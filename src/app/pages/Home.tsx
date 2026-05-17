@@ -192,10 +192,10 @@ export function Home() {
                 <img src={buckeeImage} alt="Buckee" className="w-20 h-20 lg:w-28 lg:h-28 object-contain" />
                 <div className="flex-1">
                   <p className="text-[var(--brand-yellow)] font-semibold mb-1 text-xs lg:text-sm leading-tight group-hover:text-[#cc9410] transition-colors whitespace-nowrap">
-                    MEET BUCKEE - YOUR AI TRAVEL ASSISTANT!
+                    MEET BUCKEE — FREE WHEN YOU JOIN.
                   </p>
                   <p className="text-gray-300 text-[10px] lg:text-xs leading-relaxed">
-                    PERSONALIZED ITINERARIES, LOCAL INSIDER TIPS<br className="hidden lg:block" />& SMART SAVINGS - ALL IN ONE CLICK!
+                    Personalized itineraries, local insider tips, and smart savings<br className="hidden lg:block" /> from your AI travel buddy. Membership is free.
                   </p>
                 </div>
               </button>
