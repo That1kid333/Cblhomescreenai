@@ -23,7 +23,7 @@ export function Layout() {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen" style={{ maxWidth: '1366px', margin: '0 auto' }}>
+    <div className="bg-black text-white min-h-screen w-full">
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
