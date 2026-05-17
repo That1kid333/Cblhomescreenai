@@ -7,6 +7,8 @@ import transportationImage from '../../assets/0c14cb1865bf0ca612f6fcb9d74d4ff357
 import eatsImage from '../../assets/5f602f7d30b9658349675aa8836bb8d75594e226.png';
 import attractionsImage from '../../assets/e04fa8d75cf2828287ef82f02beaae9386ee6f52.png';
 import buckeeImage from '../../assets/buckee.png';
+import blogImage from '../../assets/cbl_blog_slide.png';
+import directoryImage from '../../assets/cbl_directory_slide.png';
 
 const rotationContent = [
   {
@@ -82,6 +84,44 @@ const rotationContent = [
         <Link to="/attractions" className="text-[var(--brand-yellow)] hover:underline">
           Start Exploring <ChevronRight className="inline w-4 h-4" />
         </Link>
+      </>
+    ),
+  },
+  {
+    image: blogImage,
+    alt: 'CBL Blog',
+    headline: (
+      <>
+        STAY IN THE<br />
+        <span className="text-[var(--brand-yellow)]">KNOW</span>.<br />
+        READ LOCAL.
+      </>
+    ),
+    caption: (
+      <>
+        City Bucket List Blog - Local Guides, Tips & Stories -{' '}
+        <Link to="/blog" className="text-[var(--brand-yellow)] hover:underline">
+          Read Now <ChevronRight className="inline w-4 h-4" />
+        </Link>
+      </>
+    ),
+  },
+  {
+    image: directoryImage,
+    alt: 'CBL Directory',
+    headline: (
+      <>
+        FIND LOCAL<br />
+        <span className="text-[var(--brand-yellow)]">BUSINESSES</span>.<br />
+        CONNECT MORE.
+      </>
+    ),
+    caption: (
+      <>
+        Browse the City Bucket List Directory -{' '}
+        <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="text-[var(--brand-yellow)] hover:underline">
+          Explore Directory <ChevronRight className="inline w-4 h-4" />
+        </a>
       </>
     ),
   },
@@ -224,45 +264,45 @@ export function Home() {
             {/* Golden Circle with Message Bubble Icon */}
             <div className="relative flex-shrink-0 z-10" style={{ width: '100px', height: '100px' }}>
               <svg viewBox="0 0 100 100" className="w-full h-full">
-                {/* Golden Circle with black fill */}
                 <circle
                   cx="50"
                   cy="50"
                   r="48"
-                  fill="black"
+                  fill={currentSlide === 4 ? '#FDB913' : 'black'}
                   stroke="#FDB913"
                   strokeWidth="3.5"
+                  style={{ transition: 'fill 0.4s ease' }}
                 />
                 {/* Message Bubble Icon - centered */}
                 <g transform="translate(50, 50) scale(0.8) translate(-73, -71)">
                   <path
                     d="M49.9,87.54l4.34-8.68s-7.49-6.21-6.3-14.09c1.19-7.88,10.73-14.86,22.99-14.86s24.18,6.81,24.18,16.01-9.71,21.12-33.38,16.52c-5.45,2.21-11.83,5.11-11.83,5.11Z"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 4 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <path
                     d="M75.35,83.96c3.93,2.21,10.41,2.89,14.55.9,5.45,2.21,11.83,5.11,11.83,5.11l-4.34-8.68s5.73-2.05,4.54-9.92c0,0-1.02-5.92-6.81-7.39"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 4 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
-                  <circle fill="white" cx="62.56" cy="66.35" r="2.37" className="group-hover:fill-[#FDB913] transition-colors"/>
-                  <circle fill="white" cx="72.97" cy="66.35" r="2.37" className="group-hover:fill-[#FDB913] transition-colors"/>
-                  <circle fill="white" cx="83.39" cy="66.35" r="2.37" className="group-hover:fill-[#FDB913] transition-colors"/>
+                  <circle fill={currentSlide === 4 ? 'black' : 'white'} cx="62.56" cy="66.35" r="2.37" style={{ transition: 'fill 0.4s ease' }}/>
+                  <circle fill={currentSlide === 4 ? 'black' : 'white'} cx="72.97" cy="66.35" r="2.37" style={{ transition: 'fill 0.4s ease' }}/>
+                  <circle fill={currentSlide === 4 ? 'black' : 'white'} cx="83.39" cy="66.35" r="2.37" style={{ transition: 'fill 0.4s ease' }}/>
                 </g>
               </svg>
             </div>
 
             {/* Text with white border - overlapped with circle */}
             <div className="relative flex-1 px-6 py-8 pl-10 -ml-8 min-h-[100px] flex items-center justify-center">
-              <span className="text-white font-semibold text-lg tracking-wide group-hover:text-[#FDB913] transition-colors whitespace-nowrap">CBL BLOG</span>
+              <span className={`font-semibold text-lg tracking-wide transition-colors whitespace-nowrap ${currentSlide === 4 ? 'text-[#FDB913]' : 'text-white group-hover:text-[#FDB913]'}`}>CBL BLOG</span>
             </div>
           </Link>
 
@@ -271,14 +311,15 @@ export function Home() {
             {/* Golden Circle with Directory Icon */}
             <div className="relative flex-shrink-0 z-10" style={{ width: '100px', height: '100px' }}>
               <svg viewBox="0 0 100 100" className="w-full h-full">
-                {/* Golden Circle with black fill */}
+                {/* Golden Circle */}
                 <circle
                   cx="50"
                   cy="50"
                   r="48"
-                  fill="black"
+                  fill={currentSlide === 5 ? '#FDB913' : 'black'}
                   stroke="#FDB913"
                   strokeWidth="3.5"
+                  style={{ transition: 'fill 0.4s ease' }}
                 />
                 {/* Directory Icon - centered and scaled */}
                 <g transform="translate(50, 50) scale(0.7) translate(-74, -72)">
@@ -288,11 +329,11 @@ export function Home() {
                     width="8.1"
                     height="5.41"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <rect
                     x="51.23"
@@ -300,11 +341,11 @@ export function Home() {
                     width="8.1"
                     height="5.41"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <rect
                     x="51.23"
@@ -312,11 +353,11 @@ export function Home() {
                     width="8.1"
                     height="5.41"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <rect
                     x="51.23"
@@ -324,84 +365,84 @@ export function Home() {
                     width="8.1"
                     height="5.41"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <circle
                     cx="80.6"
                     cy="66.15"
                     r="3.82"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <path
                     d="M82.48,69.55s5.21,2.58,5.21,6.67c-3.14,0-4.95,0-4.95,0h-2.98s-3.39,0-6.53,0c0-4.09,5.21-6.67,5.21-6.67"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <path
                     d="M55.28,88.74v5.18h38.45c2.54,0,2.54-2.54,2.54-2.54v-43.55c0-2.54-2.87-2.65-2.87-2.65h-38.12v4.85"
                     fill="none"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <line
                     x1="64.07"
                     y1="49.26"
                     x2="64.07"
                     y2="89.95"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <line
                     x1="55.28"
                     y1="56.04"
                     x2="55.28"
                     y2="61.46"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <line
                     x1="55.28"
                     y1="67.26"
                     x2="55.28"
                     y2="71.31"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                   <line
                     x1="55.28"
                     y1="78.66"
                     x2="55.28"
                     y2="82.71"
-                    stroke="white"
+                    stroke={currentSlide === 5 ? 'black' : 'white'}
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="group-hover:stroke-[#FDB913] transition-colors"
+                    style={{ transition: 'stroke 0.4s ease' }}
                   />
                 </g>
               </svg>
@@ -409,7 +450,7 @@ export function Home() {
 
             {/* Text with white border - overlapped with circle */}
             <div className="relative flex-1 px-6 py-8 pl-10 -ml-8 min-h-[100px] flex items-center justify-center">
-              <span className="text-white font-semibold text-lg tracking-wide group-hover:text-[#FDB913] transition-colors whitespace-nowrap">DIRECTORY</span>
+              <span className={`font-semibold text-lg tracking-wide transition-colors whitespace-nowrap ${currentSlide === 5 ? 'text-[#FDB913]' : 'text-white group-hover:text-[#FDB913]'}`}>DIRECTORY</span>
             </div>
           </button>
         </div>
