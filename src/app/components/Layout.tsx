@@ -1,7 +1,7 @@
 import { Outlet, Link } from 'react-router';
 import { ChevronRight, Menu } from 'lucide-react';
 import { useState } from 'react';
-// Logo removed, using text base logo
+import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
 
 export function Layout() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -35,9 +35,12 @@ export function Layout() {
 
             {/* Logo - Centered on mobile, left-aligned on desktop */}
             <Link to="/" className="flex items-center absolute left-1/2 -translate-x-1/2 lg:static lg:translate-x-0">
-              <span className="text-xl lg:text-2xl font-bold text-white tracking-tight">
-                City<span className="text-[#FDB913]">BucketList</span>
-              </span>
+              <img
+                src={logo}
+                alt="CityBucketList.com"
+                className="h-8 lg:h-12"
+                style={{ filter: 'brightness(1.15) saturate(1.1)' }}
+              />
             </Link>
 
             {/* Navigation - Hidden on mobile */}
