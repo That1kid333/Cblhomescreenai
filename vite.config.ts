@@ -7,7 +7,6 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 function localApiPlugin() {
   return {
@@ -21,6 +20,7 @@ function localApiPlugin() {
           });
           req.on('end', async () => {
             try {
+              const resend = new Resend(process.env.RESEND_API_KEY);
               const data = JSON.parse(body);
               
               // 1. Send notification to site owner
