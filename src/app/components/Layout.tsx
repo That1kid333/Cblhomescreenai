@@ -87,21 +87,21 @@ export function Layout() {
                 {activeDropdown === 'explore' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
-                      <a href="#travels" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/travels" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Travels
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#transportation" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/transportation" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Transportation
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <Link to="/eats-and-drinks" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Eats & Drinks
                       </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Attractions
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -118,25 +118,25 @@ export function Layout() {
                 {activeDropdown === 'affiliates' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
-                      <a href="#become-affiliate" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Become An Affiliate
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#partner-hotels" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Partner Hotels
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#partner-restaurants" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Partner Restaurants
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#partner-attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Partner Attractions
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#commission-info" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Commission Info
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -153,21 +153,21 @@ export function Layout() {
                 {activeDropdown === 'blog' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
-                      <a href="#latest-posts" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Travels
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#travel-tips" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Transportation
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#local-guides" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Eats & Drinks
-                      </a>
+                      </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="#destination-spotlights" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Attractions
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 )}

@@ -22,9 +22,9 @@ const rotationContent = [
     caption: (
       <>
         Hotel Concierge Services Available -{' '}
-        <a href="#hotel-signup" className="text-[var(--brand-yellow)] hover:underline">
+        <Link to="/travels" className="text-[var(--brand-yellow)] hover:underline">
           Sign-up Here <ChevronRight className="inline w-4 h-4" />
-        </a>
+        </Link>
       </>
     ),
   },
@@ -41,9 +41,9 @@ const rotationContent = [
     caption: (
       <>
         Transportation Services Available -{' '}
-        <a href="#transportation" className="text-[var(--brand-yellow)] hover:underline">
+        <Link to="/transportation" className="text-[var(--brand-yellow)] hover:underline">
           Need a Ride? <ChevronRight className="inline w-4 h-4" />
-        </a>
+        </Link>
       </>
     ),
   },
@@ -60,9 +60,9 @@ const rotationContent = [
     caption: (
       <>
         Local Restaurant Partnerships Available -{' '}
-        <a href="#restaurants" className="text-[var(--brand-yellow)] hover:underline">
+        <Link to="/eats-and-drinks" className="text-[var(--brand-yellow)] hover:underline">
           Explore Dining <ChevronRight className="inline w-4 h-4" />
-        </a>
+        </Link>
       </>
     ),
   },
@@ -79,9 +79,9 @@ const rotationContent = [
     caption: (
       <>
         Local Attractions & Experiences Available -{' '}
-        <a href="#attractions" className="text-[var(--brand-yellow)] hover:underline">
+        <Link to="/attractions" className="text-[var(--brand-yellow)] hover:underline">
           Start Exploring <ChevronRight className="inline w-4 h-4" />
-        </a>
+        </Link>
       </>
     ),
   },
@@ -187,7 +187,7 @@ export function Home() {
               {/* Buckee Mascot Section */}
               <button
                 className="flex flex-col lg:flex-row gap-2 lg:gap-1 items-center justify-center lg:justify-start group cursor-pointer hover:opacity-90 transition-opacity w-full text-center lg:text-left"
-                onClick={() => window.location.href = '#start-trip'}
+                onClick={() => window.location.href = '/'}
               >
                 <img src={buckeeImage} alt="Buckee" className="w-20 h-20 lg:w-28 lg:h-28 object-contain" />
                 <div className="flex-1">

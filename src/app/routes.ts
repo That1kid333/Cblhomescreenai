@@ -7,6 +7,10 @@ import { OurStory } from './pages/OurStory';
 import { HowItWorks } from './pages/HowItWorks';
 import { Blog } from './pages/Blog';
 import { EatsAndDrinks } from './pages/EatsAndDrinks';
+import { Travels } from './pages/Travels';
+import { Transportation } from './pages/Transportation';
+import { Attractions } from './pages/Attractions';
+import { Affiliates } from './pages/Affiliates';
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +24,10 @@ export const router = createBrowserRouter([
       { path: 'how-it-works', Component: HowItWorks },
       { path: 'blog', Component: Blog },
       { path: 'eats-and-drinks', Component: EatsAndDrinks },
+      { path: 'travels', Component: Travels },
+      { path: 'transportation', Component: Transportation },
+      { path: 'attractions', Component: Attractions },
+      { path: 'affiliates', Component: Affiliates },
     ],
   },
 ]);
