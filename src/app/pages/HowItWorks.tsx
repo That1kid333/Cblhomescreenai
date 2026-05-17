@@ -1,3 +1,6 @@
+import riderImage from '../../assets/rider_meeting_driver.png';
+import driverImage from '../../assets/driver_holding_phone.png';
+
 export function HowItWorks() {
   return (
     <main className="max-w-7xl mx-auto px-4 lg:px-6 py-8 lg:py-12">
@@ -105,7 +108,7 @@ export function HowItWorks() {
               01
             </div>
             <img
-              src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=900"
+              src={riderImage}
               alt="Rider in back seat"
               className="w-full object-cover rounded-[24px_0_24px_0]"
               style={{ maxHeight: "420px" }}
@@ -192,7 +195,7 @@ export function HowItWorks() {
               02
             </div>
             <img
-              src="https://images.unsplash.com/photo-1527877213688-f3f0f876a186?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=900"
+              src={driverImage}
               alt="Independent driver at the wheel"
               className="w-full object-cover rounded-[24px_0_24px_0]"
               style={{ maxHeight: "420px" }}
