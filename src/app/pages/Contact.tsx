@@ -10,10 +10,43 @@ export function Contact() {
     agreedToTerms: false,
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setStatus('loading');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setStatus('success');
+        setFormData({
+          topic: '',
+          fullName: '',
+          email: '',
+          phone: '',
+          message: '',
+          agreedToTerms: false,
+        });
+      } else {
+        setStatus('error');
+        setErrorMessage(result.error || 'Failed to send message.');
+      }
+    } catch (error) {
+      setStatus('error');
+      setErrorMessage('Network error. Please try again later.');
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -141,17 +174,30 @@ export function Contact() {
             className="mt-1 w-5 h-5 bg-[#0A0A0A] border-2 border-[#FDB913] rounded accent-[#FDB913] focus:outline-none focus:ring-2 focus:ring-[#FDB913] cursor-pointer"
           />
           <label htmlFor="agreedToTerms" className="text-gray-300 text-sm">
-            I agree to the <a href="#terms" className="text-[#FDB913] hover:text-[#FDB913] underline">Terms and Conditions</a> <span className="text-[#FDB913]">*</span>
+            I agree to the <a href="/terms" target="_blank" className="text-[#FDB913] hover:text-[#FDB913] underline">Terms and Conditions</a> <span className="text-[#FDB913]">*</span>
           </label>
         </div>
 
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-[#FDB913] hover:bg-[#FDB913] text-black font-bold py-4 rounded-lg transition-colors text-lg"
+          disabled={status === 'loading'}
+          className={`w-full ${status === 'loading' ? 'bg-gray-500 cursor-not-allowed' : 'bg-[#FDB913] hover:bg-[#cc9410]'} text-black font-bold py-4 rounded-lg transition-colors text-lg`}
         >
-          SUBMIT
+          {status === 'loading' ? 'SENDING...' : 'SUBMIT'}
         </button>
+
+        {status === 'success' && (
+          <div className="bg-green-500/20 border border-green-500 text-green-400 p-4 rounded-lg text-center font-semibold">
+            Your message has been sent! We have emailed you a confirmation.
+          </div>
+        )}
+
+        {status === 'error' && (
+          <div className="bg-red-500/20 border border-red-500 text-red-400 p-4 rounded-lg text-center font-semibold">
+            {errorMessage}
+          </div>
+        )}
 
         {/* Response Time Note */}
         <p className="text-center text-gray-400 text-sm mt-6">
