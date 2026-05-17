@@ -206,19 +206,7 @@ export function Layout() {
       {/* Main Content */}
       <Outlet />
 
-      {/* Footer */}
-      <footer className="mt-8 lg:mt-4">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6 py-2 lg:py-3">
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            <p className="text-gray-400 text-xs lg:text-sm">
-              <span className="font-semibold">Special Thanks</span> to our Sponsors & Affiliates!
-            </p>
-            <div className="bg-orange-500 px-3 lg:px-4 py-1.5 lg:py-2 rounded">
-              <span className="text-white font-bold text-xs lg:text-sm">KAYAK</span>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Footer removed until sponsors/affiliates are added */}
     </div>
   );
 }

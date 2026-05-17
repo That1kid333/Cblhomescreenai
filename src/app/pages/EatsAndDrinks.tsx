@@ -179,7 +179,7 @@ export function EatsAndDrinks() {
             <div className="w-full lg:w-2/3 p-6 lg:p-8">
               <div className="mb-4">
                 <p className="font-['Myriad_Pro',sans-serif] font-bold text-[20px] lg:text-[26px] text-[#CE8D19] leading-tight mb-2">
-                  CBL SPONSORED
+                  FEATURED RESTAURANT
                 </p>
                 <h3 className="font-['Myriad_Pro',sans-serif] font-bold text-[24px] lg:text-[32px] text-white leading-tight mb-2">
                   Square Cafe
