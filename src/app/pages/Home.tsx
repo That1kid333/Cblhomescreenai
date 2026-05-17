@@ -201,7 +201,7 @@ export function Home() {
               </button>
 
               <button className="bg-[#FDB913] hover:bg-[#cc9410] text-black hover:text-white px-6 lg:px-8 py-2 lg:py-3 rounded-full text-sm lg:text-base font-semibold transition-colors w-full lg:w-auto">
-                START TRIP ITINERARY
+                Join Now
               </button>
             </div>
           </div>
