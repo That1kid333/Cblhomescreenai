@@ -209,10 +209,7 @@ export function Layout() {
               </div>
             </nav>
 
-            {/* Login Button */}
-            <button className="bg-[#FDB913] hover:bg-[#cc9410] text-black hover:text-white px-4 lg:px-6 py-1.5 lg:py-2 rounded-full transition-colors text-xs lg:text-sm font-bold lg:mr-8">
-              LOGIN
-            </button>
+
           </div>
         </div>
       </header>
