@@ -1,5 +1,5 @@
-import riderImage from '../../assets/rider_meeting_driver.png';
-import driverImage from '../../assets/driver_holding_phone.png';
+import riderImage from '../../assets/rider_meeting_driver_neutral.png';
+import driverImage from '../../assets/driver_holding_phone_neutral.png';
 
 export function HowItWorks() {
   return (
