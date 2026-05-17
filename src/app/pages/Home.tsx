@@ -22,9 +22,9 @@ const rotationContent = [
     caption: (
       <>
         Hotel Concierge Services Available -{' '}
-        <Link to="/travels" className="text-[var(--brand-yellow)] hover:underline">
+        <a href="https://app.citybucketlist.com/" className="text-[var(--brand-yellow)] hover:underline">
           Sign-up Here <ChevronRight className="inline w-4 h-4" />
-        </Link>
+        </a>
       </>
     ),
   },
@@ -41,9 +41,9 @@ const rotationContent = [
     caption: (
       <>
         Transportation Services Available -{' '}
-        <Link to="/transportation" className="text-[var(--brand-yellow)] hover:underline">
+        <a href="https://app.citybucketlist.com/" className="text-[var(--brand-yellow)] hover:underline">
           Need a Ride? <ChevronRight className="inline w-4 h-4" />
-        </Link>
+        </a>
       </>
     ),
   },
