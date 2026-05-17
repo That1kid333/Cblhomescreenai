@@ -1,4 +1,5 @@
-import buckeeConcierge from 'figma:asset/612bafe8b8efb25cf01bcb8de2b591148614a2b7.png';
+import buckeeConcierge from '../../assets/buckee.png';
+import { Globe } from 'lucide-react';
 
 export function OurStory() {
   return (
@@ -109,12 +110,9 @@ export function OurStory() {
               </div>
             </div>
             <div className="flex gap-4 items-start">
-              <div className="w-20 h-20 flex-shrink-0 bg-[#0a0a0a] rounded-xl flex items-center justify-center p-1">
-              <svg viewBox="0 0 125 24" className="w-full h-auto" fill="none" role="presentation">
-                <path clipRule="evenodd" fillRule="evenodd" fill="#FF690F" d="M0 24h23.936V0H0v24zm25.266 0h23.936V0H25.266v24zm49.202 0H50.532V0h23.936v24zm1.33 0h23.936V0H75.798v24zM125 24h-23.936V0H125v24z"/>
-                <path clipRule="evenodd" fillRule="evenodd" fill="#FAFAFC" d="M10.287 11.549V6H7.38v12h2.907v-5.548L13.348 18h3.208l-3.33-6 3.33-6h-3.208l-3.061 5.549zm24.785 4.724L34.552 18h-3.104l3.947-12h3.696l3.93 12h-3.194l-.52-1.727h-4.235zm2.117-6.837l-1.4 4.48h2.8l-1.4-4.48zM63.98 18h-2.906v-5.29L57.144 6h3.463l1.938 3.688L64.447 6h3.409l-3.876 6.71V18zm21.624-1.727L85.084 18h-3.105l3.948-12h3.696l3.93 12h-3.194l-.52-1.727h-4.235zm2.117-6.837l-1.4 4.48h2.8l-1.4-4.48zm23.63 2.113V6h-2.907v12h2.907v-5.548L114.412 18h3.208l-3.33-6 3.33-6h-3.208l-3.061 5.549z"/>
-              </svg>
-            </div>
+              <div className="w-20 h-20 flex-shrink-0 bg-[#0a0a0a] rounded-xl flex items-center justify-center p-4 border border-gray-800">
+                <Globe className="w-full h-full text-[#FDB913]" />
+              </div>
               <div className="flex-1">
                 <h3 className="text-[#FDB913] font-bold text-lg mb-2">Growing Strategic Partnerships</h3>
                 <p className="text-gray-300 leading-relaxed">
