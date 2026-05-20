@@ -309,12 +309,15 @@ const DESKTOP_CSS = `
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
 .cbl-eats .hero-title-row { position:relative; display:flex; flex-direction:column; align-items:flex-start; }
+/* Hero icon container dimensions are intentionally matched to the
+   Transportation page (.car-icon) so the two heros end at the same Y
+   position and headers/subheaders don't shift when toggling between pages. */
 .cbl-eats h1.hero-title .fork-knife {
-  flex-shrink:0; width:220px; height:260px;
+  flex-shrink:0; width:240px; height:240px;
   background:url('${ICON}eats-drinks-knife-fork.svg') center/contain no-repeat; opacity:.92;
 }
-@media (max-width:1100px){ .cbl-eats h1.hero-title .fork-knife { width:170px; height:200px; } }
-@media (max-width:720px){ .cbl-eats h1.hero-title .fork-knife { width:120px; height:140px; } }
+@media (max-width:1100px){ .cbl-eats h1.hero-title .fork-knife { width:180px; height:180px; } }
+@media (max-width:720px){ .cbl-eats h1.hero-title .fork-knife { width:120px; height:120px; } }
 .cbl-eats .hero p.lede { margin-top:-6px; max-width:520px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 .cbl-eats .filters {
