@@ -276,13 +276,16 @@ const TRANSPORT_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
+/* Hero icon container dimensions are intentionally matched to the
+   Eats & Drinks page (.fork-knife) so the two heros end at the same Y
+   position and headers/subheaders don't shift when toggling between pages. */
 .cbl-transport h1.hero-title .car-icon {
-  flex-shrink:0; width:280px; height:220px;
+  flex-shrink:0; width:240px; height:240px;
   display:flex; align-items:center; justify-content:center; opacity:.92;
 }
 .cbl-transport h1.hero-title .car-icon svg { width:100%; height:100%; }
-@media (max-width:1100px){ .cbl-transport h1.hero-title .car-icon { width:200px; height:160px; } }
-@media (max-width:720px){ .cbl-transport h1.hero-title .car-icon { width:140px; height:110px; } }
+@media (max-width:1100px){ .cbl-transport h1.hero-title .car-icon { width:180px; height:180px; } }
+@media (max-width:720px){ .cbl-transport h1.hero-title .car-icon { width:120px; height:120px; } }
 .cbl-transport .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
