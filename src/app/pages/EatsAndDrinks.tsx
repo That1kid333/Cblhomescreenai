@@ -319,7 +319,7 @@ const DESKTOP_CSS = `
 }
 @media (max-width:1100px){ .cbl-eats h1.hero-title .fork-knife { width:180px; height:180px; } }
 @media (max-width:720px){ .cbl-eats h1.hero-title .fork-knife { width:120px; height:120px; } }
-.cbl-eats .hero p.lede { margin-top:-6px; max-width:520px; font-size:16px; line-height:1.45; color:#B8B8B8; }
+.cbl-eats .hero p.lede { margin-top:14px; max-width:520px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 .cbl-eats .filters {
   position:sticky; top:0; z-index:20;

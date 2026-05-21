@@ -235,7 +235,7 @@ const TRAVELS_CSS = `
 .cbl-travels h1.hero-title .stays-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-travels h1.hero-title .stays-icon { width:180px; height:180px; } }
 @media (max-width:720px){ .cbl-travels h1.hero-title .stays-icon { width:120px; height:120px; } }
-.cbl-travels .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
+.cbl-travels .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Search bar ── */
 .cbl-travels .search-band {
