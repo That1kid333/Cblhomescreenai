@@ -61,7 +61,7 @@ const HOW_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
-.cbl-how .hero p.lede { margin-top:-6px; max-width:640px; font-size:16px; line-height:1.5; color:#B8B8B8; margin-bottom:20px; }
+.cbl-how .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; margin-bottom:20px; }
 .cbl-how .hero-cta {
   display:inline-flex; align-items:center; gap:10px;
   background:#C99742; color:#000; border:0;
