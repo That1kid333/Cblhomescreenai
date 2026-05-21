@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
 
 /**
  * Eats & Drinks — ported from the CBL "New Website" design export.
@@ -1420,6 +1421,113 @@ function MobileFlow({
   );
 }
 
+// ── Partner / referral CTA (shared across desktop + mobile) ─────────────────
+const PARTNER_CSS = `
+.cbl-eats .partner-band { max-width:1280px; margin:0 auto; padding:12px 48px 72px; }
+.cbl-eats .partner-band .ph { margin-bottom:24px; }
+.cbl-eats .partner-band .eyebrow {
+  font-family:${MONO}; font-size:12px; color:${GOLD}; letter-spacing:.18em;
+  text-transform:uppercase; display:inline-flex; align-items:center; gap:10px; margin-bottom:12px;
+}
+.cbl-eats .partner-band .eyebrow::before { content:''; width:28px; height:1px; background:${GOLD}; }
+.cbl-eats .partner-band h2 {
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,3.6vw,52px);
+  line-height:.98; letter-spacing:-.01em; text-transform:uppercase; margin-bottom:8px;
+}
+.cbl-eats .partner-band h2 .it {
+  font-family:${ITALIC}; font-style:italic; color:${GOLD};
+  font-weight:600; text-transform:none; font-size:.6em; margin-left:8px;
+}
+.cbl-eats .partner-band .sub { color:#B0B0B0; font-size:15px; line-height:1.55; max-width:64ch; }
+.cbl-eats .partner-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.cbl-eats .partner-card {
+  background:#141414; border:1px solid rgba(255,255,255,.08);
+  border-radius:18px 0 18px 0; padding:30px 32px;
+  display:flex; flex-direction:column; gap:14px;
+  transition:transform .3s, border-color .3s;
+}
+.cbl-eats .partner-card:hover { transform:translateY(-4px); border-color:rgba(201,151,66,.45); }
+.cbl-eats .partner-card.feature {
+  background:linear-gradient(135deg, rgba(201,151,66,.16), rgba(201,151,66,.03));
+  border-color:rgba(201,151,66,.5);
+}
+.cbl-eats .partner-card .tag { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; }
+.cbl-eats .partner-card h3 {
+  font-family:${DISPLAY}; font-weight:900; font-size:28px;
+  line-height:1; text-transform:uppercase; letter-spacing:-.005em;
+}
+.cbl-eats .partner-card > p { color:#B0B0B0; font-size:14px; line-height:1.55; }
+.cbl-eats .partner-card ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.cbl-eats .partner-card li { position:relative; padding-left:22px; color:#C8C8C8; font-size:13px; line-height:1.45; }
+.cbl-eats .partner-card li::before { content:''; position:absolute; left:0; top:7px; width:12px; height:1.5px; background:${GOLD}; }
+.cbl-eats .partner-card .cta {
+  align-self:flex-start; margin-top:auto;
+  display:inline-flex; align-items:center; gap:8px;
+  background:${GOLD}; color:#000; border:0;
+  padding:13px 28px; border-radius:999px;
+  font-family:${DISPLAY}; font-weight:800;
+  font-size:13px; letter-spacing:.12em; text-transform:uppercase; transition:background .2s;
+}
+.cbl-eats .partner-card .cta:hover { background:#DDB15F; }
+.cbl-eats .partner-card .cta.ghost { background:transparent; color:${GOLD}; border:1px solid rgba(201,151,66,.5); }
+.cbl-eats .partner-card .cta.ghost:hover { background:rgba(201,151,66,.12); }
+@media (max-width:900px){
+  .cbl-eats .partner-band { padding:12px 20px 56px; }
+  .cbl-eats .partner-grid { grid-template-columns:1fr; }
+}
+`;
+
+function PartnerBand() {
+  return (
+    <section className="partner-band">
+      <div className="ph">
+        <div className="eyebrow">partners · local referrals</div>
+        <h2>
+          Get your spot <span className="it">in front of locals</span>
+        </h2>
+        <p className="sub">
+          CBL members and local drivers use this page to decide where to eat and drink. Claim a
+          featured spot for your restaurant — or tip us off to a favorite that belongs here.
+        </p>
+      </div>
+      <div className="partner-grid">
+        <div className="partner-card feature">
+          <div className="tag">For restaurants</div>
+          <h3>Become a CBL Partner</h3>
+          <p>
+            Sponsored placement at the top of results, a partner badge, and direct exposure to
+            members and drivers exploring your neighborhood.
+          </p>
+          <ul>
+            <li>Spotlight placement above standard listings</li>
+            <li>Sponsored badge + full restaurant profile</li>
+            <li>Reach CBL members and local drivers</li>
+          </ul>
+          <Link to="/affiliates" className="cta">
+            Become a Partner →
+          </Link>
+        </div>
+        <div className="partner-card">
+          <div className="tag">For locals</div>
+          <h3>Refer a local favorite</h3>
+          <p>
+            Know a spot we're missing? Send it our way. If it joins, you earn CBL rewards — and your
+            neighborhood gets a little better.
+          </p>
+          <ul>
+            <li>Suggest any local restaurant or bar</li>
+            <li>Earn rewards when they come on board</li>
+            <li>Help shape the Pittsburgh picks</li>
+          </ul>
+          <Link to="/contact" className="cta ghost">
+            Refer a Spot →
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function EatsAndDrinks() {
   // Shared filter state. Desktop uses 'ALL' default for both; mobile flow
   // starts with no cuisine (null) so the landing/meal step shows first.
@@ -1430,6 +1538,7 @@ export function EatsAndDrinks() {
   return (
     <main className="cbl-eats">
       <style>{DESKTOP_CSS}</style>
+      <style>{PARTNER_CSS}</style>
       <DesktopEats
         meal={meal}
         setMeal={setMeal}
@@ -1442,6 +1551,7 @@ export function EatsAndDrinks() {
         cuisine={mobileCuisine}
         setCuisine={setMobileCuisine}
       />
+      <PartnerBand />
     </main>
   );
 }
