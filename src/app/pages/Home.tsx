@@ -431,19 +431,18 @@ const HOME_CSS = `
   margin-top:30px; display:flex; flex-wrap:wrap; gap:14px;
 }
 .cbl-home .chip {
-  display:inline-flex; align-items:center; gap:11px;
-  padding:7px 22px 7px 7px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:10px;
+  padding:8px 20px 8px 16px; border-radius:999px;
   border:1.5px solid rgba(255,255,255,.22); background:transparent;
   color:#fff; font-family:${DISPLAY}; font-weight:800;
   font-size:12px; letter-spacing:.1em; text-transform:uppercase;
   transition:border-color .25s, color .25s, background .25s;
 }
 .cbl-home .chip-ic {
-  width:38px; height:38px; flex-shrink:0; border-radius:50%;
-  border:1.5px solid currentColor; background:#0A0A0A;
+  width:26px; height:26px; flex-shrink:0;
   display:inline-flex; align-items:center; justify-content:center;
 }
-.cbl-home .chip-ic svg { width:84%; height:84%; display:block; }
+.cbl-home .chip-ic svg { width:100%; height:100%; display:block; }
 .cbl-home .chip:hover { border-color:${GOLD}; color:${GOLD}; }
 .cbl-home .chip.active { border-color:${GOLD}; color:${GOLD}; background:rgba(201,151,66,.1); }
 
