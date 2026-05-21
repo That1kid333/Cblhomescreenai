@@ -107,7 +107,7 @@ const FAQ_CSS = `
 
 /* ── Section frame ── */
 .cbl-faq section.band { padding:48px 48px 64px; }
-.cbl-faq .band-inner { max-width:920px; margin:0 auto; }
+.cbl-faq .band-inner { max-width:1280px; margin:0 auto; }
 
 /* ── Accordion ── */
 .cbl-faq .faq-list { display:flex; flex-direction:column; gap:10px; }
