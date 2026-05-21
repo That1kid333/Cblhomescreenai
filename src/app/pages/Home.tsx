@@ -45,7 +45,9 @@ const SLIDES: Slide[] = [
     alt: 'Hotel Concierge Services',
     headline: (
       <>
-        Travel smart. <span className="it">Live local.</span> Save more.
+        Travel smart.<br />
+        Live local.<br />
+        <span className="gold">Save more.</span>
       </>
     ),
     caption: (
@@ -63,7 +65,9 @@ const SLIDES: Slide[] = [
     alt: 'Transportation Services',
     headline: (
       <>
-        Need a ride? <span className="it">Arrive safe.</span> Save more.
+        Need a ride?<br />
+        Arrive safe.<br />
+        <span className="gold">Save more.</span>
       </>
     ),
     caption: (
@@ -81,7 +85,9 @@ const SLIDES: Slide[] = [
     alt: 'Dining and Restaurants',
     headline: (
       <>
-        Hungry? <span className="it">Eat local.</span> Save more.
+        Hungry?<br />
+        Eat local.<br />
+        <span className="gold">Save more.</span>
       </>
     ),
     caption: (
@@ -99,7 +105,9 @@ const SLIDES: Slide[] = [
     alt: 'Local Attractions',
     headline: (
       <>
-        Bored? <span className="it">Explore local.</span> Save more.
+        Bored?<br />
+        Explore local.<br />
+        <span className="gold">Save more.</span>
       </>
     ),
     caption: (
@@ -117,7 +125,9 @@ const SLIDES: Slide[] = [
     alt: 'CBL Blog',
     headline: (
       <>
-        Stay in the <span className="it">know.</span> Read local.
+        Stay in the<br />
+        know.<br />
+        <span className="gold">Read local.</span>
       </>
     ),
     caption: (
@@ -135,7 +145,9 @@ const SLIDES: Slide[] = [
     alt: 'CBL Directory',
     headline: (
       <>
-        Find local <span className="it">businesses.</span> Connect more.
+        Find local<br />
+        businesses.<br />
+        <span className="gold">Connect more.</span>
       </>
     ),
     caption: (
@@ -162,6 +174,104 @@ const APP_FEATURES = [
   { t: 'Save more', d: 'Member savings and partner offers across every city you visit. Joining is free.' },
 ];
 
+// Circular nav icons carried over from the original homepage (CategoryButton +
+// the old Blog/Directory widgets). Re-stroked with currentColor so each badge
+// inherits its chip's color — white by default, gold when active/hovered.
+const ICON_VIEWBOX: Record<string, string> = {
+  travels: '0 0 70 70',
+  transportation: '0 0 70 70',
+  eats: '0 0 70 70',
+  attractions: '0 0 70 70',
+  blog: '0 0 100 100',
+  directory: '0 0 100 100',
+};
+
+const CHIP_ICONS: Record<string, React.ReactNode> = {
+  travels: (
+    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.58} strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(-122.07, -53.18)">
+        <path d="M170.53,69.41c1.35.94-.05,4-1.36,5.82s-7.37,6.76-7.37,6.76l4.29,19.04-1.82,1.85-8.28-15.65-8.33,7.92,1.46,6.91-1.06.81-3.99-6.46" />
+        <path d="M170.87,69.76c-.94-1.35-4,.05-5.82,1.36s-6.76,7.37-6.76,7.37l-19.04-4.29-1.85,1.82,15.65,8.28-7.92,8.33-6.91-1.46-.81,1.06,6.46,3.99" />
+      </g>
+    </g>
+  ),
+  transportation: (
+    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.62} strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(-339.38, -53.15)">
+        <path d="M358.22,80.37l-2.38,3.89c-.46.75-.66,1.61-.56,2.47l.95,8.15h16.14" />
+        <path d="M358.22,80.37s-1.01-.87-2.55-1.09c-1.54-.22-2.6-.06-2.79.53-.23.72-1.26,2.3,1.33,2.38" />
+        <path d="M372.72,74.31s-8.93-.12-10.73.74c-1.58.75-3.35,4.42-3.77,5.32" />
+        <path d="M366.43,88.28s-2.2-.12-5.19-.23c-2.99-.12-2.42-2.03-2.42-2.03" />
+        <path d="M366.43,91.52h12.58" />
+        <path d="M358.13,80.52s.56.89,2.58.89h11.9" />
+        <path d="M360.84,94.88h0c1.56,0,2.82,1.27,2.82,2.82v.3h-5.65v-.3c0-1.56,1.27-2.82,2.82-2.82Z" transform="translate(721.69 192.88) rotate(180)" />
+        <path d="M386.54,80.37l2.38,3.89c.46.75.66,1.61.56,2.47l-.95,8.15h-16.14" />
+        <path d="M386.54,80.37s1.01-.87,2.55-1.09c1.54-.22,2.6-.06,2.79.53.23.72,1.26,2.3-1.33,2.38" />
+        <path d="M372.04,74.31s8.93-.12,10.73.74c1.58.75,3.35,4.42,3.77,5.32" />
+        <path d="M378.33,88.28s2.2-.12,5.19-.23c2.99-.12,2.42-2.03,2.42-2.03" />
+        <path d="M378.33,91.52h-12.58" />
+        <path d="M386.63,80.52s-.56.89-2.58.89h-11.9" />
+        <path d="M381.09,94.88h5.65v.3c0,1.56-1.27,2.82-2.82,2.82h0c-1.56,0-2.82-1.27-2.82-2.82v-.3h0Z" />
+      </g>
+    </g>
+  ),
+  eats: (
+    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.71} strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(-618.69, -49.71)">
+        <path d="M649.18,85.45l-2.49-2.49-.96.96c-.66.66-1.74.64-2.42-.04l-7.75-7.75c-2.78-2.78-2.85-7.23-.15-9.93h0s14.02,14.02,14.02,14.02l2.9,2.9" />
+        <path d="M655.18,85.98l9.64,9.64c.78.78.8,2.02.04,2.78s-2,.74-2.78-.04l-9.75-9.75" />
+        <path d="M672.1,72.94l-9.67,9.67c-1.13,1.13-2.97,1.13-4.1,0l-16.91,16.91c-.73.73-1.91.73-2.64,0h0c-.73-.73-.73-1.91,0-2.64l16.91-16.91c-1.13-1.13-1.13-2.97,0-4.1l9.67-9.67" />
+        <line x1="667.56" y1="68.39" x2="659.53" y2="76.42" />
+        <line x1="669.82" y1="70.66" x2="661.79" y2="78.68" />
+      </g>
+    </g>
+  ),
+  attractions: (
+    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.78} strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(-897.94, -50.73)">
+        <circle cx="937.26" cy="70.09" r="3.21" />
+        <circle cx="924.32" cy="76.27" r="3.21" />
+        <path d="M937.26,63.3s-7.16.45-7.16,7.46,7.16,11.74,7.16,11.74c0,0,6.95-4.37,6.95-12.2,0-7.03-6.95-7-6.95-7Z" />
+        <path d="M913.5,86.82c-.27-1.22-.3-1.96-.3-3.26,0-8.81,6.42-16.12,14.84-17.5" />
+        <path d="M946.34,74.75c1.49,2.6,2.34,5.6,2.34,8.81,0,1.6-.21,3.15-.61,4.63" />
+        <path d="M932.77,90.34s4.64-4.96,5.88-4.92c1.78.06,8.17,6.05,8.17,6.05-2.78,6.15-8.69,9.83-15.88,9.83-7.62,0-14.12-4.8-16.63-11.55,0,0,6.73-7.26,8.44-7.25,1.07,0,1.55.13,4.78,3.33,3.22,3.2,12.59,12.16,12.59,12.16" />
+      </g>
+    </g>
+  ),
+  blog: (
+    <g transform="translate(50, 50) scale(0.8) translate(-73, -71)" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M49.9,87.54l4.34-8.68s-7.49-6.21-6.3-14.09c1.19-7.88,10.73-14.86,22.99-14.86s24.18,6.81,24.18,16.01-9.71,21.12-33.38,16.52c-5.45,2.21-11.83,5.11-11.83,5.11Z" />
+      <path d="M75.35,83.96c3.93,2.21,10.41,2.89,14.55.9,5.45,2.21,11.83,5.11,11.83,5.11l-4.34-8.68s5.73-2.05,4.54-9.92c0,0-1.02-5.92-6.81-7.39" />
+      <circle fill="currentColor" stroke="none" cx="62.56" cy="66.35" r="2.37" />
+      <circle fill="currentColor" stroke="none" cx="72.97" cy="66.35" r="2.37" />
+      <circle fill="currentColor" stroke="none" cx="83.39" cy="66.35" r="2.37" />
+    </g>
+  ),
+  directory: (
+    <g transform="translate(50, 50) scale(0.7) translate(-74, -72)" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="51.23" y="50.63" width="8.1" height="5.41" />
+      <rect x="51.23" y="61.46" width="8.1" height="5.41" />
+      <rect x="51.23" y="72.13" width="8.1" height="5.41" />
+      <rect x="51.23" y="82.88" width="8.1" height="5.41" />
+      <circle cx="80.6" cy="66.15" r="3.82" />
+      <path d="M82.48,69.55s5.21,2.58,5.21,6.67c-3.14,0-4.95,0-4.95,0h-2.98s-3.39,0-6.53,0c0-4.09,5.21-6.67,5.21-6.67" />
+      <path d="M55.28,88.74v5.18h38.45c2.54,0,2.54-2.54,2.54-2.54v-43.55c0-2.54-2.87-2.65-2.87-2.65h-38.12v4.85" />
+      <line x1="64.07" y1="49.26" x2="64.07" y2="89.95" />
+      <line x1="55.28" y1="56.04" x2="55.28" y2="61.46" />
+      <line x1="55.28" y1="67.26" x2="55.28" y2="71.31" />
+      <line x1="55.28" y1="78.66" x2="55.28" y2="82.71" />
+    </g>
+  ),
+};
+
+function ChipIcon({ k }: { k: string }) {
+  return (
+    <span className="chip-ic" aria-hidden="true">
+      <svg viewBox={ICON_VIEWBOX[k]}>{CHIP_ICONS[k]}</svg>
+    </span>
+  );
+}
+
 const HOME_CSS = `
 .cbl-home { background:#0A0A0A; color:#fff; font-family:${BODY}; -webkit-font-smoothing:antialiased; }
 .cbl-home *,.cbl-home *::before,.cbl-home *::after { box-sizing:border-box; }
@@ -173,13 +283,19 @@ const HOME_CSS = `
 
 /* ── Hero band ── */
 .cbl-home .hero {
-  position:relative; overflow:hidden;
+  position:relative; overflow:hidden; background:#0A0A0A;
+  padding:22px 48px 44px;
+}
+/* Map backdrop pinned to a fixed-height header strip so it reads exactly like
+   the About / Explore heroes regardless of the (taller) two-column hero body. */
+.cbl-home .hero::before {
+  content:''; position:absolute; left:0; right:0; top:0; z-index:0; pointer-events:none;
+  height:clamp(260px,30vw,360px);
   background:
     linear-gradient(180deg, rgba(10,10,10,.25) 0%, rgba(10,10,10,.55) 45%, rgba(10,10,10,.92) 90%, #0A0A0A 100%),
     url('${MAP_BG}') center top / cover no-repeat;
-  padding:34px 48px 44px;
 }
-.cbl-home .hero-inner { max-width:1280px; margin:0 auto; }
+.cbl-home .hero-inner { position:relative; z-index:1; max-width:1280px; margin:0 auto; }
 .cbl-home .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -195,20 +311,20 @@ const HOME_CSS = `
 }
 .cbl-home .hero-copy { min-width:0; }
 .cbl-home h1.hero-title {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(46px,5.6vw,82px);
-  line-height:.94; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 18px;
-  transition:filter .5s, opacity .5s;
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(44px,5.2vw,76px);
+  line-height:.96; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 18px;
+  color:#fff; transition:filter .5s, opacity .5s;
 }
-.cbl-home h1.hero-title .it {
-  font-family:${ITALIC}; font-style:italic; font-weight:600;
-  color:${GOLD}; text-transform:none; letter-spacing:0;
-}
+/* Locked to three lines so the rotation never shifts the layout. */
+.cbl-home h1.hero-title .gold { color:${GOLD}; }
 .cbl-home .hero-lede {
   font-size:16px; line-height:1.5; color:#B8B8B8; max-width:48ch; margin:0 0 24px;
   transition:filter .5s, opacity .5s;
 }
 .cbl-home .hero-lede .cap-link { color:${GOLD}; }
 .cbl-home .hero-lede .cap-link:hover { text-decoration:underline; }
+/* Keep the arrow on the same line as its link text. */
+.cbl-home .cap-link { white-space:nowrap; }
 
 .cbl-home .btn-primary {
   display:inline-flex; align-items:center; gap:10px;
@@ -236,23 +352,24 @@ const HOME_CSS = `
 
 /* ── Category / link chips ── */
 .cbl-home .chip-row {
-  margin-top:30px; display:flex; flex-wrap:wrap; gap:12px;
+  margin-top:30px; display:flex; flex-wrap:wrap; gap:14px;
 }
 .cbl-home .chip {
-  display:inline-flex; align-items:center; gap:9px;
-  padding:11px 22px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:11px;
+  padding:7px 22px 7px 7px; border-radius:999px;
   border:1.5px solid rgba(255,255,255,.22); background:transparent;
   color:#fff; font-family:${DISPLAY}; font-weight:800;
   font-size:12px; letter-spacing:.1em; text-transform:uppercase;
   transition:border-color .25s, color .25s, background .25s;
 }
-.cbl-home .chip::before {
-  content:''; width:7px; height:7px; border-radius:50%;
-  background:currentColor; opacity:.55; transition:opacity .25s;
+.cbl-home .chip-ic {
+  width:38px; height:38px; flex-shrink:0; border-radius:50%;
+  border:1.5px solid currentColor; background:#0A0A0A;
+  display:inline-flex; align-items:center; justify-content:center;
 }
+.cbl-home .chip-ic svg { width:84%; height:84%; display:block; }
 .cbl-home .chip:hover { border-color:${GOLD}; color:${GOLD}; }
 .cbl-home .chip.active { border-color:${GOLD}; color:${GOLD}; background:rgba(201,151,66,.1); }
-.cbl-home .chip.active::before { opacity:1; }
 
 /* ── Section frame ── */
 .cbl-home section.band { padding:64px 48px; }
@@ -442,10 +559,12 @@ export function Home() {
                     className={'chip' + (current === i ? ' active' : '')}
                     onMouseEnter={() => goTo(i)}
                   >
+                    <ChipIcon k={c.key} />
                     {c.label}
                   </Link>
                 ))}
                 <Link to="/blog" className={'chip' + (current === 4 ? ' active' : '')} onMouseEnter={() => goTo(4)}>
+                  <ChipIcon k="blog" />
                   CBL Blog
                 </Link>
                 <a
@@ -455,6 +574,7 @@ export function Home() {
                   className={'chip' + (current === 5 ? ' active' : '')}
                   onMouseEnter={() => goTo(5)}
                 >
+                  <ChipIcon k="directory" />
                   Directory
                 </a>
               </div>
