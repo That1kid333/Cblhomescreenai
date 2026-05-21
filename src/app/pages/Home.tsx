@@ -580,26 +580,27 @@ const HOME_CSS = `
 .cbl-home .rd-tabs > span { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:8.5px; font-weight:700; color:${GOLD}; text-align:center; line-height:1.05; }
 .cbl-home .rd-tabs > span.dim { opacity:.5; }
 .cbl-home .rd-tabs > span.mid { font-size:9px; }
-
 /* ── Explore-more cards (Blog + Directory) ── */
 .cbl-home .more-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
 .cbl-home .more-card {
-  position:relative; overflow:hidden; min-height:220px;
+  position:relative; overflow:hidden; min-height:340px;
   border:1px solid rgba(255,255,255,.08); border-radius:18px 0 18px 0;
-  display:flex; flex-direction:column; justify-content:flex-end;
+  display:flex; flex-direction:column;
   transition:transform .3s, border-color .3s;
   animation:cbl-reveal .6s cubic-bezier(.2,.8,.2,1) both;
 }
 .cbl-home .more-card:hover { transform:translateY(-4px); border-color:rgba(201,151,66,.45); }
-.cbl-home .more-card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.cbl-home .more-card:hover img { transform:scale(1.04); }
+.cbl-home .more-card img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
 .cbl-home .more-card .overlay {
-  position:relative; z-index:1; padding:26px 28px;
-  background:linear-gradient(180deg, transparent, rgba(10,10,10,.55) 35%, rgba(10,10,10,.92));
+  position:absolute; inset:0; z-index:1; padding:26px 28px;
+  background:linear-gradient(180deg, rgba(10,10,10,0) 0%, rgba(10,10,10,.45) 40%, rgba(10,10,10,.95) 100%);
+  display:flex; flex-direction:column; justify-content:flex-end;
 }
-.cbl-home .more-card .tag { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; }
-.cbl-home .more-card h3 { font-family:${DISPLAY}; font-weight:900; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:-.005em; margin:6px 0 6px; }
-.cbl-home .more-card p { color:#C0C0C0; font-size:13px; line-height:1.5; margin:0 0 12px; }
-.cbl-home .more-card .go { display:inline-flex; align-items:center; gap:8px; color:${GOLD}; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.12em; text-transform:uppercase; }
+.cbl-home .more-card .tag { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; text-shadow:0 1px 2px rgba(0,0,0,0.6); }
+.cbl-home .more-card h3 { font-family:${DISPLAY}; font-weight:900; font-size:28px; line-height:1; text-transform:uppercase; letter-spacing:-.005em; margin:6px 0 6px; text-shadow:0 2px 4px rgba(0,0,0,0.7); }
+.cbl-home .more-card p { color:#C0C0C0; font-size:13px; line-height:1.5; margin:0 0 12px; text-shadow:0 1px 2px rgba(0,0,0,0.6); }
+.cbl-home .more-card .go { display:inline-flex; align-items:center; gap:8px; color:${GOLD}; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.12em; text-transform:uppercase; text-shadow:0 1px 2px rgba(0,0,0,0.6); }
 
 /* ── Final CTA band ── */
 .cbl-home .cta-band {
