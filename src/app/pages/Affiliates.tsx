@@ -207,6 +207,83 @@ const AFFILIATES_CSS = `
 .cbl-affiliates .tier .sub { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; }
 .cbl-affiliates .tier .note { color:#A8A8A8; font-size:13px; line-height:1.5; margin-top:2px; }
 
+/* ── Restaurant partner pricing tiers ── */
+.cbl-affiliates .pricing-band {
+  background:#0A0A0A;
+  border-top:1px solid rgba(201,151,66,.14);
+}
+.cbl-affiliates .pricing-grid {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:24px;
+}
+.cbl-affiliates .pricing-card {
+  background:#111; border:1px solid rgba(255,255,255,.08);
+  border-radius:18px 0 18px 0; padding:32px 30px 28px;
+  display:flex; flex-direction:column; gap:0;
+  transition:transform .35s, border-color .35s;
+  animation:cbl-reveal .6s cubic-bezier(.2,.8,.2,1) both;
+  position:relative; overflow:hidden;
+}
+.cbl-affiliates .pricing-card:hover { transform:translateY(-5px); border-color:rgba(201,151,66,.4); }
+.cbl-affiliates .pricing-card.gold-card {
+  background:linear-gradient(145deg,#181408,#120f04);
+  border-color:rgba(201,151,66,.55);
+  box-shadow:0 0 40px rgba(201,151,66,.08);
+}
+.cbl-affiliates .pricing-card.gold-card::before {
+  content:'MOST POPULAR';
+  position:absolute; top:0; right:0;
+  background:${GOLD}; color:#000;
+  font-family:${MONO}; font-size:9px; font-weight:700;
+  letter-spacing:.16em; text-transform:uppercase;
+  padding:5px 14px;
+  border-radius:0 0 0 10px;
+}
+.cbl-affiliates .pricing-tier-label {
+  font-family:${MONO}; font-size:10px; letter-spacing:.18em;
+  text-transform:uppercase; color:${GOLD};
+  margin-bottom:10px; font-weight:700;
+}
+.cbl-affiliates .pricing-price {
+  font-family:${DISPLAY}; font-weight:900;
+  font-size:clamp(42px,5vw,64px); line-height:1;
+  color:#fff; letter-spacing:-.02em; margin-bottom:20px;
+}
+.cbl-affiliates .pricing-price span {
+  font-size:.38em; font-weight:700; color:#888;
+  vertical-align:middle; margin-left:4px; letter-spacing:.06em;
+}
+.cbl-affiliates .pricing-divider {
+  width:100%; height:1px;
+  background:linear-gradient(90deg, ${GOLD}, transparent);
+  margin-bottom:20px; opacity:.35;
+}
+.cbl-affiliates .pricing-list {
+  list-style:none; margin:0; padding:0;
+  display:flex; flex-direction:column; gap:12px;
+  flex:1;
+}
+.cbl-affiliates .pricing-list li {
+  position:relative; padding-left:24px;
+  color:#C8C8C8; font-size:14px; line-height:1.5;
+}
+.cbl-affiliates .pricing-list li::before {
+  content:'';
+  position:absolute; left:0; top:8px;
+  width:10px; height:10px; border-radius:50%;
+  background:${GOLD}; opacity:.8;
+}
+.cbl-affiliates .pricing-cta {
+  margin-top:28px;
+  display:inline-flex; align-items:center; gap:8px;
+  background:${GOLD}; color:#000; border:0;
+  padding:14px 28px; border-radius:6px 0 6px 0;
+  font-family:${DISPLAY}; font-weight:800;
+  font-size:13px; letter-spacing:.10em; text-transform:uppercase;
+  text-decoration:none; transition:background .2s, transform .2s;
+  width:100%; justify-content:center;
+}
+.cbl-affiliates .pricing-cta:hover { background:#DDB15F; transform:translateY(-1px); }
+
 /* ── Apply CTA band ── */
 .cbl-affiliates .cta-band {
   background:
@@ -237,6 +314,7 @@ const AFFILIATES_CSS = `
   .cbl-affiliates .partner-grid { grid-template-columns:1fr; }
   .cbl-affiliates .steps { grid-template-columns:repeat(2,1fr); }
   .cbl-affiliates .tier-grid { grid-template-columns:1fr; }
+  .cbl-affiliates .pricing-grid { grid-template-columns:1fr; }
 }
 `;
 
@@ -297,6 +375,75 @@ export function Affiliates() {
             {PARTNERS.map((p) => (
               <PartnerCard key={p.id} p={p} />
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Restaurant Partner Pricing Tiers ── */}
+      <section id="restaurant-tiers" className="band pricing-band">
+        <div className="band-inner">
+          <div className="section-eyebrow">restaurant partner pricing</div>
+          <h2 className="section-h2">
+            Choose your <span className="it">tier</span>
+          </h2>
+          <p className="section-lede">
+            Every tier includes placement on the CBL directory, coupon opportunities, social media posts,
+            and fundraising solutions. Pick the package that fits your business.
+          </p>
+          <div className="pricing-grid">
+
+            {/* BRONZE */}
+            <div className="pricing-card">
+              <div className="pricing-tier-label">Bronze Tier</div>
+              <div className="pricing-price">$49<span>/yr</span></div>
+              <div className="pricing-divider" />
+              <ul className="pricing-list">
+                <li>Post on CBL Directory</li>
+                <li>Coupon Opportunities</li>
+                <li>Social Media Posts</li>
+                <li>Fundraising Solutions</li>
+                <li>Door Sticker 12&quot; x 12&quot; (1)</li>
+              </ul>
+              <a className="pricing-cta" href="https://app.citybucketlist.com">
+                Sign Up →
+              </a>
+            </div>
+
+            {/* SILVER */}
+            <div className="pricing-card">
+              <div className="pricing-tier-label">Silver Tier</div>
+              <div className="pricing-price">$199<span>/yr</span></div>
+              <div className="pricing-divider" />
+              <ul className="pricing-list">
+                <li>Top Search on our CBL Directory (Ex. Restaurant/Bar)</li>
+                <li>Coupon Opportunities</li>
+                <li>Social Media Posts</li>
+                <li>Fundraising Solutions</li>
+                <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers 6&quot; x 6&quot; (4)</li>
+              </ul>
+              <a className="pricing-cta" href="https://app.citybucketlist.com">
+                Sign Up →
+              </a>
+            </div>
+
+            {/* GOLD */}
+            <div className="pricing-card gold-card">
+              <div className="pricing-tier-label">Gold Tier</div>
+              <div className="pricing-price">$299<span>/yr</span></div>
+              <div className="pricing-divider" />
+              <ul className="pricing-list">
+                <li>Placement on Rotating Top Banner</li>
+                <li>Top Search on our CBL Directory (Ex. Restaurant/Bar)</li>
+                <li>Coupon Opportunities</li>
+                <li>Social Media Posts</li>
+                <li>Fundraising Solutions</li>
+                <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers (8)</li>
+              </ul>
+              <a className="pricing-cta" href="https://app.citybucketlist.com">
+                Sign Up →
+              </a>
+            </div>
+
           </div>
         </div>
       </section>
