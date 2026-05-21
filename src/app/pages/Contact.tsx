@@ -49,7 +49,7 @@ const CONTACT_CSS = `
 .cbl-contact h1.hero-title .h1-main { color:#fff; white-space:nowrap; }
 .cbl-contact .hero-subtitle {
   display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(24px,2.6vw,38px);
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(28px,3vw,44px);
   text-transform:uppercase; letter-spacing:-.005em; line-height:1; color:#C99742;
 }
 .cbl-contact .hero-subtitle .it {

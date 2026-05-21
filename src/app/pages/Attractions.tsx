@@ -399,7 +399,7 @@ const ATTRACTIONS_CSS = `
   background:#C99742; animation:cbl-pulse 2.4s ease-in-out infinite;
 }
 .cbl-attractions h1.hero-title {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(64px,7.4vw,108px);
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(56px,7.4vw,108px);
   line-height:.9; letter-spacing:-.02em; text-transform:uppercase;
   display:flex; align-items:center; gap:28px; flex-wrap:nowrap; margin:0;
 }
