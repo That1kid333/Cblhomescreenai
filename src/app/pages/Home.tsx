@@ -52,9 +52,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Hotel concierge services available —{' '}
+        Hotel concierge available —{' '}
         <a href={APP_URL} className="cap-link">
-          sign up here →
+          sign up
         </a>
       </>
     ),
@@ -72,9 +72,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Transportation services available —{' '}
+        Safe rides on demand —{' '}
         <a href={APP_URL} className="cap-link">
-          need a ride? →
+          book a ride
         </a>
       </>
     ),
@@ -92,9 +92,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local restaurant partnerships available —{' '}
+        Local restaurant deals —{' '}
         <Link to="/eats-and-drinks" className="cap-link">
-          explore dining →
+          explore dining
         </Link>
       </>
     ),
@@ -112,9 +112,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local attractions & experiences available —{' '}
+        Local experiences —{' '}
         <Link to="/attractions" className="cap-link">
-          start exploring →
+          start exploring
         </Link>
       </>
     ),
@@ -132,9 +132,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local guides, tips & stories on the CBL blog —{' '}
+        Guides, tips & stories —{' '}
         <Link to="/blog" className="cap-link">
-          read now →
+          read the blog
         </Link>
       </>
     ),
@@ -152,9 +152,9 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Browse the City Bucket List directory —{' '}
+        Local business directory —{' '}
         <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="cap-link">
-          explore directory →
+          browse now
         </a>
       </>
     ),
@@ -318,7 +318,8 @@ const HOME_CSS = `
 /* Locked to three lines so the rotation never shifts the layout. */
 .cbl-home h1.hero-title .gold { color:${GOLD}; }
 .cbl-home .hero-lede {
-  font-size:16px; line-height:1.5; color:#B8B8B8; max-width:48ch; margin:0 0 24px;
+  font-size:16px; line-height:1.5; color:#B8B8B8; margin:0 0 24px;
+  white-space:nowrap;
   transition:filter .5s, opacity .5s;
 }
 .cbl-home .hero-lede .cap-link { color:${GOLD}; }
@@ -489,6 +490,7 @@ const HOME_CSS = `
   .cbl-home .hero { padding:28px 22px 36px; }
   .cbl-home section.band { padding:48px 22px; }
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:28px; }
+  .cbl-home .hero-lede { white-space:normal; }
   .cbl-home .hero-media { order:-1; }
   .cbl-home .buckee-grid { grid-template-columns:1fr; gap:24px; justify-items:center; text-align:center; }
   .cbl-home .app-grid { grid-template-columns:1fr; gap:32px; }
@@ -547,7 +549,7 @@ export function Home() {
                 {slide.caption}
               </p>
               <a className="btn-primary" href={APP_URL}>
-                Join Now — Free →
+                Join Now — Free
               </a>
 
               {/* Category + link chips, highlighting in sync with the rotation */}
@@ -607,7 +609,7 @@ export function Home() {
               visit — and membership is completely free.
             </p>
             <a className="btn-primary" href={APP_URL}>
-              Meet Buckee →
+              Meet Buckee
             </a>
           </div>
         </div>
@@ -635,7 +637,7 @@ export function Home() {
               ))}
             </ul>
             <a className="btn-primary" href={APP_URL}>
-              Launch the App →
+              Launch the App
             </a>
             <a className="app-url" href={APP_URL}>
               <b>app.citybucketlist.com</b>
@@ -652,7 +654,7 @@ export function Home() {
                   Your city, <span className="it">unlocked</span>
                 </div>
                 <div className="d-sub">Rides, dining, attractions & Buckee — all in one membership.</div>
-                <span className="d-cta">Open the app →</span>
+                <span className="d-cta">Open the app</span>
               </div>
             </div>
           </div>
@@ -673,7 +675,7 @@ export function Home() {
                 <div className="tag">CBL Blog</div>
                 <h3>Stay in the know</h3>
                 <p>Local guides, tips, and stories to plan your next adventure.</p>
-                <span className="go">Read now →</span>
+                <span className="go">Read now</span>
               </div>
             </Link>
             <a
@@ -687,7 +689,7 @@ export function Home() {
                 <div className="tag">Directory & Savings</div>
                 <h3>Find local businesses</h3>
                 <p>Browse the City Bucket List directory and member savings near you.</p>
-                <span className="go">Explore directory →</span>
+                <span className="go">Explore directory</span>
               </div>
             </a>
           </div>
@@ -702,7 +704,7 @@ export function Home() {
           </h2>
           <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
           <a className="btn-primary" href={APP_URL}>
-            Join City Bucket List →
+            Join City Bucket List
           </a>
         </div>
       </section>
