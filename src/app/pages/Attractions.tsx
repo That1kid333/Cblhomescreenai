@@ -23,7 +23,6 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
-const SPOTLIGHT_BG = '/eats/imagery/hero-map-bg.jpg';
 
 type Category = 'ALL' | 'SPORTS' | 'MUSIC' | 'ARTS' | 'FAMILY' | 'OUTDOORS' | 'NIGHT';
 
@@ -171,7 +170,7 @@ const EVENTS: EventItem[] = [
     when: 'Sun – Jun 2',
     price: 'FREE',
     src: 'TrustArts.org',
-    img: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=800&h=540&fit=crop',
+    img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&h=900&fit=crop',
     desc: 'Free outdoor arts festival featuring 70+ visual artists, three concert stages, and food vendors along the rivers.',
     featured: true,
   },
@@ -1021,7 +1020,7 @@ function Spotlight({ e }: { e: EventItem }) {
         <div
           className="ph"
           style={{
-            background: `linear-gradient(180deg, rgba(10,10,10,0) 30%, rgba(10,10,10,.7)), url(${SPOTLIGHT_BG}) center/cover no-repeat`,
+            background: `linear-gradient(180deg, rgba(10,10,10,0) 30%, rgba(10,10,10,.7)), url(${e.img}) center/cover no-repeat`,
           }}
         />
         <div className="date-badge">
