@@ -23,7 +23,7 @@ export function Layout() {
   };
 
   return (
-    <div className="bg-black text-white min-h-screen w-full">
+    <div className="bg-black text-white min-h-screen w-full flex flex-col">
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
@@ -204,9 +204,29 @@ export function Layout() {
       </header>
 
       {/* Main Content */}
-      <Outlet />
+      <main className="flex-1">
+        <Outlet />
+      </main>
 
-      {/* Footer removed until sponsors/affiliates are added */}
+      {/* Footer */}
+      <footer className="border-t border-white/5 bg-[#0A0A0A] py-8 lg:py-12 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 lg:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-500 font-mono tracking-wider">
+          <div className="flex flex-col gap-2 text-center md:text-left">
+            <div>
+              &copy; {new Date().getFullYear()} CITY BUCKET LIST, INC. ALL RIGHTS RESERVED.
+            </div>
+            <p className="text-[10px] text-gray-600 max-w-2xl font-sans normal-case tracking-normal">
+              City Bucket List is a software-as-a-service (SaaS) platform and is not a rideshare company, transportation provider, or passenger carrier.
+            </p>
+          </div>
+          <div className="flex items-center gap-6 text-[10px] uppercase">
+            <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
+            <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
+            <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
+            <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
