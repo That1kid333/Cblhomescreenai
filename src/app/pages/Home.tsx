@@ -289,29 +289,60 @@ function ChipIcon({ k }: { k: string }) {
  */
 function QrPlaceholder() {
   const N = 21;
-  const inFinder = (x: number, y: number) => {
-    const box = (ox: number, oy: number) => {
-      const lx = x - ox;
-      const ly = y - oy;
-      if (lx < 0 || lx > 6 || ly < 0 || ly > 6) return null;
-      const border = lx === 0 || lx === 6 || ly === 0 || ly === 6;
-      const core = lx >= 2 && lx <= 4 && ly >= 2 && ly <= 4;
-      return border || core;
-    };
-    return box(0, 0) ?? box(N - 7, 0) ?? box(0, N - 7);
+  const inFinderZone = (x: number, y: number) => {
+    return (x < 7 && y < 7) || (x >= 14 && y < 7) || (x < 7 && y >= 14);
   };
+
   const cells: React.ReactElement[] = [];
   for (let y = 0; y < N; y++) {
     for (let x = 0; x < N; x++) {
-      const f = inFinder(x, y);
-      const on = f !== null ? f : (x * 7 + y * 13 + x * y) % 3 === 0;
-      if (on) cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />);
+      if (inFinderZone(x, y)) continue;
+
+      // Deterministic noise generator to look like a dense, real QR code
+      const on =
+        (x * 7 + y * 13 + x * y) % 3 === 0 ||
+        (x * 5 + y * 9) % 4 === 0 ||
+        (x + y === 10) ||
+        (x === 10) ||
+        (y === 10);
+        
+      if (on) {
+        // Alternating gold and white dots for high-end styling
+        const color = (x + y) % 2 === 0 ? '#FFFFFF' : GOLD;
+        cells.push(
+          <circle
+            key={`${x}-${y}`}
+            cx={x + 0.5}
+            cy={y + 0.5}
+            r={0.36}
+            fill={color}
+            opacity={0.9}
+          />
+        );
+      }
     }
   }
+
+  const drawFinder = (ox: number, oy: number) => (
+    <g key={`finder-${ox}-${oy}`}>
+      {/* Outer block */}
+      <rect x={ox} y={oy} width={7} height={7} rx={1.8} fill={GOLD} />
+      {/* Middle cutout */}
+      <rect x={ox + 1} y={oy + 1} width={5} height={5} rx={1.2} fill="#141414" />
+      {/* Inner core */}
+      <rect x={ox + 2} y={oy + 2} width={3} height={3} rx={0.6} fill={GOLD} />
+    </g>
+  );
+
   return (
-    <svg className="rd-qr-svg" viewBox={`-2 -2 ${N + 4} ${N + 4}`} shapeRendering="crispEdges" aria-label="App QR code">
-      <rect x={-2} y={-2} width={N + 4} height={N + 4} fill="#fff" />
-      <g fill="#0A0A0A">{cells}</g>
+    <svg className="rd-qr-svg" viewBox={`-1 -1 ${N + 2} ${N + 2}`} shapeRendering="geometricPrecision" aria-label="App QR code">
+      {/* Three corner finder patterns */}
+      {drawFinder(0, 0)}
+      {drawFinder(N - 7, 0)}
+      {drawFinder(0, N - 7)}
+
+      {/* Dotted data modules */}
+      <g>{cells}</g>
     </svg>
   );
 }
@@ -450,7 +481,8 @@ const HOME_CSS = `
 .cbl-home .app-features li::before { content:''; position:absolute; left:0; top:9px; width:14px; height:1.5px; background:${GOLD}; }
 .cbl-home .app-features h4 { font-family:${DISPLAY}; font-weight:900; font-size:18px; text-transform:uppercase; letter-spacing:-.005em; margin:0 0 3px; }
 .cbl-home .app-features p { color:#A8A8A8; font-size:14px; line-height:1.5; margin:0; }
-.cbl-home .app-url { display:inline-block; margin-top:16px; font-family:${MONO}; font-size:13px; letter-spacing:.06em; color:#8a8a8a; }
+.cbl-home .app-actions { display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-top:28px; }
+.cbl-home .app-url { display:inline-block; font-family:${MONO}; font-size:13px; letter-spacing:.06em; color:#8a8a8a; }
 .cbl-home .app-url b { color:${GOLD}; font-weight:600; }
 
 /* device mockup */
@@ -534,8 +566,13 @@ const HOME_CSS = `
 .cbl-home .rd-driver-info span { font-size:12px; color:#B0B0B0; }
 .cbl-home .rd-chev { color:${GOLD}; flex-shrink:0; }
 
-.cbl-home .rd-qr { display:flex; justify-content:center; padding:2px 0; }
-.cbl-home .rd-qr-svg { width:150px; height:150px; border-radius:8px; display:block; }
+.cbl-home .rd-qr {
+  display:flex; justify-content:center; align-items:center;
+  padding:8px; background:#141414;
+  border:1px solid rgba(201,151,66,.22);
+  border-radius:12px; margin:2px 8px 6px;
+}
+.cbl-home .rd-qr-svg { width:100px; height:100px; display:block; }
 
 .cbl-home .rd-tabs {
   margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between;
@@ -708,12 +745,14 @@ export function Home() {
                 </li>
               ))}
             </ul>
-            <a className="btn-primary" href={APP_URL}>
-              Launch the App
-            </a>
-            <a className="app-url" href={APP_URL}>
-              <b>app.citybucketlist.com</b>
-            </a>
+            <div className="app-actions">
+              <a className="btn-primary" href={APP_URL}>
+                Launch the App
+              </a>
+              <a className="app-url" href={APP_URL}>
+                <b>app.citybucketlist.com</b>
+              </a>
+            </div>
           </div>
 
           <div className="device-wrap">
@@ -763,7 +802,7 @@ export function Home() {
                       <small>Schedule<br />Ride</small>
                     </div>
                     <span className="rd-photo rd-photo-lg" title="Your photo">
-                      <img src={RIDER_PHOTO} alt="Keith Schmiedlin" />
+                      <img src={RIDER_PHOTO} alt="Joe Schmoe" />
                     </span>
                     <div className="rd-act">
                       <span className="rd-circle"><MessageSquare size={22} /></span>
@@ -773,18 +812,18 @@ export function Home() {
 
                   {/* welcome */}
                   <div className="rd-welcome">
-                    WELCOME <b>KEITH SCHMIEDLIN</b>
+                    WELCOME <b>JOE SCHMOE</b>
                   </div>
 
                   {/* preferred driver */}
                   <div className="rd-driver">
-                    <span className="rd-photo rd-photo-sm" title="Brian Uhler">
-                      <img src={DRIVER_PHOTO} alt="Brian Uhler" />
+                    <span className="rd-photo rd-photo-sm" title="Jane Doe">
+                      <img src={DRIVER_PHOTO} alt="Jane Doe" />
                     </span>
                     <div className="rd-driver-info">
                       <small>PREFERRED DRIVER</small>
-                      <b>Brian Uhler</b>
-                      <span>(724) 216-2672</span>
+                      <b>Jane Doe</b>
+                      <span>(555) 555-0199</span>
                     </div>
                     <ChevronDown className="rd-chev" size={16} />
                   </div>
