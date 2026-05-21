@@ -56,13 +56,6 @@ const CONTACT_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
-.cbl-contact h1.hero-title .contact-icon {
-  flex-shrink:0; width:240px; height:240px;
-  display:flex; align-items:center; justify-content:center; opacity:.92;
-}
-.cbl-contact h1.hero-title .contact-icon svg { width:100%; height:100%; }
-@media (max-width:1100px){ .cbl-contact h1.hero-title .contact-icon { width:180px; height:180px; } }
-@media (max-width:720px){ .cbl-contact h1.hero-title .contact-icon { width:120px; height:120px; } }
 .cbl-contact .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
@@ -126,15 +119,6 @@ const CONTACT_CSS = `
   .cbl-contact .submit { width:100%; }
 }
 `;
-
-function HeroContactSvg() {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="16" y="28" width="68" height="48" rx="6" />
-      <path d="M18 32l32 24 32-24" />
-    </svg>
-  );
-}
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -209,9 +193,6 @@ export function Contact() {
                 <span>Got a question?</span>
                 <span className="it">Let's talk.</span>
               </span>
-            </span>
-            <span className="contact-icon" aria-hidden="true">
-              <HeroContactSvg />
             </span>
           </h1>
           <p className="lede">
