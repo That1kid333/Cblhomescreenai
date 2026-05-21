@@ -1,8 +1,17 @@
+import { Link } from 'react-router';
+
 interface CategoryButtonProps {
   type: 'travels' | 'transportation' | 'eats' | 'attractions';
   isActive?: boolean;
   onClick?: () => void;
 }
+
+const categoryPaths: Record<CategoryButtonProps['type'], string> = {
+  travels: '/travels',
+  transportation: '/transportation',
+  eats: '/eats-and-drinks',
+  attractions: '/attractions',
+};
 
 const categoryConfig = {
   travels: {
@@ -66,7 +75,7 @@ export function CategoryButton({ type, isActive, onClick }: CategoryButtonProps)
   const config = categoryConfig[type];
 
   return (
-    <button className="group relative flex items-center" onClick={onClick}>
+    <Link to={categoryPaths[type]} onClick={onClick} className="group relative flex items-center">
       {/* Golden Circle with Icon - using SVG viewBox to maintain aspect ratio */}
       <div className="relative flex-shrink-0 z-10" style={{ width: '70px', height: '70px' }}>
         <svg viewBox="0 0 70 70" className="w-full h-full">
@@ -98,6 +107,6 @@ export function CategoryButton({ type, isActive, onClick }: CategoryButtonProps)
             : 'text-white group-hover:text-[#FDB913]'
         }`}>{config.text}</span>
       </div>
-    </button>
+    </Link>
   );
 }
