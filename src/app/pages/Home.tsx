@@ -1,5 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
+import {
+  Plane, UtensilsCrossed, BedDouble, MapPin, Sparkles, CalendarDays,
+  MessageSquare, Car, Package, Share2, Settings, Menu, ChevronDown,
+  Wifi, BatteryCharging, Signal,
+} from 'lucide-react';
 import conciergeImage from '../../assets/9b0fc11a5ef647d02d147f7c1dee023bd105e175.png';
 import transportationImage from '../../assets/0c14cb1865bf0ca612f6fcb9d74d4ff3578188ac.png';
 import eatsImage from '../../assets/5f602f7d30b9658349675aa8836bb8d75594e226.png';
@@ -29,6 +34,11 @@ const ITALIC = "'Playfair Display', serif";
 
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 const APP_URL = 'https://app.citybucketlist.com';
+
+// Placeholder portraits from the Unsplash CDN (same source as the Transportation
+// driver row). Swap these for real photos of Keith and Brian before launch.
+const RIDER_PHOTO = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=faces';
+const DRIVER_PHOTO = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces';
 
 type Slide = {
   key: string;
@@ -272,6 +282,40 @@ function ChipIcon({ k }: { k: string }) {
   );
 }
 
+/**
+ * Decorative QR placeholder for the dashboard mockup — correct finder patterns
+ * with a deterministic module fill so it reads as a real QR. NOT scannable;
+ * replace with a real QR image (e.g. linking to app.citybucketlist.com) before launch.
+ */
+function QrPlaceholder() {
+  const N = 21;
+  const inFinder = (x: number, y: number) => {
+    const box = (ox: number, oy: number) => {
+      const lx = x - ox;
+      const ly = y - oy;
+      if (lx < 0 || lx > 6 || ly < 0 || ly > 6) return null;
+      const border = lx === 0 || lx === 6 || ly === 0 || ly === 6;
+      const core = lx >= 2 && lx <= 4 && ly >= 2 && ly <= 4;
+      return border || core;
+    };
+    return box(0, 0) ?? box(N - 7, 0) ?? box(0, N - 7);
+  };
+  const cells: React.ReactElement[] = [];
+  for (let y = 0; y < N; y++) {
+    for (let x = 0; x < N; x++) {
+      const f = inFinder(x, y);
+      const on = f !== null ? f : (x * 7 + y * 13 + x * y) % 3 === 0;
+      if (on) cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} />);
+    }
+  }
+  return (
+    <svg className="rd-qr-svg" viewBox={`-2 -2 ${N + 4} ${N + 4}`} shapeRendering="crispEdges" aria-label="App QR code">
+      <rect x={-2} y={-2} width={N + 4} height={N + 4} fill="#fff" />
+      <g fill="#0A0A0A">{cells}</g>
+    </svg>
+  );
+}
+
 const HOME_CSS = `
 .cbl-home { background:#0A0A0A; color:#fff; font-family:${BODY}; -webkit-font-smoothing:antialiased; }
 .cbl-home *,.cbl-home *::before,.cbl-home *::after { box-sizing:border-box; }
@@ -393,23 +437,13 @@ const HOME_CSS = `
 }
 .cbl-home .section-lede { color:#B0B0B0; font-size:15px; line-height:1.55; max-width:62ch; margin:0 0 28px; }
 
-/* ── Meet Buckee band ── */
-.cbl-home .buckee-band {
+/* ── App showcase band ── */
+.cbl-home .app-band {
   background:
-    radial-gradient(ellipse at 18% 10%, rgba(201,151,66,.12), transparent 60%),
+    radial-gradient(ellipse at 80% 0%, rgba(201,151,66,.1), transparent 55%),
     linear-gradient(180deg, #0F0F0F 0%, #0A0A0A 100%);
-  border-top:1px solid rgba(201,151,66,.18);
   border-bottom:1px solid rgba(201,151,66,.18);
 }
-.cbl-home .buckee-grid { display:grid; grid-template-columns:auto 1fr; gap:36px; align-items:center; }
-.cbl-home .buckee-art {
-  width:200px; height:200px; flex-shrink:0;
-  border-radius:24px 0 24px 0; border:1px solid rgba(201,151,66,.35);
-  background:#0A0A0A; display:flex; align-items:center; justify-content:center; padding:18px;
-}
-.cbl-home .buckee-art img { width:100%; height:100%; object-fit:contain; }
-
-/* ── App showcase band ── */
 .cbl-home .app-grid { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; }
 .cbl-home .app-features { list-style:none; margin:24px 0 28px; padding:0; display:flex; flex-direction:column; gap:18px; }
 .cbl-home .app-features li { position:relative; padding-left:26px; }
@@ -422,32 +456,94 @@ const HOME_CSS = `
 /* device mockup */
 .cbl-home .device-wrap { display:flex; justify-content:center; }
 .cbl-home .device {
-  position:relative; width:300px; aspect-ratio:9/19; max-width:100%;
-  border-radius:46px; padding:14px;
+  position:relative; width:340px; aspect-ratio:9/19.3; max-width:100%;
+  border-radius:48px; padding:12px;
   background:linear-gradient(160deg,#2a2a2a,#0c0c0c);
   border:1px solid rgba(255,255,255,.1);
   box-shadow:0 30px 80px rgba(0,0,0,.6), 0 0 0 2px rgba(201,151,66,.25);
   animation:cbl-reveal .6s cubic-bezier(.2,.8,.2,1) both;
 }
 .cbl-home .device-screen {
-  position:relative; width:100%; height:100%; overflow:hidden;
-  border-radius:34px;
+  width:100%; height:100%; overflow:hidden; border-radius:38px;
   background:
-    radial-gradient(ellipse at 50% 18%, rgba(201,151,66,.3), transparent 55%),
-    linear-gradient(180deg,#141414 0%,#0A0A0A 100%);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  text-align:center; padding:30px 24px;
+    radial-gradient(ellipse at 50% 0%, rgba(201,151,66,.12), transparent 34%),
+    #0A0A0A;
+  display:flex;
 }
-.cbl-home .device-notch {
-  position:absolute; top:12px; left:50%; transform:translateX(-50%);
-  width:42%; height:8px; border-radius:999px; background:rgba(0,0,0,.7);
+
+/* ── Rider Dashboard mockup ── */
+.cbl-home .rd {
+  flex:1; display:flex; flex-direction:column; gap:9px;
+  padding:11px 14px 0; color:#fff; min-width:0;
+  font-family:${BODY}; -webkit-font-smoothing:antialiased;
 }
-.cbl-home .device-screen img { width:120px; height:120px; object-fit:contain; margin-bottom:16px; }
-.cbl-home .device-screen .d-kicker { font-family:${MONO}; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:8px; }
-.cbl-home .device-screen .d-title { font-family:${DISPLAY}; font-weight:900; font-size:24px; line-height:1; text-transform:uppercase; letter-spacing:-.01em; margin-bottom:10px; }
-.cbl-home .device-screen .d-title .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:${GOLD}; text-transform:none; }
-.cbl-home .device-screen .d-sub { font-size:12px; line-height:1.5; color:#B0B0B0; margin-bottom:20px; }
-.cbl-home .device-screen .d-cta { background:${GOLD}; color:#000; font-family:${DISPLAY}; font-weight:900; font-size:11px; letter-spacing:.12em; text-transform:uppercase; padding:11px 24px; border-radius:999px; }
+.cbl-home .rd b { font-weight:800; }
+.cbl-home .rd-status { display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; }
+.cbl-home .rd-status-ic { display:inline-flex; align-items:center; gap:4px; color:#fff; }
+.cbl-home .rd-status-ic svg:last-child { color:#4ade80; }
+
+.cbl-home .rd-logo { position:relative; display:flex; align-items:center; justify-content:center; }
+.cbl-home .rd-burger { position:absolute; left:0; color:#fff; }
+.cbl-home .rd-wordmark { font-size:16px; letter-spacing:-.01em; }
+.cbl-home .rd-wordmark .g { color:${GOLD}; }
+.cbl-home .rd-wordmark .w { color:#fff; }
+
+.cbl-home .rd-title { text-align:center; line-height:.92; }
+.cbl-home .rd-title span { display:block; font-family:${DISPLAY}; font-weight:900; font-size:22px; letter-spacing:.02em; }
+.cbl-home .rd-title b { display:block; font-family:${DISPLAY}; font-weight:900; font-size:26px; letter-spacing:.01em; }
+
+.cbl-home .rd-nav { display:flex; align-items:flex-end; justify-content:space-between; padding:2px 2px 0; }
+.cbl-home .rd-nav > span { display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9px; color:#e8e8e8; }
+.cbl-home .rd-nav > span svg { color:#fff; }
+.cbl-home .rd-mascot { width:54px; height:54px; object-fit:contain; margin:-8px 2px 0; }
+
+.cbl-home .rd-buckee-cta {
+  display:flex; align-items:center; justify-content:center; gap:7px;
+  border:1.5px dashed rgba(201,151,66,.6); border-radius:13px;
+  padding:9px 8px; font-size:11.5px; font-weight:600; color:#fff;
+}
+.cbl-home .rd-buckee-cta svg { color:${GOLD}; }
+
+.cbl-home .rd-actions { display:flex; align-items:center; justify-content:space-between; padding:4px 4px 0; }
+.cbl-home .rd-act { display:flex; flex-direction:column; align-items:center; gap:6px; }
+.cbl-home .rd-circle {
+  width:58px; height:58px; border-radius:50%; border:2px solid ${GOLD};
+  display:flex; align-items:center; justify-content:center; color:#fff;
+}
+.cbl-home .rd-act small { font-size:9.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:${GOLD}; text-align:center; line-height:1.15; }
+.cbl-home .rd-photo {
+  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  border-radius:50%; font-family:${DISPLAY}; font-weight:900; color:${GOLD};
+  background:radial-gradient(circle at 50% 35%, #2a2a2a, #0f0f0f);
+}
+.cbl-home .rd-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+.cbl-home .rd-photo-lg { width:92px; height:92px; border:3px solid ${GOLD}; font-size:26px; }
+.cbl-home .rd-photo-sm { width:42px; height:42px; border:2px solid ${GOLD}; font-size:14px; flex-shrink:0; }
+
+.cbl-home .rd-welcome { text-align:center; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.02em; }
+.cbl-home .rd-welcome b { color:${GOLD}; }
+
+.cbl-home .rd-driver {
+  display:flex; align-items:center; gap:11px;
+  border:1px solid rgba(201,151,66,.5); border-radius:13px;
+  padding:8px 11px; background:rgba(255,255,255,.03);
+}
+.cbl-home .rd-driver-info { flex:1; display:flex; flex-direction:column; gap:1px; min-width:0; }
+.cbl-home .rd-driver-info small { font-family:${MONO}; font-size:8px; letter-spacing:.13em; color:#9a9a9a; }
+.cbl-home .rd-driver-info b { font-size:14px; color:#fff; }
+.cbl-home .rd-driver-info span { font-size:12px; color:#B0B0B0; }
+.cbl-home .rd-chev { color:${GOLD}; flex-shrink:0; }
+
+.cbl-home .rd-qr { display:flex; justify-content:center; padding:2px 0; }
+.cbl-home .rd-qr-svg { width:150px; height:150px; border-radius:8px; display:block; }
+
+.cbl-home .rd-tabs {
+  margin-top:auto; display:flex; align-items:flex-end; justify-content:space-between;
+  border-top:1px solid rgba(255,255,255,.08); padding:8px 2px 10px;
+}
+.cbl-home .rd-tabs > span { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:8.5px; font-weight:700; color:${GOLD}; text-align:center; line-height:1.05; }
+.cbl-home .rd-tabs > span.dim { opacity:.5; }
+.cbl-home .rd-tabs > span.mid { font-size:9px; }
 
 /* ── Explore-more cards (Blog + Directory) ── */
 .cbl-home .more-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
@@ -492,7 +588,6 @@ const HOME_CSS = `
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:28px; }
   .cbl-home .hero-lede { white-space:normal; }
   .cbl-home .hero-media { order:-1; }
-  .cbl-home .buckee-grid { grid-template-columns:1fr; gap:24px; justify-items:center; text-align:center; }
   .cbl-home .app-grid { grid-template-columns:1fr; gap:32px; }
   .cbl-home .app-grid .device-wrap { order:-1; }
   .cbl-home .more-grid { grid-template-columns:1fr; }
@@ -592,41 +687,18 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Meet Buckee ── */}
-      <section className="band buckee-band">
-        <div className="band-inner buckee-grid">
-          <div className="buckee-art">
-            <img src={buckeeImage} alt="Buckee, the CBL AI travel buddy" />
-          </div>
-          <div>
-            <div className="section-eyebrow">your ai travel buddy</div>
-            <h2 className="section-h2">
-              Meet Buckee <span className="it">free when you join</span>
-            </h2>
-            <p className="section-lede">
-              Personalized itineraries, local insider tips, and smart savings from your AI travel
-              buddy. Buckee learns what you love and helps you live like a local in every city you
-              visit — and membership is completely free.
-            </p>
-            <a className="btn-primary" href={APP_URL}>
-              Meet Buckee
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Check out our app ── */}
-      <section className="band">
+      {/* ── Check out our app (Buckee lives inside the dashboard) ── */}
+      <section className="band app-band">
         <div className="band-inner app-grid">
           <div>
-            <div className="section-eyebrow">on every device</div>
+            <div className="section-eyebrow">your city, one app</div>
             <h2 className="section-h2">
               Check out <span className="it">our app</span>
             </h2>
             <p className="section-lede">
-              Everything City Bucket List does — rides, dining, attractions, travel, and Buckee —
-              lives in one place. Open the web app on your phone, tablet, or desktop and start
-              exploring in seconds.
+              Everything City Bucket List does — rides, dining, attractions, stays, and your AI
+              travel buddy Buckee — lives in one place. Scan the code or open it on any device and
+              start exploring in seconds.
             </p>
             <ul className="app-features">
               {APP_FEATURES.map((f) => (
@@ -647,14 +719,90 @@ export function Home() {
           <div className="device-wrap">
             <div className="device">
               <div className="device-screen">
-                <div className="device-notch" />
-                <img src={buckeeImage} alt="" />
-                <div className="d-kicker">app.citybucketlist.com</div>
-                <div className="d-title">
-                  Your city, <span className="it">unlocked</span>
+                <div className="rd">
+                  {/* status bar */}
+                  <div className="rd-status">
+                    <span>10:06</span>
+                    <span className="rd-status-ic">
+                      <Signal size={12} />
+                      <Wifi size={12} />
+                      <BatteryCharging size={15} />
+                    </span>
+                  </div>
+
+                  {/* logo + menu */}
+                  <div className="rd-logo">
+                    <Menu className="rd-burger" size={14} />
+                    <span className="rd-wordmark">
+                      <b className="g">CITY</b><b className="w">BUCKET</b><b className="g">LIST.COM</b>
+                    </span>
+                  </div>
+                  <div className="rd-title">
+                    <span>RIDER</span>
+                    <b>DASHBOARD</b>
+                  </div>
+
+                  {/* quick nav */}
+                  <div className="rd-nav">
+                    <span><Plane size={19} />Travel</span>
+                    <span><UtensilsCrossed size={19} />Eats</span>
+                    <img className="rd-mascot" src={buckeeImage} alt="Buckee" />
+                    <span><BedDouble size={19} />Stays</span>
+                    <span><MapPin size={19} />To Do</span>
+                  </div>
+
+                  {/* buckee CTA */}
+                  <div className="rd-buckee-cta">
+                    <Sparkles size={13} /> Plan your next trip with Buckee <Sparkles size={13} />
+                  </div>
+
+                  {/* action circles */}
+                  <div className="rd-actions">
+                    <div className="rd-act">
+                      <span className="rd-circle"><CalendarDays size={22} /></span>
+                      <small>Schedule<br />Ride</small>
+                    </div>
+                    <span className="rd-photo rd-photo-lg" title="Your photo">
+                      <img src={RIDER_PHOTO} alt="Keith Schmiedlin" />
+                    </span>
+                    <div className="rd-act">
+                      <span className="rd-circle"><MessageSquare size={22} /></span>
+                      <small>Message<br />Driver</small>
+                    </div>
+                  </div>
+
+                  {/* welcome */}
+                  <div className="rd-welcome">
+                    WELCOME <b>KEITH SCHMIEDLIN</b>
+                  </div>
+
+                  {/* preferred driver */}
+                  <div className="rd-driver">
+                    <span className="rd-photo rd-photo-sm" title="Brian Uhler">
+                      <img src={DRIVER_PHOTO} alt="Brian Uhler" />
+                    </span>
+                    <div className="rd-driver-info">
+                      <small>PREFERRED DRIVER</small>
+                      <b>Brian Uhler</b>
+                      <span>(724) 216-2672</span>
+                    </div>
+                    <ChevronDown className="rd-chev" size={16} />
+                  </div>
+
+                  {/* QR — full view */}
+                  <div className="rd-qr">
+                    <QrPlaceholder />
+                  </div>
+
+                  {/* bottom tabs */}
+                  <div className="rd-tabs">
+                    <span><Car size={16} />Rides</span>
+                    <span className="dim"><Package size={16} />Delivery</span>
+                    <span className="mid">Since<br />Feb 2025</span>
+                    <span><Share2 size={16} />Referrals</span>
+                    <span><Settings size={16} />Settings</span>
+                  </div>
                 </div>
-                <div className="d-sub">Rides, dining, attractions & Buckee — all in one membership.</div>
-                <span className="d-cta">Open the app</span>
               </div>
             </div>
           </div>
