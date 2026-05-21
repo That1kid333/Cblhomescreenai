@@ -66,16 +66,25 @@ const CONTACT_CSS = `
 .cbl-contact .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
-.cbl-contact section.band { padding:48px 48px 64px; }
-.cbl-contact .band-inner { max-width:760px; margin:0 auto; }
+.cbl-contact section.band { padding:28px 48px 44px; }
+.cbl-contact .band-inner { max-width:1280px; margin:0 auto; }
 
-/* ── Form card ── */
+/* ── Form card (left-aligned under the header, two-column) ── */
 .cbl-contact .form-card {
   background:#141414; border:1px solid rgba(255,255,255,.08);
-  border-radius:22px 0 22px 0; padding:36px 40px;
+  border-radius:22px 0 22px 0; padding:28px 32px; max-width:960px;
 }
-.cbl-contact form { display:flex; flex-direction:column; gap:20px; }
-.cbl-contact .field { display:flex; flex-direction:column; gap:8px; }
+.cbl-contact form { display:grid; grid-template-columns:1fr 1fr; gap:16px 28px; align-items:stretch; }
+.cbl-contact .fields-col { display:flex; flex-direction:column; gap:14px; }
+.cbl-contact .field { display:flex; flex-direction:column; gap:6px; }
+.cbl-contact .message-field { display:flex; flex-direction:column; gap:6px; }
+.cbl-contact .message-field textarea { flex:1; min-height:200px; }
+.cbl-contact .form-footer {
+  grid-column:1 / -1;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:24px; flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.08); padding-top:18px;
+}
 .cbl-contact label {
   font-family:${MONO}; font-size:11px; letter-spacing:.14em;
   text-transform:uppercase; color:#B8B8B8;
@@ -90,27 +99,31 @@ const CONTACT_CSS = `
 .cbl-contact input:focus, .cbl-contact select:focus, .cbl-contact textarea:focus { border-color:#C99742; }
 .cbl-contact select { appearance:none; cursor:pointer; }
 .cbl-contact textarea { resize:none; line-height:1.5; }
-.cbl-contact .terms { display:flex; align-items:flex-start; gap:12px; }
+.cbl-contact .terms { display:flex; align-items:flex-start; gap:12px; flex:1; min-width:240px; }
 .cbl-contact .terms input { width:18px; height:18px; flex-shrink:0; margin-top:2px; accent-color:#C99742; padding:0; }
 .cbl-contact .terms label { text-transform:none; letter-spacing:0; font-family:${BODY}; font-size:13px; color:#B0B0B0; }
 .cbl-contact .terms a { color:#C99742; text-decoration:underline; }
 .cbl-contact .submit {
-  width:100%; background:#C99742; color:#000; border:0;
-  padding:15px 0; border-radius:999px;
+  background:#C99742; color:#000; border:0;
+  padding:14px 44px; border-radius:999px; white-space:nowrap;
   font-family:${DISPLAY}; font-weight:900;
   font-size:15px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s;
 }
 .cbl-contact .submit:hover:not(:disabled) { background:#DDB15F; }
 .cbl-contact .submit:disabled { background:#555; cursor:not-allowed; }
-.cbl-contact .alert { padding:14px 16px; border-radius:12px; text-align:center; font-weight:600; font-size:14px; }
+.cbl-contact .alert { grid-column:1 / -1; padding:14px 16px; border-radius:12px; text-align:center; font-weight:600; font-size:14px; }
 .cbl-contact .alert.ok { background:rgba(77,191,102,.12); border:1px solid rgba(77,191,102,.5); color:#7FD68F; }
 .cbl-contact .alert.err { background:rgba(229,76,76,.12); border:1px solid rgba(229,76,76,.5); color:#F08A8A; }
-.cbl-contact .note { text-align:center; font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8a8a8a; }
+.cbl-contact .note { grid-column:1 / -1; text-align:left; font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8a8a8a; }
 
-@media (max-width:1100px){
+@media (max-width:900px){
   .cbl-contact .hero { padding:22px 24px 16px; }
-  .cbl-contact section.band { padding:40px 24px 56px; }
-  .cbl-contact .form-card { padding:28px 24px; }
+  .cbl-contact section.band { padding:28px 24px 44px; }
+  .cbl-contact .form-card { padding:24px 22px; max-width:none; }
+  .cbl-contact form { grid-template-columns:1fr; }
+  .cbl-contact .message-field textarea { min-height:140px; }
+  .cbl-contact .form-footer { flex-direction:column; align-items:stretch; }
+  .cbl-contact .submit { width:100%; }
 }
 `;
 
@@ -212,65 +225,67 @@ export function Contact() {
         <div className="band-inner">
           <div className="form-card">
             <form onSubmit={handleSubmit}>
-              <div className="field">
-                <label htmlFor="topic">
-                  What can we help you with? <span className="req">*</span>
-                </label>
-                <select id="topic" name="topic" value={formData.topic} onChange={handleChange} required>
-                  <option value="" disabled>
-                    Select a topic
-                  </option>
-                  <option value="general">General Inquiry</option>
-                  <option value="rider">Rider Support</option>
-                  <option value="driver">Driver Support</option>
-                  <option value="partnership">Partnership Inquiry</option>
-                  <option value="bug">Bug Report</option>
-                </select>
+              <div className="fields-col">
+                <div className="field">
+                  <label htmlFor="topic">
+                    What can we help you with? <span className="req">*</span>
+                  </label>
+                  <select id="topic" name="topic" value={formData.topic} onChange={handleChange} required>
+                    <option value="" disabled>
+                      Select a topic
+                    </option>
+                    <option value="general">General Inquiry</option>
+                    <option value="rider">Rider Support</option>
+                    <option value="driver">Driver Support</option>
+                    <option value="partnership">Partnership Inquiry</option>
+                    <option value="bug">Bug Report</option>
+                  </select>
+                </div>
+
+                <div className="field">
+                  <label htmlFor="fullName">
+                    Full Name <span className="req">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="fullName"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter your full name"
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="email">
+                    Email <span className="req">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    placeholder="your.email@example.com"
+                  />
+                </div>
+
+                <div className="field">
+                  <label htmlFor="phone">Phone Number (optional)</label>
+                  <input
+                    type="tel"
+                    id="phone"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
               </div>
 
-              <div className="field">
-                <label htmlFor="fullName">
-                  Full Name <span className="req">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Enter your full name"
-                />
-              </div>
-
-              <div className="field">
-                <label htmlFor="email">
-                  Email <span className="req">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="your.email@example.com"
-                />
-              </div>
-
-              <div className="field">
-                <label htmlFor="phone">Phone Number (optional)</label>
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  placeholder="(555) 123-4567"
-                />
-              </div>
-
-              <div className="field">
+              <div className="field message-field">
                 <label htmlFor="message">
                   How can we help? <span className="req">*</span>
                 </label>
@@ -285,27 +300,29 @@ export function Contact() {
                 />
               </div>
 
-              <div className="terms">
-                <input
-                  type="checkbox"
-                  id="agreedToTerms"
-                  name="agreedToTerms"
-                  checked={formData.agreedToTerms}
-                  onChange={handleChange}
-                  required
-                />
-                <label htmlFor="agreedToTerms">
-                  I agree to the{' '}
-                  <a href="/terms" target="_blank">
-                    Terms and Conditions
-                  </a>{' '}
-                  <span className="req">*</span>
-                </label>
-              </div>
+              <div className="form-footer">
+                <div className="terms">
+                  <input
+                    type="checkbox"
+                    id="agreedToTerms"
+                    name="agreedToTerms"
+                    checked={formData.agreedToTerms}
+                    onChange={handleChange}
+                    required
+                  />
+                  <label htmlFor="agreedToTerms">
+                    I agree to the{' '}
+                    <a href="/terms" target="_blank">
+                      Terms and Conditions
+                    </a>{' '}
+                    <span className="req">*</span>
+                  </label>
+                </div>
 
-              <button type="submit" className="submit" disabled={status === 'loading'}>
-                {status === 'loading' ? 'Sending…' : 'Submit →'}
-              </button>
+                <button type="submit" className="submit" disabled={status === 'loading'}>
+                  {status === 'loading' ? 'Sending…' : 'Submit →'}
+                </button>
+              </div>
 
               {status === 'success' && (
                 <div className="alert ok">

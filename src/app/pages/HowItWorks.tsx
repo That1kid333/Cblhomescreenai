@@ -61,13 +61,6 @@ const HOW_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
-.cbl-how h1.hero-title .how-icon {
-  flex-shrink:0; width:240px; height:240px;
-  display:flex; align-items:center; justify-content:center; opacity:.92;
-}
-.cbl-how h1.hero-title .how-icon svg { width:100%; height:100%; }
-@media (max-width:1100px){ .cbl-how h1.hero-title .how-icon { width:180px; height:180px; } }
-@media (max-width:720px){ .cbl-how h1.hero-title .how-icon { width:120px; height:120px; } }
 .cbl-how .hero p.lede { margin-top:-6px; max-width:640px; font-size:16px; line-height:1.5; color:#B8B8B8; margin-bottom:20px; }
 .cbl-how .hero-cta {
   display:inline-flex; align-items:center; gap:10px;
@@ -187,19 +180,6 @@ const HOW_CSS = `
   .cbl-how .row-body { padding:28px 24px; }
 }
 `;
-
-function HeroHandshakeSvg() {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M6 40l16-6 12 8" />
-      <path d="M94 40l-16-6-14 9-10-3" />
-      <path d="M22 34l14 16c2 2 5 2 7 0l4-4" />
-      <path d="M47 46l8 8c2 2 5 2 7 0M55 54l6 6c2 2 5 2 7 0M63 58l4 4c2 2 5 2 7 0" />
-      <path d="M78 34l-9 10" />
-      <path d="M6 40v20M94 40v20" />
-    </svg>
-  );
-}
 
 type Audience = {
   num: string;
@@ -350,9 +330,6 @@ export function HowItWorks() {
                 <span>Scheduled rides.</span>
                 <span className="it">Drivers you know.</span>
               </span>
-            </span>
-            <span className="how-icon" aria-hidden="true">
-              <HeroHandshakeSvg />
             </span>
           </h1>
           <p className="lede">

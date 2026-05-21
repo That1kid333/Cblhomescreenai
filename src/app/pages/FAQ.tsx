@@ -103,13 +103,6 @@ const FAQ_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
-.cbl-faq h1.hero-title .faq-icon {
-  flex-shrink:0; width:240px; height:240px;
-  display:flex; align-items:center; justify-content:center; opacity:.92;
-}
-.cbl-faq h1.hero-title .faq-icon svg { width:100%; height:100%; }
-@media (max-width:1100px){ .cbl-faq h1.hero-title .faq-icon { width:180px; height:180px; } }
-@media (max-width:720px){ .cbl-faq h1.hero-title .faq-icon { width:120px; height:120px; } }
 .cbl-faq .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
@@ -157,16 +150,6 @@ const FAQ_CSS = `
 }
 `;
 
-function HeroFaqSvg() {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="50" cy="50" r="38" />
-      <path d="M38 40c0-7 6-12 12-12s12 4 12 11c0 6-5 8-8 11-2 2-4 4-4 8" />
-      <circle cx="50" cy="72" r="1.6" fill="#fff" stroke="none" />
-    </svg>
-  );
-}
-
 export function FAQ() {
   return (
     <main className="cbl-faq">
@@ -182,9 +165,6 @@ export function FAQ() {
                 <span>Everything you need</span>
                 <span className="it">to know</span>
               </span>
-            </span>
-            <span className="faq-icon" aria-hidden="true">
-              <HeroFaqSvg />
             </span>
           </h1>
           <p className="lede">

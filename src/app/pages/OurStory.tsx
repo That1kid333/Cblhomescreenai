@@ -60,14 +60,6 @@ const STORY_CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em;
 }
-/* Hero icon container matches the Explore pages so heros align across the site. */
-.cbl-story h1.hero-title .story-icon {
-  flex-shrink:0; width:240px; height:240px;
-  display:flex; align-items:center; justify-content:center; opacity:.92;
-}
-.cbl-story h1.hero-title .story-icon svg { width:100%; height:100%; }
-@media (max-width:1100px){ .cbl-story h1.hero-title .story-icon { width:180px; height:180px; } }
-@media (max-width:720px){ .cbl-story h1.hero-title .story-icon { width:120px; height:120px; } }
 .cbl-story .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
@@ -175,18 +167,6 @@ const STORY_CSS = `
 }
 `;
 
-function HeroStorySvg() {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="50" cy="50" r="36" />
-      <ellipse cx="50" cy="50" rx="16" ry="36" />
-      <line x1="14" y1="50" x2="86" y2="50" />
-      <path d="M18 32h64" />
-      <path d="M18 68h64" />
-    </svg>
-  );
-}
-
 export function OurStory() {
   return (
     <main className="cbl-story">
@@ -202,9 +182,6 @@ export function OurStory() {
                 <span>Locals everywhere.</span>
                 <span className="it">Friends from anywhere.</span>
               </span>
-            </span>
-            <span className="story-icon" aria-hidden="true">
-              <HeroStorySvg />
             </span>
           </h1>
           <p className="lede">
