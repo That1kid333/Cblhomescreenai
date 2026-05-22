@@ -220,8 +220,8 @@ export function OurStory() {
           <div className="split reverse">
             <div className="split-media">
               <img
-                src="https://images.unsplash.com/photo-1766812782166-e243111f703d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwZGluaW5nJTIwZXhwZXJpZW5jZXxlbnwxfHx8fDE3NzYxMTQzNzl8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Restaurant dining experience"
+                src="https://images.unsplash.com/photo-1525610553991-2bede1a236e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwZGluaW5nJTIwZXhwZXJpZW5jZXxlbnwxfHx8fDE3NzYxMTQzNzl8MA&ixlib=rb-4.1.0&q=80&w=1080"
+                alt="Friends sharing a meal at a local restaurant"
               />
             </div>
             <div className="split-body">
