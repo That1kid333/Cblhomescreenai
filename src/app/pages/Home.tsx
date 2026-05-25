@@ -421,7 +421,16 @@ const HOME_CSS = `
 
 /* ── Talk to Buckee voice bar ── */
 .cbl-home .talk-band { padding:18px 48px 0; }
-.cbl-home .talk-wrap { max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:20px; }
+.cbl-home .talk-wrap { position:relative; max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:20px; }
+.cbl-home .buckee-bubble { position:absolute; bottom:calc(100% + 12px); left:0; z-index:20; max-width:560px; background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:18px 18px 18px 0; padding:16px 20px; box-shadow:0 18px 44px rgba(0,0,0,.55); animation:cbl-bubble-pop .26s cubic-bezier(.2,.9,.3,1.25) both; }
+.cbl-home .buckee-bubble::after { content:''; position:absolute; bottom:-9px; left:30px; width:18px; height:18px; background:#141414; border-right:1px solid rgba(201,151,66,.45); border-bottom:1px solid rgba(201,151,66,.45); transform:rotate(45deg); }
+.cbl-home .bubble-eyebrow { font-family:${MONO}; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:6px; }
+.cbl-home .bubble-text { font-size:16px; line-height:1.45; color:#EAEAEA; margin-bottom:12px; }
+.cbl-home .bubble-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.cbl-home .bubble-chips button { background:rgba(201,151,66,.10); border:1px solid rgba(201,151,66,.4); color:#F0D9A8; border-radius:999px; padding:7px 14px; font-family:${DISPLAY}; font-weight:700; font-size:13px; cursor:pointer; transition:background .2s, color .2s, border-color .2s; }
+.cbl-home .bubble-chips button:hover { background:${GOLD}; color:#000; border-color:${GOLD}; }
+@keyframes cbl-bubble-pop { 0% { opacity:0; transform:translateY(8px) scale(.96); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+@media (max-width:1000px) { .cbl-home .buckee-bubble { max-width:none; right:0; } }
 .cbl-home .talk-buckee { width:100px; height:100px; flex-shrink:0; object-fit:contain; filter:drop-shadow(0 10px 22px rgba(0,0,0,.5)); }
 .cbl-home .talk-card { flex:1; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg, rgba(201,151,66,.10) 0%, #141414 100%); border:1px solid rgba(201,151,66,.35); border-radius:18px 0 18px 0; padding:16px 22px; }
 .cbl-home .mic-btn { flex-shrink:0; width:64px; height:64px; border-radius:50%; border:0; background:${GOLD}; color:#000; display:grid; place-items:center; box-shadow:0 0 0 6px rgba(201,151,66,.12); transition:transform .2s, background .2s; }
@@ -697,6 +706,9 @@ export function Home() {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
+  const BUCKEE_HI = "Hey, I'm Buckee 👋 What are you in the mood for? Tap one below — or just talk to me.";
+  const [talking, setTalking] = useState(false);
+  const [reply, setReply] = useState(BUCKEE_HI);
 
   useEffect(() => {
     if (paused) return;
@@ -792,11 +804,22 @@ export function Home() {
       {/* ── Talk to Buckee (voice) ── */}
       <section ref={talkRef} className={'band talk-band' + (buckeeIn ? ' talk-in' : '')}>
         <div className="talk-wrap">
+          {talking && (
+            <div className="buckee-bubble" role="status">
+              <div className="bubble-eyebrow">Buckee says</div>
+              <div className="bubble-text">{reply}</div>
+              <div className="bubble-chips">
+                <button onClick={() => setReply("Nice — I'll pull up the best tables near you and can book it. Want a ride there too?")}>🍽️ Find dinner</button>
+                <button onClick={() => setReply("On it. I'll compare your fastest ride options and have a car ready when you are.")}>🚗 Get a ride</button>
+                <button onClick={() => setReply("Let's build the whole night — dinner, a show, and a ride home. Citty and Listy are helping. 🎟️")}>✨ Plan my night</button>
+              </div>
+            </div>
+          )}
           <span className="talk-buckee-wrap">
             <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
           </span>
           <div className="talk-card">
-            <button className="mic-btn" aria-label="Talk to Buckee">
+            <button className="mic-btn" aria-label="Talk to Buckee" onClick={() => { if (!talking) setReply(BUCKEE_HI); setTalking((t) => !t); }}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none" />
                 <path d="M5 11a7 7 0 0 0 14 0" />
