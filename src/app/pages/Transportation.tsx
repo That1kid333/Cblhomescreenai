@@ -285,7 +285,11 @@ const TRANSPORT_CSS = `
 }
 .cbl-transport h1.hero-title .car-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-transport h1.hero-title .car-icon { width:180px; height:180px; } }
-@media (max-width:720px){ .cbl-transport h1.hero-title .car-icon { width:120px; height:120px; } }
+@media (max-width:720px){
+  .cbl-transport h1.hero-title { gap:0; font-size:clamp(38px,11vw,56px); }
+  .cbl-transport h1.hero-title .car-icon { display:none; }
+  .cbl-transport .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+}
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
