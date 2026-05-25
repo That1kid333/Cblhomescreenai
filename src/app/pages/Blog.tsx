@@ -64,7 +64,7 @@ const BLOG_CSS = `
   display:flex; align-items:center; gap:28px; flex-wrap:nowrap; margin:0;
 }
 .cbl-blog h1.hero-title .title-stack { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
-.cbl-blog h1.hero-title .h1-main { color:#C99742; white-space:nowrap; position:relative; }
+.cbl-blog h1.hero-title .h1-main { color:#fff; white-space:nowrap; position:relative; }
 .cbl-blog .hero-subtitle {
   display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;
   font-family:${DISPLAY}; font-weight:900; font-size:clamp(28px,3vw,44px);
