@@ -1,11 +1,12 @@
 import { Outlet, Link } from 'react-router';
-import { ChevronRight, Menu } from 'lucide-react';
+import { ChevronRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
 
 export function Layout() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleMouseEnter = (dropdown: string) => {
     if (closeTimeout) {
@@ -29,8 +30,12 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
           <div className="flex items-center justify-between">
             {/* Hamburger Menu - Mobile Only (Far Left) */}
-            <button className="lg:hidden text-white hover:text-[#FDB913] transition-colors">
-              <Menu className="w-6 h-6" />
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label="Toggle menu"
+              className="lg:hidden text-white hover:text-[#FDB913] transition-colors"
+            >
+              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
 
             {/* Logo - Centered on mobile, left-aligned on desktop */}
@@ -179,6 +184,42 @@ export function Layout() {
             {/* Spacer to maintain center alignment of nav after removing login button */}
             <div className="hidden lg:block w-[88px] lg:mr-8"></div>
           </div>
+
+          {/* Mobile menu - shown when hamburger is tapped */}
+          {mobileOpen && (
+            <nav className="lg:hidden mt-4 flex flex-col border-t border-white/10 pt-1">
+              {[
+                { to: '/our-story', label: 'Our Story' },
+                { to: '/travels', label: 'Travels' },
+                { to: '/transportation', label: 'Transportation' },
+                { to: '/eats-and-drinks', label: 'Eats & Drinks' },
+                { to: '/attractions', label: 'Attractions' },
+                { to: '/blog', label: 'CBL Blog' },
+                { to: '/directory', label: 'Directory' },
+                { to: '/affiliates', label: 'Affiliates' },
+                { to: '/faq', label: 'FAQ' },
+                { to: '/contact', label: 'Contact' },
+              ].map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  onClick={() => setMobileOpen(false)}
+                  className="py-3 text-sm text-white hover:text-[#FDB913] border-b border-gray-700 border-dotted transition-colors uppercase tracking-wide"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <a
+                href="https://directory.citybucketlist.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="py-3 text-sm text-white hover:text-[#FDB913] transition-colors uppercase tracking-wide"
+              >
+                Local Classifieds (Live)
+              </a>
+            </nav>
+          )}
         </div>
       </header>
 
