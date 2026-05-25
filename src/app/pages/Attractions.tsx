@@ -530,7 +530,7 @@ const ATTRACTIONS_CSS = `
 .cbl-attractions .source-chip:hover { border-color:rgba(201,151,66,.45); color:#fff; }
 
 /* ── Section frame ── */
-.cbl-attractions section.band { padding:48px 48px 56px; }
+.cbl-attractions section.band { padding:36px 48px 56px; }
 .cbl-attractions section.band.tight { padding:28px 48px 36px; }
 .cbl-attractions .band-inner { max-width:1280px; margin:0 auto; }
 .cbl-attractions .section-eyebrow {
