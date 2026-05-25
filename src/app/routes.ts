@@ -5,6 +5,7 @@ import { FAQ } from './pages/FAQ';
 import { Contact } from './pages/Contact';
 import { OurStory } from './pages/OurStory';
 import { HowItWorks } from './pages/HowItWorks';
+import { MeetBuckee } from './pages/MeetBuckee';
 import { Blog } from './pages/Blog';
 import { Directory } from './pages/Directory';
 import { EatsAndDrinks } from './pages/EatsAndDrinks';
@@ -24,6 +25,7 @@ export const router = createBrowserRouter([
       { path: 'contact', Component: Contact },
       { path: 'our-story', Component: OurStory },
       { path: 'how-it-works', Component: HowItWorks },
+      { path: 'meet-buckee', Component: MeetBuckee },
       { path: 'blog', Component: Blog },
       { path: 'directory', Component: Directory },
       { path: 'eats-and-drinks', Component: EatsAndDrinks },
