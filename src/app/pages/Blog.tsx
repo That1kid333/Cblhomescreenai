@@ -2,15 +2,19 @@ import { useState, type ReactNode } from "react";
 
 /**
  * Blog — ported from the approved "CBL Blog Desktop" design
- * (Claude Design · CBL Website 2026 project, May 2026).
+ * (Claude Design · CBL Website 2026 project, May 2026 — updated rev).
  *
  * Re-skinned to match the other Explore pages (Our Story / Eats & Drinks /
- * Transportation / Travels / Attractions): dark canvas, gold (#C99742) accents,
- * Barlow Condensed / Myriad Pro display, Playfair Display italic accents,
- * mono eyebrow labels, and the CBL diagonal-corner card treatment.
+ * Transportation / Travels / Attractions / Directory): dark canvas, gold
+ * (#C99742) accents, Barlow Condensed / Myriad Pro display, Playfair Display
+ * italic accents, mono eyebrow labels, CBL diagonal-corner cards.
  *
  * Nav + footer come from the shared Layout (same as OurStory), so this
  * component renders the page body only. All CSS is scoped under `.cbl-blog`.
+ *
+ * Updated rev: new category set (Transportation / Good Eats / Places to Stay /
+ * Flight Deals / Arts & Culture / Behind the Brand), city-locator + tag chips
+ * removed, refreshed post set, section reads "Latest stories from the CBL network".
  */
 
 const DISPLAY = "'Barlow Condensed','Myriad Pro',sans-serif";
@@ -22,8 +26,6 @@ type CatDef = { key: string; label: string; Icon: (p: { s?: number }) => JSX.Ele
 type Post = {
   id: number;
   cat: string;
-  tag: string;
-  city: string;
   title: string;
   excerpt: string;
   author: string;
@@ -31,6 +33,7 @@ type Post = {
   date: string;
   read: string;
   img: string;
+  tag?: string;
   featured?: boolean;
 };
 
@@ -95,18 +98,6 @@ const BLOG_CSS = `
 .cbl-blog .cat-btn:hover .ic { opacity:1; }
 .cbl-blog .cat-btn.active { color:#B8B8B8; border-bottom-color:#C99742; }
 .cbl-blog .cat-btn.active .ic { opacity:1; color:#fff; }
-
-.cbl-blog .tag-row { display:flex; gap:8px; padding:12px 0; overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(201,151,66,.4) transparent; }
-.cbl-blog .tag-row::-webkit-scrollbar { height:6px; }
-.cbl-blog .tag-row::-webkit-scrollbar-thumb { background:rgba(201,151,66,.35); border-radius:3px; }
-.cbl-blog .tag-chip {
-  flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:999px;
-  background:transparent; border:1px solid rgba(255,255,255,.10); color:#C99742;
-  font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.12em; text-transform:uppercase; transition:all .2s;
-}
-.cbl-blog .tag-chip:hover { border-color:rgba(201,151,66,.45); color:#fff; }
-.cbl-blog .tag-chip.active { background:rgba(201,151,66,.15); border-color:#C99742; color:#fff; }
-.cbl-blog .tag-chip.all { padding:8px 18px; }
 
 /* Section frame */
 .cbl-blog section.band { padding:36px 48px 56px; }
@@ -309,94 +300,87 @@ const IconDirectory = ({ s }: { s?: number }) => (
 
 const CATS: CatDef[] = [
   { key: "ALL", label: "All Posts", Icon: IconBlog },
-  { key: "TRAVELS", label: "Travels", Icon: IconStays },
-  { key: "EATS", label: "Eats & Drinks", Icon: IconEats },
-  { key: "CITY", label: "Local Scene", Icon: IconAttractions },
-  { key: "DRIVERS", label: "Drivers", Icon: IconTransport },
-  { key: "INTERVIEWS", label: "Interviews", Icon: IconBlog },
-  { key: "CULTURE", label: "Culture", Icon: IconDirectory },
+  { key: "TRANSPO", label: "Transportation", Icon: IconTransport },
+  { key: "EATS", label: "Good Eats", Icon: IconEats },
+  { key: "STAYS", label: "Places to Stay", Icon: IconStays },
+  { key: "FLIGHTS", label: "Flight Deals", Icon: IconStays },
+  { key: "CULTURE", label: "Arts & Culture", Icon: IconDirectory },
+  { key: "BEHIND", label: "Behind the Brand", Icon: IconBlog },
 ];
-
-const TAGS = [
-  "ALL", "Pittsburgh", "Bucket List", "Itineraries", "Concierge",
-  "Hidden Gems", "Driver Stories", "Affiliate News", "Behind the Brand",
-];
-
-const CITIES = ["Pittsburgh", "Cleveland", "Erie", "Washington D.C.", "Buffalo"];
 
 const POSTS: Post[] = [
   {
-    id: 1, cat: "CITY", tag: "Pittsburgh", city: "Pittsburgh",
-    title: "The Strip District at 6 AM: A Walking Guide",
-    excerpt: "When the wholesale trucks are still pulling in and the chefs are stockpiling for the night, the Strip belongs to early risers. Our guide to the rooms that open at dawn.",
-    author: "Brian K.", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
+    id: 1, cat: "TRANSPO",
+    title: "Meet Brian: 847 Rides and Counting",
+    excerpt: "How a former rideshare driver built a 5-figure side business booking the same regulars every week. The story of one of CBL's top earning Independent Drivers.",
+    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
     date: "May 20, 2026", read: "6 min read",
-    img: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=900&h=600&fit=crop",
+    img: "https://images.unsplash.com/photo-1542282088-fe8426682b8f?w=900&h=600&fit=crop",
     featured: true,
   },
   {
-    id: 2, cat: "DRIVERS", tag: "Driver Stories", city: "Pittsburgh",
-    title: "Meet Brian: 847 Rides and Counting",
-    excerpt: "How a former Uber driver built a 5-figure side business booking the same Pittsburgh regulars every week.",
-    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
-    date: "May 18, 2026", read: "4 min read",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=900&h=600&fit=crop",
-  },
-  {
-    id: 3, cat: "TRAVELS", tag: "Itineraries", city: "GLOBAL",
-    title: "Three Perfect Days in Banff (Built by Buckee)",
-    excerpt: "We let our AI concierge plan a member trip. Here's what she came back with — Lake Louise to The Grapes, every ride pre-booked.",
-    author: "Buckee", avatar: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=200&h=200&fit=crop",
-    date: "May 16, 2026", read: "8 min read",
-    img: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=900&h=600&fit=crop",
-  },
-  {
-    id: 4, cat: "EATS", tag: "Hidden Gems", city: "Pittsburgh",
-    title: "Why Bloomfield Is Pittsburgh's Most Underrated Food Block",
-    excerpt: "Pierogi, pho, and an old-school espresso bar all on one stretch of Liberty Ave. Our team's picks.",
-    author: "Maria R.", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
-    date: "May 14, 2026", read: "5 min read",
+    id: 2, cat: "EATS",
+    title: "12 Restaurants Worth the Drive",
+    excerpt: "Hidden patios, neighborhood institutions, and the kind of plates locals tell their friends about. Our team's favorite tables across the network.",
+    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop&crop=faces",
+    date: "May 19, 2026", read: "7 min read",
     img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&h=600&fit=crop",
   },
   {
-    id: 5, cat: "INTERVIEWS", tag: "Behind the Brand", city: "GLOBAL",
-    title: "How CityBucketList Got Its Name",
-    excerpt: "Founder Keith Murawski on building a private membership platform when everyone else was building a rideshare app.",
+    id: 3, cat: "FLIGHTS",
+    title: "This Week's Best Flight Deals — Under $250 Round-Trip",
+    excerpt: "Six destinations under $250 RT this week, plus the Kayak + Booking.com bundles that beat the airline direct rate. Member-rate fares included.",
     author: "CBL Team", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=faces",
-    date: "May 12, 2026", read: "7 min read",
-    img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=900&h=600&fit=crop",
+    date: "May 18, 2026", read: "4 min read",
+    img: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=900&h=600&fit=crop",
   },
   {
-    id: 6, cat: "CITY", tag: "Bucket List", city: "Pittsburgh",
-    title: "10 Things Every Pittsburgher Should Do This Summer",
-    excerpt: "From the Phipps butterfly room to a $5 sunrise at Mount Washington — the seasonal checklist our locals swear by.",
+    id: 4, cat: "STAYS",
+    title: "5 Boutique Hotels Built for a Long Weekend",
+    excerpt: "A castle in Banff, a Brooklyn modernist tower, an Adirondack cottage. Hand-picked stays with one thing in common — they're worth the trip.",
+    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1455587734955-081b22074882?w=200&h=200&fit=crop",
+    date: "May 16, 2026", read: "6 min read",
+    img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&h=600&fit=crop",
+  },
+  {
+    id: 5, cat: "TRANSPO",
+    title: "Same Driver Every Wednesday: A Rider's Story",
+    excerpt: "Keith books the same Independent Driver for his weekly trip to dialysis. What it's like when your rideshare actually knows your name.",
     author: "CBL Team", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces",
-    date: "May 10, 2026", read: "4 min read",
-    img: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=900&h=600&fit=crop",
+    date: "May 14, 2026", read: "5 min read",
+    img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=900&h=600&fit=crop",
   },
   {
-    id: 7, cat: "TRAVELS", tag: "Concierge", city: "GLOBAL",
-    title: "The Concierge Playbook: How Hotels Earn 10% with CBL",
-    excerpt: "Our Concierge Partner program in plain English — what hotels get, what drivers earn, and how the QR-code welcome packet works.",
+    id: 6, cat: "CULTURE",
+    title: "Galleries Worth Your Weekend",
+    excerpt: "Zynka, James, Warhol, Mattress Factory — a Saturday-afternoon itinerary that hits the openings, then the after-parties. Ride pre-booked.",
+    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
+    date: "May 12, 2026", read: "5 min read",
+    img: "https://images.unsplash.com/photo-1577720580479-7d839d829c73?w=900&h=600&fit=crop",
+  },
+  {
+    id: 7, cat: "TRANSPO",
+    title: "How Drivers Build a Book of Regulars",
+    excerpt: "Three Independent Drivers on how they turned one-off rides into weekly recurring fares — and 5-figure monthly earnings.",
+    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop&crop=faces",
+    date: "May 10, 2026", read: "5 min read",
+    img: "https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=900&h=600&fit=crop",
+  },
+  {
+    id: 8, cat: "STAYS",
+    title: "Short-Term Rentals That Actually Feel Like Home",
+    excerpt: "Strip District lofts, Hudson Valley farmhouses, Asheville A-frames. The picks our team books when work brings them out of town.",
     author: "CBL Team", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop&crop=faces",
     date: "May 8, 2026", read: "6 min read",
-    img: "https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&h=600&fit=crop",
+    img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop",
   },
   {
-    id: 8, cat: "CULTURE", tag: "Behind the Brand", city: "GLOBAL",
-    title: "Meet Citee and Listee: Buckee's Family",
-    excerpt: "Our mascot has a wife, a dog, and a habit of showing up unannounced. The story behind CBL's growing cast of characters.",
-    author: "CBL Team", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
-    date: "May 6, 2026", read: "3 min read",
-    img: "https://images.unsplash.com/photo-1517849845537-4d257902454a?w=900&h=600&fit=crop",
-  },
-  {
-    id: 9, cat: "DRIVERS", tag: "Affiliate News", city: "GLOBAL",
+    id: 9, cat: "BEHIND",
     title: "Why We Added Uber, Lyft, and Waymo to CBL",
-    excerpt: "100% coverage, zero rider cost. The affiliate routing layer that complements (not competes with) our Independent Drivers.",
+    excerpt: "100% coverage, zero rider cost. The affiliate routing layer that complements — not competes with — our Independent Drivers.",
     author: "Keith M.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=faces",
     date: "May 4, 2026", read: "5 min read",
-    img: "https://images.unsplash.com/photo-1494522358652-f30e61a60313?w=900&h=600&fit=crop",
+    img: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=900&h=600&fit=crop",
   },
 ];
 
@@ -430,23 +414,20 @@ function Hero() {
           <BlogIconHero />
         </h1>
         <p className="lede">
-          Drivers, riders, restaurants and the people who built the platform —
-          dispatches from the city our team calls home. New posts weekly.
+          Driver stories, rider stories, and the playbook behind the
+          platform. Built for the people in the cars and the people in
+          the back seats. New posts weekly.
         </p>
       </div>
     </section>
   );
 }
 
-function Filters({
-  cat, setCat, tag, setTag,
-}: {
-  cat: string; setCat: (v: string) => void; tag: string; setTag: (v: string) => void;
-}) {
+function Filters({ cat, setCat }: { cat: string; setCat: (v: string) => void }) {
   return (
     <div className="filters">
       <div className="filters-inner">
-        <div className="cat-row">
+        <div className="cat-row" style={{ borderBottom: 0, paddingBottom: 12 }}>
           {CATS.map((c) => (
             <button
               key={c.key}
@@ -457,20 +438,6 @@ function Filters({
               {c.label}
             </button>
           ))}
-        </div>
-        <div className="tag-row">
-          {TAGS.map((t) => {
-            const active = tag === t;
-            return (
-              <button
-                key={t}
-                className={"tag-chip" + (active ? " active" : "") + (t === "ALL" ? " all" : "")}
-                onClick={() => setTag(t)}
-              >
-                {t === "ALL" ? "All Topics" : t}
-              </button>
-            );
-          })}
         </div>
       </div>
     </div>
@@ -484,7 +451,7 @@ function Spotlight({ p }: { p: Post }) {
         <span className="cat-pill">{p.cat === "CITY" ? "Local Scene" : p.cat}</span>
       </div>
       <div className="text">
-        <div className="kicker">CBL Featured · {p.tag}</div>
+        <div className="kicker">CBL Featured{p.tag ? ` · ${p.tag}` : ""}</div>
         <h3>{p.title}</h3>
         <p>{p.excerpt}</p>
         <div className="byline">
@@ -552,98 +519,10 @@ function Newsletter() {
   );
 }
 
-function CityPill({
-  city, setCity, open, setOpen, destination, setDestination,
-}: {
-  city: string; setCity: (v: string) => void;
-  open: boolean; setOpen: (v: boolean) => void;
-  destination: string; setDestination: (v: string) => void;
-}) {
-  return (
-    <div style={{ position: "relative", display: "flex", gap: 10, alignItems: "center", padding: "10px 0 0", flexWrap: "wrap" }}>
-      <span style={{ fontFamily: MONO, fontSize: 10, color: "#888", letterSpacing: ".14em", textTransform: "uppercase" }}>
-        you're reading from →
-      </span>
-      <button
-        onClick={() => setOpen(!open)}
-        style={{
-          background: "rgba(201,151,66,.14)", border: "1px solid #C99742", color: "#fff",
-          padding: "7px 16px", borderRadius: 999, fontFamily: DISPLAY, fontWeight: 800,
-          fontSize: 13, letterSpacing: ".12em", textTransform: "uppercase",
-          display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer",
-        }}
-      >
-        <svg width="12" height="14" viewBox="0 0 14 16" fill="none">
-          <path d="M7 1c3 0 5 2 5 5 0 4-5 9-5 9S2 10 2 6c0-3 2-5 5-5z" stroke="#C99742" strokeWidth="1.6" />
-          <circle cx="7" cy="6" r="2" stroke="#C99742" strokeWidth="1.4" />
-        </svg>
-        {city} <span style={{ color: "#C99742", fontSize: 11 }}>▾</span>
-      </button>
-      {destination && (
-        <span style={{ fontFamily: MONO, fontSize: 10, color: "#888", letterSpacing: ".14em", textTransform: "uppercase" }}>
-          · traveling to <span style={{ color: "#C99742" }}>{destination}</span>
-        </span>
-      )}
-      <span style={{ marginLeft: "auto", fontFamily: MONO, fontSize: 10, color: "#666", letterSpacing: ".14em", textTransform: "uppercase" }}>
-        auto-detected at signup · change anytime
-      </span>
-      {open && (
-        <div
-          style={{
-            position: "absolute", top: "100%", left: 175, marginTop: 8,
-            background: "#141414", border: "1px solid rgba(201,151,66,.4)",
-            borderRadius: "12px 0 12px 0", padding: 10, minWidth: 220, zIndex: 30,
-            boxShadow: "0 14px 32px rgba(0,0,0,.5)",
-          }}
-        >
-          {CITIES.map((c) => (
-            <button
-              key={c}
-              onClick={() => { setCity(c); setOpen(false); }}
-              style={{
-                display: "block", width: "100%", textAlign: "left",
-                background: c === city ? "rgba(201,151,66,.14)" : "transparent",
-                border: 0, color: c === city ? "#C99742" : "#fff",
-                padding: "8px 12px", borderRadius: 8,
-                fontFamily: "Inter,sans-serif", fontSize: 14, fontWeight: 600, cursor: "pointer",
-              }}
-            >
-              {c}
-            </button>
-          ))}
-          <div style={{ borderTop: "1px solid rgba(255,255,255,.08)", margin: "8px 0", padding: "8px 12px 0" }}>
-            <div style={{ fontFamily: MONO, fontSize: 9, color: "#888", letterSpacing: ".14em", textTransform: "uppercase", marginBottom: 6 }}>
-              Traveling to?
-            </div>
-            <input
-              value={destination || ""}
-              onChange={(e) => setDestination(e.target.value)}
-              placeholder="e.g. Banff, Miami"
-              style={{
-                width: "100%", background: "#0A0A0A", border: "1px solid rgba(255,255,255,.10)",
-                borderRadius: 8, color: "#fff", padding: "8px 10px", fontFamily: "Inter,sans-serif", fontSize: 13, outline: 0,
-              }}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export function Blog() {
   const [cat, setCat] = useState("ALL");
-  const [tag, setTag] = useState("ALL");
-  const [city, setCity] = useState("Pittsburgh");
-  const [destination, setDestination] = useState("");
-  const [cityOpen, setCityOpen] = useState(false);
 
-  const filtered = POSTS.filter(
-    (p) =>
-      (cat === "ALL" || p.cat === cat) &&
-      (tag === "ALL" || p.tag === tag) &&
-      (p.city === "GLOBAL" || p.city === city || (destination !== "" && p.city === destination))
-  );
+  const filtered = POSTS.filter((p) => cat === "ALL" || p.cat === cat);
   const featured = filtered.find((p) => p.featured) || POSTS.find((p) => p.featured);
   const rest = filtered.filter((p) => !p.featured);
 
@@ -652,34 +531,22 @@ export function Blog() {
       <style>{BLOG_CSS}</style>
 
       <Hero />
-      <Filters cat={cat} setCat={setCat} tag={tag} setTag={setTag} />
+      <Filters cat={cat} setCat={setCat} />
 
-      <section className="band tight" style={{ paddingTop: 18, paddingBottom: 0 }}>
-        <div className="band-inner">
-          <CityPill
-            city={city} setCity={setCity}
-            open={cityOpen} setOpen={setCityOpen}
-            destination={destination} setDestination={setDestination}
-          />
-        </div>
-      </section>
-
-      <section className="band" style={{ paddingTop: 24 }}>
+      <section className="band">
         <div className="band-inner">
           <div className="section-head">
             <div>
               <div className="section-eyebrow">latest · refreshed weekly</div>
               <h2 className="section-h2">
-                {cat === "ALL" ? `From ${city}` : CATS.find((c) => c.key === cat)?.label}
-                <span className="it">{destination ? `+ ${destination}` : "and the wider network"}</span>
+                {cat === "ALL" ? "Latest stories" : CATS.find((c) => c.key === cat)?.label}
+                <span className="it">from the CBL network</span>
               </h2>
             </div>
-            <div className="count">
-              <b>{filtered.length}</b> stories · {tag === "ALL" ? "all topics" : tag}
-            </div>
+            <div className="count"><b>{filtered.length}</b> stories</div>
           </div>
 
-          {featured && filtered.includes(featured) && cat === "ALL" && <Spotlight p={featured} />}
+          {featured && filtered.includes(featured) && <Spotlight p={featured} />}
 
           <div className="posts-grid">
             {rest.map((p) => <PostCard key={p.id} p={p} />)}
