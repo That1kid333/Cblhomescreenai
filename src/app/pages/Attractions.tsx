@@ -426,6 +426,20 @@ const ATTRACTIONS_CSS = `
   .cbl-attractions h1.hero-title { gap:0; font-size:clamp(38px,11vw,56px); }
   .cbl-attractions h1.hero-title .attractions-icon { display:none; }
   .cbl-attractions .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  /* Bottom tab bar (TripIt-style) — pin the 5 category tabs to the bottom on phones */
+  .cbl-attractions { padding-bottom:76px; }
+  .cbl-attractions .filters { position:static; padding:12px 16px 0; }
+  .cbl-attractions .cat-row {
+    position:fixed; left:0; right:0; bottom:0; z-index:60;
+    background:rgba(10,10,10,.98); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
+    border-top:1px solid rgba(255,255,255,.10); border-bottom:0;
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom)); gap:0;
+    overflow:visible; justify-content:space-around;
+  }
+  .cbl-attractions .cat-btn { flex:1; padding:2px; gap:4px; font-size:11px; letter-spacing:.04em; border-bottom:0; margin-bottom:0; white-space:nowrap; }
+  .cbl-attractions .cat-btn.active { border-bottom:0; }
+  .cbl-attractions .cat-btn .ic { width:24px; height:24px; opacity:.7; }
+  .cbl-attractions .cat-btn.active .ic { opacity:1; }
 }
 .cbl-attractions .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
