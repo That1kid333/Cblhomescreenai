@@ -293,10 +293,29 @@ const DIR_CSS = `
   .cbl-dir .compare-grid { grid-template-columns:1fr; }
 }
 @media (max-width:720px) {
-  .cbl-dir h1.hero-title .dir-icon { width:110px; height:90px; }
+  /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
+  .cbl-dir h1.hero-title { gap:0; font-size:clamp(40px,11vw,58px); }
+  .cbl-dir h1.hero-title .dir-icon { display:none; }
+  .cbl-dir .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  .cbl-dir .hero p.lede { font-size:16px; }
+  .cbl-dir .signup-hint { font-size:12px; }
   .cbl-dir .listings-grid { grid-template-columns:1fr; }
   .cbl-dir .coupons-grid { grid-template-columns:1fr; }
   .cbl-dir .tiers { grid-template-columns:1fr; }
+  .cbl-dir .eyebrow, .cbl-dir .section-eyebrow, .cbl-dir .section-head .count { font-size:12px; }
+  .cbl-dir .listing h3 { font-size:20px; }
+  .cbl-dir .listing .loc { font-size:12px; }
+  .cbl-dir .listing .desc { font-size:14.5px; }
+  .cbl-dir .listing .badge, .cbl-dir .listing .img-count, .cbl-dir .listing .foot { font-size:12px; }
+  .cbl-dir .driver-card .schedule, .cbl-dir .driver-card .stats { font-size:12px; }
+  .cbl-dir .driver-card .blurb { font-size:14.5px; }
+  .cbl-dir .rider-card .tag, .cbl-dir .rider-card .when, .cbl-dir .rider-card .author { font-size:12px; }
+  .cbl-dir .rider-card .blurb { font-size:14.5px; }
+  .cbl-dir .coupon .partner, .cbl-dir .coupon .terms, .cbl-dir .coupon .code { font-size:12px; }
+  .cbl-dir .tier .per { font-size:12px; }
+  .cbl-dir .tier li, .cbl-dir .compare-col li { font-size:14px; }
+  .cbl-dir .mock .meta, .cbl-dir .mock .desc, .cbl-dir .mock .foot { font-size:12px; }
+  .cbl-dir .chip { font-size:12px; }
 }
 `;
 

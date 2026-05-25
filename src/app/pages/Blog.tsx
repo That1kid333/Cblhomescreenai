@@ -171,8 +171,21 @@ const BLOG_CSS = `
   .cbl-blog .news-grid { grid-template-columns:1fr; gap:24px; }
 }
 @media (max-width:720px) {
-  .cbl-blog h1.hero-title .blog-icon { width:110px; height:90px; }
+  /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
+  .cbl-blog h1.hero-title { gap:0; font-size:clamp(40px,12vw,60px); }
+  .cbl-blog h1.hero-title .blog-icon { display:none; }
+  .cbl-blog .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  .cbl-blog .hero p.lede { font-size:16px; }
   .cbl-blog .posts-grid { grid-template-columns:1fr; }
+  .cbl-blog .eyebrow, .cbl-blog .section-eyebrow, .cbl-blog .section-head .count { font-size:12px; }
+  .cbl-blog .post h3 { font-size:23px; }
+  .cbl-blog .post .excerpt { font-size:15px; line-height:1.6; }
+  .cbl-blog .post .cat-pill, .cbl-blog .post .read-time, .cbl-blog .post .byline .date { font-size:12px; }
+  .cbl-blog .post .byline .author { font-size:14px; }
+  .cbl-blog .spotlight h3 { font-size:34px; }
+  .cbl-blog .spotlight p { font-size:15px; line-height:1.6; }
+  .cbl-blog .spotlight .kicker, .cbl-blog .spotlight .byline .meta { font-size:12px; }
+  .cbl-blog .spotlight .byline .author { font-size:14px; }
 }
 `;
 
