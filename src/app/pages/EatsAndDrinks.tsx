@@ -319,9 +319,13 @@ const DESKTOP_CSS = `
 }
 @media (max-width:1100px){ .cbl-eats h1.hero-title .fork-knife { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-eats h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
-  .cbl-eats h1.hero-title .fork-knife { display:flex; width:60px; height:60px; }
-  .cbl-eats .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  .cbl-eats h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  .cbl-eats h1.hero-title .title-stack { min-width:0; flex:1; }
+  .cbl-eats h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
+  .cbl-eats h1.hero-title .fork-knife { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
+  .cbl-eats .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
+  .cbl-eats .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cbl-eats .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
 }
 .cbl-eats .hero p.lede { margin-top:14px; max-width:520px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
