@@ -423,8 +423,8 @@ const ATTRACTIONS_CSS = `
 .cbl-attractions h1.hero-title .attractions-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-attractions h1.hero-title .attractions-icon { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-attractions h1.hero-title { gap:0; font-size:clamp(38px,11vw,56px); }
-  .cbl-attractions h1.hero-title .attractions-icon { display:none; }
+  .cbl-attractions h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
+  .cbl-attractions h1.hero-title .attractions-icon { display:flex; width:60px; height:60px; }
   .cbl-attractions .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
   /* Bottom tab bar (TripIt-style) — pin the 5 category tabs to the bottom on phones */
   .cbl-attractions { padding-bottom:76px; }

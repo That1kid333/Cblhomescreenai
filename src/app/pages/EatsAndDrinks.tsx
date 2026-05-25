@@ -319,8 +319,8 @@ const DESKTOP_CSS = `
 }
 @media (max-width:1100px){ .cbl-eats h1.hero-title .fork-knife { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-eats h1.hero-title { gap:0; font-size:clamp(38px,11vw,56px); }
-  .cbl-eats h1.hero-title .fork-knife { display:none; }
+  .cbl-eats h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
+  .cbl-eats h1.hero-title .fork-knife { display:flex; width:60px; height:60px; }
   .cbl-eats .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
 }
 .cbl-eats .hero p.lede { margin-top:14px; max-width:520px; font-size:16px; line-height:1.45; color:#B8B8B8; }

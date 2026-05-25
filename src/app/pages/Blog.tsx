@@ -172,8 +172,8 @@ const BLOG_CSS = `
 }
 @media (max-width:720px) {
   /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
-  .cbl-blog h1.hero-title { gap:0; font-size:clamp(40px,12vw,60px); }
-  .cbl-blog h1.hero-title .blog-icon { display:none; }
+  .cbl-blog h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
+  .cbl-blog h1.hero-title .blog-icon { display:flex; width:58px; height:46px; }
   .cbl-blog .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
   .cbl-blog .hero p.lede { font-size:16px; }
   .cbl-blog .posts-grid { grid-template-columns:1fr; }
