@@ -50,9 +50,9 @@ export function Layout() {
                 onMouseEnter={() => handleMouseEnter('about')}
                 onMouseLeave={handleMouseLeave}
               >
-                <a href="#about" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
+                <Link to="/our-story" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
                   ABOUT <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'about' ? 'rotate-90' : ''}`} />
-                </a>
+                </Link>
                 {activeDropdown === 'about' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
@@ -81,9 +81,9 @@ export function Layout() {
                 onMouseEnter={() => handleMouseEnter('explore')}
                 onMouseLeave={handleMouseLeave}
               >
-                <a href="#explore" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
+                <Link to="/travels" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
                   EXPLORE <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'explore' ? 'rotate-90' : ''}`} />
-                </a>
+                </Link>
                 {activeDropdown === 'explore' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
@@ -112,9 +112,9 @@ export function Layout() {
                 onMouseEnter={() => handleMouseEnter('affiliates')}
                 onMouseLeave={handleMouseLeave}
               >
-                <a href="#affiliates" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
+                <Link to="/affiliates" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
                   AFFILIATES <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'affiliates' ? 'rotate-90' : ''}`} />
-                </a>
+                </Link>
                 {activeDropdown === 'affiliates' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
@@ -142,35 +142,10 @@ export function Layout() {
                 )}
               </div>
 
-              <div
-                className="relative"
-                onMouseEnter={() => handleMouseEnter('blog')}
-                onMouseLeave={handleMouseLeave}
-              >
+              <div className="relative">
                 <Link to="/blog" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
-                  CBL BLOG <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'blog' ? 'rotate-90' : ''}`} />
+                  CBL BLOG
                 </Link>
-                {activeDropdown === 'blog' && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
-                    <div className="py-2">
-                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Travels
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Transportation
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Eats & Drinks
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/blog" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Attractions
-                      </Link>
-                    </div>
-                  </div>
-                )}
               </div>
 
               <div
@@ -178,9 +153,9 @@ export function Layout() {
                 onMouseEnter={() => handleMouseEnter('directory')}
                 onMouseLeave={handleMouseLeave}
               >
-                <a href="#directory" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
+                <Link to="/directory" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
                   DIRECTORY & SAVINGS <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'directory' ? 'rotate-90' : ''}`} />
-                </a>
+                </Link>
                 {activeDropdown === 'directory' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
