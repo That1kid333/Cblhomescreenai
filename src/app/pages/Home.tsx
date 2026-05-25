@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import {
   Plane, UtensilsCrossed, BedDouble, MapPin, Sparkles, CalendarDays,
@@ -434,6 +434,22 @@ const HOME_CSS = `
 .cbl-home .lang-chip { min-width:48px; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:${DISPLAY}; font-weight:800; font-size:14px; letter-spacing:.08em; background:transparent; border:1px solid rgba(255,255,255,.18); color:#888; transition:all .2s; }
 .cbl-home .lang-chip:hover { border-color:rgba(201,151,66,.5); color:#fff; }
 .cbl-home .lang-chip.active { background:${GOLD}; border-color:${GOLD}; color:#000; }
+/* Buckee walk-in + idle bob (triggered when the bar scrolls into view) */
+.cbl-home .talk-buckee-wrap { display:inline-flex; opacity:0; }
+.cbl-home .talk-band.talk-in .talk-buckee-wrap { animation:cbl-buckee-in .85s cubic-bezier(.2,.85,.3,1) forwards; }
+.cbl-home .talk-band.talk-in .talk-buckee { animation:cbl-buckee-bob 3.4s ease-in-out .95s infinite; }
+@keyframes cbl-buckee-in {
+  0%   { transform:translateX(-60px); opacity:0; }
+  30%  { transform:translateX(-30px) translateY(-6px); opacity:1; }
+  55%  { transform:translateX(-14px) translateY(0); }
+  78%  { transform:translateX(-4px) translateY(-4px); }
+  100% { transform:translateX(0) translateY(0); opacity:1; }
+}
+@keyframes cbl-buckee-bob { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-6px) rotate(-2.5deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .cbl-home .talk-buckee-wrap { opacity:1 !important; animation:none !important; }
+  .cbl-home .talk-band.talk-in .talk-buckee { animation:none !important; }
+}
 @media (max-width:1000px) {
   .cbl-home .talk-band { padding:14px 22px 0; }
   .cbl-home .talk-wrap { flex-direction:column; gap:14px; }
@@ -669,6 +685,18 @@ export function Home() {
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
   const [talkLang, setTalkLang] = useState('EN');
+  const talkRef = useRef<HTMLElement>(null);
+  const [buckeeIn, setBuckeeIn] = useState(false);
+  useEffect(() => {
+    const el = talkRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) { setBuckeeIn(true); obs.disconnect(); } },
+      { threshold: 0.4 }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
 
   useEffect(() => {
     if (paused) return;
@@ -762,9 +790,11 @@ export function Home() {
       </section>
 
       {/* ── Talk to Buckee (voice) ── */}
-      <section className="band talk-band">
+      <section ref={talkRef} className={'band talk-band' + (buckeeIn ? ' talk-in' : '')}>
         <div className="talk-wrap">
-          <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
+          <span className="talk-buckee-wrap">
+            <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
+          </span>
           <div className="talk-card">
             <button className="mic-btn" aria-label="Talk to Buckee">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
