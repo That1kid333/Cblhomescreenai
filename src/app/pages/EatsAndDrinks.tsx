@@ -356,7 +356,7 @@ const DESKTOP_CSS = `
 .cbl-eats .cuisine-chip.active { background:rgba(201,151,66,.15); border-color:#C99742; color:#fff; }
 .cbl-eats .cuisine-chip.all { padding:10px 20px; }
 
-.cbl-eats .results { max-width:1280px; margin:0 auto; padding:28px 48px 64px; }
+.cbl-eats .results { max-width:1376px; margin:0 auto; padding:36px 48px 64px; }
 .cbl-eats .results-head { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:18px; gap:24px; }
 .cbl-eats .results-head h2 {
   font-family:${DISPLAY}; font-weight:900; font-size:52px; line-height:1;
@@ -1423,7 +1423,7 @@ function MobileFlow({
 
 // ── Partner / referral CTA (shared across desktop + mobile) ─────────────────
 const PARTNER_CSS = `
-.cbl-eats .partner-band { max-width:1280px; margin:0 auto; padding:12px 48px 72px; }
+.cbl-eats .partner-band { max-width:1376px; margin:0 auto; padding:12px 48px 72px; }
 .cbl-eats .partner-band .ph { margin-bottom:24px; }
 .cbl-eats .partner-band .eyebrow {
   font-family:${MONO}; font-size:12px; color:${GOLD}; letter-spacing:.18em;

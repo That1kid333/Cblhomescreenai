@@ -297,7 +297,7 @@ const TRAVELS_CSS = `
 .cbl-travels .prov-chip.cbl::before { background:#C99742; box-shadow:0 0 6px #C99742; }
 
 /* ── Section frame ── */
-.cbl-travels section.band { padding:48px 48px 56px; }
+.cbl-travels section.band { padding:36px 48px 56px; }
 .cbl-travels section.band.tight { padding:28px 48px 36px; }
 .cbl-travels .band-inner { max-width:1280px; margin:0 auto; }
 .cbl-travels .section-eyebrow {
@@ -612,7 +612,7 @@ const TRAVELS_CSS = `
   .cbl-travels .search-band { padding:14px 24px; }
   .cbl-travels .providers { padding:0 24px; }
   .cbl-travels .cat-tabs { padding:14px 24px 0; }
-  .cbl-travels section.band { padding:48px 24px; }
+  .cbl-travels section.band { padding:36px 24px 48px; }
   .cbl-travels .search-inner { grid-template-columns:1fr 1fr; }
   .cbl-travels .search-btn { grid-column:span 2; width:100%; }
   .cbl-travels .stays-grid { grid-template-columns:repeat(2,1fr); }

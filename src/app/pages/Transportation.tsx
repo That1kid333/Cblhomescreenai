@@ -289,8 +289,8 @@ const TRANSPORT_CSS = `
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* ── Section frame ── */
-.cbl-transport section.band { padding:64px 48px; }
-.cbl-transport section.band.tight { padding:36px 48px; }
+.cbl-transport section.band { padding:36px 48px 56px; }
+.cbl-transport section.band.tight { padding:28px 48px 36px; }
 .cbl-transport .band-inner { max-width:1280px; margin:0 auto; }
 .cbl-transport .section-eyebrow {
   font-family:${MONO}; font-size:12px; color:#C99742;
@@ -609,7 +609,7 @@ const TRANSPORT_CSS = `
 
 /* ── Responsive ── */
 @media (max-width:1100px){
-  .cbl-transport section.band { padding:48px 24px; }
+  .cbl-transport section.band { padding:36px 24px 48px; }
   .cbl-transport .hero { padding:22px 24px 12px; }
   .cbl-transport .booking-grid { grid-template-columns:1fr; }
   .cbl-transport .audience-grid { grid-template-columns:1fr; }
