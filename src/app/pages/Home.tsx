@@ -410,6 +410,14 @@ const HOME_CSS = `
   font-size:14px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s;
 }
 .cbl-home .btn-primary:hover { background:#DDB15F; }
+.cbl-home .btn-ghost {
+  display:inline-flex; align-items:center; gap:10px; margin-left:12px;
+  background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.25);
+  padding:15px 32px; border-radius:999px;
+  font-family:${DISPLAY}; font-weight:900;
+  font-size:14px; letter-spacing:.14em; text-transform:uppercase; transition:border-color .2s, color .2s;
+}
+.cbl-home .btn-ghost:hover { border-color:${GOLD}; color:${GOLD}; }
 
 /* ── Hero media (rotating) ── */
 .cbl-home .hero-media {
@@ -682,6 +690,9 @@ export function Home() {
               </p>
               <a className="btn-primary" href={APP_URL}>
                 Join Now — Free
+              </a>
+              <a className="btn-ghost" href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer">
+                Sign In
               </a>
 
               {/* Category + link chips, highlighting in sync with the rotation */}
