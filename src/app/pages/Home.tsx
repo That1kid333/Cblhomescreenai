@@ -829,7 +829,7 @@ export function Home() {
             </button>
             <div className="talk-text">
               <div className="talk-eyebrow">Talk to Buckee</div>
-              <div className="talk-lede">Tap and speak — English, Español, Français, Português.</div>
+              <div className="talk-lede">Your AI concierge — ask him anything about the city.</div>
             </div>
             <div className="lang-chips">
               {['EN', 'ES', 'FR', 'PT'].map((l) => (
