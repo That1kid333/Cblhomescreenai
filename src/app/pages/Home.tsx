@@ -12,6 +12,9 @@ import attractionsImage from '../../assets/e04fa8d75cf2828287ef82f02beaae9386ee6
 import blogImage from '../../assets/cbl_blog_slide.png';
 import directoryImage from '../../assets/cbl_directory_slide.png';
 import buckeeImage from '../../assets/buckee.png';
+import buckeeConciergeImg from '../../assets/buckee_concierge.png';
+import cittyImage from '../../assets/citty.png';
+import listyImage from '../../assets/listy.png';
 
 /**
  * Home — re-skinned to match the rest of the site (Our Story / Explore /
@@ -469,6 +472,23 @@ const HOME_CSS = `
   .cbl-home .lang-chip { flex:1; }
 }
 
+/* ── Meet the Buckee Family teaser ── */
+.cbl-home .family-band-inner { display:flex; align-items:center; gap:48px; }
+.cbl-home .family-faces { display:flex; flex-shrink:0; }
+.cbl-home .family-faces img {
+  width:118px; height:118px; border-radius:50%; object-fit:cover; object-position:center 12%;
+  background:#141414; border:3px solid #0A0A0A; box-shadow:0 12px 30px rgba(0,0,0,.55);
+}
+.cbl-home .family-faces img:nth-child(2) { border-color:${GOLD}; z-index:2; }
+.cbl-home .family-faces img:not(:first-child) { margin-left:-26px; }
+.cbl-home .family-copy { flex:1; }
+.cbl-home .family-copy .btn-primary { margin-top:6px; }
+@media (max-width:1000px) {
+  .cbl-home .family-band-inner { flex-direction:column; align-items:flex-start; gap:24px; }
+  .cbl-home .family-faces img { width:84px; height:84px; }
+  .cbl-home .family-faces img:not(:first-child) { margin-left:-20px; }
+}
+
 /* ── Hero media (rotating) ── */
 .cbl-home .hero-media {
   position:relative; border-radius:18px 0 18px 0; overflow:hidden;
@@ -842,6 +862,30 @@ export function Home() {
                 </button>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Meet the Buckee Family (teaser → /meet-buckee) ── */}
+      <section className="band family-band">
+        <div className="band-inner family-band-inner">
+          <div className="family-faces">
+            <img src={buckeeConciergeImg} alt="Buckee" />
+            <img src={cittyImage} alt="Citty" />
+            <img src={listyImage} alt="Listy" />
+          </div>
+          <div className="family-copy">
+            <div className="section-eyebrow">the buckee family</div>
+            <h2 className="section-h2">
+              Meet <span className="it">Buckee, Citty &amp; Listy</span>
+            </h2>
+            <p className="section-lede">
+              Your City Bucket List concierge crew. Buckee greets and guides, Citty hosts the food,
+              stays and good times, and Listy fetches your rides, tickets and reservations.
+            </p>
+            <Link className="btn-primary" to="/meet-buckee">
+              Meet the family →
+            </Link>
           </div>
         </div>
       </section>
