@@ -419,6 +419,31 @@ const HOME_CSS = `
 }
 .cbl-home .btn-ghost:hover { border-color:${GOLD}; color:${GOLD}; }
 
+/* ── Talk to Buckee voice bar ── */
+.cbl-home .talk-band { padding:18px 48px 0; }
+.cbl-home .talk-wrap { max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:20px; }
+.cbl-home .talk-buckee { width:100px; height:100px; flex-shrink:0; object-fit:contain; filter:drop-shadow(0 10px 22px rgba(0,0,0,.5)); }
+.cbl-home .talk-card { flex:1; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg, rgba(201,151,66,.10) 0%, #141414 100%); border:1px solid rgba(201,151,66,.35); border-radius:18px 0 18px 0; padding:16px 22px; }
+.cbl-home .mic-btn { flex-shrink:0; width:64px; height:64px; border-radius:50%; border:0; background:${GOLD}; color:#000; display:grid; place-items:center; box-shadow:0 0 0 6px rgba(201,151,66,.12); transition:transform .2s, background .2s; }
+.cbl-home .mic-btn:hover { transform:scale(1.05); background:#DDB15F; }
+.cbl-home .mic-btn svg { width:24px; height:24px; }
+.cbl-home .talk-text { flex:1; min-width:0; }
+.cbl-home .talk-eyebrow { font-family:${MONO}; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:4px; }
+.cbl-home .talk-lede { font-size:18px; line-height:1.3; color:#E8E8E8; }
+.cbl-home .lang-chips { display:flex; gap:8px; flex-shrink:0; }
+.cbl-home .lang-chip { min-width:48px; padding:8px 12px; border-radius:10px; cursor:pointer; font-family:${DISPLAY}; font-weight:800; font-size:14px; letter-spacing:.08em; background:transparent; border:1px solid rgba(255,255,255,.18); color:#888; transition:all .2s; }
+.cbl-home .lang-chip:hover { border-color:rgba(201,151,66,.5); color:#fff; }
+.cbl-home .lang-chip.active { background:${GOLD}; border-color:${GOLD}; color:#000; }
+@media (max-width:1000px) {
+  .cbl-home .talk-band { padding:14px 22px 0; }
+  .cbl-home .talk-wrap { flex-direction:column; gap:14px; }
+  .cbl-home .talk-buckee { width:84px; height:84px; }
+  .cbl-home .talk-card { flex-wrap:wrap; gap:14px; width:100%; }
+  .cbl-home .talk-text { flex:1 1 auto; }
+  .cbl-home .lang-chips { width:100%; }
+  .cbl-home .lang-chip { flex:1; }
+}
+
 /* ── Hero media (rotating) ── */
 .cbl-home .hero-media {
   position:relative; border-radius:18px 0 18px 0; overflow:hidden;
@@ -643,6 +668,7 @@ export function Home() {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [talkLang, setTalkLang] = useState('EN');
 
   useEffect(() => {
     if (paused) return;
@@ -730,6 +756,38 @@ export function Home() {
                 <img src={slide.image} alt={slide.alt} />
                 <div className="cap">{slide.caption}</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Talk to Buckee (voice) ── */}
+      <section className="band talk-band">
+        <div className="talk-wrap">
+          <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
+          <div className="talk-card">
+            <button className="mic-btn" aria-label="Talk to Buckee">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none" />
+                <path d="M5 11a7 7 0 0 0 14 0" />
+                <line x1="12" y1="18" x2="12" y2="22" />
+                <line x1="8.5" y1="22" x2="15.5" y2="22" />
+              </svg>
+            </button>
+            <div className="talk-text">
+              <div className="talk-eyebrow">Talk to Buckee</div>
+              <div className="talk-lede">Tap and speak — English, Español, Français, Português.</div>
+            </div>
+            <div className="lang-chips">
+              {['EN', 'ES', 'FR', 'PT'].map((l) => (
+                <button
+                  key={l}
+                  className={'lang-chip' + (talkLang === l ? ' active' : '')}
+                  onClick={() => setTalkLang(l)}
+                >
+                  {l}
+                </button>
+              ))}
             </div>
           </div>
         </div>
