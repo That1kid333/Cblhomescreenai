@@ -294,8 +294,8 @@ const DIR_CSS = `
 }
 @media (max-width:720px) {
   /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
-  .cbl-dir h1.hero-title { gap:0; font-size:clamp(40px,11vw,58px); }
-  .cbl-dir h1.hero-title .dir-icon { display:none; }
+  .cbl-dir h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
+  .cbl-dir h1.hero-title .dir-icon { display:flex; width:58px; height:46px; }
   .cbl-dir .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
   .cbl-dir .hero p.lede { font-size:16px; }
   .cbl-dir .signup-hint { font-size:12px; }
