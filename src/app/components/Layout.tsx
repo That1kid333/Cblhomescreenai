@@ -184,12 +184,16 @@ export function Layout() {
                 {activeDropdown === 'directory' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
+                      <Link to="/directory" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Directory <span className="text-[#FDB913]">· New Design</span>
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Local Classifieds
+                        Local Classifieds <span className="text-gray-500">· Live</span>
                       </a>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Shopping & Offers
+                        Shopping & Offers <span className="text-gray-500">· Live</span>
                       </a>
                     </div>
                   </div>
