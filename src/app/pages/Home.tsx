@@ -12,7 +12,7 @@ import attractionsImage from '../../assets/e04fa8d75cf2828287ef82f02beaae9386ee6
 import blogImage from '../../assets/cbl_blog_slide.png';
 import directoryImage from '../../assets/cbl_directory_slide.png';
 import buckeeImage from '../../assets/buckee.png';
-import buckeeConciergeImg from '../../assets/buckee_concierge.png';
+import buckeeServerImg from '../../assets/buckee_server.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 
@@ -474,19 +474,18 @@ const HOME_CSS = `
 
 /* ── Meet the Buckee Family teaser ── */
 .cbl-home .family-band-inner { display:flex; align-items:center; gap:48px; }
-.cbl-home .family-faces { display:flex; flex-shrink:0; }
-.cbl-home .family-faces img {
-  width:118px; height:118px; border-radius:50%; object-fit:cover; object-position:center 12%;
-  background:#141414; border:3px solid #0A0A0A; box-shadow:0 12px 30px rgba(0,0,0,.55);
-}
-.cbl-home .family-faces img:nth-child(2) { border-color:${GOLD}; z-index:2; }
-.cbl-home .family-faces img:not(:first-child) { margin-left:-26px; }
 .cbl-home .family-copy { flex:1; }
 .cbl-home .family-copy .btn-primary { margin-top:6px; }
+.cbl-home .family-figs { flex:0 0 auto; display:flex; align-items:flex-end; justify-content:flex-end; }
+.cbl-home .family-figs img {
+  height:220px; width:auto; display:block;
+  filter:drop-shadow(0 16px 28px rgba(0,0,0,.55));
+}
+.cbl-home .family-figs img:not(:first-child) { margin-left:-14px; }
 @media (max-width:1000px) {
-  .cbl-home .family-band-inner { flex-direction:column; align-items:flex-start; gap:24px; }
-  .cbl-home .family-faces img { width:84px; height:84px; }
-  .cbl-home .family-faces img:not(:first-child) { margin-left:-20px; }
+  .cbl-home .family-band-inner { flex-direction:column; align-items:flex-start; gap:20px; }
+  .cbl-home .family-figs { align-self:center; }
+  .cbl-home .family-figs img { height:150px; }
 }
 
 /* ── Hero media (rotating) ── */
@@ -869,11 +868,6 @@ export function Home() {
       {/* ── Meet the Buckee Family (teaser → /meet-buckee) ── */}
       <section className="band family-band">
         <div className="band-inner family-band-inner">
-          <div className="family-faces">
-            <img src={buckeeConciergeImg} alt="Buckee" />
-            <img src={cittyImage} alt="Citty" />
-            <img src={listyImage} alt="Listy" />
-          </div>
           <div className="family-copy">
             <div className="section-eyebrow">the buckee family</div>
             <h2 className="section-h2">
@@ -886,6 +880,11 @@ export function Home() {
             <Link className="btn-primary" to="/meet-buckee">
               Meet the family →
             </Link>
+          </div>
+          <div className="family-figs">
+            <img src={buckeeServerImg} alt="Buckee" />
+            <img src={cittyImage} alt="Citty" />
+            <img src={listyImage} alt="Listy" />
           </div>
         </div>
       </section>
