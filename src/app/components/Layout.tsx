@@ -65,6 +65,10 @@ export function Layout() {
                         Our Story
                       </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/meet-buckee" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Meet the Buckee Family
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <Link to="/how-it-works" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         How It Works
                       </Link>
@@ -190,6 +194,7 @@ export function Layout() {
             <nav className="lg:hidden mt-4 flex flex-col border-t border-white/10 pt-1">
               {[
                 { to: '/our-story', label: 'Our Story' },
+                { to: '/meet-buckee', label: 'Meet the Buckee Family' },
                 { to: '/travels', label: 'Travels' },
                 { to: '/transportation', label: 'Transportation' },
                 { to: '/eats-and-drinks', label: 'Eats & Drinks' },
