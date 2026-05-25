@@ -286,9 +286,13 @@ const TRANSPORT_CSS = `
 .cbl-transport h1.hero-title .car-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-transport h1.hero-title .car-icon { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-transport h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
-  .cbl-transport h1.hero-title .car-icon { display:flex; width:60px; height:60px; }
-  .cbl-transport .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  .cbl-transport h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  .cbl-transport h1.hero-title .title-stack { min-width:0; flex:1; }
+  .cbl-transport h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
+  .cbl-transport h1.hero-title .car-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
+  .cbl-transport .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
+  .cbl-transport .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cbl-transport .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
 }
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 

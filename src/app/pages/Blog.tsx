@@ -172,9 +172,13 @@ const BLOG_CSS = `
 }
 @media (max-width:720px) {
   /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
-  .cbl-blog h1.hero-title { flex-wrap:wrap; gap:10px 14px; font-size:clamp(30px,8vw,44px); }
-  .cbl-blog h1.hero-title .blog-icon { display:flex; width:58px; height:46px; }
-  .cbl-blog .hero-subtitle { font-size:clamp(24px,6.5vw,34px); }
+  .cbl-blog h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  .cbl-blog h1.hero-title .title-stack { min-width:0; flex:1; }
+  .cbl-blog h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
+  .cbl-blog h1.hero-title .blog-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:44px; }
+  .cbl-blog .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
+  .cbl-blog .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cbl-blog .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
   .cbl-blog .hero p.lede { font-size:16px; }
   .cbl-blog .posts-grid { grid-template-columns:1fr; }
   .cbl-blog .eyebrow, .cbl-blog .section-eyebrow, .cbl-blog .section-head .count { font-size:12px; }
