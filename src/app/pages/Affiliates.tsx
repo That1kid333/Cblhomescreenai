@@ -21,6 +21,7 @@ type Partner = {
   id: string;
   tag: string;
   name: string;
+  link: string;
   blurb: string;
   bullets: string[];
   feature?: boolean;
@@ -32,6 +33,7 @@ const PARTNERS: Partner[] = [
     tag: 'Eats & Drinks',
     name: 'Partner Restaurants',
     feature: true,
+    link: '/partner-restaurants',
     blurb:
       'Claim a sponsored spot on the Eats & Drinks page — featured above standard listings, with a partner badge and a full profile.',
     bullets: [
@@ -42,20 +44,22 @@ const PARTNERS: Partner[] = [
   },
   {
     id: 'hotels',
-    tag: 'Travels',
-    name: 'Partner Hotels',
+    tag: 'Hotels & Concierge',
+    name: 'Hotel & Concierge',
+    link: '/concierge',
     blurb:
-      'Help guests book trusted rides, dining, and attractions through CBL — and earn commission on every booking they make.',
+      'Connect guests with trusted drivers and plan their itineraries — staff free and earning, the property on a simple flat plan.',
     bullets: [
-      'Front-desk QR + welcome kit',
-      'Commission on guest bookings',
-      'Preferred local driver network',
+      '8% to staff on every guest ride',
+      'Property earns 2% + branded welcome kit',
+      'Full concierge dashboard',
     ],
   },
   {
     id: 'attractions',
     tag: 'Attractions',
     name: 'Partner Attractions',
+    link: '/partner-attractions',
     blurb:
       'Get featured on the Attractions page and sell tickets and experiences to members planning their week.',
     bullets: [
@@ -329,8 +333,8 @@ function PartnerCard({ p }: { p: Partner }) {
           <li key={b}>{b}</li>
         ))}
       </ul>
-      <a href="https://app.citybucketlist.com" className="cta">
-        Apply →
+      <a href={p.link} className="cta">
+        Learn More →
       </a>
     </div>
   );
@@ -375,75 +379,6 @@ export function Affiliates() {
             {PARTNERS.map((p) => (
               <PartnerCard key={p.id} p={p} />
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Restaurant Partner Pricing Tiers ── */}
-      <section id="restaurant-tiers" className="band pricing-band">
-        <div className="band-inner">
-          <div className="section-eyebrow">restaurant partner pricing</div>
-          <h2 className="section-h2">
-            Choose your <span className="it">tier</span>
-          </h2>
-          <p className="section-lede">
-            Every tier includes placement on the CBL directory, coupon opportunities, social media posts,
-            and fundraising solutions. Pick the package that fits your business.
-          </p>
-          <div className="pricing-grid">
-
-            {/* BRONZE */}
-            <div className="pricing-card">
-              <div className="pricing-tier-label">Bronze Tier</div>
-              <div className="pricing-price">$49<span>/yr</span></div>
-              <div className="pricing-divider" />
-              <ul className="pricing-list">
-                <li>Post on CBL Directory</li>
-                <li>Coupon Opportunities</li>
-                <li>Social Media Posts</li>
-                <li>Fundraising Solutions</li>
-                <li>Door Sticker 12&quot; x 12&quot; (1)</li>
-              </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">
-                Sign Up →
-              </a>
-            </div>
-
-            {/* SILVER */}
-            <div className="pricing-card">
-              <div className="pricing-tier-label">Silver Tier</div>
-              <div className="pricing-price">$199<span>/yr</span></div>
-              <div className="pricing-divider" />
-              <ul className="pricing-list">
-                <li>Top Search on our CBL Directory (Ex. Restaurant/Bar)</li>
-                <li>Coupon Opportunities</li>
-                <li>Social Media Posts</li>
-                <li>Fundraising Solutions</li>
-                <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers 6&quot; x 6&quot; (4)</li>
-              </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">
-                Sign Up →
-              </a>
-            </div>
-
-            {/* GOLD */}
-            <div className="pricing-card gold-card">
-              <div className="pricing-tier-label">Gold Tier</div>
-              <div className="pricing-price">$299<span>/yr</span></div>
-              <div className="pricing-divider" />
-              <ul className="pricing-list">
-                <li>Placement on Rotating Top Banner</li>
-                <li>Top Search on our CBL Directory (Ex. Restaurant/Bar)</li>
-                <li>Coupon Opportunities</li>
-                <li>Social Media Posts</li>
-                <li>Fundraising Solutions</li>
-                <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers (8)</li>
-              </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">
-                Sign Up →
-              </a>
-            </div>
-
           </div>
         </div>
       </section>
