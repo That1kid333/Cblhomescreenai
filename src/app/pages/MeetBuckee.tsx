@@ -22,6 +22,7 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
 const APP_URL = 'https://app.citybucketlist.com';
+const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 
 type CharKey = 'buckee' | 'citty' | 'listy';
 
@@ -145,7 +146,7 @@ export function MeetBuckee() {
       <style>{CSS}</style>
 
       {/* ── HERO ── */}
-      <section className="wrap hero">
+      <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">meet your concierge</span>
           <h1>
@@ -165,16 +166,6 @@ export function MeetBuckee() {
               How it works
             </Link>
           </div>
-        </div>
-
-        <div className="stage">
-          <div className="bubble">
-            <span className="bubble-eyebrow">Buckee says</span>
-            <span key={qi} className="bubble-text">
-              {HERO_LINES[qi]}
-            </span>
-          </div>
-          <img className="buckee-art" src={buckeeConcierge} alt="Buckee, the CityBucketList concierge, ringing a bell" />
         </div>
       </section>
 
@@ -298,11 +289,15 @@ const CSS = `
 .cbl-buckee button { font-family:inherit; cursor:pointer; }
 .cbl-buckee .wrap { max-width:1376px; margin:0 auto; padding:0 48px; }
 
-/* ── HERO ── */
+/* ── HERO (map-backdrop header — matches Our Story / Explore) ── */
 .cbl-buckee .hero {
-  padding-top:64px; padding-bottom:56px;
-  display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:center;
+  position:relative; overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(10,10,10,.25) 0%, rgba(10,10,10,.55) 45%, rgba(10,10,10,.92) 90%, #0A0A0A 100%),
+    url('${MAP_BG}') center top / cover no-repeat;
+  padding:44px 48px 52px;
 }
+.cbl-buckee .hero-copy { position:relative; z-index:1; max-width:1376px; margin:0 auto; }
 .cbl-buckee .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:lowercase;
@@ -462,7 +457,7 @@ const CSS = `
 /* ── MOBILE (iPhone-first) ── */
 @media (max-width:720px) {
   .cbl-buckee .wrap { padding:0 20px; }
-  .cbl-buckee .hero { grid-template-columns:1fr; gap:28px; padding-top:40px; padding-bottom:40px; }
+  .cbl-buckee .hero { padding:32px 20px 40px; }
   .cbl-buckee .hero h1 { font-size:clamp(40px,11vw,60px); }
   .cbl-buckee .lede { font-size:16px; }
   .cbl-buckee .stage { min-height:380px; order:-1; }
