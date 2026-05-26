@@ -127,6 +127,10 @@ export function Layout() {
                 {activeDropdown === 'affiliates' && (
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
+                      <Link to="/concierge" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Concierge Program
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Become An Affiliate
                       </Link>
@@ -201,6 +205,7 @@ export function Layout() {
                 { to: '/attractions', label: 'Attractions' },
                 { to: '/blog', label: 'CBL Blog' },
                 { to: '/directory', label: 'Directory' },
+                { to: '/concierge', label: 'Concierge Program' },
                 { to: '/affiliates', label: 'Affiliates' },
                 { to: '/faq', label: 'FAQ' },
                 { to: '/contact', label: 'Contact' },
