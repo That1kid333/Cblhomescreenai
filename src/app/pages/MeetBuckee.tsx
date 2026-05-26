@@ -298,13 +298,13 @@ const CSS = `
   background:
     linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,.92) 90%, #000 100%),
     url('${MAP_BG}') center top / cover no-repeat;
-  padding:44px 48px 52px;
+  padding:26px 48px 16px;
 }
 .cbl-buckee .hero-copy { position:relative; z-index:1; max-width:1376px; margin:0 auto; }
 .cbl-buckee .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:lowercase;
-  color:var(--text-muted); margin-bottom:20px;
+  color:var(--text-muted); margin-bottom:12px;
 }
 .cbl-buckee .eyebrow::before {
   content:''; width:8px; height:8px; border-radius:50%; background:var(--gold);
@@ -312,8 +312,8 @@ const CSS = `
 }
 @keyframes cblb-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.45;transform:scale(.85);} }
 .cbl-buckee .hero-title {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(52px,7.4vw,104px);
-  line-height:.9; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 18px;
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(48px,6.2vw,84px);
+  line-height:.9; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 10px;
 }
 .cbl-buckee .hero-title .title-stack { display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
 .cbl-buckee .hero-title .h1-main { color:#fff; }
@@ -326,7 +326,7 @@ const CSS = `
   font-family:${ITALIC}; font-style:italic; font-weight:600;
   color:var(--gold); text-transform:none; letter-spacing:0; font-size:.82em;
 }
-.cbl-buckee .lede { font-size:19px; line-height:1.55; color:var(--text-body); max-width:520px; margin:0 0 30px; }
+.cbl-buckee .lede { font-size:17px; line-height:1.5; color:var(--text-body); max-width:560px; margin:0 0 18px; }
 .cbl-buckee .hero-cta { display:flex; gap:14px; flex-wrap:wrap; }
 .cbl-buckee .btn-gold {
   display:inline-block; background:var(--gold); color:#111; font-weight:800; font-size:15px;
@@ -444,10 +444,10 @@ const CSS = `
 .cbl-buckee .chip.active { background:var(--gold); color:#111; border-color:var(--gold); }
 
 /* ── Meet-the-crew intro videos ── */
-.cbl-buckee .videos { padding-top:14px; padding-bottom:20px; }
-.cbl-buckee .videos-head { text-align:center; margin-bottom:26px; }
-.cbl-buckee .videos-head .eyebrow { justify-content:center; }
-.cbl-buckee .videos-title { font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:clamp(28px,4vw,40px); color:#fff; margin:0 0 8px; }
+.cbl-buckee .videos { padding-top:0; padding-bottom:20px; }
+.cbl-buckee .videos-head { text-align:center; margin-bottom:14px; }
+.cbl-buckee .videos-head .eyebrow { justify-content:center; margin-bottom:8px; }
+.cbl-buckee .videos-title { font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:clamp(24px,3.4vw,34px); color:#fff; margin:0 0 4px; }
 .cbl-buckee .videos-title em { font-style:italic; color:var(--gold); }
 .cbl-buckee .videos-sub { font-size:15px; color:var(--text-body); margin:0; }
 .cbl-buckee .video-row { display:flex; gap:18px; align-items:flex-end; justify-content:center; }
