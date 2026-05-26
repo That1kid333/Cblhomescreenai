@@ -13,6 +13,7 @@ import { Travels } from './pages/Travels';
 import { Transportation } from './pages/Transportation';
 import { Attractions } from './pages/Attractions';
 import { Affiliates } from './pages/Affiliates';
+import { Concierge } from './pages/Concierge';
 import { TermsAndConditions } from './pages/TermsAndConditions';
 
 export const router = createBrowserRouter([
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'transportation', Component: Transportation },
       { path: 'attractions', Component: Attractions },
       { path: 'affiliates', Component: Affiliates },
+      { path: 'concierge', Component: Concierge },
     ],
   },
 ]);
