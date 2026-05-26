@@ -149,10 +149,13 @@ export function MeetBuckee() {
       <section className="hero">
         <div className="hero-copy">
           <span className="eyebrow">meet your concierge</span>
-          <h1>
-            Your city,
-            <br />
-            <em>at your service.</em>
+          <h1 className="hero-title">
+            <span className="title-stack">
+              <span className="h1-main">Your city,</span>
+              <span className="hero-subtitle">
+                At your service. <span className="it">just ask.</span>
+              </span>
+            </span>
           </h1>
           <p className="lede">
             Buckee and his family are standing by — ready to book a ride, set a dinner, find a
@@ -278,7 +281,7 @@ export function MeetBuckee() {
 
 const CSS = `
 .cbl-buckee {
-  --bg:#0A0A0A; --surface:#141414; --surface-2:#1A1A1A;
+  --bg:#000; --surface:#141414; --surface-2:#1A1A1A;
   --text-body:#C9C9C9; --text-muted:#8A8A8A; --gold:${GOLD};
   --line:rgba(255,255,255,0.08);
   --corner-lg:24px 0 24px 0; --corner-md:18px 0 18px 0; --corner-sm:12px 0 12px 0;
@@ -293,7 +296,7 @@ const CSS = `
 .cbl-buckee .hero {
   position:relative; overflow:hidden;
   background:
-    linear-gradient(180deg, rgba(10,10,10,.25) 0%, rgba(10,10,10,.55) 45%, rgba(10,10,10,.92) 90%, #0A0A0A 100%),
+    linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,.92) 90%, #000 100%),
     url('${MAP_BG}') center top / cover no-repeat;
   padding:44px 48px 52px;
 }
@@ -308,11 +311,21 @@ const CSS = `
   animation:cblb-pulse 2.4s ease-in-out infinite;
 }
 @keyframes cblb-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:.45;transform:scale(.85);} }
-.cbl-buckee .hero h1 {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(48px,6vw,84px);
-  line-height:.96; letter-spacing:-.02em; margin:0 0 22px;
+.cbl-buckee .hero-title {
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(52px,7.4vw,104px);
+  line-height:.9; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 18px;
 }
-.cbl-buckee .hero h1 em { font-family:${ITALIC}; font-style:italic; font-weight:400; color:var(--gold); }
+.cbl-buckee .hero-title .title-stack { display:flex; flex-direction:column; gap:4px; align-items:flex-start; }
+.cbl-buckee .hero-title .h1-main { color:#fff; }
+.cbl-buckee .hero-subtitle {
+  display:flex; align-items:baseline; gap:12px; flex-wrap:wrap;
+  font-family:${DISPLAY}; font-weight:900; font-size:clamp(26px,3vw,44px);
+  text-transform:uppercase; letter-spacing:-.005em; line-height:1; color:var(--gold);
+}
+.cbl-buckee .hero-subtitle .it {
+  font-family:${ITALIC}; font-style:italic; font-weight:600;
+  color:var(--gold); text-transform:none; letter-spacing:0; font-size:.82em;
+}
 .cbl-buckee .lede { font-size:19px; line-height:1.55; color:var(--text-body); max-width:520px; margin:0 0 30px; }
 .cbl-buckee .hero-cta { display:flex; gap:14px; flex-wrap:wrap; }
 .cbl-buckee .btn-gold {
@@ -458,7 +471,8 @@ const CSS = `
 @media (max-width:720px) {
   .cbl-buckee .wrap { padding:0 20px; }
   .cbl-buckee .hero { padding:32px 20px 40px; }
-  .cbl-buckee .hero h1 { font-size:clamp(40px,11vw,60px); }
+  .cbl-buckee .hero-title { font-size:clamp(40px,11vw,60px); }
+  .cbl-buckee .hero-subtitle { font-size:clamp(22px,5.5vw,32px); }
   .cbl-buckee .lede { font-size:16px; }
   .cbl-buckee .stage { min-height:380px; order:-1; }
   .cbl-buckee .buckee-art { width:260px; }
