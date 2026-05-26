@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
@@ -90,15 +90,53 @@ const HERO_LINES = [
   'Wanna build a bucket list?',
 ];
 
+// Galaxy-generated talking-head intros (black bg + narration baked in).
+// URLs are authoritative per the mascot handoff package.
+const MASCOT_VIDEOS: { id: CharKey; name: string; role: string; url: string }[] = [
+  { id: 'buckee', name: 'Buckee', role: 'concierge', url: 'https://cdn.galaxy.ai/user_366xyt7NI0XIYqXXItVcjkNHDKl/572b0c2b6cc54ad3a8d2f3da744ee462.mp4' },
+  { id: 'citty', name: 'Citty', role: 'host & hospitality', url: 'https://cdn.galaxy.ai/user_366xyt7NI0XIYqXXItVcjkNHDKl/5223faf859f04687951b11efe82ba874.mp4' },
+  { id: 'listy', name: 'Listy', role: 'rides & reservations', url: 'https://cdn.galaxy.ai/user_366xyt7NI0XIYqXXItVcjkNHDKl/d6e5e3cf35004c3486d238a646133f4c.mp4' },
+];
+
+const PlayGlyph = () => (
+  <svg viewBox="0 0 80 80" fill="none" aria-hidden="true">
+    <circle cx="40" cy="40" r="38" fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" />
+    <polygon points="32,24 60,40 32,56" fill="rgba(255,255,255,0.95)" />
+  </svg>
+);
+const PauseGlyph = () => (
+  <svg viewBox="0 0 80 80" fill="none" aria-hidden="true">
+    <circle cx="40" cy="40" r="38" fill="rgba(0,0,0,0.55)" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" />
+    <rect x="26" y="23" width="10" height="34" rx="3" fill="rgba(255,255,255,0.95)" />
+    <rect x="44" y="23" width="10" height="34" rx="3" fill="rgba(255,255,255,0.95)" />
+  </svg>
+);
+
 export function MeetBuckee() {
   const [active, setActive] = useState<CharKey>('buckee');
   const [qi, setQi] = useState(0);
   const [lang, setLang] = useState('EN');
+  const [vplaying, setVplaying] = useState<CharKey | null>(null);
+  const vidRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
   useEffect(() => {
     const id = setInterval(() => setQi((i) => (i + 1) % HERO_LINES.length), 2600);
     return () => clearInterval(id);
   }, []);
+
+  // Play one intro at a time — playing a new one resets/pauses the others.
+  const playVideo = (id: CharKey) => {
+    MASCOT_VIDEOS.forEach(({ id: other }) => {
+      if (other !== id) {
+        const ov = vidRefs.current[other];
+        if (ov) { ov.pause(); ov.currentTime = 0; }
+      }
+    });
+    vidRefs.current[id]?.play();
+    setVplaying(id);
+  };
+  const pauseVideo = (id: CharKey) => { vidRefs.current[id]?.pause(); setVplaying(null); };
+  const endVideo = (id: CharKey) => { const v = vidRefs.current[id]; if (v) v.currentTime = 0; setVplaying(null); };
 
   const c = FAMILY[active];
 
@@ -137,6 +175,38 @@ export function MeetBuckee() {
             </span>
           </div>
           <img className="buckee-art" src={buckeeConcierge} alt="Buckee, the CityBucketList concierge, ringing a bell" />
+        </div>
+      </section>
+
+      {/* ── MEET THE CREW (talking-head intro videos) ── */}
+      <section className="wrap videos">
+        <div className="videos-head">
+          <span className="eyebrow">press play</span>
+          <h2 className="videos-title">Hear from the <em>crew</em></h2>
+          <p className="videos-sub">Tap a character to hear them introduce themselves.</p>
+        </div>
+        <div className="video-row">
+          {MASCOT_VIDEOS.map((v) => (
+            <div className="vcard" key={v.id}>
+              <div
+                className={'vmedia' + (vplaying === v.id ? ' playing' : '')}
+                onClick={() => (vplaying === v.id ? pauseVideo(v.id) : playVideo(v.id))}
+              >
+                <video
+                  ref={(el) => { vidRefs.current[v.id] = el; }}
+                  src={v.url}
+                  playsInline
+                  preload="metadata"
+                  onEnded={() => endVideo(v.id)}
+                />
+                <span className="vbtn">{vplaying === v.id ? <PauseGlyph /> : <PlayGlyph />}</span>
+              </div>
+              <div className="vcap">
+                <span className="vname">{v.name}</span>
+                <span className="vrole">{v.role}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -365,6 +435,24 @@ const CSS = `
 .cbl-buckee .chip:hover { color:#fff; border-color:var(--text-body); }
 .cbl-buckee .chip.active { background:var(--gold); color:#111; border-color:var(--gold); }
 
+/* ── Meet-the-crew intro videos ── */
+.cbl-buckee .videos { padding-top:14px; padding-bottom:20px; }
+.cbl-buckee .videos-head { text-align:center; margin-bottom:26px; }
+.cbl-buckee .videos-head .eyebrow { justify-content:center; }
+.cbl-buckee .videos-title { font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:clamp(28px,4vw,40px); color:#fff; margin:0 0 8px; }
+.cbl-buckee .videos-title em { font-style:italic; color:var(--gold); }
+.cbl-buckee .videos-sub { font-size:15px; color:var(--text-body); margin:0; }
+.cbl-buckee .video-row { display:flex; gap:18px; align-items:flex-end; justify-content:center; }
+.cbl-buckee .vcard { flex:1; min-width:0; max-width:340px; }
+.cbl-buckee .vmedia { position:relative; background:#000; cursor:pointer; }
+.cbl-buckee .vmedia video { width:100%; height:auto; display:block; }
+.cbl-buckee .vbtn { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:1; transition:opacity .2s ease; pointer-events:none; }
+.cbl-buckee .vmedia.playing .vbtn { opacity:0; }
+.cbl-buckee .vbtn svg { width:64px; height:64px; filter:drop-shadow(0 2px 8px rgba(0,0,0,.6)); }
+.cbl-buckee .vcap { text-align:center; padding-top:12px; }
+.cbl-buckee .vname { display:block; font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:20px; color:#fff; }
+.cbl-buckee .vrole { display:block; font-family:${MONO}; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--text-muted); margin-top:3px; }
+
 @media (prefers-reduced-motion: reduce) {
   .cbl-buckee .buckee-art { animation:none; }
   .cbl-buckee .bubble { animation:none; }
@@ -389,5 +477,8 @@ const CSS = `
   .cbl-buckee .voice-bar { flex-wrap:wrap; gap:14px; }
   .cbl-buckee .voice-text { flex-basis:100%; order:3; }
   .cbl-buckee .lang-chips { order:2; }
+  .cbl-buckee .video-row { flex-direction:column; align-items:center; gap:28px; }
+  .cbl-buckee .vcard { width:100%; max-width:380px; flex:none; }
+  .cbl-buckee .videos-title { font-size:26px; }
 }
 `;
