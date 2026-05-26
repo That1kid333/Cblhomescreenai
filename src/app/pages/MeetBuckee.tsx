@@ -139,6 +139,14 @@ export function MeetBuckee() {
   const pauseVideo = (id: CharKey) => { vidRefs.current[id]?.pause(); setVplaying(null); };
   const endVideo = (id: CharKey) => { const v = vidRefs.current[id]; if (v) v.currentTime = 0; setVplaying(null); };
 
+  // Tapping a family "ON DUTY" card selects that mascot, brings their intro
+  // video into view, and plays it (tap = user gesture, so audio is allowed).
+  const selectAndPlay = (id: CharKey) => {
+    setActive(id);
+    vidRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    playVideo(id);
+  };
+
   const c = FAMILY[active];
 
   return (
@@ -212,7 +220,7 @@ export function MeetBuckee() {
             <button
               key={key}
               className={'char' + (active === key ? ' active' : '')}
-              onClick={() => setActive(key)}
+              onClick={() => selectAndPlay(key)}
               aria-pressed={active === key}
             >
               <span className="char-thumb" style={{ backgroundImage: `url(${m.img})` }} />
