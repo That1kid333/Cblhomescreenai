@@ -33,7 +33,7 @@ const CSS = `
   background:
     linear-gradient(180deg,rgba(10,10,10,.25) 0%,rgba(10,10,10,.55) 45%,rgba(10,10,10,.92) 90%,#0A0A0A 100%),
     url('/eats/imagery/cbl-map-backdrop.jpg') center top / cover no-repeat;
-  padding:48px 48px 30px;
+  padding:22px 48px 16px;
 }
 .cbl-concierge .wrap{max-width:1280px;margin:0 auto;}
 .cbl-concierge .hero .wrap{display:grid;grid-template-columns:1.12fr .88fr;gap:44px;align-items:center;}
@@ -167,7 +167,7 @@ const CSS = `
 /* responsive */
 @media(max-width:1000px){
   .cbl-concierge section.band{padding:44px 24px 48px;}
-  .cbl-concierge .hero{padding:36px 24px 26px;}
+  .cbl-concierge .hero{padding:22px 24px 16px;}
   .cbl-concierge .hero .wrap{grid-template-columns:1fr;}
   .cbl-concierge .hero-media{display:none;}
   .cbl-concierge .val-grid{grid-template-columns:1fr;}
