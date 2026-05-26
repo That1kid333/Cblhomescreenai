@@ -194,10 +194,10 @@ export function Concierge() {
       <section className="hero">
         <div className="wrap">
           <div className="hero-copy">
-            <div className="eyebrow">hospitality partners · concierge program</div>
-            <h1 className="hero-title">Concierge</h1>
+            <div className="eyebrow">hotels &amp; hospitality · partner program</div>
+            <h1 className="hero-title">Hotel &amp;</h1>
             <div className="hero-subtitle">
-              <span>For hotels &amp; hospitality.</span>
+              <span>Concierge Program.</span>
               <span className="it">earn on every ride.</span>
             </div>
             <p className="lede">
@@ -229,7 +229,7 @@ export function Concierge() {
           <div className="section-eyebrow">why partner</div>
           <h2 className="section-h2">Three ways <span className="it">you earn</span></h2>
           <p className="section-lede">
-            Your front desk already sends guests out the door every day. The Concierge Program turns
+            Your front desk already sends guests out the door every day. The Hotel &amp; Concierge Program turns
             every ride, referral, and itinerary into ongoing revenue — free to join, with nothing to install.
           </p>
           <div className="val-grid">
