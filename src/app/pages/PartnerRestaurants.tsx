@@ -111,6 +111,8 @@ const CSS = `
 .cbl-partner-rest .pricing-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; flex:1; }
 .cbl-partner-rest .pricing-list li { position:relative; padding-left:24px; color:#C8C8C8; font-size:14px; line-height:1.5; }
 .cbl-partner-rest .pricing-list li::before { content:''; position:absolute; left:0; top:8px; width:10px; height:10px; border-radius:50%; background:${GOLD}; opacity:.8; }
+.cbl-partner-rest .pricing-list strong { color:#fff; font-weight:800; }
+.cbl-partner-rest .pricing-list .gold-flag { display:inline-block; margin-left:6px; font-family:${MONO}; font-size:9px; font-weight:700; letter-spacing:.10em; text-transform:uppercase; color:#000; background:${GOLD}; padding:2px 7px; border-radius:3px; vertical-align:middle; }
 .cbl-partner-rest .pricing-cta { margin-top:28px; display:inline-flex; align-items:center; gap:8px; background:${GOLD}; color:#000; border:0; padding:14px 28px; border-radius:6px 0 6px 0; font-family:${DISPLAY}; font-weight:800; font-size:13px; letter-spacing:.10em; text-transform:uppercase; text-decoration:none; transition:background .2s, transform .2s; width:100%; justify-content:center; }
 .cbl-partner-rest .pricing-cta:hover { background:#DDB15F; transform:translateY(-1px); }
 
@@ -220,6 +222,7 @@ export function PartnerRestaurants() {
               <div className="pricing-price">$299<span>/yr</span></div>
               <div className="pricing-divider" />
               <ul className="pricing-list">
+                <li><strong>CBL App Delivery Service</strong> — set up your own delivery through the CBL app <span className="gold-flag">Gold exclusive</span></li>
                 <li>Placement on Rotating Top Banner</li>
                 <li>Top Search on our CBL Directory (Ex. Restaurant/Bar)</li>
                 <li>Coupon Opportunities</li>
