@@ -201,58 +201,50 @@ const ICON_VIEWBOX: Record<string, string> = {
 
 const CHIP_ICONS: Record<string, React.ReactNode> = {
   travels: (
-    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.58} strokeLinecap="round" strokeLinejoin="round">
-      <g transform="translate(-122.07, -53.18)">
-        <path d="M170.53,69.41c1.35.94-.05,4-1.36,5.82s-7.37,6.76-7.37,6.76l4.29,19.04-1.82,1.85-8.28-15.65-8.33,7.92,1.46,6.91-1.06.81-3.99-6.46" />
-        <path d="M170.87,69.76c-.94-1.35-4,.05-5.82,1.36s-6.76,7.37-6.76,7.37l-19.04-4.29-1.85,1.82,15.65,8.28-7.92,8.33-6.91-1.46-.81,1.06,6.46,3.99" />
-      </g>
+    <g transform="translate(35, 35) scale(1.4) translate(-151.67, -85.68)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M170.53,69.41c1.35.94-.05,4-1.36,5.82s-7.37,6.76-7.37,6.76l4.29,19.04-1.82,1.85-8.28-15.65-8.33,7.92,1.46,6.91-1.06.81-3.99-6.46" />
+      <path d="M170.87,69.76c-.94-1.35-4,.05-5.82,1.36s-6.76,7.37-6.76,7.37l-19.04-4.29-1.85,1.82,15.65,8.28-7.92,8.33-6.91-1.46-.81,1.06,6.46,3.99" />
     </g>
   ),
   transportation: (
-    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.62} strokeLinecap="round" strokeLinejoin="round">
-      <g transform="translate(-339.38, -53.15)">
-        <path d="M358.22,80.37l-2.38,3.89c-.46.75-.66,1.61-.56,2.47l.95,8.15h16.14" />
-        <path d="M358.22,80.37s-1.01-.87-2.55-1.09c-1.54-.22-2.6-.06-2.79.53-.23.72-1.26,2.3,1.33,2.38" />
-        <path d="M372.72,74.31s-8.93-.12-10.73.74c-1.58.75-3.35,4.42-3.77,5.32" />
-        <path d="M366.43,88.28s-2.2-.12-5.19-.23c-2.99-.12-2.42-2.03-2.42-2.03" />
-        <path d="M366.43,91.52h12.58" />
-        <path d="M358.13,80.52s.56.89,2.58.89h11.9" />
-        <path d="M360.84,94.88h0c1.56,0,2.82,1.27,2.82,2.82v.3h-5.65v-.3c0-1.56,1.27-2.82,2.82-2.82Z" transform="translate(721.69 192.88) rotate(180)" />
-        <path d="M386.54,80.37l2.38,3.89c.46.75.66,1.61.56,2.47l-.95,8.15h-16.14" />
-        <path d="M386.54,80.37s1.01-.87,2.55-1.09c1.54-.22,2.6-.06,2.79.53.23.72,1.26,2.3-1.33,2.38" />
-        <path d="M372.04,74.31s8.93-.12,10.73.74c1.58.75,3.35,4.42,3.77,5.32" />
-        <path d="M378.33,88.28s2.2-.12,5.19-.23c2.99-.12,2.42-2.03,2.42-2.03" />
-        <path d="M378.33,91.52h-12.58" />
-        <path d="M386.63,80.52s-.56.89-2.58.89h-11.9" />
-        <path d="M381.09,94.88h5.65v.3c0,1.56-1.27,2.82-2.82,2.82h0c-1.56,0-2.82-1.27-2.82-2.82v-.3h0Z" />
-      </g>
+    <g transform="translate(35, 35) scale(1.4) translate(-372, -86)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M358.22,80.37l-2.38,3.89c-.46.75-.66,1.61-.56,2.47l.95,8.15h16.14" />
+      <path d="M358.22,80.37s-1.01-.87-2.55-1.09c-1.54-.22-2.6-.06-2.79.53-.23.72-1.26,2.3,1.33,2.38" />
+      <path d="M372.72,74.31s-8.93-.12-10.73.74c-1.58.75-3.35,4.42-3.77,5.32" />
+      <path d="M366.43,88.28s-2.2-.12-5.19-.23c-2.99-.12-2.42-2.03-2.42-2.03" />
+      <path d="M366.43,91.52h12.58" />
+      <path d="M358.13,80.52s.56.89,2.58.89h11.9" />
+      <path d="M360.84,94.88h0c1.56,0,2.82,1.27,2.82,2.82v.3h-5.65v-.3c0-1.56,1.27-2.82,2.82-2.82Z" transform="translate(721.69 192.88) rotate(180)" />
+      <path d="M386.54,80.37l2.38,3.89c.46.75.66,1.61.56,2.47l-.95,8.15h-16.14" />
+      <path d="M386.54,80.37s1.01-.87,2.55-1.09c1.54-.22,2.6-.06,2.79.53.23.72,1.26,2.3-1.33,2.38" />
+      <path d="M372.04,74.31s8.93-.12,10.73.74c1.58.75,3.35,4.42,3.77,5.32" />
+      <path d="M378.33,88.28s2.2-.12,5.19-.23c2.99-.12,2.42-2.03,2.42-2.03" />
+      <path d="M378.33,91.52h-12.58" />
+      <path d="M386.63,80.52s-.56.89-2.58.89h-11.9" />
+      <path d="M381.09,94.88h5.65v.3c0,1.56-1.27,2.82-2.82,2.82h0c-1.56,0-2.82-1.27-2.82-2.82v-.3h0Z" />
     </g>
   ),
   eats: (
-    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.71} strokeLinecap="round" strokeLinejoin="round">
-      <g transform="translate(-618.69, -49.71)">
-        <path d="M649.18,85.45l-2.49-2.49-.96.96c-.66.66-1.74.64-2.42-.04l-7.75-7.75c-2.78-2.78-2.85-7.23-.15-9.93h0s14.02,14.02,14.02,14.02l2.9,2.9" />
-        <path d="M655.18,85.98l9.64,9.64c.78.78.8,2.02.04,2.78s-2,.74-2.78-.04l-9.75-9.75" />
-        <path d="M672.1,72.94l-9.67,9.67c-1.13,1.13-2.97,1.13-4.1,0l-16.91,16.91c-.73.73-1.91.73-2.64,0h0c-.73-.73-.73-1.91,0-2.64l16.91-16.91c-1.13-1.13-1.13-2.97,0-4.1l9.67-9.67" />
-        <line x1="667.56" y1="68.39" x2="659.53" y2="76.42" />
-        <line x1="669.82" y1="70.66" x2="661.79" y2="78.68" />
-      </g>
+    <g transform="translate(35, 35) scale(1.4) translate(-653.6, -81.7)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M649.18,85.45l-2.49-2.49-.96.96c-.66.66-1.74.64-2.42-.04l-7.75-7.75c-2.78-2.78-2.85-7.23-.15-9.93h0s14.02,14.02,14.02,14.02l2.9,2.9" />
+      <path d="M655.18,85.98l9.64,9.64c.78.78.8,2.02.04,2.78s-2,.74-2.78-.04l-9.75-9.75" />
+      <path d="M672.1,72.94l-9.67,9.67c-1.13,1.13-2.97,1.13-4.1,0l-16.91,16.91c-.73.73-1.91.73-2.64,0h0c-.73-.73-.73-1.91,0-2.64l16.91-16.91c-1.13-1.13-1.13-2.97,0-4.1l9.67-9.67" />
+      <line x1="667.56" y1="68.39" x2="659.53" y2="76.42" />
+      <line x1="669.82" y1="70.66" x2="661.79" y2="78.68" />
     </g>
   ),
   attractions: (
-    <g transform="translate(2,2)" fill="none" stroke="currentColor" strokeWidth={1.78} strokeLinecap="round" strokeLinejoin="round">
-      <g transform="translate(-897.94, -50.73)">
-        <circle cx="937.26" cy="70.09" r="3.21" />
-        <circle cx="924.32" cy="76.27" r="3.21" />
-        <path d="M937.26,63.3s-7.16.45-7.16,7.46,7.16,11.74,7.16,11.74c0,0,6.95-4.37,6.95-12.2,0-7.03-6.95-7-6.95-7Z" />
-        <path d="M913.5,86.82c-.27-1.22-.3-1.96-.3-3.26,0-8.81,6.42-16.12,14.84-17.5" />
-        <path d="M946.34,74.75c1.49,2.6,2.34,5.6,2.34,8.81,0,1.6-.21,3.15-.61,4.63" />
-        <path d="M932.77,90.34s4.64-4.96,5.88-4.92c1.78.06,8.17,6.05,8.17,6.05-2.78,6.15-8.69,9.83-15.88,9.83-7.62,0-14.12-4.8-16.63-11.55,0,0,6.73-7.26,8.44-7.25,1.07,0,1.55.13,4.78,3.33,3.22,3.2,12.59,12.16,12.59,12.16" />
-      </g>
+    <g transform="translate(35, 35) scale(1.4) translate(-931, -81.8)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="937.26" cy="70.09" r="3.21" />
+      <circle cx="924.32" cy="76.27" r="3.21" />
+      <path d="M937.26,63.3s-7.16.45-7.16,7.46,7.16,11.74,7.16,11.74c0,0,6.95-4.37,6.95-12.2,0-7.03-6.95-7-6.95-7Z" />
+      <path d="M913.5,86.82c-.27-1.22-.3-1.96-.3-3.26,0-8.81,6.42-16.12,14.84-17.5" />
+      <path d="M946.34,74.75c1.49,2.6,2.34,5.6,2.34,8.81,0,1.6-.21,3.15-.61,4.63" />
+      <path d="M932.77,90.34s4.64-4.96,5.88-4.92c1.78.06,8.17,6.05,8.17,6.05-2.78,6.15-8.69,9.83-15.88,9.83-7.62,0-14.12-4.8-16.63-11.55,0,0,6.73-7.26,8.44-7.25,1.07,0,1.55.13,4.78,3.33,3.22,3.2,12.59,12.16,12.59,12.16" />
     </g>
   ),
   blog: (
-    <g transform="translate(50, 50) scale(0.8) translate(-73, -71)" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <g transform="translate(50, 50) scale(1.45) translate(-73, -71)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M49.9,87.54l4.34-8.68s-7.49-6.21-6.3-14.09c1.19-7.88,10.73-14.86,22.99-14.86s24.18,6.81,24.18,16.01-9.71,21.12-33.38,16.52c-5.45,2.21-11.83,5.11-11.83,5.11Z" />
       <path d="M75.35,83.96c3.93,2.21,10.41,2.89,14.55.9,5.45,2.21,11.83,5.11,11.83,5.11l-4.34-8.68s5.73-2.05,4.54-9.92c0,0-1.02-5.92-6.81-7.39" />
       <circle fill="currentColor" stroke="none" cx="62.56" cy="66.35" r="2.37" />
@@ -261,7 +253,7 @@ const CHIP_ICONS: Record<string, React.ReactNode> = {
     </g>
   ),
   directory: (
-    <g transform="translate(50, 50) scale(0.7) translate(-74, -72)" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <g transform="translate(50, 50) scale(1.45) translate(-74, -72)" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       <rect x="51.23" y="50.63" width="8.1" height="5.41" />
       <rect x="51.23" y="61.46" width="8.1" height="5.41" />
       <rect x="51.23" y="72.13" width="8.1" height="5.41" />
@@ -508,15 +500,15 @@ const HOME_CSS = `
   margin-top:30px; display:flex; flex-wrap:wrap; gap:14px;
 }
 .cbl-home .chip {
-  display:inline-flex; align-items:center; gap:10px;
-  padding:8px 20px 8px 16px; border-radius:999px;
+  display:inline-flex; align-items:center; gap:12px;
+  padding:7px 22px 7px 16px; border-radius:999px;
   border:1.5px solid rgba(255,255,255,.22); background:transparent;
   color:#fff; font-family:${DISPLAY}; font-weight:800;
   font-size:12px; letter-spacing:.1em; text-transform:uppercase;
   transition:border-color .25s, color .25s, background .25s;
 }
 .cbl-home .chip-ic {
-  width:26px; height:26px; flex-shrink:0;
+  width:38px; height:38px; flex-shrink:0;
   display:inline-flex; align-items:center; justify-content:center;
 }
 .cbl-home .chip-ic svg { width:100%; height:100%; display:block; }
