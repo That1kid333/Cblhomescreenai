@@ -330,8 +330,7 @@ const CATS: CatDef[] = [
   { key: "EATS", label: "Good Eats", Icon: IconEats },
   { key: "STAYS", label: "Places to Stay", Icon: IconStays },
   { key: "FLIGHTS", label: "Flight Deals", Icon: IconTravel },
-  { key: "CULTURE", label: "Arts & Culture", Icon: IconDirectory },
-  { key: "BEHIND", label: "Behind the Brand", Icon: IconBlog },
+  { key: "ATTRACTIONS", label: "Attractions", Icon: IconAttractions },
 ];
 
 const POSTS: Post[] = [
@@ -377,7 +376,7 @@ const POSTS: Post[] = [
     img: "https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=900&h=600&fit=crop",
   },
   {
-    id: 6, cat: "CULTURE",
+    id: 6, cat: "ATTRACTIONS",
     title: "Galleries Worth Your Weekend",
     excerpt: "Zynka, James, Warhol, Mattress Factory — a Saturday-afternoon itinerary that hits the openings, then the after-parties. Ride pre-booked.",
     author: "CBL Team", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&h=200&fit=crop&crop=faces",
@@ -401,7 +400,7 @@ const POSTS: Post[] = [
     img: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop",
   },
   {
-    id: 9, cat: "BEHIND",
+    id: 9, cat: "TRANSPO",
     title: "Why We Added Uber, Lyft, and Waymo to CBL",
     excerpt: "100% coverage, zero rider cost. The affiliate routing layer that complements — not competes with — our Independent Drivers.",
     author: "Keith M.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop&crop=faces",
