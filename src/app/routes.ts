@@ -14,6 +14,8 @@ import { Transportation } from './pages/Transportation';
 import { Attractions } from './pages/Attractions';
 import { Affiliates } from './pages/Affiliates';
 import { Concierge } from './pages/Concierge';
+import { PartnerRestaurants } from './pages/PartnerRestaurants';
+import { PartnerAttractions } from './pages/PartnerAttractions';
 import { TermsAndConditions } from './pages/TermsAndConditions';
 
 export const router = createBrowserRouter([
@@ -36,6 +38,8 @@ export const router = createBrowserRouter([
       { path: 'attractions', Component: Attractions },
       { path: 'affiliates', Component: Affiliates },
       { path: 'concierge', Component: Concierge },
+      { path: 'partner-restaurants', Component: PartnerRestaurants },
+      { path: 'partner-attractions', Component: PartnerAttractions },
     ],
   },
 ]);
