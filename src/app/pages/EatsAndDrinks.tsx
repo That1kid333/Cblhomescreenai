@@ -496,6 +496,17 @@ const MOBILE_CUISINES = [
 
 const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
+// Cuisines that actually have a restaurant for a given meal. Used to limit the
+// cuisine chips so we never offer e.g. "Tacos" under Breakfast. ('ALL' meal =
+// every populated cuisine.)
+function cuisinesForMeal(m: string): Set<string> {
+  const set = new Set<string>();
+  RESTAURANTS.forEach((r) => {
+    if (m === 'ALL' || r.meal.includes(m)) r.cuisine.forEach((c) => set.add(c));
+  });
+  return set;
+}
+
 // ── Desktop pieces ──────────────────────────────────────────────────────────
 function RestaurantCard({ r }: { r: Restaurant }) {
   return (
@@ -585,6 +596,7 @@ function DesktopEats({
   const featured = filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored);
   const featuredShown = !!featured && filtered.some((r) => r.id === featured.id);
   const rest = filtered.filter((r) => !r.sponsored);
+  const availCuisines = cuisinesForMeal(meal);
 
   return (
     <div className="cbl-eats-desktop">
@@ -622,7 +634,10 @@ function DesktopEats({
               <button
                 key={m}
                 className={'meal-btn' + (meal === m ? ' active' : '')}
-                onClick={() => setMeal(m)}
+                onClick={() => {
+                  if (cuisine !== 'ALL' && !cuisinesForMeal(m).has(cuisine)) setCuisine('ALL');
+                  setMeal(m);
+                }}
               >
                 <span
                   style={{ height: 56, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
@@ -652,7 +667,7 @@ function DesktopEats({
             ))}
           </div>
           <div className="cuisine-row">
-            {DESKTOP_CUISINES.map((c) => {
+            {DESKTOP_CUISINES.filter((c) => c === 'ALL' || availCuisines.has(c)).map((c) => {
               const active = cuisine === c;
               return (
                 <button
@@ -1359,7 +1374,7 @@ function MobileFlow({
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 2 }}>
-            {MOBILE_CUISINES.map((c) => (
+            {MOBILE_CUISINES.filter((c) => cuisinesForMeal(activeMeal).has(c)).map((c) => (
               <CuisineTile
                 key={c}
                 label={c === 'VIETNAMESE' ? 'VIETNAM' : c}
