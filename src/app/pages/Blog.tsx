@@ -315,12 +315,21 @@ const IconDirectory = ({ s }: { s?: number }) => (
   />
 );
 
+const IconTravel = ({ s }: { s?: number }) => (
+  <BrandIcon
+    s={s}
+    paths={
+      <path d="M232.63,25.99c2.31,6.92-3.42,19.87-9.4,28.16-6.96,9.63-39.07,35.86-39.07,35.86l22.75,100.97-9.63,9.81-43.88-82.95-44.15,42.01,7.76,36.66-5.62,4.28-21.99-34.89-34.61-21.72,4.28-5.62,36.66,7.76,42.01-44.15L54.77,58.29l9.81-9.63,100.97,22.75s26.22-32.11,35.86-39.07c8.47-6.12,22.05-12.58,28.59-9.2,0,0,2.2,1.58,2.63,2.86Z" />
+    }
+  />
+);
+
 const CATS: CatDef[] = [
   { key: "ALL", label: "All Posts", Icon: IconBlog },
   { key: "TRANSPO", label: "Transportation", Icon: IconTransport },
   { key: "EATS", label: "Good Eats", Icon: IconEats },
   { key: "STAYS", label: "Places to Stay", Icon: IconStays },
-  { key: "FLIGHTS", label: "Flight Deals", Icon: IconStays },
+  { key: "FLIGHTS", label: "Flight Deals", Icon: IconTravel },
   { key: "CULTURE", label: "Arts & Culture", Icon: IconDirectory },
   { key: "BEHIND", label: "Behind the Brand", Icon: IconBlog },
 ];
