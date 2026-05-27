@@ -128,27 +128,19 @@ export function Layout() {
                   <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
                     <div className="py-2">
                       <Link to="/concierge" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Concierge Program
+                        Hotel &amp; Concierge Program
                       </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Become An Affiliate
                       </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Partner Hotels
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/partner-restaurants" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Partner Restaurants
                       </Link>
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                      <Link to="/partner-attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Partner Attractions
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/affiliates" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Commission Info
                       </Link>
                     </div>
                   </div>
@@ -205,8 +197,10 @@ export function Layout() {
                 { to: '/attractions', label: 'Attractions' },
                 { to: '/blog', label: 'CBL Blog' },
                 { to: '/directory', label: 'Directory' },
-                { to: '/concierge', label: 'Concierge Program' },
+                { to: '/concierge', label: 'Hotel & Concierge Program' },
                 { to: '/affiliates', label: 'Affiliates' },
+                { to: '/partner-restaurants', label: 'Partner Restaurants' },
+                { to: '/partner-attractions', label: 'Partner Attractions' },
                 { to: '/faq', label: 'FAQ' },
                 { to: '/contact', label: 'Contact' },
               ].map((item) => (
