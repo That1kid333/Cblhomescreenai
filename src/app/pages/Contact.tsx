@@ -8,8 +8,8 @@ import { useState } from 'react';
  * are unchanged; only the presentation now follows the rest of the new site.
  */
 
-const DISPLAY = "'Myriad Pro', sans-serif";
-const BODY = "'Myriad Pro', sans-serif";
+const DISPLAY = "'Source Sans 3', 'Myriad Pro', sans-serif";
+const BODY = "'Source Sans 3', 'Myriad Pro', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
