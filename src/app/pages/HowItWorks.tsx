@@ -12,8 +12,8 @@ import driverImage from '../../assets/driver_holding_phone_neutral.png';
  * rest of the new site. Hero backdrop reuses `/eats/imagery/cbl-map-backdrop.jpg`.
  */
 
-const DISPLAY = "'Source Sans 3', 'Myriad Pro', sans-serif";
-const BODY = "'Source Sans 3', 'Myriad Pro', sans-serif";
+const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
+const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
