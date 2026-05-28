@@ -17,7 +17,7 @@ import { useState, type ReactNode } from "react";
  * removed, refreshed post set, section reads "Latest stories from the CBL network".
  */
 
-const DISPLAY = "'Barlow Condensed','Myriad Pro',sans-serif";
+const DISPLAY = "'Barlow Condensed','Source Sans 3','Myriad Pro',sans-serif";
 const ITALIC = "'Playfair Display',serif";
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const MAP_BG = "/eats/imagery/cbl-map-backdrop.jpg";

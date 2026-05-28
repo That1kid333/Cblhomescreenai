@@ -10,8 +10,8 @@
  */
 
 const GOLD = '#C99742';
-const DISPLAY = "'Myriad Pro', sans-serif";
-const BODY = "'Myriad Pro', sans-serif";
+const DISPLAY = "'Source Sans 3', 'Myriad Pro', sans-serif";
+const BODY = "'Source Sans 3', 'Myriad Pro', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
