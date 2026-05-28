@@ -17,8 +17,8 @@ import { useState } from 'react';
  * already in /public/eats/imagery/.
  */
 
-const DISPLAY = "'Source Sans 3', 'Myriad Pro', sans-serif";
-const BODY = "'Source Sans 3', 'Myriad Pro', sans-serif";
+const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
+const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 

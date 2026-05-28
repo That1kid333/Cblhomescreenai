@@ -16,7 +16,7 @@ const CSS = `
 .cbl-concierge{
   --bg:#0A0A0A; --gold:#C99742; --gold-lt:#DDB15F; --yellow:#FDB913;
   --ink:#fff; --muted:#B0B0B0; --muted2:#888; --card:#141414; --line:rgba(255,255,255,.08);
-  --display:'Source Sans 3','Myriad Pro','Helvetica Neue',Arial,sans-serif;
+  --display:'myriad-pro','Source Sans 3','Helvetica Neue',Arial,sans-serif;
   --italic:'Playfair Display',serif;
   --mono:ui-monospace,SFMono-Regular,Menlo,monospace;
   background:var(--bg); color:var(--ink); font-family:var(--display); -webkit-font-smoothing:antialiased;

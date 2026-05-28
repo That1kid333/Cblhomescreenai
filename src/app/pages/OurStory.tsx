@@ -11,8 +11,8 @@ import { Globe } from 'lucide-react';
  * the rest of the new site. Hero backdrop reuses `/eats/imagery/cbl-map-backdrop.jpg`.
  */
 
-const DISPLAY = "'Myriad Pro', sans-serif";
-const BODY = "'Myriad Pro', sans-serif";
+const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
+const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
