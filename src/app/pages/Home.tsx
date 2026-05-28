@@ -53,26 +53,6 @@ type Slide = {
 
 const SLIDES: Slide[] = [
   {
-    key: 'travels',
-    image: conciergeImage,
-    alt: 'Hotel Concierge Services',
-    headline: (
-      <>
-        Travel smart.<br />
-        Live local.<br />
-        <span className="gold">Save more.</span>
-      </>
-    ),
-    caption: (
-      <>
-        Hotel concierge available —{' '}
-        <a href={APP_URL} className="cap-link">
-          sign up
-        </a>
-      </>
-    ),
-  },
-  {
     key: 'transportation',
     image: transportationImage,
     alt: 'Transportation Services',
@@ -88,6 +68,26 @@ const SLIDES: Slide[] = [
         Safe rides on demand —{' '}
         <a href={APP_URL} className="cap-link">
           book a ride
+        </a>
+      </>
+    ),
+  },
+  {
+    key: 'travels',
+    image: conciergeImage,
+    alt: 'Hotel Concierge Services',
+    headline: (
+      <>
+        Travel smart.<br />
+        Live local.<br />
+        <span className="gold">Save more.</span>
+      </>
+    ),
+    caption: (
+      <>
+        Hotel concierge available —{' '}
+        <a href={APP_URL} className="cap-link">
+          sign up
         </a>
       </>
     ),
@@ -175,8 +175,8 @@ const SLIDES: Slide[] = [
 ];
 
 const CATEGORIES = [
-  { key: 'travels', label: 'Travels', to: '/travels' },
   { key: 'transportation', label: 'Transportation', to: '/transportation' },
+  { key: 'travels', label: 'Travels', to: '/travels' },
   { key: 'eats', label: 'Eats & Drinks', to: '/eats-and-drinks' },
   { key: 'attractions', label: 'Attractions', to: '/attractions' },
 ];
