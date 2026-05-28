@@ -20,7 +20,7 @@ import { useState, type ReactNode } from "react";
  * has working login + posting + pricing.
  */
 
-const DISPLAY = "'Barlow Condensed','Source Sans 3',sans-serif";
+const DISPLAY = "'myriad-pro','Source Sans 3',sans-serif";
 const ITALIC = "'Playfair Display',serif";
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const MAP_BG = "/eats/imagery/cbl-map-backdrop.jpg";
@@ -51,7 +51,7 @@ type Tier = {
 };
 
 const DIR_CSS = `
-.cbl-dir { background:#0A0A0A; color:#fff; font-family:Inter,system-ui,sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh; }
+.cbl-dir { background:#0A0A0A; color:#fff; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; min-height:100vh; }
 .cbl-dir *,.cbl-dir *::before,.cbl-dir *::after { box-sizing:border-box; margin:0; padding:0; }
 .cbl-dir a { color:inherit; text-decoration:none; }
 .cbl-dir button { font-family:inherit; cursor:pointer; }
