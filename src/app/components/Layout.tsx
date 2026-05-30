@@ -80,6 +80,10 @@ export function Layout() {
                       <Link to="/contact" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Contact Us
                       </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/feedback" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Share Feedback
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -203,6 +207,7 @@ export function Layout() {
                 { to: '/partner-attractions', label: 'Partner Attractions' },
                 { to: '/faq', label: 'FAQ' },
                 { to: '/contact', label: 'Contact' },
+                { to: '/feedback', label: 'Share Feedback' },
               ].map((item) => (
                 <Link
                   key={item.to}
@@ -247,10 +252,27 @@ export function Layout() {
             <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
             <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
             <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
+            <Link to="/feedback" className="hover:text-[#FDB913] transition-colors">Feedback</Link>
             <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
           </div>
         </div>
       </footer>
+
+      {/* Floating Feedback pill — sits on top of every page, bottom-right */}
+      <Link
+        to="/feedback"
+        aria-label="Share feedback"
+        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-lg transition-all hover:scale-105"
+        style={{
+          background: '#C99742',
+          color: '#000',
+          fontFamily: "'myriad-pro', 'Source Sans 3', sans-serif",
+          boxShadow: '0 6px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.2)',
+        }}
+      >
+        <span aria-hidden style={{ width: 8, height: 8, background: '#000', borderRadius: '50%' }} />
+        Feedback
+      </Link>
     </div>
   );
 }
