@@ -252,27 +252,24 @@ export function Layout() {
             <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
             <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
             <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
-            <Link to="/feedback" className="hover:text-[#FDB913] transition-colors">Feedback</Link>
+            <Link
+              to="/feedback"
+              aria-label="Share feedback"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all hover:scale-105"
+              style={{
+                background: '#C99742',
+                color: '#000',
+                fontFamily: "'myriad-pro', 'Source Sans 3', sans-serif",
+                boxShadow: '0 2px 8px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.2)',
+              }}
+            >
+              <span aria-hidden style={{ width: 6, height: 6, background: '#000', borderRadius: '50%' }} />
+              Feedback
+            </Link>
             <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
           </div>
         </div>
       </footer>
-
-      {/* Floating Feedback pill — sits on top of every page, bottom-right */}
-      <Link
-        to="/feedback"
-        aria-label="Share feedback"
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-full text-xs font-bold tracking-widest uppercase shadow-lg transition-all hover:scale-105"
-        style={{
-          background: '#C99742',
-          color: '#000',
-          fontFamily: "'myriad-pro', 'Source Sans 3', sans-serif",
-          boxShadow: '0 6px 24px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.2)',
-        }}
-      >
-        <span aria-hidden style={{ width: 8, height: 8, background: '#000', borderRadius: '50%' }} />
-        Feedback
-      </Link>
     </div>
   );
 }
