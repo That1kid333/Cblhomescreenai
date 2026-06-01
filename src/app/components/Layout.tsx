@@ -181,15 +181,8 @@ export function Layout() {
               </div>
             </nav>
 
-            {/* Login button — top right, gold pill */}
-            <div className="hidden lg:block">
-              <Link
-                to="/login"
-                className="inline-flex items-center px-5 py-2 rounded-full bg-[#C99742] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#DDB15F] transition-colors"
-              >
-                Login
-              </Link>
-            </div>
+            {/* Spacer to maintain center alignment of nav */}
+            <div className="hidden lg:block w-[88px] lg:mr-8"></div>
           </div>
 
           {/* Mobile menu - shown when hamburger is tapped */}
@@ -210,7 +203,6 @@ export function Layout() {
                 { to: '/partner-attractions', label: 'Partner Attractions' },
                 { to: '/faq', label: 'FAQ' },
                 { to: '/contact', label: 'Contact' },
-                { to: '/login', label: 'Login' },
               ].map((item) => (
                 <Link
                   key={item.to}
