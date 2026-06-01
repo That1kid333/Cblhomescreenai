@@ -80,10 +80,6 @@ export function Layout() {
                       <Link to="/contact" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Contact Us
                       </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <Link to="/feedback" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Share Feedback
-                      </Link>
                     </div>
                   </div>
                 )}
@@ -185,8 +181,15 @@ export function Layout() {
               </div>
             </nav>
 
-            {/* Spacer to maintain center alignment of nav after removing login button */}
-            <div className="hidden lg:block w-[88px] lg:mr-8"></div>
+            {/* Login button — top right, gold pill */}
+            <div className="hidden lg:block">
+              <Link
+                to="/login"
+                className="inline-flex items-center px-5 py-2 rounded-full bg-[#C99742] text-black text-sm font-bold uppercase tracking-wider hover:bg-[#DDB15F] transition-colors"
+              >
+                Login
+              </Link>
+            </div>
           </div>
 
           {/* Mobile menu - shown when hamburger is tapped */}
@@ -207,7 +210,7 @@ export function Layout() {
                 { to: '/partner-attractions', label: 'Partner Attractions' },
                 { to: '/faq', label: 'FAQ' },
                 { to: '/contact', label: 'Contact' },
-                { to: '/feedback', label: 'Share Feedback' },
+                { to: '/login', label: 'Login' },
               ].map((item) => (
                 <Link
                   key={item.to}
@@ -252,20 +255,6 @@ export function Layout() {
             <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
             <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
             <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
-            <Link
-              to="/feedback"
-              aria-label="Share feedback"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase transition-all hover:scale-105"
-              style={{
-                background: '#C99742',
-                color: '#000',
-                fontFamily: "'myriad-pro', 'Source Sans 3', sans-serif",
-                boxShadow: '0 2px 8px rgba(0,0,0,.35), 0 0 0 1px rgba(0,0,0,.2)',
-              }}
-            >
-              <span aria-hidden style={{ width: 6, height: 6, background: '#000', borderRadius: '50%' }} />
-              Feedback
-            </Link>
             <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
           </div>
         </div>
