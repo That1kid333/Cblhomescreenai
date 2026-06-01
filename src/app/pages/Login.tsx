@@ -18,8 +18,8 @@
 import { useState } from 'react';
 
 const GOLD = '#C99742';
-const DISPLAY = "'Myriad Pro','Helvetica Neue',Arial,sans-serif";
-const BODY = "'Myriad Pro','Helvetica Neue',Arial,sans-serif";
+const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
+const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
@@ -74,12 +74,12 @@ const CSS = `
 .cbl-login .card-wrap { padding:0 48px 56px; }
 .cbl-login .card {
   position:relative; overflow:hidden;
-  max-width:1280px; margin:0 auto;
+  max-width:960px; margin:0;
   background:
     radial-gradient(120% 80% at 20% 0%, rgba(201,151,66,.06), rgba(201,151,66,0) 60%),
     #121212;
   border:1px solid rgba(255,255,255,.08);
-  border-radius:28px 28px 28px 8px;
+  border-radius:22px 0 22px 0;
   box-shadow:0 30px 70px rgba(0,0,0,.5);
   display:grid; grid-template-columns:0.92fr 1.08fr;
   animation:cbl-rise .6s ease both;
@@ -142,9 +142,9 @@ const CSS = `
 .cbl-login .label .req { color:${GOLD}; }
 .cbl-login .field { position:relative; margin-bottom:16px; }
 .cbl-login .field input {
-  width:100%; background:rgba(255,255,255,.025); color:#fff; font-size:15px;
-  border:1px solid rgba(255,255,255,.1); border-radius:14px;
-  padding:15px 18px; transition:border-color .2s, box-shadow .2s, background .2s;
+  width:100%; background:#0A0A0A; color:#fff; font-size:15px;
+  border:1px solid rgba(255,255,255,.12); border-radius:12px;
+  padding:13px 14px; transition:border-color .2s, box-shadow .2s, background .2s;
 }
 .cbl-login .field input::placeholder { color:#6a6a6a; }
 .cbl-login .field input:focus {
@@ -152,7 +152,7 @@ const CSS = `
   box-shadow:0 0 0 4px rgba(201,151,66,.16);
 }
 .cbl-login .field .toggle {
-  position:absolute; right:8px; top:38px; background:none; border:0; cursor:pointer;
+  position:absolute; right:8px; top:34px; background:none; border:0; cursor:pointer;
   padding:8px; color:#8a8a8a; display:inline-flex; transition:color .2s;
 }
 .cbl-login .field .toggle:hover { color:${GOLD}; }
@@ -181,13 +181,13 @@ const CSS = `
 }
 .cbl-login .btn:active { transform:translateY(1px); }
 .cbl-login .btn-primary {
-  width:100%; border-radius:999px; font-size:19px; padding:16px;
-  background:${GOLD}; color:#1A1206;
+  width:100%; border-radius:999px; font-size:15px; padding:14px 44px; letter-spacing:.14em;
+  background:${GOLD}; color:#000;
   display:inline-flex; align-items:center; justify-content:center; gap:10px;
   box-shadow:0 10px 26px rgba(201,151,66,.3);
 }
 .cbl-login .btn-primary:hover { background:#DDB15F; }
-.cbl-login .btn-primary .arr { font-size:17px; }
+.cbl-login .btn-primary .arr { font-size:15px; }
 
 .cbl-login .switch {
   display:flex; align-items:center; gap:14px; margin:20px 0 14px;
@@ -197,7 +197,7 @@ const CSS = `
   content:''; flex:1; height:1px; background:rgba(255,255,255,.1);
 }
 .cbl-login .btn-ghost {
-  width:100%; border-radius:999px; font-size:18px; padding:14px;
+  width:100%; border-radius:999px; font-size:15px; padding:14px 44px; letter-spacing:.14em;
   background:transparent; color:${GOLD}; border:1.5px solid rgba(201,151,66,.5);
 }
 .cbl-login .btn-ghost:hover { background:rgba(201,151,66,.1); border-color:${GOLD}; color:#DDB15F; }
@@ -236,8 +236,8 @@ export function Login() {
           </div>
           <p className="lede">
             Sign in to your CityBucketList membership — or request your private invitation to join.
-            Riders join free, get full access to the member directory, and earn commissions for
-            bringing new restaurants and local spots onboard.
+            Browse the member directory, discover local restaurants, attractions, and stays. To
+            request rides from your local independent-contractor drivers, download the CBL App.
           </p>
         </div>
       </section>
@@ -256,15 +256,15 @@ export function Login() {
               <span className="it">It's a membership.</span>
             </h2>
             <p className="seal-copy">
-              CityBucketList is a Private Membership Association — schedule rides with local
-              independent contractor drivers, get full access to the member directory, and earn
-              commissions for bringing new restaurants and local spots onboard.
+              CityBucketList is a Private Membership Association. Explore the directory, discover
+              local restaurants, attractions, and stays — then download the CBL App to connect with
+              your local independent-contractor drivers.
             </p>
             <div className="trust-row">
               <span className="trust">100% Free to Join</span>
               <span className="trust">Full Directory Access</span>
-              <span className="trust">Earn Referral Commissions</span>
-              <span className="trust">Local Rides · No Surge</span>
+              <span className="trust">Local Spots &amp; Stays</span>
+              <span className="trust">Rides via CBL App</span>
             </div>
           </div>
 
