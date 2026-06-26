@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { APP_URL } from '../lib/constants';
+import { ComingSoonInline } from '../components/ComingSoon';
 
 /**
  * Attractions — ported from the CBL "New Website" handoff bundle
@@ -1084,11 +1086,11 @@ function EventCard({ e }: { e: EventItem }) {
           <span className="price-pill">{e.price}</span>
         </div>
         <div className="cta-row">
-          <button className="cta">
+          <a className="cta" href={APP_URL} target="_blank" rel="noopener noreferrer">
             <CarMini size={14} color="#000" />
             Book a Ride
-          </button>
-          <button className="cta ghost">Tickets</button>
+          </a>
+          <ComingSoonInline label="Tickets" />
         </div>
       </div>
     </article>
@@ -1140,11 +1142,11 @@ function Spotlight({ e }: { e: EventItem }) {
           </span>
         </div>
         <div className="actions">
-          <button className="cta">
+          <a className="cta" href={APP_URL} target="_blank" rel="noopener noreferrer">
             <CarMini size={14} color="#000" />
             Book a Ride to This Event
-          </button>
-          <button className="cta ghost">Get Tickets</button>
+          </a>
+          <ComingSoonInline label="Get Tickets" />
         </div>
       </div>
     </div>

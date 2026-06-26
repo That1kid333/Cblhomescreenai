@@ -1,4 +1,13 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { getActivePartners, type Partner } from "../lib/supabase/ridesClient";
+import {
+  getActiveBusinesses,
+  getActiveListings,
+  type DirectoryBusiness,
+  type DirectoryListing,
+} from "../lib/supabase/directoryClient";
+import { useVisitorLocation } from "../lib/location";
+import { ComingSoonSection } from "../components/ComingSoon";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
@@ -29,21 +38,9 @@ const DIR_URL = "https://directory.citybucketlist.com/";
 type SecDef = { key: string; label: string; Icon: (p: { s?: number }) => JSX.Element };
 type Chip = { k: string; l: string; d: string };
 type Listing = {
-  id: number; name: string; loc: string; desc: string; price: string;
+  id: string | number; name: string; loc: string; desc: string; price: string;
   photos?: number; badges?: { t: string; k?: string }[];
   img?: string; featured?: boolean; placeholder?: boolean;
-};
-type Driver = {
-  id: number; name: string; schedule: string; blurb: string;
-  rides: string; rating: string; vehicle: string; tags: string[]; featured?: boolean;
-};
-type Rider = {
-  id: number; name: string; when: string; title: string; blurb: string;
-  tags: string[]; urgent?: boolean;
-};
-type Coupon = {
-  disc: string; unit: string; title: string; partner: string;
-  terms: string; code: string; featured?: boolean; img?: string;
 };
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
@@ -477,43 +474,53 @@ const CHIPS: Record<string, Chip[]> = {
   ],
 };
 
-const CLASSIFIEDS: Listing[] = [
-  { id: 1, name: "2018 Honda Civic - Low Miles", loc: "Squirrel Hill · Vehicles", desc: "Clean title, 62k miles, manual. New tires, fresh inspection, garage-kept. Service records included.", price: "$11,500", photos: 8, badges: [{ t: "★ Featured", k: "feat" }], img: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=540&fit=crop", featured: true },
-  { id: 2, name: "IKEA Sectional Couch", loc: "Lawrenceville · Furniture", desc: "Grey 3-piece sectional with ottoman. 2 years old, smoke-free home. Pickup only.", price: "$425", photos: 5, badges: [{ t: "★ Featured", k: "feat" }], img: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&h=540&fit=crop", featured: true },
-  { id: 3, name: 'MacBook Pro 16" M2', loc: "Downtown · Electronics", desc: "2023 model, 32GB RAM, 1TB SSD. AppleCare+ until 2027.", price: "$1,850", photos: 4, badges: [{ t: "★ Featured", k: "feat" }], img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=800&h=540&fit=crop", featured: true },
-  { id: 4, name: "Mountain Bike - Trek", loc: "Bloomfield · Vehicles", desc: "Trek X-Caliber 9, size L. Hydraulic disc brakes.", price: "$680", badges: [], placeholder: true },
-  { id: 5, name: "Concert Tickets - 5/30", loc: "Strip District · Tickets", desc: "2 tickets, section 124. Below face value.", price: "$140", badges: [], placeholder: true },
-  { id: 6, name: "Free Moving Boxes", loc: "Shadyside · Free", desc: "30+ boxes, various sizes. Curbside pickup this weekend.", price: "FREE", badges: [{ t: "Free" }], placeholder: true },
-];
+// Live data only past this point — Driver Posts, Rider Requests, and Coupons
+// have no real backing source yet (see ComingSoonSection usage below), so
+// there are no mock arrays for them.
 
-const DRIVER_POSTS: Driver[] = [
-  { id: 1, name: "Marcus T.", schedule: "Mon-Fri · 6 AM – 9 AM · Airport Runs", blurb: "Specializing in PIT airport runs and downtown business commutes. Black car available. 1,200+ CBL rides, 5.0★. Scan my QR code to book directly.", rides: "1.2k", rating: "5.0", vehicle: "Lincoln Continental", tags: ["Airport", "Black Car"], featured: true },
-  { id: 2, name: "Sarah J.", schedule: "Weekends · Concert & Event Drivers", blurb: "Weekend warrior! Available for concerts, sporting events, and night-out group runs. Up to 6 passengers. Book me through the CBL app.", rides: "487", rating: "4.9", vehicle: "Chevy Suburban", tags: ["Events", "Group"] },
-  { id: 3, name: "David L.", schedule: "Tue/Thu/Sat · Recurring Riders Welcome", blurb: "Set up a weekly recurring schedule with me. I drive my regulars to dialysis, work, and the gym. Same-day messaging.", rides: "2.1k", rating: "4.9", vehicle: "Honda Odyssey", tags: ["Recurring"] },
-  { id: 4, name: "Lena R.", schedule: "Evenings · 5 PM – 11 PM · Dinner & Drinks", blurb: "After-work driver. Open for dinner runs, date nights, and bar hops. No surge pricing — book ahead via my QR code.", rides: "612", rating: "4.8", vehicle: "Audi Q5", tags: ["Evening", "Lux"] },
-];
+function listingToCard(l: DirectoryListing): Listing {
+  return {
+    id: l.id,
+    name: l.title,
+    loc: [l.city, l.subcategory || l.category].filter(Boolean).join(" · "),
+    desc: l.description || "",
+    price: l.price_type === "free" ? "FREE" : l.price != null ? `$${l.price}` : "Contact for price",
+    photos: l.photos?.length,
+    img: l.photos?.[0],
+    badges: l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : [],
+    featured: !!l.featured,
+    placeholder: !l.photos?.length,
+  };
+}
 
-const RIDER_POSTS: Rider[] = [
-  { id: 1, name: "Jamie K.", when: "SAT MAY 31 · 7:00 PM", title: "Need a driver this weekend for the Jay-Z concert", blurb: "Looking for a CBL Private Driver to take 4 of us from Squirrel Hill to PPG Paints Arena and back. Will tip generously. Black car preferred.", tags: ["Event Ride", "4 Passengers", "Round-Trip"], urgent: true },
-  { id: 2, name: "Tom & Linda", when: "WED · Weekly · 8 AM", title: "Weekly grocery run — Recurring Wed mornings", blurb: "Senior couple looking for a reliable driver every Wednesday morning. Highland Park → Whole Foods Wexford → home. About 90 minutes total.", tags: ["Recurring", "Senior"] },
-  { id: 3, name: "Marcus P.", when: "THU JUN 5 · 4:00 AM", title: "Early-morning airport run to PIT", blurb: "Flight at 6:15 AM out of PIT. Need pickup in Mt. Lebanon at 4 AM sharp. Open to scheduling now.", tags: ["Airport", "Solo"] },
-  { id: 4, name: "Bachelorette Party", when: "FRI JUN 13 · 9 PM", title: "Bachelorette party — 6 of us, downtown bar crawl", blurb: "Friday night, downtown to South Side bar crawl, then home. Need a Suburban or van for 6. We tip well!", tags: ["Group", "Night Out", "6+ Passengers"] },
-];
+function businessToCard(b: DirectoryBusiness): Listing {
+  return {
+    id: b.id,
+    name: b.business_name,
+    loc: [b.city, b.directory_category || b.business_type].filter(Boolean).join(" · "),
+    desc: b.description || "",
+    price: b.rating ? `★ ${b.rating.toFixed(1)} (${b.review_count ?? 0})` : "New listing",
+    photos: b.photos?.length,
+    img: b.photos?.[0] || b.logo_url || undefined,
+    badges: b.featured ? [{ t: "★ Featured", k: "feat" }] : [],
+    featured: !!b.featured,
+    placeholder: !b.photos?.length && !b.logo_url,
+  };
+}
 
-const SHOPPING: Listing[] = [
-  { id: 1, name: "Wigle Whiskey Distillery", loc: "Strip District · Liquor", desc: "Pittsburgh's first craft distillery. Tastings, tours, exclusive bottles for CBL members.", price: "CBL Member", badges: [{ t: "★ Featured", k: "feat" }, { t: "Local" }], img: "https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=800&h=540&fit=crop", featured: true },
-  { id: 2, name: "Penzeys Spices", loc: "Strip District · Pantry", desc: "Fresh-ground spices and blends. Sample bins, knowledgeable staff.", price: "15% OFF", badges: [{ t: "★ Featured", k: "feat" }], img: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&h=540&fit=crop", featured: true },
-  { id: 3, name: "Three Rivers Outpost", loc: "Lawrenceville · Outdoor Gear", desc: "Locally owned outdoor gear shop. Patagonia, Arc'teryx, custom fittings.", price: "10% OFF", badges: [], img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=540&fit=crop" },
-];
-
-const COUPONS: Coupon[] = [
-  { disc: "20", unit: "%", title: "Market Street Patio", partner: "East Liberty · Brunch", terms: "Valid Sat/Sun all day. Dine-in only. Not combinable with other offers.", code: "CBLBRUNCH20", featured: true, img: "/eats/imagery/mm-patio.jpg" },
-  { disc: "$10", unit: "", title: "Iron Valley Pies", partner: "Strip District · Pizza", terms: "Off any large square. Pickup or delivery via CBL.", code: "CBLPIE10", featured: true, img: "/eats/imagery/iv-pies.jpg" },
-  { disc: "BOGO", unit: "", title: "Wigle Whiskey Tastings", partner: "Strip District · Distillery", terms: "Buy 1 tasting flight, get 1 free. Sun-Thu, must show member ID.", code: "CBLWIGLE" },
-  { disc: "FREE", unit: "", title: "Phipps Conservatory Coat Check", partner: "Oakland · Attraction", terms: "Free coat check for CBL members + one guest. Valid year-round.", code: "PHIPPSCBL" },
-  { disc: "15", unit: "%", title: "Industry Public House", partner: "Lawrenceville · Bar", terms: "15% off entire bill Sun-Thu. Show member badge to server.", code: "IPHCBL15" },
-  { disc: "$25", unit: "", title: "Hotel Monaco Weekend", partner: "Cultural District · Hotel", terms: "Off any 2-night weekend stay. Subject to availability.", code: "MONACO25" },
-];
+function partnerToCard(p: Partner): Listing {
+  return {
+    id: `partner-${p.id}`,
+    name: p.business_name,
+    loc: [p.city, p.business_type].filter(Boolean).join(" · "),
+    desc: p.description || "",
+    price: "CBL Partner",
+    img: p.logo_url || undefined,
+    badges: [{ t: "★ CBL Partner", k: "feat" }],
+    featured: true,
+    placeholder: !p.logo_url,
+  };
+}
 
 const PRICING: Tier[] = [
   { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats"], cta: "Post Free Ad" },
@@ -743,62 +750,6 @@ function ClassifiedCard({ l }: { l: Listing }) {
   );
 }
 
-function MockQR() {
-  const pattern = [
-    [1, 1, 1, 0, 1, 1, 1],
-    [1, 0, 1, 1, 1, 0, 1],
-    [1, 1, 1, 0, 1, 1, 1],
-    [0, 1, 0, 1, 0, 0, 1],
-    [1, 0, 1, 1, 1, 1, 0],
-    [1, 1, 1, 0, 0, 1, 1],
-    [1, 0, 1, 1, 1, 1, 1],
-  ];
-  return (
-    <div className="qr">
-      {pattern.flatMap((row, ri) =>
-        row.map((bit, ci) => <div key={ri + "-" + ci} className={bit ? "b" : ""} />)
-      )}
-    </div>
-  );
-}
-
-function DriverCard({ d }: { d: Driver }) {
-  return (
-    <article className={"driver-card" + (d.featured ? " featured" : "")}>
-      <MockQR />
-      <div className="body">
-        <div className="name">{d.name}</div>
-        <div className="schedule">{d.schedule}</div>
-        <p className="blurb">{d.blurb}</p>
-        <div className="stats">
-          <span><b>{d.rides}</b>rides</span>
-          <span><b>★ {d.rating}</b></span>
-          <span style={{ color: "#C99742" }}>{d.vehicle}</span>
-        </div>
-      </div>
-    </article>
-  );
-}
-
-function RiderCard({ r }: { r: Rider }) {
-  return (
-    <article className={"rider-card" + (r.urgent ? " urgent" : "")}>
-      <div className="tag-row">
-        {r.tags.map((t, i) => (
-          <span key={t} className={"tag" + (r.urgent && i === 0 ? " urgent" : "")}>{t}</span>
-        ))}
-      </div>
-      <h4>{r.title}</h4>
-      <div className="when">{r.when}</div>
-      <p className="blurb">{r.blurb}</p>
-      <div className="foot">
-        <span className="author"><b>{r.name}</b>· Member · 12 rides</span>
-        <a className="respond" href={DIR_URL} target="_blank" rel="noopener noreferrer">Respond →</a>
-      </div>
-    </article>
-  );
-}
-
 function PickupBanner() {
   return (
     <div className="pickup-banner">
@@ -882,15 +833,92 @@ function Newsletter() {
   );
 }
 
+const CLASSIFIEDS_CHIP_TO_SLUG: Record<string, string> = {
+  VEH: "vehicles", ELEC: "electronics", FURN: "furniture", SERV: "services",
+  JOBS: "jobs", HOUSE: "housing", TIX: "tickets", FREE: "free",
+};
+
+function cityMatches(itemCity: string | null | undefined, visitorCity: string | null) {
+  return !!itemCity && !!visitorCity && itemCity.toLowerCase() === visitorCity.toLowerCase();
+}
+
+function LocationBar({
+  city, availableCities, onChangeCity,
+}: { city: string | null; availableCities: string[]; onChangeCity: (c: string) => void }) {
+  return (
+    <div className="band tight" style={{ paddingBottom: 0 }}>
+      <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <span style={{ color: "#999", fontSize: 13 }}>
+          {city ? <>Showing CBL Partners &amp; listings near <b style={{ color: "#C99742" }}>{city}</b></> : "Choose a city to see local partners & listings"}
+        </span>
+        {availableCities.length > 0 && (
+          <select
+            value={city || ""}
+            onChange={(e) => onChangeCity(e.target.value)}
+            style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 14px", fontSize: 12 }}
+          >
+            <option value="" disabled>Choose a city…</option>
+            {availableCities.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function EmptyState({ city }: { city: string | null }) {
+  return (
+    <div className="cbl-dir-empty" style={{ textAlign: "center", padding: "48px 24px", color: "#999" }}>
+      <p style={{ marginBottom: 16 }}>
+        {city ? `No listings near ${city} yet — be the first.` : "No listings yet — be the first."}
+      </p>
+      <a className="cta" href={DIR_URL} target="_blank" rel="noopener noreferrer">Post the First Listing →</a>
+    </div>
+  );
+}
+
 export function Directory() {
   const [section, setSection] = useState("CLASSIFIEDS");
   const [cat, setCat] = useState("ALL");
+  const { city, setManualCity } = useVisitorLocation();
+
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [businesses, setBusinesses] = useState<DirectoryBusiness[]>([]);
+  const [listings, setListings] = useState<DirectoryListing[]>([]);
+
+  useEffect(() => {
+    getActivePartners().then(setPartners);
+    getActiveBusinesses().then(setBusinesses);
+    getActiveListings().then(setListings);
+  }, []);
+
+  const availableCities = useMemo(() => {
+    const cities = [...partners.map((p) => p.city), ...businesses.map((b) => b.city), ...listings.map((l) => l.city)]
+      .filter((c): c is string => !!c);
+    return [...new Set(cities)].sort();
+  }, [partners, businesses, listings]);
+
+  const sortByCityMatch = <T extends { city?: string | null }>(items: T[]) =>
+    [...items].sort((a, b) => Number(cityMatches(b.city, city)) - Number(cityMatches(a.city, city)));
+
+  const classifiedsLive = useMemo(() => {
+    const slug = CLASSIFIEDS_CHIP_TO_SLUG[cat];
+    const filtered = slug ? listings.filter((l) => l.category === slug) : listings;
+    return sortByCityMatch(filtered).map(listingToCard);
+  }, [listings, cat, city]);
+
+  const shopLive = useMemo(() => {
+    const pinnedPartners = sortByCityMatch(partners).map(partnerToCard);
+    const sortedBusinesses = sortByCityMatch(businesses).map(businessToCard);
+    return [...pinnedPartners, ...sortedBusinesses];
+  }, [partners, businesses, city]);
 
   return (
     <main className="cbl-dir">
       <style>{DIR_CSS}</style>
 
       <Hero />
+      <LocationBar city={city} availableCities={availableCities} onChangeCity={setManualCity} />
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
@@ -898,9 +926,13 @@ export function Directory() {
           <section className="band">
             <div className="band-inner">
               <SectionHead section="CLASSIFIEDS" />
-              <div className="listings-grid">
-                {CLASSIFIEDS.map((l) => <ClassifiedCard key={l.id} l={l} />)}
-              </div>
+              {classifiedsLive.length === 0 ? (
+                <EmptyState city={city} />
+              ) : (
+                <div className="listings-grid">
+                  {classifiedsLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+                </div>
+              )}
               <PickupBanner />
             </div>
           </section>
@@ -913,13 +945,10 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="DRIVERS" />
-            <p style={{ color: "#B0B0B0", fontSize: 14, lineHeight: 1.55, maxWidth: "62ch", marginBottom: 24, marginTop: -16 }}>
-              Independent Drivers post weekly schedules and self-promote with their
-              personal CBL QR code. Riders scan, book directly, and skip the search.
-            </p>
-            <div className="listings-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-              {DRIVER_POSTS.map((d) => <DriverCard key={d.id} d={d} />)}
-            </div>
+            <ComingSoonSection
+              title="Driver Posts — Coming Soon"
+              blurb="Independent drivers will be able to post weekly schedules and self-promote with a personal CBL QR code. This is launching on the directory app soon."
+            />
           </div>
         </section>
       )}
@@ -928,13 +957,10 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="RIDERS" />
-            <p style={{ color: "#B0B0B0", fontSize: 14, lineHeight: 1.55, maxWidth: "62ch", marginBottom: 24, marginTop: -16 }}>
-              Members post ride requests — events, recurring schedules, airport runs,
-              group nights out. CBL Drivers respond directly and book through the app.
-            </p>
-            <div className="listings-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)" }}>
-              {RIDER_POSTS.map((r) => <RiderCard key={r.id} r={r} />)}
-            </div>
+            <ComingSoonSection
+              title="Rider Requests — Coming Soon"
+              blurb="Posting a ride request (events, recurring schedules, airport runs) for CBL Drivers to respond to is launching on the directory app soon."
+            />
           </div>
         </section>
       )}
@@ -943,9 +969,13 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="SHOPPING" />
-            <div className="listings-grid">
-              {SHOPPING.map((l) => <ClassifiedCard key={l.id} l={l} />)}
-            </div>
+            {shopLive.length === 0 ? (
+              <EmptyState city={city} />
+            ) : (
+              <div className="listings-grid">
+                {shopLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -954,27 +984,10 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="COUPONS" />
-            <div className="coupons-grid">
-              {COUPONS.map((c, i) => (
-                <div key={i} className={"coupon" + (c.featured ? " featured" : "")}>
-                  <div className="disc">
-                    {c.disc}{c.unit && <small>{c.unit}</small>}
-                    {!c.unit && c.disc !== "BOGO" && c.disc !== "FREE" && <small>off</small>}
-                  </div>
-                  <div className="body">
-                    {c.featured && c.img && (
-                      <div className="coupon-img" style={{ backgroundImage: `url(${c.img})` }}>
-                        <span className="feat-tag">★ Featured</span>
-                      </div>
-                    )}
-                    <h4>{c.title}</h4>
-                    <div className="partner">{c.partner}</div>
-                    <div className="terms">{c.terms}</div>
-                    <div className="code">CODE: <b>{c.code}</b></div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <ComingSoonSection
+              title="Member Coupons — Coming Soon"
+              blurb="Member-only offers from local partners are on the way. Check back soon."
+            />
             <CompareBand />
           </div>
         </section>

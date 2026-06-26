@@ -40,7 +40,7 @@ export function TermsAndConditions() {
         </div>
 
         <div>
-          <h2 className="text-xl font-bold text-white mb-2">Privacy Policy</h2>
+          <h2 id="privacy-policy" className="text-xl font-bold text-white mb-2">Privacy Policy</h2>
           <p>
             Our Privacy Policy outlines how we collect, use, and protect your data in relation to our A2P 10DLC messaging service. It can be found on our website.
           </p>
