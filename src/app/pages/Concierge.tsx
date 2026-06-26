@@ -12,6 +12,8 @@
  * the booking/Stripe backend is a later phase.
  */
 
+import { APP_URL } from '../lib/constants';
+
 const CSS = `
 .cbl-concierge{
   --bg:#0A0A0A; --gold:#C99742; --gold-lt:#DDB15F; --yellow:#FDB913;
@@ -490,7 +492,7 @@ export function Concierge() {
           Join free in minutes. Tell us about your property, sign the authorization letter, and we'll
           send your welcome kit so you can start earning on every guest booking.
         </p>
-        <a className="btn gold" href="#" style={{ padding: '15px 34px' }}>Become a Partner →</a>
+        <a className="btn gold" href={`${APP_URL}/partner/signup`} style={{ padding: '15px 34px' }}>Become a Partner →</a>
         <div className="note">Questions? info@citybucketlist.com · CityBucketList.com is an LLC company</div>
       </section>
     </main>

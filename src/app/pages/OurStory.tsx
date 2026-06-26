@@ -1,5 +1,6 @@
 import buckeeConcierge from '../../assets/buckee.png';
 import { Globe } from 'lucide-react';
+import { APP_URL } from '../lib/constants';
 
 /**
  * Our Story — re-skinned to match the Explore pages (Travels / Transportation /
@@ -315,7 +316,7 @@ export function OurStory() {
             Ready to start <span className="it">your journey?</span>
           </h2>
           <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
-          <a className="cta" href="https://app.citybucketlist.com">
+          <a className="cta" href={APP_URL}>
             Join City Bucket List →
           </a>
         </div>

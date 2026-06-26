@@ -15,6 +15,7 @@ import buckeeImage from '../../assets/buckee.png';
 import buckeeServerImg from '../../assets/buckee_server.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
+import { APP_URL } from '../lib/constants';
 
 /**
  * Home — re-skinned to match the rest of the site (Our Story / Explore /
@@ -36,7 +37,6 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
-const APP_URL = 'https://app.citybucketlist.com';
 
 // Placeholder portraits from the Unsplash CDN (same source as the Transportation
 // driver row). Swap these for real photos of Keith and Brian before launch.

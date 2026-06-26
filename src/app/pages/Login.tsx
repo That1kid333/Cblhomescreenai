@@ -319,7 +319,7 @@ export function Login() {
                 <input type="checkbox" id="sms" />
                 <label htmlFor="sms">
                   I agree to receive SMS notifications from CityBucketList.com. Message &amp; data
-                  rates may apply. <a href="#">See our Privacy policy.</a>
+                  rates may apply. <a href="/terms#privacy-policy">See our Privacy policy.</a>
                 </label>
               </div>
 

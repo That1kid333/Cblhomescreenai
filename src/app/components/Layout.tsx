@@ -111,6 +111,10 @@ export function Layout() {
                       <Link to="/attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Attractions
                       </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/delivery" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Delivery
+                      </Link>
                     </div>
                   </div>
                 )}
@@ -195,6 +199,7 @@ export function Layout() {
                 { to: '/transportation', label: 'Transportation' },
                 { to: '/eats-and-drinks', label: 'Eats & Drinks' },
                 { to: '/attractions', label: 'Attractions' },
+                { to: '/delivery', label: 'Delivery' },
                 { to: '/blog', label: 'CBL Blog' },
                 { to: '/directory', label: 'Directory' },
                 { to: '/concierge', label: 'Hotel & Concierge Program' },

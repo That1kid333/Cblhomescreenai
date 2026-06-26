@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
+import { APP_URL } from '../lib/constants';
 
 /**
  * Meet the Buckee Family — ported from the concierge-hero mockup into the
@@ -21,7 +22,6 @@ const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
-const APP_URL = 'https://app.citybucketlist.com';
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 
 type CharKey = 'buckee' | 'citty' | 'listy';

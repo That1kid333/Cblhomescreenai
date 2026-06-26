@@ -7,6 +7,8 @@
  * Shared Layout provides nav + footer. Hero reuses /eats/imagery/cbl-map-backdrop.jpg.
  */
 
+import { APP_URL } from '../lib/constants';
+
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -210,7 +212,7 @@ export function PartnerAttractions() {
         <div className="band-inner">
           <h2>Ready to get <span className="it">featured?</span></h2>
           <p>Apply in minutes. Tell us about your attraction and we'll get you live across the CBL platform.</p>
-          <a className="apply" href="https://app.citybucketlist.com">Apply Now →</a>
+          <a className="apply" href={`${APP_URL}/partner/signup`}>Apply Now →</a>
         </div>
       </section>
     </main>

@@ -9,6 +9,7 @@ import { MeetBuckee } from './pages/MeetBuckee';
 import { Blog } from './pages/Blog';
 import { Directory } from './pages/Directory';
 import { EatsAndDrinks } from './pages/EatsAndDrinks';
+import { Delivery } from './pages/Delivery';
 import { Travels } from './pages/Travels';
 import { Transportation } from './pages/Transportation';
 import { Attractions } from './pages/Attractions';
@@ -34,6 +35,7 @@ export const router = createBrowserRouter([
       { path: 'blog', Component: Blog },
       { path: 'directory', Component: Directory },
       { path: 'eats-and-drinks', Component: EatsAndDrinks },
+      { path: 'delivery', Component: Delivery },
       { path: 'terms', Component: TermsAndConditions },
       { path: 'travels', Component: Travels },
       { path: 'transportation', Component: Transportation },

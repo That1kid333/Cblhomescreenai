@@ -7,6 +7,8 @@
  * Shared Layout provides nav + footer. Hero reuses /eats/imagery/cbl-map-backdrop.jpg.
  */
 
+import { APP_URL } from '../lib/constants';
+
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -200,7 +202,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1)</li>
               </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
             </div>
 
             <div className="pricing-card">
@@ -214,7 +216,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers 6&quot; x 6&quot; (4)</li>
               </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
             </div>
 
             <div className="pricing-card gold-card">
@@ -230,7 +232,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers (8)</li>
               </ul>
-              <a className="pricing-cta" href="https://app.citybucketlist.com">Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
             </div>
           </div>
         </div>
@@ -256,7 +258,7 @@ export function PartnerRestaurants() {
         <div className="band-inner">
           <h2>Ready to get <span className="it">listed?</span></h2>
           <p>Apply in minutes. Pick your tier and we'll get your restaurant live across the CBL platform.</p>
-          <a className="apply" href="https://app.citybucketlist.com">Apply Now →</a>
+          <a className="apply" href={`${APP_URL}/partner/signup`}>Apply Now →</a>
         </div>
       </section>
     </main>

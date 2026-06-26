@@ -9,6 +9,8 @@
  * so other pages (e.g. the Eats & Drinks "Become a Partner" CTA) can deep-link.
  */
 
+import { APP_URL } from '../lib/constants';
+
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const BODY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -430,7 +432,7 @@ export function Affiliates() {
             Ready to partner <span className="it">with CBL?</span>
           </h2>
           <p>Apply in minutes. Tell us about your business and we'll get you set up across the platform.</p>
-          <a className="apply" href="https://app.citybucketlist.com">
+          <a className="apply" href={`${APP_URL}/partner/signup`}>
             Apply Now →
           </a>
         </div>
