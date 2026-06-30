@@ -639,10 +639,11 @@ function FreeListingMock() {
   return (
     <div className="mock" style={{ background: "linear-gradient(180deg,#161616 0%,#0F0F0F 100%)" }}>
       <div className="body" style={{ paddingTop: 18 }}>
-        <h4>2018 Honda Civic - Low Miles</h4>
-        <div className="meta">Vehicles · Posted 2 days ago</div>
-        <div className="desc">Clean title, 62k miles, manual. New tires. Text for details.</div>
-        <div className="price">$11,500</div>
+        <div style={{ height: 14, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 8, width: "70%" }} />
+        <div className="meta">Your category · Standard placement</div>
+        <div style={{ height: 10, background: "rgba(255,255,255,.06)", borderRadius: 4, marginBottom: 6, width: "90%" }} />
+        <div style={{ height: 10, background: "rgba(255,255,255,.06)", borderRadius: 4, marginBottom: 14, width: "60%" }} />
+        <div className="price" style={{ color: "rgba(201,151,66,.5)" }}>Your price</div>
         <div className="foot">
           <span>Basic Listing</span>
           <span>30 days</span>
@@ -655,17 +656,23 @@ function FreeListingMock() {
 function FeaturedListingMock() {
   return (
     <div className="mock featured">
-      <div className="img" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&h=450&fit=crop')" }}>
+      <div className="img" style={{ background: "linear-gradient(135deg,rgba(201,151,66,.18),rgba(201,151,66,.06))", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <span className="feat-badge">★ Featured</span>
-        <span className="img-count">📷 8 photos</span>
+        <span className="img-count">📷 Up to 10 photos</span>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,66,.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute" }}>
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="8.5" cy="8.5" r="1.5" />
+          <path d="M21 15l-5-5L5 21" />
+        </svg>
       </div>
       <div className="body">
-        <h4>2018 Honda Civic - Low Miles</h4>
-        <div className="meta">Vehicles · <span className="gold">Top of search · 60 days</span></div>
-        <div className="desc">Clean title, 62k miles, manual. New tires, fresh inspection, garage-kept. Service records included. Negotiable.</div>
-        <div className="price">$11,500</div>
+        <div style={{ height: 14, background: "rgba(201,151,66,.2)", borderRadius: 4, marginBottom: 8, width: "70%" }} />
+        <div className="meta">Your category · <span className="gold">Top of search · 60 days</span></div>
+        <div style={{ height: 10, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 6, width: "90%" }} />
+        <div style={{ height: 10, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 14, width: "75%" }} />
+        <div className="price">Your price</div>
         <div className="foot">
-          <span style={{ color: "#C99742" }}>★ 247 views this week</span>
+          <span style={{ color: "#C99742" }}>★ View counter active</span>
           <span>📞 Contact verified</span>
         </div>
       </div>
@@ -682,7 +689,7 @@ function CompareBand() {
           Free ad vs. featured <span className="it">see the difference</span>
         </h2>
         <p style={{ color: "#B0B0B0", fontSize: 15, lineHeight: 1.55, maxWidth: "62ch", marginBottom: 28 }}>
-          Same 2018 Honda Civic, posted two ways. Free gets you live in 30 days.
+          Same listing, posted two ways. Free gets you live in 30 days.
           Featured gets you photos, top placement, and the gold border that pulls
           eyes in a busy feed.
         </p>

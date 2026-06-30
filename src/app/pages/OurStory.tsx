@@ -1,4 +1,6 @@
 import buckeeConcierge from '../../assets/buckee.png';
+import driverImg from '../../assets/driver_holding_phone_neutral.png';
+import riderImg from '../../assets/rider_meeting_driver_neutral.png';
 import { Globe } from 'lucide-react';
 import { APP_URL } from '../lib/constants';
 
@@ -199,8 +201,8 @@ export function OurStory() {
           <div className="split">
             <div className="split-media">
               <img
-                src="https://images.unsplash.com/photo-1600320254374-ce2d293c324e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyaWRlc2hhcmUlMjBjYXIlMjBkcml2ZXJ8ZW58MXx8fHwxNzc2MTE0Mzc5fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Rideshare driver"
+                src={driverImg}
+                alt="CBL driver"
               />
             </div>
             <div className="split-body">
@@ -221,8 +223,8 @@ export function OurStory() {
           <div className="split reverse">
             <div className="split-media">
               <img
-                src="https://images.unsplash.com/photo-1525610553991-2bede1a236e2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZXN0YXVyYW50JTIwZGluaW5nJTIwZXhwZXJpZW5jZXxlbnwxfHx8fDE3NzYxMTQzNzl8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Friends sharing a meal at a local restaurant"
+                src={riderImg}
+                alt="Rider meeting their CBL driver"
               />
             </div>
             <div className="split-body">
