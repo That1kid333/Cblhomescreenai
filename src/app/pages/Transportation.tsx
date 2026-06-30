@@ -195,44 +195,6 @@ const FAQS = [
   },
 ];
 
-const DRIVERS = [
-  {
-    name: 'Brian K.',
-    role: 'Driver · Pittsburgh',
-    rides: '847',
-    rating: '4.9',
-    img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=faces',
-  },
-  {
-    name: 'Maria R.',
-    role: 'Lux Driver · Black Car',
-    rides: '512',
-    rating: '5.0',
-    img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=faces',
-  },
-  {
-    name: 'Darnell T.',
-    role: 'Driver · Strip District',
-    rides: '293',
-    rating: '4.9',
-    img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=faces',
-  },
-  {
-    name: 'Anika S.',
-    role: 'Driver · Airport',
-    rides: '1.2k',
-    rating: '4.8',
-    img: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop&crop=faces',
-  },
-  {
-    name: 'Joey C.',
-    role: 'Driver · East End',
-    rides: '604',
-    rating: '4.9',
-    img: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=faces',
-  },
-];
-
 // ── Scoped CSS (from Transportation Desktop.html, namespaced under .cbl-transport) ──
 const TRANSPORT_CSS = `
 .cbl-transport { background:#0A0A0A; color:#fff; font-family:${BODY}; -webkit-font-smoothing:antialiased; }
@@ -821,30 +783,6 @@ function ProviderCard({
   );
 }
 
-function DriverRow() {
-  return (
-    <div className="drivers-row">
-      {DRIVERS.map((d) => (
-        <div key={d.name} className="driver-card">
-          <div className="avatar">
-            <img src={d.img} alt={d.name} />
-          </div>
-          <div className="d-name">{d.name}</div>
-          <div className="d-role">{d.role}</div>
-          <div className="d-stats">
-            <span>
-              <b>{d.rides}</b>rides
-            </span>
-            <span>
-              <b>★{d.rating}</b>
-            </span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function RideAggregator() {
   const [mode, setMode] = useState<'BOOK' | 'DRIVE'>('BOOK');
   const [selected, setSelected] = useState('cbl');
@@ -935,7 +873,6 @@ function RideAggregator() {
               </div>
             </div>
 
-            {/* Drivers strip — combined into the Pick Your Ride section */}
             <div
               style={{
                 marginTop: 40,
@@ -943,7 +880,7 @@ function RideAggregator() {
                 borderTop: '1px solid rgba(255,255,255,.08)',
               }}
             >
-              <div className="section-eyebrow">your cbl drivers · pittsburgh members</div>
+              <div className="section-eyebrow">cbl private · scheduled rides</div>
               <h3
                 style={{
                   fontFamily: DISPLAY,
@@ -981,9 +918,8 @@ function RideAggregator() {
               >
                 Every CBL Private ride is scheduled at least 12 hours in advance, so you and your
                 driver have time to plan, message, and confirm the trip before pickup. No anonymous
-                strangers.
+                strangers. Sign in to the app to browse available drivers in your city.
               </p>
-              <DriverRow />
             </div>
           </>
         ) : (

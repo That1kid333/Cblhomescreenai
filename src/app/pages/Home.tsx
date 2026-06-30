@@ -38,10 +38,6 @@ const ITALIC = "'Playfair Display', serif";
 
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 
-// Placeholder portraits from the Unsplash CDN (same source as the Transportation
-// driver row). Swap these for real photos of Keith and Brian before launch.
-const RIDER_PHOTO = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=240&h=240&fit=crop&crop=faces';
-const DRIVER_PHOTO = 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&fit=crop&crop=faces';
 
 type Slide = {
   key: string;
@@ -959,7 +955,7 @@ export function Home() {
                       <small>Schedule<br />Ride</small>
                     </div>
                     <span className="rd-photo rd-photo-lg" title="Your photo">
-                      <img src={RIDER_PHOTO} alt="Joe Schmoe" />
+                      <span style={{ fontSize: 26, fontFamily: DISPLAY, fontWeight: 900, color: GOLD }}>YOU</span>
                     </span>
                     <div className="rd-act">
                       <span className="rd-circle"><MessageSquare size={22} /></span>
@@ -969,18 +965,18 @@ export function Home() {
 
                   {/* welcome */}
                   <div className="rd-welcome">
-                    WELCOME <b>JOE SCHMOE</b>
+                    WELCOME <b>CBL MEMBER</b>
                   </div>
 
                   {/* preferred driver */}
                   <div className="rd-driver">
-                    <span className="rd-photo rd-photo-sm" title="Jane Doe">
-                      <img src={DRIVER_PHOTO} alt="Jane Doe" />
+                    <span className="rd-photo rd-photo-sm" title="Your Driver">
+                      <span style={{ fontSize: 14, fontFamily: DISPLAY, fontWeight: 900, color: GOLD }}>DR</span>
                     </span>
                     <div className="rd-driver-info">
                       <small>PREFERRED DRIVER</small>
-                      <b>Jane Doe</b>
-                      <span>(555) 555-0199</span>
+                      <b>Your Driver</b>
+                      <span>Set in the app</span>
                     </div>
                     <ChevronDown className="rd-chev" size={16} />
                   </div>

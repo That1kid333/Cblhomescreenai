@@ -1,5 +1,6 @@
 import riderImage from '../../assets/rider_meeting_driver_neutral.png';
 import driverImage from '../../assets/driver_holding_phone_neutral.png';
+import conciergeImage from '../../assets/buckee_concierge.png';
 
 /**
  * How It Works — re-skinned to match the Explore pages (Travels / Transportation
@@ -257,8 +258,8 @@ const AUDIENCES: Audience[] = [
   },
   {
     num: '03',
-    img: 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=900',
-    alt: 'Concierge partner',
+    img: conciergeImage,
+    alt: 'CBL Concierge',
     kicker: 'For Concierge Partners',
     title: (
       <>
