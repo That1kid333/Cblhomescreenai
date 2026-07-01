@@ -3,3 +3,6 @@ node_modules
 dist
 .claude
 .gemini
+
+# Local Netlify folder
+.netlify

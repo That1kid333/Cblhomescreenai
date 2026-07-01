@@ -45,6 +45,9 @@ type Slide = {
   alt: string;
   headline: React.ReactNode;
   caption: React.ReactNode;
+  /** Optional CSS object-position for the hero image (e.g. to keep a subject
+   * that sits near the top from being cropped in the short mobile banner). */
+  imgPos?: string;
 };
 
 const SLIDES: Slide[] = [
@@ -54,9 +57,9 @@ const SLIDES: Slide[] = [
     alt: 'Transportation Services',
     headline: (
       <>
-        Need a ride?<br />
-        Arrive safe.<br />
-        <span className="gold">Save more.</span>
+        <span className="ln">Need a ride?</span>{' '}
+        <span className="ln">Arrive safe.</span>{' '}
+        <span className="ln gold">Save more.</span>
       </>
     ),
     caption: (
@@ -74,9 +77,9 @@ const SLIDES: Slide[] = [
     alt: 'Hotel Concierge Services',
     headline: (
       <>
-        Travel smart.<br />
-        Live local.<br />
-        <span className="gold">Save more.</span>
+        <span className="ln">Travel smart.</span>{' '}
+        <span className="ln">Live local.</span>{' '}
+        <span className="ln gold">Save more.</span>
       </>
     ),
     caption: (
@@ -92,11 +95,12 @@ const SLIDES: Slide[] = [
     key: 'eats',
     image: eatsImage,
     alt: 'Dining and Restaurants',
+    imgPos: '50% 18%', // keep the waiter's head from being cropped in the short mobile banner
     headline: (
       <>
-        Hungry?<br />
-        Eat local.<br />
-        <span className="gold">Save more.</span>
+        <span className="ln">Hungry?</span>{' '}
+        <span className="ln">Eat local.</span>{' '}
+        <span className="ln gold">Save more.</span>
       </>
     ),
     caption: (
@@ -114,9 +118,9 @@ const SLIDES: Slide[] = [
     alt: 'Local Attractions',
     headline: (
       <>
-        Bored?<br />
-        Explore local.<br />
-        <span className="gold">Save more.</span>
+        <span className="ln">Bored?</span>{' '}
+        <span className="ln">Explore local.</span>{' '}
+        <span className="ln gold">Save more.</span>
       </>
     ),
     caption: (
@@ -134,9 +138,9 @@ const SLIDES: Slide[] = [
     alt: 'CBL Blog',
     headline: (
       <>
-        Stay in the<br />
-        know.<br />
-        <span className="gold">Read local.</span>
+        <span className="ln">Stay in the</span>{' '}
+        <span className="ln">know.</span>{' '}
+        <span className="ln gold">Read local.</span>
       </>
     ),
     caption: (
@@ -154,9 +158,9 @@ const SLIDES: Slide[] = [
     alt: 'CBL Directory',
     headline: (
       <>
-        Find local<br />
-        businesses.<br />
-        <span className="gold">Connect more.</span>
+        <span className="ln">Find local</span>{' '}
+        <span className="ln">businesses.</span>{' '}
+        <span className="ln gold">Connect more.</span>
       </>
     ),
     caption: (
@@ -382,6 +386,7 @@ const HOME_CSS = `
   color:#fff; transition:filter .5s, opacity .5s;
 }
 /* Locked to three lines so the rotation never shifts the layout. */
+.cbl-home h1.hero-title .ln { display:block; }
 .cbl-home h1.hero-title .gold { color:${GOLD}; }
 .cbl-home .hero-lede {
   font-size:16px; line-height:1.5; color:#B8B8B8; margin:0 0 24px;
@@ -694,9 +699,10 @@ const HOME_CSS = `
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
   .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(120px,26vh,200px); }
   .cbl-home .mobile-icon-row { order:2; }
-  .cbl-home .hero-copy { order:3; }
+  .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
-  .cbl-home h1.hero-title { font-size:clamp(30px,7vw,46px); margin-bottom:10px; }
+  /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
+  .cbl-home h1.hero-title { font-size:clamp(32px,7vw,48px); margin-bottom:12px; text-align:center; line-height:1.02; }
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row directly under the image (like the live site) */
@@ -704,10 +710,10 @@ const HOME_CSS = `
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
   .cbl-home .micon .chip-ic { width:44px; height:44px; }
-  /* Labeled pills lower down (2-column grid) */
+  /* Option B: text-only pills, 2-column grid (icons removed, labels centered) */
   .cbl-home .chip-row { margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .cbl-home .chip { padding:9px 12px; font-size:11px; gap:9px; justify-content:flex-start; min-width:0; }
-  .cbl-home .chip-ic { width:24px; height:24px; }
+  .cbl-home .chip { padding:11px 12px; font-size:11.5px; gap:0; justify-content:center; min-width:0; }
+  .cbl-home .chip .chip-ic { display:none; }
   .cbl-home .app-grid { grid-template-columns:1fr; gap:32px; }
   .cbl-home .app-grid .device-wrap { order:-1; }
   .cbl-home .more-grid { grid-template-columns:1fr; }
@@ -715,7 +721,7 @@ const HOME_CSS = `
 @media (max-width:640px){
   .cbl-home .eyebrow { margin-bottom:6px; font-size:11px; }
   .cbl-home .hero-media { height:clamp(110px,20vh,160px); }
-  .cbl-home h1.hero-title { font-size:clamp(26px,7.6vw,36px); }
+  .cbl-home h1.hero-title { font-size:clamp(30px,8.6vw,44px); }
   .cbl-home .hero-lede { margin-bottom:10px; }
   /* Tighten CTAs so both stay on one row on small phones */
   .cbl-home .btn-primary { padding:11px 18px; font-size:12px; }
@@ -723,8 +729,7 @@ const HOME_CSS = `
   .cbl-home .mobile-icon-row { margin:12px 0 2px; }
   .cbl-home .micon .chip-ic { width:40px; height:40px; }
   .cbl-home .chip-row { margin-top:18px; gap:8px; }
-  .cbl-home .chip { padding:8px 10px; font-size:10.5px; gap:7px; letter-spacing:.03em; }
-  .cbl-home .chip-ic { width:22px; height:22px; }
+  .cbl-home .chip { padding:10px 10px; font-size:11px; gap:0; letter-spacing:.03em; }
 }
 `;
 
@@ -836,7 +841,7 @@ export function Home() {
               onMouseLeave={() => setPaused(false)}
             >
               <div className="frame" style={fadeStyle}>
-                <img src={slide.image} alt={slide.alt} />
+                <img src={slide.image} alt={slide.alt} style={{ objectPosition: slide.imgPos ?? 'center' }} />
                 <div className="cap">{slide.caption}</div>
               </div>
             </div>
