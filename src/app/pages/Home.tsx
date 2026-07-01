@@ -510,6 +510,8 @@ const HOME_CSS = `
 .cbl-home .chip-ic svg { width:100%; height:100%; display:block; }
 .cbl-home .chip:hover { border-color:${GOLD}; color:${GOLD}; }
 .cbl-home .chip.active { border-color:${GOLD}; color:${GOLD}; background:rgba(201,151,66,.1); }
+/* Mobile-only big icon row (rendered under the hero image); hidden on desktop */
+.cbl-home .mobile-icon-row { display:none; }
 
 /* ── Section frame ── */
 .cbl-home section.band { padding:64px 48px; }
@@ -685,14 +687,44 @@ const HOME_CSS = `
 
 /* ── Responsive ── */
 @media (max-width:1000px){
-  .cbl-home .hero { padding:28px 22px 36px; }
+  .cbl-home .hero { padding:16px 20px 28px; }
   .cbl-home section.band { padding:48px 22px; }
-  .cbl-home .hero-grid { grid-template-columns:1fr; gap:28px; }
-  .cbl-home .hero-lede { white-space:normal; }
-  .cbl-home .hero-media { order:-1; }
+  .cbl-home .hero-grid { grid-template-columns:1fr; gap:16px; }
+  .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:14px; }
+  /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(120px,26vh,200px); }
+  .cbl-home .mobile-icon-row { order:2; }
+  .cbl-home .hero-copy { order:3; }
+  .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
+  .cbl-home h1.hero-title { font-size:clamp(30px,7vw,46px); margin-bottom:10px; }
+  .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
+  .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
+  /* Big icon-only row directly under the image (like the live site) */
+  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:16px 0 2px; }
+  .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
+  .cbl-home .micon.active { color:${GOLD}; }
+  .cbl-home .micon .chip-ic { width:44px; height:44px; }
+  /* Labeled pills lower down (2-column grid) */
+  .cbl-home .chip-row { margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .cbl-home .chip { padding:9px 12px; font-size:11px; gap:9px; justify-content:flex-start; min-width:0; }
+  .cbl-home .chip-ic { width:24px; height:24px; }
   .cbl-home .app-grid { grid-template-columns:1fr; gap:32px; }
   .cbl-home .app-grid .device-wrap { order:-1; }
   .cbl-home .more-grid { grid-template-columns:1fr; }
+}
+@media (max-width:640px){
+  .cbl-home .eyebrow { margin-bottom:6px; font-size:11px; }
+  .cbl-home .hero-media { height:clamp(110px,20vh,160px); }
+  .cbl-home h1.hero-title { font-size:clamp(26px,7.6vw,36px); }
+  .cbl-home .hero-lede { margin-bottom:10px; }
+  /* Tighten CTAs so both stay on one row on small phones */
+  .cbl-home .btn-primary { padding:11px 18px; font-size:12px; }
+  .cbl-home .btn-ghost { padding:11px 16px; font-size:12px; margin-left:8px; }
+  .cbl-home .mobile-icon-row { margin:12px 0 2px; }
+  .cbl-home .micon .chip-ic { width:40px; height:40px; }
+  .cbl-home .chip-row { margin-top:18px; gap:8px; }
+  .cbl-home .chip { padding:8px 10px; font-size:10.5px; gap:7px; letter-spacing:.03em; }
+  .cbl-home .chip-ic { width:22px; height:22px; }
 }
 `;
 
@@ -725,7 +757,7 @@ export function Home() {
         setCurrent((prev) => (prev + 1) % SLIDES.length);
         setFading(false);
       }, 300);
-    }, 5000);
+    }, 4000);
     return () => clearInterval(interval);
   }, [paused]);
 
@@ -746,11 +778,7 @@ export function Home() {
       <style>{HOME_CSS}</style>
 
       {/* ── Hero (rotating showcase) ── */}
-      <section
-        className="hero"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-      >
+      <section className="hero">
         <div className="hero-inner">
           <div className="eyebrow">what's on your bucket list?</div>
           <div className="hero-grid">
@@ -769,7 +797,11 @@ export function Home() {
               </a>
 
               {/* Category + link chips, highlighting in sync with the rotation */}
-              <div className="chip-row">
+              <div
+                className="chip-row"
+                onMouseEnter={() => setPaused(true)}
+                onMouseLeave={() => setPaused(false)}
+              >
                 {CATEGORIES.map((c, i) => (
                   <Link
                     key={c.key}
@@ -798,11 +830,44 @@ export function Home() {
               </div>
             </div>
 
-            <div className="hero-media">
+            <div
+              className="hero-media"
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+            >
               <div className="frame" style={fadeStyle}>
                 <img src={slide.image} alt={slide.alt} />
                 <div className="cap">{slide.caption}</div>
               </div>
+            </div>
+
+            {/* Mobile-only: big icon row directly under the hero image (labels hidden via CSS) */}
+            <div className="mobile-icon-row">
+              {CATEGORIES.map((c, i) => (
+                <Link
+                  key={c.key}
+                  to={c.to}
+                  className={'micon' + (current === i ? ' active' : '')}
+                  onMouseEnter={() => goTo(i)}
+                >
+                  <ChipIcon k={c.key} />
+                  {c.label}
+                </Link>
+              ))}
+              <Link to="/blog" className={'micon' + (current === 4 ? ' active' : '')} onMouseEnter={() => goTo(4)}>
+                <ChipIcon k="blog" />
+                CBL Blog
+              </Link>
+              <a
+                href="https://directory.citybucketlist.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={'micon' + (current === 5 ? ' active' : '')}
+                onMouseEnter={() => goTo(5)}
+              >
+                <ChipIcon k="directory" />
+                Directory
+              </a>
             </div>
           </div>
         </div>
