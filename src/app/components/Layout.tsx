@@ -1,4 +1,4 @@
-import { Outlet, Link } from 'react-router';
+import { Outlet, Link, ScrollRestoration } from 'react-router';
 import { ChevronRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
@@ -25,6 +25,8 @@ export function Layout() {
 
   return (
     <div className="bg-black text-white min-h-screen w-full flex flex-col">
+      {/* Scroll to top on navigation; restore position on back/forward */}
+      <ScrollRestoration />
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">

@@ -1,5 +1,5 @@
 import buckeeConcierge from '../../assets/buckee.png';
-import driverImg from '../../assets/driver_holding_phone_neutral.png';
+import driverImg from '../../assets/driver_at_wheel.jpg';
 import riderImg from '../../assets/rider_meeting_driver_neutral.png';
 import { Globe } from 'lucide-react';
 import { APP_URL } from '../lib/constants';
