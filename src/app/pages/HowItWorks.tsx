@@ -1,6 +1,8 @@
 import riderImage from '../../assets/rider_meeting_driver_neutral.png';
-import driverImage from '../../assets/driver_holding_phone_neutral.png';
-import conciergeImage from '../../assets/buckee_concierge.png';
+import driverImage from '../../assets/driver_at_wheel.jpg';
+import conciergeImage from '../../assets/concierge_professional.jpg';
+import { APP_URL } from '../lib/constants';
+import { Link } from 'react-router';
 
 /**
  * How It Works — re-skinned to match the Explore pages (Travels / Transportation
@@ -69,6 +71,7 @@ const HOW_CSS = `
   padding:14px 28px; border-radius:999px;
   font-family:${DISPLAY}; font-weight:900;
   font-size:14px; letter-spacing:.14em; text-transform:uppercase;
+  text-decoration:none; cursor:pointer;
 }
 .cbl-how .hero-cta:hover { background:#DDB15F; }
 
@@ -159,10 +162,12 @@ const HOW_CSS = `
 }
 .cbl-how .btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; }
 .cbl-how .btn {
+  display:inline-flex; align-items:center;
   background:#C99742; color:#000; border:0;
   padding:11px 22px; border-radius:999px;
   font-family:${DISPLAY}; font-weight:800;
   font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+  text-decoration:none; cursor:pointer;
 }
 .cbl-how .btn:hover { background:#DDB15F; }
 .cbl-how .btn.ghost { background:transparent; color:#C99742; border:1px solid rgba(201,151,66,.5); }
@@ -194,6 +199,13 @@ type Audience = {
   steps: string[];
   primary: string;
   secondary: string;
+  /** Optional targets for the primary/secondary buttons. `*To` renders an
+   * internal react-router <Link>; `*Href` renders an external <a>; if neither
+   * is set the button stays a plain (inert) button. */
+  primaryTo?: string;
+  secondaryTo?: string;
+  primaryHref?: string;
+  secondaryHref?: string;
 };
 
 const AUDIENCES: Audience[] = [
@@ -284,6 +296,8 @@ const AUDIENCES: Audience[] = [
     ],
     primary: 'Become a Partner',
     secondary: 'Partner Benefits',
+    primaryHref: `${APP_URL}/partner/signup`,
+    secondaryTo: '/concierge',
   },
 ];
 
@@ -308,8 +322,20 @@ function AudienceRow({ a }: { a: Audience }) {
           ))}
         </ol>
         <div className="btn-row">
-          <button className="btn">{a.primary}</button>
-          <button className="btn ghost">{a.secondary}</button>
+          {a.primaryTo ? (
+            <Link className="btn" to={a.primaryTo}>{a.primary}</Link>
+          ) : a.primaryHref ? (
+            <a className="btn" href={a.primaryHref}>{a.primary}</a>
+          ) : (
+            <button className="btn">{a.primary}</button>
+          )}
+          {a.secondaryTo ? (
+            <Link className="btn ghost" to={a.secondaryTo}>{a.secondary}</Link>
+          ) : a.secondaryHref ? (
+            <a className="btn ghost" href={a.secondaryHref}>{a.secondary}</a>
+          ) : (
+            <button className="btn ghost">{a.secondary}</button>
+          )}
         </div>
       </div>
     </div>
@@ -339,7 +365,7 @@ export function HowItWorks() {
             met. Need a quick one-off? Use whatever rideshare you like. We're not here to replace
             on-demand apps. We're here to give drivers a network of their own.
           </p>
-          <button className="hero-cta">Find a CBL Driver →</button>
+          <a className="hero-cta" href={APP_URL}>Join CBL — Free for Riders →</a>
         </div>
       </section>
 
