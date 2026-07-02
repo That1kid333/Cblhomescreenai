@@ -694,7 +694,7 @@ const HOME_CSS = `
 @media (max-width:1000px){
   .cbl-home .hero { padding:16px 20px 28px; }
   .cbl-home section.band { padding:48px 22px; }
-  .cbl-home .hero-grid { grid-template-columns:1fr; gap:16px; }
+  .cbl-home .hero-grid { grid-template-columns:1fr; gap:8px; }
   .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:14px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
   .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(120px,26vh,200px); }
@@ -702,11 +702,11 @@ const HOME_CSS = `
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
-  .cbl-home h1.hero-title { font-size:clamp(32px,7vw,48px); margin-bottom:12px; text-align:center; line-height:1.02; }
+  .cbl-home h1.hero-title { font-size:clamp(36px,7.8vw,52px); margin-bottom:12px; text-align:center; line-height:1.02; }
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
-  /* Big icon-only row directly under the image (like the live site) */
-  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:16px 0 2px; }
+  /* Big icon-only row hugging the image (like the live site) */
+  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:2px 0 8px; }
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
   .cbl-home .micon .chip-ic { width:44px; height:44px; }
@@ -721,12 +721,12 @@ const HOME_CSS = `
 @media (max-width:640px){
   .cbl-home .eyebrow { margin-bottom:6px; font-size:11px; }
   .cbl-home .hero-media { height:clamp(110px,20vh,160px); }
-  .cbl-home h1.hero-title { font-size:clamp(30px,8.6vw,44px); }
+  .cbl-home h1.hero-title { font-size:clamp(34px,10vw,46px); }
   .cbl-home .hero-lede { margin-bottom:10px; }
   /* Tighten CTAs so both stay on one row on small phones */
   .cbl-home .btn-primary { padding:11px 18px; font-size:12px; }
   .cbl-home .btn-ghost { padding:11px 16px; font-size:12px; margin-left:8px; }
-  .cbl-home .mobile-icon-row { margin:12px 0 2px; }
+  .cbl-home .mobile-icon-row { margin:2px 0 6px; }
   .cbl-home .micon .chip-ic { width:40px; height:40px; }
   .cbl-home .chip-row { margin-top:18px; gap:8px; }
   .cbl-home .chip { padding:10px 10px; font-size:11px; gap:0; letter-spacing:.03em; }
