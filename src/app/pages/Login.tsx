@@ -12,10 +12,14 @@
  * /eats/imagery/cbl-map-backdrop.jpg; the PMA seal lives at
  * /eats/imagery/cbl-pma-seal.png (uploaded alongside the page).
  *
- * Note: form actions are placeholders for now — the auth backend is a later
- * Claude Code phase (see Affiliate-Network-Integration-Guide.md sequencing).
+ * The membership form is the no-password "quick join" — it POSTs to /api/lead
+ * (Netlify function → Resend → info@citybucketlist.com), same pipeline as the
+ * homepage JoinModal. Real password auth stays in the app (APP_URL); the
+ * "Sign in here" button links there. Full password-protected accounts unlock
+ * complete blog + directory access once the auth phase lands (Justin's side).
  */
 import { useState } from 'react';
+import { APP_URL } from '../lib/constants';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -151,12 +155,8 @@ const CSS = `
   outline:none; border-color:${GOLD}; background:rgba(201,151,66,.05);
   box-shadow:0 0 0 4px rgba(201,151,66,.16);
 }
-.cbl-login .field .toggle {
-  position:absolute; right:8px; top:34px; background:none; border:0; cursor:pointer;
-  padding:8px; color:#8a8a8a; display:inline-flex; transition:color .2s;
-}
-.cbl-login .field .toggle:hover { color:${GOLD}; }
 .cbl-login .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+.cbl-login .opt { text-transform:none; letter-spacing:0; color:#6f6f6f; }
 
 .cbl-login .divider { height:1px; background:rgba(255,255,255,.08); margin:8px 0 18px; }
 .cbl-login .consent { display:flex; align-items:flex-start; gap:11px; margin:0 2px 22px; }
@@ -199,12 +199,31 @@ const CSS = `
 .cbl-login .btn-ghost {
   width:100%; border-radius:999px; font-size:15px; padding:14px 44px; letter-spacing:.14em;
   background:transparent; color:${GOLD}; border:1.5px solid rgba(201,151,66,.5);
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  font-family:${DISPLAY}; font-weight:800; text-transform:uppercase;
+  transition:transform .12s, background .2s, border-color .2s;
 }
 .cbl-login .btn-ghost:hover { background:rgba(201,151,66,.1); border-color:${GOLD}; color:#DDB15F; }
+.cbl-login .btn-primary:disabled { background:#555; cursor:not-allowed; box-shadow:none; }
 .cbl-login .respond {
   margin-top:18px; font-family:${MONO}; font-size:10.5px;
   letter-spacing:.14em; text-transform:uppercase; color:#6f6f6f;
 }
+
+.cbl-login .alert { border-radius:12px; padding:11px 14px; font-size:13.5px; line-height:1.45; margin-bottom:16px; }
+.cbl-login .alert.err { background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.4); color:#f0b3b3; }
+
+.cbl-login .note { font-size:12.5px; line-height:1.55; color:#8a8a8a; margin:14px 2px 0; }
+.cbl-login .note a { color:${GOLD}; text-decoration:none; white-space:nowrap; }
+.cbl-login .note a:hover { text-decoration:underline; }
+
+.cbl-login .success { text-align:center; padding:24px 0; }
+.cbl-login .success .mark { width:56px; height:56px; margin:0 auto 16px; border-radius:50%; border:2px solid ${GOLD}; display:grid; place-items:center; color:${GOLD}; font-size:26px; }
+.cbl-login .success h3 { font-family:${DISPLAY}; font-weight:900; font-size:30px; text-transform:uppercase; color:#fff; margin:0 0 8px; }
+.cbl-login .success h3 .g { color:${GOLD}; }
+.cbl-login .success p { font-size:14.5px; line-height:1.55; color:#B8B8B8; margin:0 0 20px; }
+
+.cbl-login .hp { position:absolute; left:-9999px; top:-9999px; }
 
 /* responsive */
 @media (max-width:980px) {
@@ -219,7 +238,44 @@ const CSS = `
 `;
 
 export function Login() {
-  const [showPw, setShowPw] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [smsConsent, setSmsConsent] = useState(false);
+  const [company, setCompany] = useState(''); // honeypot
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === 'loading') return;
+    setStatus('loading');
+    setErrorMessage('');
+    try {
+      const res = await fetch('/api/lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName,
+          email,
+          phone,
+          smsConsent: Boolean(phone.trim() && smsConsent),
+          source: 'login-page',
+          company,
+        }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (res.ok && result.success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMessage(result.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage('Network error. Please check your connection and try again.');
+    }
+  };
 
   return (
     <main className="cbl-login">
@@ -235,9 +291,9 @@ export function Login() {
             <span className="it">Let's ride.</span>
           </div>
           <p className="lede">
-            Sign in to your CityBucketList membership — or request your private invitation to join.
-            Browse the member directory, discover local restaurants, attractions, and stays. To
-            request rides from your local independent-contractor drivers, download the CBL App.
+            Join free in seconds — no password needed — or sign in to your full membership.
+            Password-protected members get the complete experience: full blog &amp; directory
+            access, plus rides from your local independent-contractor drivers in the CBL App.
           </p>
         </div>
       </section>
@@ -273,65 +329,113 @@ export function Login() {
             <div className="form-eyebrow">Welcome</div>
             <h2 className="form-head">Private Membership <span className="g">Invitation</span></h2>
 
-            <form onSubmit={(e) => e.preventDefault()}>
-              <div className="grid-2">
-                <div className="field">
-                  <label className="label" htmlFor="first">First name <span className="req">*</span></label>
-                  <input type="text" id="first" name="first" placeholder="Enter your first name" autoComplete="given-name" />
-                </div>
-                <div className="field">
-                  <label className="label" htmlFor="cell">Cell <span className="req">*</span></label>
-                  <input type="tel" id="cell" name="cell" placeholder="(555) 123-4567" autoComplete="tel" />
-                </div>
+            {status === 'success' ? (
+              <div className="success">
+                <div className="mark" aria-hidden="true">✓</div>
+                <h3>You're <span className="g">in.</span></h3>
+                <p>Check your inbox — we'll keep you posted on the best of the city.</p>
+                <a className="btn btn-ghost" href={APP_URL}>Create your free account →</a>
+                <p className="note">
+                  Quick join keeps you in the loop. For full blog &amp; directory access — and
+                  rides in the app — you'll need a free password-protected account.
+                </p>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit}>
+                {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
-              <div className="field">
-                <label className="label" htmlFor="email">Email <span className="req">*</span></label>
-                <input type="email" id="email" name="email" placeholder="your.email@example.com" autoComplete="email" />
-              </div>
+                <div className="grid-2">
+                  <div className="field">
+                    <label className="label" htmlFor="first">First name <span className="req">*</span></label>
+                    <input
+                      type="text"
+                      id="first"
+                      name="first"
+                      placeholder="Enter your first name"
+                      autoComplete="given-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      maxLength={100}
+                      required
+                    />
+                  </div>
+                  <div className="field">
+                    <label className="label" htmlFor="cell">Cell <span className="opt">(optional)</span></label>
+                    <input
+                      type="tel"
+                      id="cell"
+                      name="cell"
+                      placeholder="(555) 123-4567"
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => {
+                        setPhone(e.target.value);
+                        if (!e.target.value.trim()) setSmsConsent(false);
+                      }}
+                      maxLength={30}
+                    />
+                  </div>
+                </div>
 
-              <div className="field">
-                <label className="label" htmlFor="pw">Password <span className="req">*</span></label>
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  id="pw"
-                  name="password"
-                  placeholder="Create a password"
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  className="toggle"
-                  onClick={() => setShowPw((s) => !s)}
-                  aria-label={showPw ? 'Hide password' : 'Show password'}
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z" />
-                    <circle cx="12" cy="12" r="3" />
-                    {showPw && <line x1="3" y1="3" x2="21" y2="21" />}
-                  </svg>
+                <div className="field">
+                  <label className="label" htmlFor="email">Email <span className="req">*</span></label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="your.email@example.com"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    maxLength={200}
+                    required
+                  />
+                </div>
+
+                {/* Honeypot — hidden from real users, bots fill it in */}
+                <div className="hp" aria-hidden="true">
+                  <input
+                    type="text"
+                    name="company"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="divider" />
+
+                <div className="consent">
+                  <input
+                    type="checkbox"
+                    id="sms"
+                    checked={smsConsent}
+                    disabled={!phone.trim()}
+                    onChange={(e) => setSmsConsent(e.target.checked)}
+                  />
+                  <label htmlFor="sms">
+                    I agree to receive SMS notifications from CityBucketList.com. Message &amp; data
+                    rates may apply. <a href="/terms#privacy-policy">See our Privacy policy.</a>
+                  </label>
+                </div>
+
+                <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
+                  {status === 'loading' ? 'Sending…' : <>Join Free — No Password <span className="arr">→</span></>}
                 </button>
-              </div>
 
-              <div className="divider" />
+                <p className="note">
+                  Quick join keeps you in the loop. For full blog &amp; directory access — and rides
+                  in the app — you'll need a free password-protected account —{' '}
+                  <a href={APP_URL}>create yours here →</a>
+                </p>
 
-              <div className="consent">
-                <input type="checkbox" id="sms" />
-                <label htmlFor="sms">
-                  I agree to receive SMS notifications from CityBucketList.com. Message &amp; data
-                  rates may apply. <a href="/terms#privacy-policy">See our Privacy policy.</a>
-                </label>
-              </div>
+                <div className="switch">Already a member?</div>
+                <a className="btn btn-ghost" href={APP_URL}>Sign in here</a>
 
-              <button type="submit" className="btn btn-primary">
-                Join Membership <span className="arr">→</span>
-              </button>
-
-              <div className="switch">Already a member?</div>
-              <button type="button" className="btn btn-ghost">Sign in here</button>
-
-              <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
-            </form>
+                <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
+              </form>
+            )}
           </div>
 
         </div>

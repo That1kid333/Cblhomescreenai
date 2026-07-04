@@ -12,6 +12,7 @@ import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import riderDashboardImg from '../../assets/cbl-rider-dashboard.png';
 import { APP_URL, BUCKEE_PUBLIC_URL, SUPABASE_ANON_KEY } from '../lib/constants';
+import { JoinModal } from '../components/JoinModal';
 
 /**
  * Home — re-skinned to match the rest of the site (Our Story / Explore /
@@ -614,6 +615,7 @@ export function Home() {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
   const [talkLang, setTalkLang] = useState('EN');
   const talkRef = useRef<HTMLElement>(null);
   const [buckeeIn, setBuckeeIn] = useState(false);
@@ -759,12 +761,12 @@ export function Home() {
               <p className="hero-lede" style={fadeStyle}>
                 {slide.caption}
               </p>
-              <a className="btn-primary" href={APP_URL}>
+              <button className="btn-primary" onClick={() => setJoinOpen(true)}>
                 Join Now — Free
-              </a>
-              <a className="btn-ghost" href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer">
+              </button>
+              <Link className="btn-ghost" to="/login">
                 Sign In
-              </a>
+              </Link>
 
               {/* Category + link chips, highlighting in sync with the rotation */}
               <div
@@ -1024,6 +1026,8 @@ export function Home() {
           </a>
         </div>
       </section>
+
+      <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} source="home-hero" />
     </main>
   );
 }
