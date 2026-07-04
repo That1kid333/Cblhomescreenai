@@ -83,6 +83,18 @@ const FAMILY: Record<CharKey, Member> = {
 
 const ORDER: CharKey[] = ['buckee', 'citty', 'listy'];
 
+// §5.3 — intentional status badges: Buckee is live (chat), the others are marketing-only for now.
+const CHAR_STATUS: Record<CharKey, 'on-duty' | 'coming-soon'> = {
+  buckee: 'on-duty',
+  citty: 'coming-soon',
+  listy: 'coming-soon',
+};
+
+// §5.2 — "Hear from the crew" intro-video row. The videos are real (galaxy.ai CDN, verified
+// video/mp4) and play on click; the play button is just the poster state. Kept as a flag for
+// easy toggling. (Optional future polish: add poster frames so the black first frame isn't blank.)
+const SHOW_CREW_VIDEOS = true;
+
 const HERO_LINES = [
   'How can I help you today?',
   'Do you need a ride?',
@@ -143,6 +155,7 @@ export function MeetBuckee() {
   // video into view, and plays it (tap = user gesture, so audio is allowed).
   const selectAndPlay = (id: CharKey) => {
     setActive(id);
+    if (!SHOW_CREW_VIDEOS) return; // video row hidden — card just selects the character
     vidRefs.current[id]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     playVideo(id);
   };
@@ -180,7 +193,8 @@ export function MeetBuckee() {
         </div>
       </section>
 
-      {/* ── MEET THE CREW (talking-head intro videos) ── */}
+      {/* ── MEET THE CREW (talking-head intro videos) — hidden until real videos exist (§5.2) ── */}
+      {SHOW_CREW_VIDEOS && (
       <section className="wrap videos">
         <div className="videos-head">
           <span className="eyebrow">press play</span>
@@ -197,6 +211,7 @@ export function MeetBuckee() {
                 <video
                   ref={(el) => { vidRefs.current[v.id] = el; }}
                   src={v.url}
+                  poster={FAMILY[v.id].img}
                   playsInline
                   preload="metadata"
                   onEnded={() => endVideo(v.id)}
@@ -211,6 +226,7 @@ export function MeetBuckee() {
           ))}
         </div>
       </section>
+      )}
 
       {/* ── FAMILY PICKER ── */}
       <section className="wrap family">
@@ -223,6 +239,9 @@ export function MeetBuckee() {
               onClick={() => selectAndPlay(key)}
               aria-pressed={active === key}
             >
+              <span className={'char-badge ' + CHAR_STATUS[key]}>
+                {CHAR_STATUS[key] === 'on-duty' ? 'ON DUTY' : 'COMING SOON'}
+              </span>
               <span className="char-thumb" style={{ backgroundImage: `url(${m.img})` }} />
               <span className="char-info">
                 <span className="char-name">{m.name}</span>
@@ -401,11 +420,14 @@ const CSS = `
 }
 .cbl-buckee .char:hover { border-color:rgba(201,151,66,.35); background:var(--surface-2); transform:translateY(-2px); }
 .cbl-buckee .char.active { border-color:var(--gold); background:linear-gradient(180deg, rgba(201,151,66,.08) 0%, var(--surface) 100%); }
-.cbl-buckee .char.active::before {
-  content:'ON DUTY'; position:absolute; top:-10px; right:16px;
-  background:var(--gold); color:#111; font-family:${MONO}; font-size:10px; letter-spacing:.1em;
-  font-weight:600; padding:4px 10px; border-radius:2px;
+/* §5.3 — intentional per-character status badges */
+.cbl-buckee .char-badge {
+  position:absolute; top:-10px; right:16px;
+  font-family:${MONO}; font-size:10px; letter-spacing:.1em; font-weight:600;
+  padding:4px 10px; border-radius:2px; text-transform:uppercase;
 }
+.cbl-buckee .char-badge.on-duty { background:#4DBF66; color:#062615; }
+.cbl-buckee .char-badge.coming-soon { background:rgba(201,151,66,.12); color:var(--gold); border:1px solid rgba(201,151,66,.45); }
 .cbl-buckee .char-thumb {
   width:64px; height:64px; border-radius:50%; flex-shrink:0;
   background-color:var(--surface-2); background-size:130%; background-position:center 16%;
