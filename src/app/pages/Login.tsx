@@ -54,8 +54,15 @@ const CSS = `
   color:#fff; font-weight:700; text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-login .eyebrow::before {
-  content:''; width:8px; height:8px; border-radius:50%;
+  content:''; width:8px; height:8px; border-radius:50%; flex-shrink:0;
   background:${GOLD}; animation:cbl-pulse 2.4s ease-in-out infinite;
+}
+/* One line always: full wording on desktop, "PMA" on phones/small tablets. */
+.cbl-login .eyebrow { white-space:nowrap; }
+.cbl-login .eyebrow .pma-abbr { display:none; }
+@media (max-width:700px) {
+  .cbl-login .eyebrow .pma-full { display:none; }
+  .cbl-login .eyebrow .pma-abbr { display:inline; text-transform:uppercase; }
 }
 .cbl-login h1.hero-title {
   font-family:${DISPLAY}; font-weight:900;
@@ -317,7 +324,10 @@ export function Login() {
       {/* HERO */}
       <section className="hero">
         <div className="hero-inner">
-          <div className="eyebrow">members only · private membership association</div>
+          <div className="eyebrow">
+            members only · <span className="pma-full">private membership association</span>
+            <span className="pma-abbr">pma</span>
+          </div>
           <h1 className="hero-title">Login</h1>
           <div className="hero-subtitle">
             <span>Welcome back.</span>
