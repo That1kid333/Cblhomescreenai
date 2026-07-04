@@ -41,7 +41,7 @@ const CSS = `
 .cbl-concierge .hero .wrap{display:grid;grid-template-columns:1.12fr .88fr;gap:44px;align-items:center;}
 .cbl-concierge .hero-copy{min-width:0;}
 .cbl-concierge .hero-media img{width:100%;height:auto;max-height:470px;object-fit:cover;border-radius:22px 0 22px 0;border:1px solid rgba(201,151,66,.4);box-shadow:0 26px 56px rgba(0,0,0,.55);display:block;}
-.cbl-concierge .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#8a8a8a;text-transform:lowercase;margin-bottom:12px;}
+.cbl-concierge .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:lowercase;margin-bottom:12px;}
 .cbl-concierge .eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);animation:cbl-pulse 2.4s ease-in-out infinite;}
 .cbl-concierge h1.hero-title{font-family:var(--display);font-weight:900;font-size:clamp(56px,7.4vw,108px);line-height:.9;letter-spacing:-.02em;text-transform:uppercase;margin:0;color:#fff;}
 .cbl-concierge .hero-subtitle{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;font-family:var(--display);font-weight:900;font-size:clamp(28px,3vw,44px);text-transform:uppercase;letter-spacing:-.005em;line-height:1.05;color:var(--gold);margin-top:6px;}

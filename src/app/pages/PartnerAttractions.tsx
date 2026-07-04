@@ -55,7 +55,7 @@ const CSS = `
 .cbl-partner-attr .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
-  color:#8a8a8a; text-transform:lowercase; margin-bottom:10px;
+  color:#fff; font-weight:700; text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-partner-attr .eyebrow::before { content:''; width:8px; height:8px; border-radius:50%; background:${GOLD}; animation:cbl-pulse 2.4s ease-in-out infinite; }
 .cbl-partner-attr h1.hero-title {

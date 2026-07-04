@@ -67,7 +67,7 @@ const DIR_CSS = `
 .cbl-dir .hero-inner { max-width:1280px; margin:0 auto; }
 .cbl-dir .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
-  font-family:${MONO}; font-size:12px; letter-spacing:.14em; color:#8a8a8a;
+  font-family:${MONO}; font-size:12px; letter-spacing:.14em; color:#fff; font-weight:700;
   text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-dir .eyebrow::before { content:''; width:8px; height:8px; border-radius:50%; background:#C99742; animation:cbl-pulse 2.4s ease-in-out infinite; }
