@@ -237,12 +237,36 @@ const CSS = `
 /* responsive */
 @media (max-width:980px) {
   .cbl-login .card { grid-template-columns:1fr; }
-  .cbl-login .seal-pane { border-right:0; border-bottom:1px solid rgba(255,255,255,.07); }
+  /* Action first on mobile: signup pane on top, seal/brand story below. */
+  .cbl-login .form-pane { order:1; }
+  .cbl-login .seal-pane { order:2; border-right:0; border-top:1px solid rgba(255,255,255,.07); }
 }
 @media (max-width:560px) {
-  .cbl-login .hero, .cbl-login .card-wrap { padding-left:24px; padding-right:24px; }
-  .cbl-login .card > .col { padding:34px 26px; }
+  .cbl-login .hero, .cbl-login .card-wrap { padding-left:18px; padding-right:18px; }
+  /* Keep the signup pane inside the first viewport: compact hero, no lede
+     (the seal pane below carries the story), tightened fields, no perks. */
+  .cbl-login .hero { padding-top:14px; padding-bottom:14px; }
+  .cbl-login .eyebrow { margin-bottom:4px; font-size:10.5px; }
+  .cbl-login h1.hero-title { font-size:clamp(38px,11vw,52px); }
+  .cbl-login .hero-subtitle { font-size:clamp(20px,5.5vw,26px); margin-top:2px; }
+  .cbl-login .hero .lede { display:none; }
+  .cbl-login .card-wrap { padding-bottom:28px; }
+  .cbl-login .card > .col { padding:20px 18px; }
   .cbl-login .grid-2 { grid-template-columns:1fr; }
+  .cbl-login .perks { display:none; }
+  .cbl-login .form-eyebrow { display:none; }
+  .cbl-login .form-head { font-size:24px; margin-bottom:14px; }
+  .cbl-login .btn-primary, .cbl-login .btn-ghost { padding:12px 30px; font-size:13.5px; }
+  .cbl-login .note { margin-top:10px; font-size:11.5px; }
+  .cbl-login .switch { margin:14px 0 12px; }
+  .cbl-login .label { margin-bottom:5px; }
+  .cbl-login .field { margin-bottom:10px; }
+  .cbl-login .field input { padding:10px 12px; font-size:14px; }
+  .cbl-login .divider { margin:4px 0 12px; }
+  .cbl-login .consent { margin-bottom:14px; }
+  .cbl-login .consent label { font-size:11.5px; }
+  .cbl-login .signin-line { margin-top:12px; font-size:12.5px; }
+  .cbl-login .respond { display:none; }
 }
 `;
 
