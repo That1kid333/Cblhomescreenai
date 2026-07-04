@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import { APP_URL } from '../lib/constants';
+import { useBuckeeChat, BUCKEE_GREETING, BUCKEE_GATE_LINE } from '../lib/useBuckeeChat';
 
 /**
  * Meet the Buckee Family — ported from the concierge-hero mockup into the
@@ -95,6 +95,18 @@ const CHAR_STATUS: Record<CharKey, 'on-duty' | 'coming-soon'> = {
 // easy toggling. (Optional future polish: add poster frames so the black first frame isn't blank.)
 const SHOW_CREW_VIDEOS = true;
 
+// §5b.3 — the wired Talk-to-Buckee bar on this page (same buckee-public endpoint + shared
+// teaser counter as the home screen). Set false to hide behind a flag if it ships pre-wiring.
+const SHOW_MEET_BUCKEE_CHAT = true;
+
+// §5b.2 — prompt each "What can Buckee do?" card fires into the chat (empty = just open + focus).
+const BUCKEE_PROMPTS: Record<string, string> = {
+  'Surprise me': 'Surprise me — pick something great to do tonight.',
+  'Build a bucket list': 'Help me build a bucket list for this city.',
+  "What's nearby": "What's nearby that's worth checking out?",
+  'Ask anything': '',
+};
+
 const HERO_LINES = [
   'How can I help you today?',
   'Do you need a ride?',
@@ -131,6 +143,15 @@ export function MeetBuckee() {
   const [lang, setLang] = useState('EN');
   const [vplaying, setVplaying] = useState<CharKey | null>(null);
   const vidRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+  const chat = useBuckeeChat(lang);
+  const chatBarRef = useRef<HTMLDivElement>(null);
+  const scrollToChat = () => { chat.setOpen(true); chatBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
+  const onCard = (name: string) => {
+    scrollToChat();
+    const prompt = BUCKEE_PROMPTS[name];
+    if (prompt) chat.sendPrompt(prompt);
+    else setTimeout(() => chat.inputRef.current?.focus(), 300);
+  };
 
   useEffect(() => {
     const id = setInterval(() => setQi((i) => (i + 1) % HERO_LINES.length), 2600);
@@ -186,9 +207,9 @@ export function MeetBuckee() {
             <a className="btn-gold" href={APP_URL} target="_blank" rel="noopener noreferrer">
               Open the app
             </a>
-            <Link className="btn-ghost" to="/how-it-works">
-              How it works
-            </Link>
+            <button className="btn-ghost" onClick={scrollToChat}>
+              Say hi to Buckee ↓
+            </button>
           </div>
         </div>
       </section>
@@ -263,21 +284,59 @@ export function MeetBuckee() {
           </div>
           <p className="who-blurb">{c.blurb}</p>
           <div className="services-grid">
-            {c.services.map((s) => (
-              <div className="svc" key={s.name}>
-                <span className="svc-ico">{s.ico}</span>
-                <div className="svc-name">{s.name}</div>
-                <div className="svc-hint">{s.hint}</div>
-              </div>
-            ))}
+            {c.services.map((s) => {
+              const inner = (
+                <>
+                  <span className="svc-ico">{s.ico}</span>
+                  <div className="svc-name">{s.name}</div>
+                  <div className="svc-hint">{s.hint}</div>
+                </>
+              );
+              // §5b.2/5b.4 — Buckee (on duty) = clickable prompt-starters; Citty/Listy = static list.
+              return active === 'buckee' ? (
+                <button className="svc svc-btn" key={s.name} onClick={() => onCard(s.name)}>{inner}</button>
+              ) : (
+                <div className="svc" key={s.name}>{inner}</div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* ── VOICE BAR ── */}
-      <section className="wrap voice">
+      {/* ── TALK TO BUCKEE — wired teaser chat (§5b.3) ── */}
+      {SHOW_MEET_BUCKEE_CHAT && (
+      <section className="wrap voice" ref={chatBarRef}>
+        {chat.open && (
+          <div className="bkchat" role="log" aria-live="polite">
+            <div className="bkchat-scroll" ref={chat.scrollRef}>
+              <div className="bkmsg bot">{BUCKEE_GREETING[lang]}</div>
+              {chat.messages.map((m, i) => (
+                <div key={i} className={'bkmsg ' + (m.role === 'user' ? 'me' : 'bot')}>{m.content}</div>
+              ))}
+              {chat.sending && <div className="bkmsg bot typing"><span></span><span></span><span></span></div>}
+            </div>
+            {chat.gated ? (
+              <div className="bkgate">
+                <div>{BUCKEE_GATE_LINE[lang]}</div>
+                <a className="btn-gold" href={APP_URL}>Join now — free</a>
+              </div>
+            ) : (
+              <form className="bkinput" onSubmit={(e) => { e.preventDefault(); chat.send(chat.input); }}>
+                <input
+                  ref={chat.inputRef}
+                  value={chat.input}
+                  onChange={(e) => chat.setInput(e.target.value)}
+                  placeholder={chat.listening ? 'Listening…' : 'Ask Buckee anything…'}
+                  maxLength={500}
+                  aria-label="Message Buckee"
+                />
+                <button type="submit" className="bksend" aria-label="Send" disabled={chat.sending || !chat.input.trim()}>→</button>
+              </form>
+            )}
+          </div>
+        )}
         <div className="voice-bar">
-          <button className="mic-btn" aria-label={`Talk to ${c.name}`}>
+          <button className={'mic-btn' + (chat.listening ? ' listening' : '')} aria-label="Talk to Buckee" onClick={chat.toggleMic}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="9" y="2" width="6" height="12" rx="3" />
               <path d="M5 10v2a7 7 0 0 0 14 0v-2" />
@@ -286,8 +345,8 @@ export function MeetBuckee() {
             </svg>
           </button>
           <div className="voice-text">
-            <div className="voice-label">talk to {c.name}</div>
-            <div className="voice-prompt">Tap and speak — English, Español, Français, Português.</div>
+            <div className="voice-label">talk to Buckee</div>
+            <div className="voice-prompt">Type or tap the mic — English, Español, Français, Português.</div>
           </div>
           <div className="lang-chips">
             {['EN', 'ES', 'FR', 'PT'].map((l) => (
@@ -302,6 +361,7 @@ export function MeetBuckee() {
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 }
@@ -331,7 +391,7 @@ const CSS = `
 .cbl-buckee .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:lowercase;
-  color:var(--text-muted); margin-bottom:12px;
+  color:#fff; font-weight:700; margin-bottom:12px;
 }
 .cbl-buckee .eyebrow::before {
   content:''; width:8px; height:8px; border-radius:50%; background:var(--gold);
@@ -363,6 +423,7 @@ const CSS = `
 .cbl-buckee .btn-ghost {
   display:inline-block; border:1px solid rgba(255,255,255,.25); color:#fff; font-weight:700; font-size:15px;
   padding:12px 24px; border-radius:var(--corner-sm); transition:border-color .2s,color .2s;
+  background:transparent; cursor:pointer; font-family:inherit;
 }
 .cbl-buckee .btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
 
@@ -447,7 +508,8 @@ const CSS = `
 .cbl-buckee .who-blurb { font-size:16px; line-height:1.55; color:var(--text-body); max-width:760px; margin:14px 0 24px; padding-bottom:22px; border-bottom:1px solid var(--line); }
 .cbl-buckee .services-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
 .cbl-buckee .svc { background:var(--surface-2); border:1px solid var(--line); border-radius:var(--corner-sm); padding:20px 18px; transition:border-color .2s, transform .2s; }
-.cbl-buckee .svc:hover { border-color:rgba(201,151,66,.4); transform:translateY(-2px); }
+.cbl-buckee .svc-btn { cursor:pointer; text-align:left; width:100%; font:inherit; color:inherit; }
+.cbl-buckee .svc-btn:hover { border-color:rgba(201,151,66,.4); transform:translateY(-2px); }
 .cbl-buckee .svc-ico { font-size:24px; margin-bottom:10px; display:block; }
 .cbl-buckee .svc-name { font-size:15px; font-weight:700; color:#fff; margin-bottom:4px; }
 .cbl-buckee .svc-hint { font-size:13px; line-height:1.4; color:var(--text-muted); }
@@ -472,6 +534,26 @@ const CSS = `
 .cbl-buckee .chip { font-family:${MONO}; font-size:12px; letter-spacing:.06em; padding:8px 12px; border-radius:6px; border:1px solid var(--line); color:var(--text-muted); background:transparent; transition:all .2s; }
 .cbl-buckee .chip:hover { color:#fff; border-color:var(--text-body); }
 .cbl-buckee .chip.active { background:var(--gold); color:#111; border-color:var(--gold); }
+
+/* §5b — wired Talk-to-Buckee chat panel */
+.cbl-buckee .bkchat { background:var(--surface); border:1px solid rgba(201,151,66,.4); border-radius:12px; padding:12px 14px; margin-bottom:12px; display:flex; flex-direction:column; gap:10px; }
+.cbl-buckee .bkchat-scroll { display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding-right:4px; }
+.cbl-buckee .bkmsg { max-width:86%; padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.4; word-wrap:break-word; }
+.cbl-buckee .bkmsg.bot { align-self:flex-start; background:rgba(201,151,66,.12); border:1px solid rgba(201,151,66,.25); color:#EDEDED; border-bottom-left-radius:4px; }
+.cbl-buckee .bkmsg.me { align-self:flex-end; background:var(--gold); color:#111; font-weight:600; border-bottom-right-radius:4px; }
+.cbl-buckee .bkmsg.typing { display:inline-flex; gap:4px; align-items:center; }
+.cbl-buckee .bkmsg.typing span { width:6px; height:6px; border-radius:50%; background:var(--gold); opacity:.5; animation:bk-typing 1s infinite; }
+.cbl-buckee .bkmsg.typing span:nth-child(2){ animation-delay:.15s; }
+.cbl-buckee .bkmsg.typing span:nth-child(3){ animation-delay:.3s; }
+@keyframes bk-typing { 0%,100%{ opacity:.3; transform:translateY(0);} 50%{ opacity:1; transform:translateY(-3px);} }
+.cbl-buckee .bkinput { display:flex; gap:8px; }
+.cbl-buckee .bkinput input { flex:1; min-width:0; background:#0A0A0A; border:1px solid rgba(255,255,255,.15); border-radius:999px; padding:10px 16px; color:#fff; font-size:14px; outline:none; }
+.cbl-buckee .bkinput input:focus { border-color:var(--gold); }
+.cbl-buckee .bksend { flex-shrink:0; width:40px; height:40px; border-radius:50%; border:0; background:var(--gold); color:#111; font-size:18px; font-weight:900; cursor:pointer; }
+.cbl-buckee .bksend:disabled { opacity:.4; cursor:default; }
+.cbl-buckee .bkgate { display:flex; flex-direction:column; gap:10px; align-items:flex-start; font-size:14px; color:#EDEDED; }
+.cbl-buckee .mic-btn.listening { animation:bk-mic-pulse 1.2s ease-in-out infinite; }
+@keyframes bk-mic-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(201,151,66,.35);} 50%{ box-shadow:0 0 0 9px rgba(201,151,66,.10);} }
 
 /* ── Meet-the-crew intro videos ── */
 .cbl-buckee .videos { padding-top:0; padding-bottom:20px; }

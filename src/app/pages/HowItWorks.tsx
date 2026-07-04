@@ -42,7 +42,7 @@ const HOW_CSS = `
 .cbl-how .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
-  color:#8a8a8a; text-transform:lowercase; margin-bottom:10px;
+  color:#fff; font-weight:700; text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-how .eyebrow::before {
   content:''; width:8px; height:8px; border-radius:50%;
