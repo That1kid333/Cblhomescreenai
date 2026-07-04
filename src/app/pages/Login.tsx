@@ -210,6 +210,15 @@ const CSS = `
   letter-spacing:.14em; text-transform:uppercase; color:#6f6f6f;
 }
 
+.cbl-login .perks { list-style:none; margin:0 0 18px; padding:0; display:flex; flex-direction:column; gap:9px; }
+.cbl-login .perks li { position:relative; padding-left:22px; font-size:13.5px; line-height:1.45; color:#B8B8B8; }
+.cbl-login .perks li::before { content:''; position:absolute; left:0; top:9px; width:13px; height:1.5px; background:${GOLD}; }
+.cbl-login .perks li b { color:#fff; }
+.cbl-login .btn-ghost:disabled { opacity:.5; cursor:not-allowed; }
+.cbl-login .signin-line { margin-top:18px; text-align:center; font-size:13px; color:#8a8a8a; }
+.cbl-login .signin-line a { color:${GOLD}; font-weight:700; }
+.cbl-login .signin-line a:hover { text-decoration:underline; }
+
 .cbl-login .alert { border-radius:12px; padding:11px 14px; font-size:13.5px; line-height:1.45; margin-bottom:16px; }
 .cbl-login .alert.err { background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.4); color:#f0b3b3; }
 
@@ -291,9 +300,10 @@ export function Login() {
             <span className="it">Let's ride.</span>
           </div>
           <p className="lede">
-            Join free in seconds — no password needed — or sign in to your full membership.
-            Password-protected members get the complete experience: full blog &amp; directory
-            access, plus rides from your local independent-contractor drivers in the CBL App.
+            Create your free password-protected membership for the complete experience — full
+            blog &amp; directory access, plus rides from your local independent-contractor
+            drivers in the CBL App. In a hurry? The two-step quick join keeps you in the loop,
+            no password needed.
           </p>
         </div>
       </section>
@@ -341,7 +351,24 @@ export function Login() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <>
+                {/* Option 1 — full membership (featured) */}
+                <ul className="perks">
+                  <li><b>Full blog &amp; directory access</b> — post, save spots, member pricing</li>
+                  <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
+                  <li><b>Buckee, your AI concierge</b> — plus savings in every partner city</li>
+                </ul>
+                <a className="btn btn-primary" href={APP_URL}>
+                  Create Full Account <span className="arr">→</span>
+                </a>
+                <p className="note" style={{ textAlign: 'center' }}>
+                  100% free · password-protected · everything unlocked
+                </p>
+
+                <div className="switch">In a hurry? Quick join</div>
+
+                {/* Option 2 — easy two-step, no password */}
+                <form onSubmit={handleSubmit}>
                 {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
                 <div className="grid-2">
@@ -420,21 +447,22 @@ export function Login() {
                   </label>
                 </div>
 
-                <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
-                  {status === 'loading' ? 'Sending…' : <>Join Free — No Password <span className="arr">→</span></>}
+                <button type="submit" className="btn btn-ghost" disabled={status === 'loading'}>
+                  {status === 'loading' ? 'Sending…' : <>Quick Join — No Password <span className="arr">→</span></>}
                 </button>
 
                 <p className="note">
-                  Quick join keeps you in the loop. For full blog &amp; directory access — and rides
-                  in the app — you'll need a free password-protected account —{' '}
-                  <a href={APP_URL}>create yours here →</a>
+                  Quick join keeps you in the loop — updates &amp; local tips only. Full access
+                  lives in your free account above.
                 </p>
 
-                <div className="switch">Already a member?</div>
-                <a className="btn btn-ghost" href={APP_URL}>Sign in here</a>
+                <div className="signin-line">
+                  Already a member? <a href={APP_URL}>Sign in here →</a>
+                </div>
 
                 <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
-              </form>
+                </form>
+              </>
             )}
           </div>
 
