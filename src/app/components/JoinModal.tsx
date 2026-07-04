@@ -121,6 +121,14 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
 
+  // Hold onClose in a ref so the open-effect never re-runs when a parent
+  // re-render recreates the callback (e.g. Home's hero rotation every 4s) —
+  // re-running it would steal focus back to the first field mid-typing.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
@@ -129,7 +137,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (e.key !== 'Tab' || !panelRef.current) return;
@@ -152,7 +160,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
