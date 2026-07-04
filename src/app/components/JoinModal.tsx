@@ -75,17 +75,17 @@ const JOIN_CSS = `
 
 .cbl-join .switch {
   display:flex; align-items:center; gap:14px; margin:18px 0 14px;
-  color:#8a8a8a; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:${GOLD}; font-size:13px; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
 }
-.cbl-join .switch::before, .cbl-join .switch::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.1); }
+.cbl-join .switch::before, .cbl-join .switch::after { content:''; flex:1; height:1px; background:rgba(201,151,66,.4); }
 .cbl-join .alt {
   display:flex; align-items:center; justify-content:center; gap:10px; width:100%;
-  border:1.5px solid rgba(255,255,255,.25); border-radius:999px; padding:13px 32px;
-  color:#fff; font-family:${DISPLAY}; font-weight:900; font-size:13px;
+  border:0; border-radius:999px; padding:14px 32px;
+  background:${GOLD}; color:#000; font-family:${DISPLAY}; font-weight:900; font-size:13.5px;
   letter-spacing:.14em; text-transform:uppercase; text-decoration:none;
-  transition:border-color .2s, color .2s;
+  transition:background .2s;
 }
-.cbl-join .alt:hover { border-color:${GOLD}; color:${GOLD}; }
+.cbl-join .alt:hover { background:#DDB15F; }
 .cbl-join .alt-cap { text-align:center; font-family:${MONO}; font-size:11px; letter-spacing:.06em; color:#6f6f6f; margin:8px 0 0; }
 
 .cbl-join .success { text-align:center; padding:10px 0 4px; }
