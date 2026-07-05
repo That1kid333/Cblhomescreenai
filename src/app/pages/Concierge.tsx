@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { APP_URL } from '../lib/constants';
 
 const CSS = `
 .cbl-concierge{
@@ -595,9 +596,13 @@ export function Concierge() {
               <div className="mark" aria-hidden="true">✓</div>
               <h3>Application <span className="g">received.</span></h3>
               <p>
-                Thanks, we'll be in touch within 24 hours to set up your property and send your
-                welcome kit. Watch your inbox for a confirmation from info@citybucketlist.com.
+                Thanks — we'll be in touch within 24 hours with your welcome kit details. One more
+                step: create your CBL account now so we can activate your dashboard, referral
+                code, and payouts the moment you're approved.
               </p>
+              <a className="btn gold" href={`${APP_URL}/partner/signup`} style={{ marginTop: '18px', display: 'inline-flex' }}>
+                Create your account in the app →
+              </a>
             </div>
           ) : (
             <form onSubmit={handleApply}>
