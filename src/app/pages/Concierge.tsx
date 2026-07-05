@@ -16,6 +16,7 @@
 
 import { useState } from 'react';
 import { APP_URL } from '../lib/constants';
+import conciergeDashImg from '../../assets/cbl-concierge-dashboard.png';
 
 const CSS = `
 .cbl-concierge{
@@ -86,26 +87,13 @@ const CSS = `
 .cbl-concierge .step h4{font-family:var(--display);font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:-.005em;margin:0 0 8px;}
 .cbl-concierge .step p{color:var(--muted);font-size:14px;line-height:1.55;margin:0;}
 
-/* dashboard preview */
-.cbl-concierge .dash-grid{display:grid;grid-template-columns:340px 1fr;gap:48px;align-items:center;}
-.cbl-concierge .phone{width:340px;justify-self:center;background:#000;border:9px solid #1b1b1b;border-radius:46px;padding:18px 16px 22px;box-shadow:0 30px 60px rgba(0,0,0,.6);}
-.cbl-concierge .phone .pwm{text-align:center;font-family:var(--display);font-weight:900;font-size:13px;letter-spacing:.02em;color:#fff;margin-bottom:14px;}
-.cbl-concierge .phone .pwm .y{color:var(--yellow);}
-.cbl-concierge .phone .ptitle{text-align:center;font-family:var(--display);font-weight:900;font-size:24px;text-transform:uppercase;line-height:.95;}
-.cbl-concierge .phone .ptitle .g{color:var(--gold);font-size:15px;display:block;letter-spacing:.06em;}
-.cbl-concierge .hub{position:relative;width:230px;height:230px;margin:18px auto 6px;}
-.cbl-concierge .hub .ring{position:absolute;inset:0;border-radius:50%;border:1px dashed rgba(201,151,66,.5);}
-.cbl-concierge .hub .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:88px;height:88px;border-radius:50%;border:2px solid var(--gold);background:#141414;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--gold);text-align:center;}
-.cbl-concierge .hub .node{position:absolute;width:58px;height:58px;border-radius:50%;border:2px solid var(--gold);background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
-.cbl-concierge .hub .node span{font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:#ddd;text-transform:uppercase;}
-.cbl-concierge .hub .n-top{top:0;left:50%;transform:translateX(-50%);}
-.cbl-concierge .hub .n-bot{bottom:0;left:50%;transform:translateX(-50%);}
-.cbl-concierge .hub .n-left{left:0;top:50%;transform:translateY(-50%);}
-.cbl-concierge .hub .n-right{right:0;top:50%;transform:translateY(-50%);}
-.cbl-concierge .phone .pbtn{margin-top:8px;background:var(--gold);color:#000;border-radius:8px;text-align:center;padding:11px;font-family:var(--display);font-weight:800;font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
-.cbl-concierge .phone .pbtn.ghost{background:transparent;border:1px solid var(--gold);color:var(--gold);margin-top:8px;}
-.cbl-concierge .phone .pnav{display:flex;justify-content:space-around;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);}
-.cbl-concierge .phone .pnav div{font-family:var(--mono);font-size:7.5px;letter-spacing:.06em;color:var(--gold);text-align:center;text-transform:uppercase;line-height:1.4;}
+/* dashboard preview — real app screenshot in a hand-held phone (transparent
+   PNG, 1427x1500 ~3x retina). Sits flush on the black band; drop-shadow lifts it. */
+.cbl-concierge .dash-grid{display:grid;grid-template-columns:420px 1fr;gap:48px;align-items:center;}
+.cbl-concierge .dash-phone{
+  width:min(100%,420px);height:auto;display:block;justify-self:center;
+  filter:drop-shadow(0 30px 60px rgba(0,0,0,.6));
+}
 .cbl-concierge .feat-list{display:flex;flex-direction:column;gap:18px;}
 .cbl-concierge .feat{display:flex;gap:16px;}
 .cbl-concierge .feat .fic{flex-shrink:0;width:42px;height:42px;border-radius:12px;background:#0A0A0A;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;}
@@ -226,6 +214,7 @@ const CSS = `
   .cbl-concierge .val-grid{grid-template-columns:1fr;}
   .cbl-concierge .steps{grid-template-columns:1fr 1fr;}
   .cbl-concierge .dash-grid{grid-template-columns:1fr;gap:32px;}
+  .cbl-concierge .dash-phone{width:min(74vw,360px);}
   .cbl-concierge .plaque-grid{grid-template-columns:1fr;gap:32px;}
   .cbl-concierge .earn-grid{grid-template-columns:1fr;}
   .cbl-concierge .price-grid{grid-template-columns:1fr;}
@@ -410,25 +399,11 @@ export function Concierge() {
             local Eats &amp; Drinks, Attractions, and Airport Info to share with every guest.
           </p>
           <div className="dash-grid">
-            <div className="phone">
-              <div className="pwm">CITYBUCKET<span className="y">LIST.COM</span></div>
-              <div className="ptitle">CONCIERGE<span className="g">DASHBOARD</span></div>
-              <div className="hub">
-                <div className="ring"></div>
-                <div className="node n-top"><span>Drivers</span></div>
-                <div className="node n-left"><span>Schedule</span></div>
-                <div className="node n-right"><span>Bank</span></div>
-                <div className="node n-bot"><span>Guests</span></div>
-                <div className="center">CONCIERGE<br />MANAGER</div>
-              </div>
-              <div className="pbtn">+ Book a Ride for Guest</div>
-              <div className="pbtn ghost">⚙ Settings &amp; Profile</div>
-              <div className="pnav">
-                <div>Local<br />Eats &amp; Drinks</div>
-                <div>Local<br />Attractions</div>
-                <div>Local<br />Airport Info</div>
-              </div>
-            </div>
+            <img
+              className="dash-phone"
+              src={conciergeDashImg}
+              alt="CityBucketList Concierge Dashboard on a phone — book rides for guests, manage drivers and guests, and track earnings in the Concierge Bank"
+            />
             <div className="feat-list">
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11" /><path d="M5 11h14v5H5z" /></svg></div>
