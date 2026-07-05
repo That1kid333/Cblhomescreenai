@@ -87,8 +87,8 @@ const CSS = `
 .cbl-concierge .step h4{font-family:var(--display);font-weight:900;font-size:20px;text-transform:uppercase;letter-spacing:-.005em;margin:0 0 8px;}
 .cbl-concierge .step p{color:var(--muted);font-size:14px;line-height:1.55;margin:0;}
 
-/* dashboard preview — real app screenshot in a hand-held phone (transparent
-   PNG, 1427x1500 ~3x retina). Sits flush on the black band; drop-shadow lifts it. */
+/* dashboard preview — real app screenshot phone mockup (transparent PNG,
+   886x1866 ~2x retina). Sits flush on the black band; drop-shadow lifts it. */
 .cbl-concierge .dash-grid{display:grid;grid-template-columns:420px 1fr;gap:48px;align-items:center;}
 .cbl-concierge .dash-phone{
   width:min(100%,420px);height:auto;display:block;justify-self:center;
