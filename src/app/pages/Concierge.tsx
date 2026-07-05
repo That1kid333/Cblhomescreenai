@@ -187,6 +187,16 @@ const CSS = `
 .cbl-concierge .apply-card input:focus,.cbl-concierge .apply-card textarea:focus{outline:none;border-color:var(--gold);background:rgba(201,151,66,.05);box-shadow:0 0 0 4px rgba(201,151,66,.16);}
 .cbl-concierge .apply-card textarea{resize:vertical;min-height:88px;}
 .cbl-concierge .apply-card .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+.cbl-concierge .apply-card .plan-row{display:flex;gap:8px;}
+.cbl-concierge .apply-card .plan-pill{
+  flex:1;cursor:pointer;background:transparent;border:1.5px solid rgba(255,255,255,.18);
+  border-radius:999px;padding:11px 10px;color:#B0B0B0;font-family:var(--display);
+  font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.cbl-concierge .apply-card .plan-pill:hover{border-color:rgba(201,151,66,.5);color:#fff;}
+.cbl-concierge .apply-card .plan-pill.active{background:var(--gold);border-color:var(--gold);color:#000;}
+@media(max-width:560px){.cbl-concierge .apply-card .plan-row{flex-direction:column;}}
 .cbl-concierge .apply-card .submit{
   width:100%;border:0;cursor:pointer;border-radius:999px;padding:14px 36px;
   background:var(--gold);color:#000;font-family:var(--display);font-weight:900;
@@ -227,12 +237,19 @@ const CSS = `
 }
 `;
 
+const PLANS = {
+  team: 'Team member — Always Free',
+  property: 'Property — Hotel Plan (Founding Rate)',
+} as const;
+type PlanKey = keyof typeof PLANS;
+
 export function Concierge() {
   const [fullName, setFullName] = useState('');
   const [property, setProperty] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [plan, setPlan] = useState<PlanKey>('team');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -250,7 +267,7 @@ export function Concierge() {
           fullName,
           email,
           phone,
-          message: `Property / company: ${property}\n\n${notes || '(no additional notes)'}`,
+          message: `Applying as: ${PLANS[plan]}\nProperty / company: ${property}\n\n${notes || '(no additional notes)'}`,
         }),
       });
       const result = await res.json().catch(() => ({}));
@@ -539,7 +556,7 @@ export function Concierge() {
                 <li>Full Concierge Dashboard + itinerary tools</li>
                 <li>Secure Stripe payouts — no equipment, no fees</li>
               </ul>
-              <a className="btn ghost" href="#apply">Join Free</a>
+              <a className="btn ghost" href="#apply" onClick={() => setPlan('team')}>Join Free</a>
             </div>
             <div className="price-card feature">
               <div className="pc-eyebrow">For your property</div>
@@ -554,7 +571,7 @@ export function Concierge() {
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
               </ul>
-              <a className="btn gold" href="#apply">Start with a Founding Rate →</a>
+              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start with a Founding Rate →</a>
             </div>
           </div>
           <div className="price-note">
@@ -585,6 +602,24 @@ export function Concierge() {
           ) : (
             <form onSubmit={handleApply}>
               {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
+
+              <div className="field">
+                <label>I'm applying as <span className="req">*</span></label>
+                <div className="plan-row" role="radiogroup" aria-label="Applying as">
+                  {(Object.keys(PLANS) as PlanKey[]).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      role="radio"
+                      aria-checked={plan === k}
+                      className={'plan-pill' + (plan === k ? ' active' : '')}
+                      onClick={() => setPlan(k)}
+                    >
+                      {k === 'team' ? 'Team member · Free' : 'Property · Hotel Plan'}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="grid-2">
                 <div className="field">
