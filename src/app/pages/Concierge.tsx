@@ -17,6 +17,7 @@
 import { useState } from 'react';
 import { APP_URL } from '../lib/constants';
 import conciergeDashImg from '../../assets/cbl-concierge-dashboard.png';
+import plaqueImg from '../../assets/cbl-concierge-desk-plaque.png';
 
 const CSS = `
 .cbl-concierge{
@@ -100,21 +101,12 @@ const CSS = `
 .cbl-concierge .feat h4{font-family:var(--display);font-weight:900;font-size:18px;text-transform:uppercase;letter-spacing:-.005em;margin:0 0 5px;}
 .cbl-concierge .feat p{color:var(--muted);font-size:14px;line-height:1.5;margin:0;}
 
-/* plaque */
+/* plaque — real desk-plaque artwork (transparent PNG, 840x1379 ~2x retina) */
 .cbl-concierge .plaque-grid{display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:center;}
-.cbl-concierge .plaque{background:#0c0c0c;border:1px solid rgba(201,151,66,.35);border-radius:14px;padding:30px 26px;text-align:center;justify-self:center;width:360px;}
-.cbl-concierge .plaque .ph-corp{font-family:var(--italic);font-style:italic;font-weight:600;font-size:13px;letter-spacing:.3em;color:#ccc;text-transform:uppercase;}
-.cbl-concierge .plaque .ph-name{font-family:var(--display);font-weight:900;font-size:30px;letter-spacing:.28em;margin:2px 0 10px;}
-.cbl-concierge .plaque .ph-svc{display:inline-block;background:#fff;color:#000;font-family:var(--display);font-weight:900;font-size:15px;letter-spacing:.04em;padding:4px 14px;}
-.cbl-concierge .plaque .ph-pwr{font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:#999;text-transform:uppercase;margin-top:10px;}
-.cbl-concierge .plaque .ph-pwr b{color:#fff;}.cbl-concierge .plaque .ph-pwr b .y{color:var(--yellow);}
-.cbl-concierge .plaque .ph-qr{width:120px;height:120px;margin:18px auto 14px;background:
-  repeating-linear-gradient(0deg,#fff 0 6px,#0c0c0c 6px 12px),
-  repeating-linear-gradient(90deg,#fff 0 6px,transparent 6px 12px);
-  background-blend-mode:multiply;border:6px solid #fff;border-radius:6px;}
-.cbl-concierge .plaque .ph-needs{display:flex;justify-content:center;gap:16px;color:#fff;}
-.cbl-concierge .plaque .ph-needs div{font-family:var(--mono);font-size:8px;letter-spacing:.05em;text-transform:uppercase;color:#cfcfcf;display:flex;flex-direction:column;align-items:center;gap:6px;}
-.cbl-concierge .plaque .ph-tag{font-family:var(--italic);font-style:italic;font-size:9px;color:var(--gold);margin-top:12px;letter-spacing:.04em;}
+.cbl-concierge .plaque-img{
+  width:min(100%,360px);height:auto;display:block;justify-self:center;
+  filter:drop-shadow(0 30px 60px rgba(0,0,0,.6));
+}
 
 /* earnings */
 .cbl-concierge .earn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
@@ -437,20 +429,11 @@ export function Concierge() {
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><path d="M13 13h3v3M20 16v4M16 20h4" /></svg></div><div><h4>One-Scan Guest Join</h4><p>Guests scan with any phone camera to access transportation, dining, attractions, and member savings.</p></div></div>
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" /></svg></div><div><h4>Everything to Get Started</h4><p>The welcome packet includes your placard, QR codes, and referral links — no setup cost, no equipment.</p></div></div>
             </div>
-            <div className="plaque">
-              <div className="ph-corp">The</div>
-              <div className="ph-name">JUNIPER</div>
-              <div className="ph-svc">CONCIERGE SERVICE</div>
-              <div className="ph-pwr">powered by <b>CITYBUCKET<span className="y">LIST.COM</span></b></div>
-              <div className="ph-qr"></div>
-              <div className="ph-needs">
-                <div>✈<br />Transport</div>
-                <div>🍴<br />Eats</div>
-                <div>◎<br />Attractions</div>
-                <div>$<br />Savings</div>
-              </div>
-              <div className="ph-tag">Locals everywhere, helping new friends feel at home.</div>
-            </div>
+            <img
+              className="plaque-img"
+              src={plaqueImg}
+              alt="CBL front-desk plaque example — The Schmieddy Hotel Concierge Service, powered by CityBucketList.com, with a scan-to-join QR code"
+            />
           </div>
         </div>
       </section>
