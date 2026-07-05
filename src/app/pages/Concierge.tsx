@@ -102,7 +102,7 @@ const CSS = `
 .cbl-concierge .feat p{color:var(--muted);font-size:14px;line-height:1.5;margin:0;}
 
 /* plaque — real desk-plaque artwork (transparent PNG, 840x1379 ~2x retina) */
-.cbl-concierge .plaque-grid{display:grid;grid-template-columns:1fr 360px;gap:48px;align-items:center;}
+.cbl-concierge .plaque-grid{display:grid;grid-template-columns:1fr 360px;gap:56px;align-items:start;}
 .cbl-concierge .plaque-img{
   width:min(100%,360px);height:auto;display:block;justify-self:center;
   filter:drop-shadow(0 30px 60px rgba(0,0,0,.6));
@@ -417,17 +417,19 @@ export function Concierge() {
       {/* WELCOME KIT / PLAQUE */}
       <section className="band alt">
         <div className="wrap">
-          <div className="section-eyebrow">welcome kit</div>
-          <h2 className="section-h2">A plaque for <span className="it">your front desk</span></h2>
-          <p className="section-lede">
-            Every approved partner gets a branded front-desk placard with your property's logo and a
-            scan-to-join QR code — so guests can connect in seconds, right where they check in.
-          </p>
           <div className="plaque-grid">
-            <div className="feat-list">
+            <div>
+              <div className="section-eyebrow">welcome kit</div>
+              <h2 className="section-h2">A plaque for <span className="it">your front desk</span></h2>
+              <p className="section-lede">
+                Every approved partner gets a branded front-desk placard with your property's logo and a
+                scan-to-join QR code — so guests can connect in seconds, right where they check in.
+              </p>
+              <div className="feat-list">
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7h18v12H3z" /><path d="M3 11h18" /></svg></div><div><h4>Your Logo, Front &amp; Center</h4><p>Co-branded with your hotel, residence, or venue name — it looks like your concierge service, powered by CBL.</p></div></div>
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><path d="M13 13h3v3M20 16v4M16 20h4" /></svg></div><div><h4>One-Scan Guest Join</h4><p>Guests scan with any phone camera to access transportation, dining, attractions, and member savings.</p></div></div>
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" /></svg></div><div><h4>Everything to Get Started</h4><p>The welcome packet includes your placard, QR codes, and referral links — no setup cost, no equipment.</p></div></div>
+              </div>
             </div>
             <img
               className="plaque-img"
