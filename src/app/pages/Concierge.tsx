@@ -8,11 +8,13 @@
  * so this file renders only <main>. Images are served from /public/concierge/* and
  * the shared map backdrop at /eats/imagery/cbl-map-backdrop.jpg.
  *
- * NOTE: CTAs (Become a Partner / Apply / Book a Ride) are in-page anchors for now —
- * the booking/Stripe backend is a later phase.
+ * The #apply section hosts the on-brand partner application form — it POSTs to
+ * /api/contact (Netlify function → Resend → info@citybucketlist.com) with a
+ * partner-application topic, so applicants never bounce to an off-brand page.
+ * The booking/Stripe backend is a later phase.
  */
 
-import { APP_URL } from '../lib/constants';
+import { useState } from 'react';
 
 const CSS = `
 .cbl-concierge{
@@ -166,6 +168,44 @@ const CSS = `
 .cbl-concierge .cta-final p{color:var(--muted);font-size:15px;line-height:1.6;max-width:60ch;margin:0 auto 26px;}
 .cbl-concierge .cta-final .note{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted2);margin-top:18px;}
 
+/* apply form */
+.cbl-concierge .apply-card{
+  max-width:560px;margin:0 auto;text-align:left;
+  background:var(--card);border:1px solid rgba(201,151,66,.45);border-radius:18px 0 18px 0;
+  box-shadow:0 18px 44px rgba(0,0,0,.55);padding:28px;
+}
+.cbl-concierge .apply-card label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8f8f8f;margin:0 0 7px 2px;}
+.cbl-concierge .apply-card label .req{color:var(--gold);}
+.cbl-concierge .apply-card label .opt{text-transform:none;letter-spacing:0;color:#6f6f6f;}
+.cbl-concierge .apply-card .field{margin-bottom:14px;}
+.cbl-concierge .apply-card input,.cbl-concierge .apply-card textarea{
+  width:100%;box-sizing:border-box;background:#0A0A0A;color:#fff;font-size:15px;font-family:inherit;
+  border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:12px 14px;
+  transition:border-color .2s,box-shadow .2s,background .2s;
+}
+.cbl-concierge .apply-card input::placeholder,.cbl-concierge .apply-card textarea::placeholder{color:#6a6a6a;}
+.cbl-concierge .apply-card input:focus,.cbl-concierge .apply-card textarea:focus{outline:none;border-color:var(--gold);background:rgba(201,151,66,.05);box-shadow:0 0 0 4px rgba(201,151,66,.16);}
+.cbl-concierge .apply-card textarea{resize:vertical;min-height:88px;}
+.cbl-concierge .apply-card .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 16px;}
+.cbl-concierge .apply-card .submit{
+  width:100%;border:0;cursor:pointer;border-radius:999px;padding:14px 36px;
+  background:var(--gold);color:#000;font-family:var(--display);font-weight:900;
+  font-size:14px;letter-spacing:.14em;text-transform:uppercase;transition:background .2s;
+}
+.cbl-concierge .apply-card .submit:hover{background:var(--gold-lt);}
+.cbl-concierge .apply-card .submit:disabled{background:#555;cursor:not-allowed;}
+.cbl-concierge .apply-card .alert{border-radius:12px;padding:11px 14px;font-size:13.5px;line-height:1.45;margin-bottom:14px;}
+.cbl-concierge .apply-card .alert.err{background:rgba(220,60,60,.12);border:1px solid rgba(220,60,60,.4);color:#f0b3b3;}
+.cbl-concierge .apply-success{text-align:center;padding:10px 0 4px;}
+.cbl-concierge .apply-success .mark{width:52px;height:52px;margin:0 auto 14px;border-radius:50%;border:2px solid var(--gold);display:grid;place-items:center;color:var(--gold);font-size:24px;}
+.cbl-concierge .apply-success h3{font-family:var(--display);font-weight:900;font-size:26px;text-transform:uppercase;color:#fff;margin:0 0 8px;}
+.cbl-concierge .apply-success h3 .g{color:var(--gold);}
+.cbl-concierge .apply-success p{color:var(--muted);font-size:14.5px;line-height:1.55;margin:0;}
+@media(max-width:560px){
+  .cbl-concierge .apply-card{padding:22px 18px;}
+  .cbl-concierge .apply-card .grid-2{grid-template-columns:1fr;}
+}
+
 /* responsive */
 @media(max-width:1000px){
   .cbl-concierge section.band{padding:44px 24px 48px;}
@@ -188,6 +228,44 @@ const CSS = `
 `;
 
 export function Concierge() {
+  const [fullName, setFullName] = useState('');
+  const [property, setProperty] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [notes, setNotes] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleApply = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === 'loading') return;
+    setStatus('loading');
+    setErrorMessage('');
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          topic: 'Hotel & Concierge Partner Application',
+          fullName,
+          email,
+          phone,
+          message: `Property / company: ${property}\n\n${notes || '(no additional notes)'}`,
+        }),
+      });
+      const result = await res.json().catch(() => ({}));
+      if (res.ok && result.success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMessage(result.error || 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMessage('Network error. Please check your connection and try again.');
+    }
+  };
+
   return (
     <main className="cbl-concierge">
       <style>{CSS}</style>
@@ -485,14 +563,61 @@ export function Concierge() {
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* FINAL CTA — partner application */}
       <section className="cta-final" id="apply">
         <h2>Ready to become <span className="it">a partner?</span></h2>
         <p>
-          Join free in minutes. Tell us about your property, sign the authorization letter, and we'll
-          send your welcome kit so you can start earning on every guest booking.
+          Join free in minutes. Tell us about your property and we'll reach out within 24 hours
+          with your authorization letter and welcome kit — so you can start earning on every
+          guest booking.
         </p>
-        <a className="btn gold" href={`${APP_URL}/partner/signup`} style={{ padding: '15px 34px' }}>Become a Partner →</a>
+
+        <div className="apply-card">
+          {status === 'success' ? (
+            <div className="apply-success">
+              <div className="mark" aria-hidden="true">✓</div>
+              <h3>Application <span className="g">received.</span></h3>
+              <p>
+                Thanks, we'll be in touch within 24 hours to set up your property and send your
+                welcome kit. Watch your inbox for a confirmation from info@citybucketlist.com.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleApply}>
+              {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
+
+              <div className="grid-2">
+                <div className="field">
+                  <label htmlFor="ap-name">Your name <span className="req">*</span></label>
+                  <input id="ap-name" type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Full name" autoComplete="name" maxLength={100} required />
+                </div>
+                <div className="field">
+                  <label htmlFor="ap-property">Property / company <span className="req">*</span></label>
+                  <input id="ap-property" type="text" value={property} onChange={(e) => setProperty(e.target.value)} placeholder="Hotel or company name" autoComplete="organization" maxLength={150} required />
+                </div>
+              </div>
+              <div className="grid-2">
+                <div className="field">
+                  <label htmlFor="ap-email">Work email <span className="req">*</span></label>
+                  <input id="ap-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@property.com" autoComplete="email" maxLength={200} required />
+                </div>
+                <div className="field">
+                  <label htmlFor="ap-phone">Phone <span className="opt">(optional)</span></label>
+                  <input id="ap-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 123-4567" autoComplete="tel" maxLength={30} />
+                </div>
+              </div>
+              <div className="field">
+                <label htmlFor="ap-notes">About your property <span className="opt">(optional)</span></label>
+                <textarea id="ap-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Rooms, location, concierge team size — anything that helps us set you up faster." maxLength={1000} />
+              </div>
+
+              <button type="submit" className="submit" disabled={status === 'loading'}>
+                {status === 'loading' ? 'Sending…' : 'Become a Partner →'}
+              </button>
+            </form>
+          )}
+        </div>
+
         <div className="note">Questions? info@citybucketlist.com · CityBucketList.com is an LLC company</div>
       </section>
     </main>

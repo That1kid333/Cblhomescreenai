@@ -82,9 +82,9 @@ const SLIDES: Slide[] = [
     caption: (
       <>
         Hotel concierge available —{' '}
-        <a href={APP_URL} className="cap-link">
+        <Link to="/concierge" className="cap-link">
           sign up
-        </a>
+        </Link>
       </>
     ),
   },
