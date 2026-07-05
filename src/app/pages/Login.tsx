@@ -198,10 +198,10 @@ const CSS = `
 
 .cbl-login .switch {
   display:flex; align-items:center; gap:14px; margin:20px 0 14px;
-  color:#8a8a8a; font-size:13px; font-weight:600; letter-spacing:.02em; text-transform:uppercase;
+  color:${GOLD}; font-size:13px; font-weight:900; letter-spacing:.06em; text-transform:uppercase;
 }
 .cbl-login .switch::before, .cbl-login .switch::after {
-  content:''; flex:1; height:1px; background:rgba(255,255,255,.1);
+  content:''; flex:1; height:1px; background:rgba(201,151,66,.4);
 }
 .cbl-login .btn-ghost {
   width:100%; border-radius:999px; font-size:15px; padding:14px 44px; letter-spacing:.14em;
@@ -378,7 +378,7 @@ export function Login() {
                 <div className="mark" aria-hidden="true">✓</div>
                 <h3>You're <span className="g">in.</span></h3>
                 <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-                <a className="btn btn-ghost" href={APP_URL}>Create your free account →</a>
+                <a className="btn btn-primary" href={APP_URL}>Create your free account →</a>
                 <p className="note">
                   Quick join keeps you in the loop. For full blog &amp; directory access — and
                   rides in the app — you'll need a free password-protected account.
@@ -481,7 +481,7 @@ export function Login() {
                   </label>
                 </div>
 
-                <button type="submit" className="btn btn-ghost" disabled={status === 'loading'}>
+                <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
                   {status === 'loading' ? 'Sending…' : <>Quick Join — No Password <span className="arr">→</span></>}
                 </button>
 
