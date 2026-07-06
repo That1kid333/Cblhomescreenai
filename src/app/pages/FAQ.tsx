@@ -34,6 +34,10 @@ const faqData = [
     answer: 'Anyone can sign up as a rider! While a referral code isn\'t required, using one rewards the person who referred you with bonus points. Ask a friend or driver for their code to help them earn rewards when you join.',
   },
   {
+    question: 'What is the member digital business card, and how do I earn by sharing it?',
+    answer: 'City Bucket List is a software-as-a-service platform, and every free member account includes a digital business card — your profile plus a personal QR code, built right into the site and app. Share it with anyone: a restaurant owner you love, a friend, or a driver worth knowing. When they join under your code, you earn rewards. It turns the local spots and people you already recommend into value for you — and helps grow the community.',
+  },
+  {
     question: 'Do Riders pay a monthly fee?',
     answer: 'No. Rider membership is completely free. First-time members may receive special onboarding incentives depending on availability.',
   },

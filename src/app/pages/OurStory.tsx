@@ -1,7 +1,7 @@
 import buckeeConcierge from '../../assets/buckee.png';
 import driverImg from '../../assets/driver_at_wheel.jpg';
 import riderImg from '../../assets/rider_meeting_driver_neutral.png';
-import { Globe } from 'lucide-react';
+import { Globe, QrCode, Share2, TrendingUp } from 'lucide-react';
 import { APP_URL } from '../lib/constants';
 
 /**
@@ -243,6 +243,49 @@ export function OurStory() {
                 We partner with independent contractors, local businesses, and community experts to
                 create a curated directory of services and experiences that help you live like a
                 local in any city you visit.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Your card, shareable — the member digital business card / referral loop */}
+      <section className="band tight">
+        <div className="band-inner">
+          <div className="section-eyebrow">share &amp; earn</div>
+          <h2 className="section-h2" style={{ marginBottom: 12 }}>
+            Your membership, <span className="it">made to share</span>
+          </h2>
+          <p style={{ color: '#B0B0B0', fontSize: 15, lineHeight: 1.6, maxWidth: '64ch', margin: '0 0 24px' }}>
+            City Bucket List is a software-as-a-service platform — and every member gets their own
+            digital business card built right in. It carries your profile and a personal QR code, so
+            sharing City Bucket List is as easy as showing your phone. Found a restaurant you love?
+            Share your card with the owner. Meet a driver worth knowing? Same code. When they join
+            under you, you earn — and the community grows.
+          </p>
+          <div className="feature-grid">
+            <div className="feature-card">
+              <div className="ic"><QrCode className="w-full h-full" /></div>
+              <h3>Your Own QR Code</h3>
+              <p>
+                A digital business card with a personal QR code, ready the moment you create your free
+                account — no printing, no setup.
+              </p>
+            </div>
+            <div className="feature-card">
+              <div className="ic"><Share2 className="w-full h-full" /></div>
+              <h3>Share With Anyone</h3>
+              <p>
+                Riders, drivers, and local business owners — one tap or scan brings them into your
+                circle and unlocks member savings for everyone.
+              </p>
+            </div>
+            <div className="feature-card">
+              <div className="ic"><TrendingUp className="w-full h-full" /></div>
+              <h3>Earn On Every Signup</h3>
+              <p>
+                When someone joins under your code, you're rewarded — turning the spots and people you
+                already recommend into real value for you and for CBL.
               </p>
             </div>
           </div>
