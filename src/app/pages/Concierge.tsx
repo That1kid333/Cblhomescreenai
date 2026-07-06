@@ -231,6 +231,7 @@ export function Concierge() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [notes, setNotes] = useState('');
+  const [website, setWebsite] = useState(''); // honeypot — hidden from real users
   const [plan, setPlan] = useState<PlanKey>('team');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -250,6 +251,7 @@ export function Concierge() {
           email,
           phone,
           message: `Applying as: ${PLANS[plan]}\nProperty / company: ${property}\n\n${notes || '(no additional notes)'}`,
+          website,
         }),
       });
       const result = await res.json().catch(() => ({}));
@@ -566,6 +568,17 @@ export function Concierge() {
             </div>
           ) : (
             <form onSubmit={handleApply}>
+              {/* Honeypot — hidden from real users, bots fill it in */}
+              <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </div>
               {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
               <div className="field">

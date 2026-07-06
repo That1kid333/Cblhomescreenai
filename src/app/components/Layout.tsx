@@ -2,11 +2,16 @@ import { Outlet, Link, ScrollRestoration } from 'react-router';
 import { ChevronRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
+import { useAuth, firstNameOf } from '../lib/auth';
+import { MemberCard } from './MemberCard';
 
 export function Layout() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
+  const { session, profile } = useAuth();
+  const firstName = firstNameOf(profile, session);
 
   const handleMouseEnter = (dropdown: string) => {
     if (closeTimeout) {
@@ -187,8 +192,29 @@ export function Layout() {
               </div>
             </nav>
 
-            {/* Spacer to maintain center alignment of nav */}
-            <div className="hidden lg:block w-[88px] lg:mr-8"></div>
+            {/* Right slot — keeps the nav centered on desktop (min 88px) and
+                hosts the member avatar + welcome-back when signed in */}
+            <div className="flex items-center justify-end lg:min-w-[88px] lg:mr-8">
+              {session && (
+                <>
+                  <span className="hidden lg:block text-xs text-[#B8B8B8] mr-3 whitespace-nowrap">
+                    Welcome back, <span className="text-[#FDB913] font-bold">{firstName}</span>
+                  </span>
+                  <button
+                    onClick={() => setCardOpen(true)}
+                    title={`Welcome back, ${firstName}!`}
+                    aria-label={`Open your member card, ${firstName}`}
+                    className="w-10 h-10 rounded-full border-2 border-[#C99742] hover:border-[#FDB913] transition-colors overflow-hidden grid place-items-center bg-[#141414] text-[#C99742] font-black text-base flex-shrink-0"
+                  >
+                    {profile?.photo ? (
+                      <img src={profile.photo} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{firstName.charAt(0)}</span>
+                    )}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Mobile menu - shown when hamburger is tapped */}
@@ -258,6 +284,8 @@ export function Layout() {
           </div>
         </div>
       </footer>
+
+      <MemberCard open={cardOpen} onClose={() => setCardOpen(false)} />
     </div>
   );
 }

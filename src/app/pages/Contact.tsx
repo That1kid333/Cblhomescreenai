@@ -128,6 +128,7 @@ export function Contact() {
     phone: '',
     message: '',
     agreedToTerms: false,
+    website: '', // honeypot — hidden from real users, bots fill it in
   });
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -158,6 +159,7 @@ export function Contact() {
           phone: '',
           message: '',
           agreedToTerms: false,
+          website: '',
         });
       } else {
         setStatus('error');
@@ -206,6 +208,17 @@ export function Contact() {
         <div className="band-inner">
           <div className="form-card">
             <form onSubmit={handleSubmit}>
+              {/* Honeypot — hidden from real users, bots fill it in */}
+              <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={(e) => setFormData((f) => ({ ...f, website: e.target.value }))}
+                />
+              </div>
               <div className="fields-col">
                 <div className="field">
                   <label htmlFor="topic">

@@ -19,7 +19,9 @@
  * complete blog + directory access once the auth phase lands (Justin's side).
  */
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { APP_URL } from '../lib/constants';
+import { useAuth, firstNameOf } from '../lib/auth';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -223,8 +225,11 @@ const CSS = `
 .cbl-login .perks li b { color:#fff; }
 .cbl-login .btn-ghost:disabled { opacity:.5; cursor:not-allowed; }
 .cbl-login .signin-line { margin-top:18px; text-align:center; font-size:13px; color:#8a8a8a; }
-.cbl-login .signin-line a { color:${GOLD}; font-weight:700; }
-.cbl-login .signin-line a:hover { text-decoration:underline; }
+.cbl-login .signin-line a, .cbl-login .signin-line button.linklike { color:${GOLD}; font-weight:700; background:none; border:0; cursor:pointer; font-size:inherit; font-family:inherit; padding:0; }
+.cbl-login .signin-line a:hover, .cbl-login .signin-line button.linklike:hover { text-decoration:underline; }
+.cbl-login .si-form { margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,.08); }
+.cbl-login .si-form .forgot { display:block; text-align:center; margin-top:10px; font-size:12px; color:#8a8a8a; text-decoration:none; }
+.cbl-login .si-form .forgot:hover { color:${GOLD}; }
 
 .cbl-login .alert { border-radius:12px; padding:11px 14px; font-size:13.5px; line-height:1.45; margin-bottom:16px; }
 .cbl-login .alert.err { background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.4); color:#f0b3b3; }
@@ -278,6 +283,34 @@ const CSS = `
 `;
 
 export function Login() {
+  const navigate = useNavigate();
+  const { session, profile, signIn } = useAuth();
+  const [signinOpen, setSigninOpen] = useState(false);
+  const [siEmail, setSiEmail] = useState('');
+  const [siPassword, setSiPassword] = useState('');
+  const [siStatus, setSiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [siError, setSiError] = useState('');
+
+  const handleSignIn = async (e: React.FormEvent | React.KeyboardEvent) => {
+    e.preventDefault();
+    if (siStatus === 'loading') return;
+    setSiStatus('loading');
+    setSiError('');
+    const { error } = await signIn(siEmail.trim(), siPassword);
+    if (error) {
+      setSiStatus('error');
+      setSiError(error);
+    } else {
+      navigate('/');
+    }
+  };
+
+  // The sign-in fields live inside the quick-join <form>; Enter must trigger
+  // sign-in, not the outer form's submit.
+  const signInOnEnter = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') handleSignIn(e);
+  };
+
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -490,9 +523,58 @@ export function Login() {
                   lives in your free account above.
                 </p>
 
-                <div className="signin-line">
-                  Already a member? <a href={APP_URL}>Sign in here →</a>
-                </div>
+                {session ? (
+                  <div className="signin-line">
+                    You're signed in, {firstNameOf(profile, session)} — your member card is in the
+                    top-right corner.
+                  </div>
+                ) : signinOpen ? (
+                  <div className="si-form">
+                    {siStatus === 'error' && <div className="alert err" role="alert">{siError}</div>}
+                    <div className="field">
+                      <label className="label" htmlFor="si-email">Email <span className="req">*</span></label>
+                      <input
+                        type="email"
+                        id="si-email"
+                        placeholder="your.email@example.com"
+                        autoComplete="email"
+                        value={siEmail}
+                        onChange={(e) => setSiEmail(e.target.value)}
+                        onKeyDown={signInOnEnter}
+                        required
+                      />
+                    </div>
+                    <div className="field">
+                      <label className="label" htmlFor="si-password">Password <span className="req">*</span></label>
+                      <input
+                        type="password"
+                        id="si-password"
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                        value={siPassword}
+                        onChange={(e) => setSiPassword(e.target.value)}
+                        onKeyDown={signInOnEnter}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      disabled={siStatus === 'loading'}
+                      onClick={handleSignIn}
+                    >
+                      {siStatus === 'loading' ? 'Signing in…' : <>Sign In <span className="arr">→</span></>}
+                    </button>
+                    <a className="forgot" href={APP_URL}>Forgot password? Reset it in the app →</a>
+                  </div>
+                ) : (
+                  <div className="signin-line">
+                    Already a member?{' '}
+                    <button type="button" className="linklike" onClick={() => setSigninOpen(true)}>
+                      Sign in here →
+                    </button>
+                  </div>
+                )}
 
                 <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
                 </form>
