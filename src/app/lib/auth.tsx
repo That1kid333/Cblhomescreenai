@@ -14,6 +14,7 @@ import keithPhoto from '../../assets/cbl-keith.png';
  * the display name so anyone on the team can preview their own card.
  */
 const DEMO_KEY = 'cbl-demo-member';
+const DEMO_OFF_KEY = 'cbl-demo-off';
 const DEMO_NAME_KEY = 'cbl-demo-name';
 const DEMO_PROFILE: MemberProfile = {
   id: 'demo',
@@ -24,14 +25,26 @@ const DEMO_PROFILE: MemberProfile = {
 };
 const DEMO_SESSION = { user: { id: 'demo', email: 'keith@citybucketlist.com' } } as unknown as Session;
 
+// Preview/staging hosts (and local dev) — NOT the live citybucketlist.com.
+function isPreviewHost(): boolean {
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.netlify.app');
+}
+
 function demoRequested(): boolean {
   try {
     const param = new URLSearchParams(window.location.search).get('demo-member');
     if (param !== null) {
+      sessionStorage.removeItem(DEMO_OFF_KEY);
       sessionStorage.setItem(DEMO_KEY, '1');
       if (param) sessionStorage.setItem(DEMO_NAME_KEY, param);
     }
-    return sessionStorage.getItem(DEMO_KEY) === '1';
+    // Signed out this tab → stay signed out until they reopen or ?demo-member.
+    if (sessionStorage.getItem(DEMO_OFF_KEY) === '1') return false;
+    if (sessionStorage.getItem(DEMO_KEY) === '1') return true;
+    // Always-on for previews so the member experience (avatar + card) is
+    // there for demos without adding ?demo-member; never on production.
+    return isPreviewHost();
   } catch {
     return false;
   }
@@ -142,6 +155,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (demo) {
       try {
         sessionStorage.removeItem(DEMO_KEY);
+        // Keep demo off for this tab even on preview (where it's otherwise
+        // always-on), so signing out actually shows the logged-out state.
+        sessionStorage.setItem(DEMO_OFF_KEY, '1');
       } catch {
         /* ignore */
       }
