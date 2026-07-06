@@ -153,6 +153,7 @@ export function Feedback() {
     name: '',
     email: '',
     message: '',
+    website: '', // honeypot — hidden from real users, bots fill it in
   });
 
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -180,6 +181,7 @@ export function Feedback() {
         `[Area: ${areaLabel(formData.area)}]\n\n` +
         formData.message,
       agreedToTerms: true,
+      website: formData.website,
     };
 
     try {
@@ -192,7 +194,7 @@ export function Feedback() {
 
       if (response.ok && result.success !== false) {
         setStatus('success');
-        setFormData({ audience: '', area: '', name: '', email: '', message: '' });
+        setFormData({ audience: '', area: '', name: '', email: '', message: '', website: '' });
       } else {
         setStatus('error');
         setErrorMessage(result.error || 'Could not send your feedback. Please try again.');
@@ -241,6 +243,17 @@ export function Feedback() {
         <div className="band-inner">
           <div className="form-card">
             <form onSubmit={handleSubmit}>
+              {/* Honeypot — hidden from real users, bots fill it in */}
+              <div style={{ position: 'absolute', left: '-9999px', top: '-9999px' }} aria-hidden="true">
+                <input
+                  type="text"
+                  name="website"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={formData.website}
+                  onChange={(e) => setFormData((f) => ({ ...f, website: e.target.value }))}
+                />
+              </div>
               <div className="fields-col">
                 <div className="field">
                   <label htmlFor="audience">

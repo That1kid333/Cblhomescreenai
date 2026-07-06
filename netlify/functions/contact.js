@@ -9,8 +9,29 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const resend = new Resend(process.env.RESEND_API_KEY);
     const data = JSON.parse(event.body);
+
+    // Honeypot (matches lead.js): real users never see this field — pretend
+    // success so bots move on without sending any email.
+    if (typeof data.website === 'string' && data.website.trim() !== '') {
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: true })
+      };
+    }
+
+    // Basic server-side validation so bots can't relay garbage through Resend
+    const email = String(data.email || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !String(data.fullName || data.message || '').trim()) {
+      return {
+        statusCode: 400,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ error: 'Please provide a valid email and message.' })
+      };
+    }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     // 1. Send notification to site owner
     await resend.emails.send({
