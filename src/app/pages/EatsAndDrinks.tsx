@@ -1,5 +1,121 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import { useVisitorLocation } from '../lib/location';
+
+const GOLD = '#C99742';
+const DISPLAY = "'Myriad Pro', sans-serif";
+const BODY = "'Myriad Pro', sans-serif";
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+const ITALIC = "'Playfair Display', serif";
+
+const IMG = '/eats/imagery/';
+const ICON = '/eats/food-icons/';
+
+// Markets with seeded restaurant data. Pittsburgh is the launch market; other
+// cities show a friendly "expanding soon" note while still surfacing the picks.
+const MARKET_CITY = 'Pittsburgh';
+const COMING_SOON_CITIES = ['Cleveland', 'Columbus', 'Philadelphia', 'Detroit', 'Chicago', 'Buffalo'];
+
+const LOC_CSS = `
+.cbl-eats .locbar {
+  display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
+  padding:11px 20px; background:#0c0c0c; border-bottom:1px solid rgba(201,151,66,.22);
+  font-family:${MONO}; font-size:12px; letter-spacing:.06em; color:#B8B8B8;
+}
+.cbl-eats .locbar .pin { color:${GOLD}; display:inline-flex; }
+.cbl-eats .locbar b { color:${GOLD}; font-weight:700; letter-spacing:.04em; }
+.cbl-eats .locbar select {
+  background:#141414; color:#fff; border:1px solid rgba(201,151,66,.4); border-radius:999px;
+  padding:6px 12px; font-family:${MONO}; font-size:12px; letter-spacing:.04em; cursor:pointer;
+}
+.cbl-eats .locbar select:focus { outline:none; border-color:${GOLD}; }
+.cbl-eats .locbar .note { color:#9a9a9a; }
+.cbl-eats .locbar .note b { color:#fff; }
+@media (max-width:640px){ .cbl-eats .locbar { font-size:11px; padding:10px 14px; } }
+
+.cbl-eats .city-soon { max-width:640px; margin:0 auto; text-align:center; padding:72px 24px 88px; }
+.cbl-eats .city-soon .eyebrow { display:inline-flex; align-items:center; gap:9px; font-family:${MONO}; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin-bottom:14px; }
+.cbl-eats .city-soon h2 { font-family:${DISPLAY}; font-weight:900; font-size:clamp(30px,4vw,46px); line-height:1; text-transform:uppercase; color:#fff; margin:0 0 14px; }
+.cbl-eats .city-soon h2 .it { font-family:${ITALIC}; font-style:italic; color:${GOLD}; font-weight:600; text-transform:none; }
+.cbl-eats .city-soon p { color:#B0B0B0; font-size:15px; line-height:1.6; margin:0 0 26px; }
+.cbl-eats .city-soon .row { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.cbl-eats .city-soon .btn { display:inline-flex; align-items:center; gap:8px; border-radius:999px; padding:13px 28px; font-family:${DISPLAY}; font-weight:900; font-size:13px; letter-spacing:.12em; text-transform:uppercase; text-decoration:none; }
+.cbl-eats .city-soon .btn.gold { background:${GOLD}; color:#000; }
+.cbl-eats .city-soon .btn.gold:hover { background:#DDB15F; }
+.cbl-eats .city-soon .btn.ghost { background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.25); }
+.cbl-eats .city-soon .btn.ghost:hover { border-color:${GOLD}; color:${GOLD}; }
+`;
+
+function CityComingSoon({ city }: { city: string }) {
+  return (
+    <section className="city-soon">
+      <div className="eyebrow">— expanding soon</div>
+      <h2>
+        We&rsquo;re bringing CBL <span className="it">to {city}</span>
+      </h2>
+      <p>
+        Our hand-picked local eats &amp; drinks are live in Pittsburgh first — and {city} is next.
+        Know a spot that belongs here? Refer it, or share your member card with the owner and earn
+        when they join under your code.
+      </p>
+      <div className="row">
+        <Link className="btn gold" to="/login">Get your member card →</Link>
+        <Link className="btn ghost" to="/contact">Refer a {city} spot →</Link>
+      </div>
+    </section>
+  );
+}
+
+type LocState = ReturnType<typeof useVisitorLocation>;
+
+function LocationBar({ city, status, setManualCity }: LocState) {
+  const activeCity = city || MARKET_CITY;
+  const inMarket = activeCity.toLowerCase() === MARKET_CITY.toLowerCase();
+
+  const cityOptions = [MARKET_CITY, ...COMING_SOON_CITIES];
+  // Ensure a detected non-listed city still appears as the selected value.
+  if (city && !cityOptions.some((c) => c.toLowerCase() === city.toLowerCase())) {
+    cityOptions.splice(1, 0, city);
+  }
+
+  return (
+    <div className="locbar">
+      <span className="pin" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </span>
+      {status === 'locating' ? (
+        <span>Finding local spots near you…</span>
+      ) : (
+        <span>
+          Showing local spots near{' '}
+          <label>
+            <span className="sr-only">Choose your city</span>
+            <select
+              value={cityOptions.find((c) => c.toLowerCase() === activeCity.toLowerCase()) || MARKET_CITY}
+              onChange={(e) => setManualCity(e.target.value, e.target.value === MARKET_CITY ? 'PA' : '')}
+              aria-label="Choose your city"
+            >
+              {cityOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                  {c !== MARKET_CITY && !COMING_SOON_CITIES.includes(c) ? '' : c !== MARKET_CITY ? ' (coming soon)' : ''}
+                </option>
+              ))}
+            </select>
+          </label>
+        </span>
+      )}
+      {!inMarket && status !== 'locating' && (
+        <span className="note">
+          — Pittsburgh is live now; <b>{activeCity}</b> is coming soon.
+        </span>
+      )}
+    </div>
+  );
+}
 
 /**
  * Eats & Drinks — ported from the CBL "New Website" design export.
@@ -12,15 +128,6 @@ import { Link } from 'react-router';
  * Fonts kept consistent with the rest of the site: Myriad Pro for display
  * headers, Playfair Display for the editorial italic accents.
  */
-
-const GOLD = '#C99742';
-const DISPLAY = "'Myriad Pro', sans-serif";
-const BODY = "'Myriad Pro', sans-serif";
-const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
-const ITALIC = "'Playfair Display', serif";
-
-const IMG = '/eats/imagery/';
-const ICON = '/eats/food-icons/';
 
 // ── Restaurant data (from design lib/data.jsx) ──────────────────────────────
 type Restaurant = {
@@ -122,7 +229,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['BURGERS', 'AMERICAN'],
     description:
       "Family-run Bloomfield tavern with an in-house butcher — locals swear it's the best hardwood-grilled burger in the city.",
-    image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900&h=600&fit=crop',
+    image: IMG + 'tessaros.jpg',
   },
   {
     id: 'chengdu-gourmet',
@@ -136,7 +243,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['CHINESE'],
     description:
       "Chef Wei Zhu's fiery, peppercorn-laced Sichuan cooking — the real-deal benchmark locals send every out-of-towner to.",
-    image: 'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=900&h=600&fit=crop',
+    image: IMG + 'chengdu-gourmet.jpg',
   },
   {
     id: 'umami',
@@ -150,7 +257,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['JAPANESE', 'SUSHI'],
     description:
       'A moody Lawrenceville izakaya pairing robata skewers and one of the city’s best sushi menus with serious cocktails.',
-    image: 'https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=900&h=600&fit=crop',
+    image: IMG + 'umami.jpg',
   },
   {
     id: 'senyai-thai',
@@ -164,7 +271,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['THAI'],
     description:
       "Chef Tu cooks her mother's Bangkok recipes with grace; the boat noodles and curries keep Shadyside coming back.",
-    image: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=900&h=600&fit=crop',
+    image: IMG + 'senyai-thai.jpg',
   },
   {
     id: 'green-pepper',
@@ -178,7 +285,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['KOREAN'],
     description:
       'A cozy, longtime Squirrel Hill favorite for bibimbap, bulgogi and bubbling stone-bowl comfort food.',
-    image: 'https://images.unsplash.com/photo-1590301157890-4810ed352733?w=900&h=600&fit=crop',
+    image: IMG + 'green-pepper.jpg',
   },
   {
     id: 'trams-kitchen',
@@ -192,7 +299,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['VIETNAMESE'],
     description:
       'A no-frills Bloomfield staple whose pho and banh mi have quietly earned a fierce local following for years.',
-    image: 'https://images.unsplash.com/photo-1576577445504-6af96477db52?w=900&h=600&fit=crop',
+    image: IMG + 'trams-kitchen.jpg',
   },
   {
     id: 'all-india',
@@ -206,7 +313,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['INDIAN'],
     description:
       'A Craig Street favorite blending North and South Indian, with fresh-ground spices and a beloved dosa lineup.',
-    image: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=900&h=600&fit=crop',
+    image: IMG + 'all-india.jpg',
   },
   {
     id: 'luke-wholeys',
@@ -220,7 +327,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['SEAFOOD'],
     description:
       'The Wholey family’s riverside Strip spot for wild Alaskan salmon and king crab — casual, but seriously fresh.',
-    image: 'https://images.unsplash.com/photo-1559737558-2f5a35f4523b?w=900&h=600&fit=crop',
+    image: IMG + 'luke-wholeys.jpg',
   },
   {
     id: 'apteka',
@@ -234,7 +341,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['VEGETARIAN'],
     description:
       'All-vegan Eastern European cooking so good the national press took notice; the pierogi are essential.',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900&h=600&fit=crop',
+    image: IMG + 'apteka.jpg',
   },
   {
     id: 'carson-street-deli',
@@ -248,7 +355,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['SANDWICHES'],
     description:
       'A South Side counter beloved for overstuffed sandwiches and a rotating wall of local craft taps.',
-    image: 'https://images.unsplash.com/photo-1554433607-66b5efe9d304?w=900&h=600&fit=crop',
+    image: IMG + 'carson-street-deli.jpg',
   },
   {
     id: 'tazza-doro',
@@ -262,7 +369,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['COFFEE'],
     description:
       "Amy Enrico's warm Highland Park cafe has been the neighborhood's living room since 1999.",
-    image: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=900&h=600&fit=crop',
+    image: IMG + 'tazza-doro.jpg',
   },
   {
     id: 'pamelas-diner',
@@ -276,7 +383,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['AMERICAN'],
     description:
       'Crepe-thin, crispy-edged hotcakes so iconic that presidents have eaten them — the definitive Pittsburgh breakfast.',
-    image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=900&h=600&fit=crop',
+    image: IMG + 'pamelas-diner.jpg',
   },
   {
     id: 'prantls',
@@ -290,7 +397,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['COFFEE'],
     description:
       'Home of the legendary Burnt Almond Torte, once crowned "best cake in America" — a Pittsburgh celebration staple.',
-    image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=900&h=600&fit=crop',
+    image: IMG + 'prantls.jpg',
   },
   {
     id: 'pages-dairy-mart',
@@ -304,7 +411,7 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['AMERICAN'],
     description:
       'A seasonal walk-up window since 1951 where South Siders line up for soft serve and Yinzer sundaes.',
-    image: 'https://images.unsplash.com/photo-1497034825429-c343d7c6a68f?w=900&h=600&fit=crop',
+    image: IMG + 'pages-dairy-mart.jpg',
   },
 ];
 
@@ -764,11 +871,15 @@ function DesktopEats({
   setMeal,
   cuisine,
   setCuisine,
+  inMarket,
+  activeCity,
 }: {
   meal: string;
   setMeal: (m: string) => void;
   cuisine: string;
   setCuisine: (c: string) => void;
+  inMarket: boolean;
+  activeCity: string;
 }) {
   const filtered = RESTAURANTS.filter(
     (r) =>
@@ -808,6 +919,10 @@ function DesktopEats({
         </div>
       </section>
 
+      {!inMarket ? (
+        <CityComingSoon city={activeCity} />
+      ) : (
+        <>
       {/* FILTERS */}
       <div className="filters">
         <div className="filters-inner">
@@ -905,6 +1020,8 @@ function DesktopEats({
           ) : null}
         </div>
       </section>
+        </>
+      )}
     </div>
   );
 }
@@ -1328,16 +1445,29 @@ function MobileFlow({
   setMeal,
   cuisine,
   setCuisine,
+  inMarket,
+  activeCity,
 }: {
   meal: string;
   setMeal: (m: string) => void;
   cuisine: string | null;
   setCuisine: (c: string | null) => void;
+  inMarket: boolean;
+  activeCity: string;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const activeMeal = MOBILE_MEALS.includes(meal) ? meal : 'LUNCH';
   const inResults = !!cuisine;
+
+  if (!inMarket) {
+    return (
+      <div className="cbl-eats-mobile" style={{ background: '#000' }}>
+        <EatsTitleBlock />
+        <CityComingSoon city={activeCity} />
+      </div>
+    );
+  }
 
   const featured = RESTAURANTS.find((r) => r.sponsored);
   const matches = RESTAURANTS.filter(
@@ -1743,21 +1873,31 @@ export function EatsAndDrinks() {
   const [desktopCuisine, setDesktopCuisine] = useState('ALL');
   const [mobileCuisine, setMobileCuisine] = useState<string | null>(null);
 
+  const loc = useVisitorLocation();
+  const activeCity = loc.city || MARKET_CITY;
+  const inMarket = activeCity.toLowerCase() === MARKET_CITY.toLowerCase();
+
   return (
     <main className="cbl-eats">
       <style>{DESKTOP_CSS}</style>
       <style>{PARTNER_CSS}</style>
+      <style>{LOC_CSS}</style>
+      <LocationBar {...loc} />
       <DesktopEats
         meal={meal}
         setMeal={setMeal}
         cuisine={desktopCuisine}
         setCuisine={setDesktopCuisine}
+        inMarket={inMarket}
+        activeCity={activeCity}
       />
       <MobileFlow
         meal={meal}
         setMeal={setMeal}
         cuisine={mobileCuisine}
         setCuisine={setMobileCuisine}
+        inMarket={inMarket}
+        activeCity={activeCity}
       />
       <PartnerBand />
     </main>
