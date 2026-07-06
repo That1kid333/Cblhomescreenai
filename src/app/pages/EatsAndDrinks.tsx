@@ -30,14 +30,23 @@ const ITALIC = "'Playfair Display', serif";
 const IMG = '/eats/imagery/';
 const ICON = '/eats/food-icons/';
 
-// Markets with seeded restaurant data. Pittsburgh is the launch market; other
-// cities show a friendly "expanding soon" note while still surfacing the picks.
+// Pittsburgh is the curated home market (hand-picked list + sponsored Square
+// Cafe). Everywhere else runs on live Google Places data — real local spots
+// with real photos near the visitor — so the page works in any city.
 const MARKET_CITY = 'Pittsburgh';
-const COMING_SOON_CITIES = ['Cleveland', 'Columbus', 'Philadelphia', 'Detroit', 'Chicago', 'Buffalo'];
 // Pittsburgh metro center + radius — a visitor anywhere in the metro (any
-// suburb) counts as the Pittsburgh market, so auto-detected suburbs still work.
+// suburb) gets the curated home-market treatment.
 const PGH_CENTER: [number, number] = [40.4406, -79.9959];
 const MARKET_RADIUS_MI = 45;
+// Coordinates for the manual city picker so choosing a city actually relocates
+// the live search (the auto-detected location is used until the visitor picks).
+const CITY_COORDS: Record<string, [number, number]> = {
+  Pittsburgh: [40.4406, -79.9959], Cleveland: [41.4993, -81.6944], Columbus: [39.9612, -82.9988],
+  Philadelphia: [39.9526, -75.1652], Detroit: [42.3314, -83.0458], Chicago: [41.8781, -87.6298],
+  Buffalo: [42.8864, -78.8784], 'New York': [40.7128, -74.006], 'Los Angeles': [34.0522, -118.2437],
+  Miami: [25.7617, -80.1918], Austin: [30.2672, -97.7431], Nashville: [36.1627, -86.7816],
+};
+const DROPDOWN_CITIES = Object.keys(CITY_COORDS);
 
 const LOC_CSS = `
 .cbl-eats .locbar {
@@ -71,41 +80,16 @@ const LOC_CSS = `
 .cbl-eats .city-soon .btn.ghost:hover { border-color:${GOLD}; color:${GOLD}; }
 `;
 
-function CityComingSoon({ city }: { city: string }) {
-  return (
-    <section className="city-soon">
-      <div className="eyebrow">— expanding soon</div>
-      <h2>
-        We&rsquo;re bringing CBL <span className="it">to {city}</span>
-      </h2>
-      <p>
-        Our hand-picked local eats &amp; drinks are live in Pittsburgh first — and {city} is next.
-        Know a spot that belongs here? Refer it, or share your member card with the owner and earn
-        when they join under your code.
-      </p>
-      <div className="row">
-        <Link className="btn gold" to="/login">Get your member card →</Link>
-        <Link className="btn ghost" to="/contact">Refer a {city} spot →</Link>
-      </div>
-    </section>
-  );
-}
-
 type LocState = ReturnType<typeof useVisitorLocation>;
 
 function LocationBar({
   city,
   status,
   coords,
-  precise,
   setManualCity,
-  requestPrecise,
-  inMarket,
   activeCity,
-}: LocState & { inMarket: boolean; activeCity: string }) {
-  const nearestFirst = inMarket && !!coords;
-
-  const cityOptions = [MARKET_CITY, ...COMING_SOON_CITIES];
+}: LocState & { activeCity: string }) {
+  const cityOptions = [...DROPDOWN_CITIES];
   // Ensure a detected non-listed city still appears as the selected value.
   if (city && !cityOptions.some((c) => c.toLowerCase() === city.toLowerCase())) {
     cityOptions.splice(1, 0, city);
@@ -127,36 +111,18 @@ function LocationBar({
           <label>
             <span className="sr-only">Choose your city</span>
             <select
-              value={cityOptions.find((c) => c.toLowerCase() === activeCity.toLowerCase()) || MARKET_CITY}
-              onChange={(e) => setManualCity(e.target.value, e.target.value === MARKET_CITY ? 'PA' : '')}
+              value={cityOptions.find((c) => c.toLowerCase() === activeCity.toLowerCase()) || activeCity}
+              onChange={(e) => setManualCity(e.target.value, '')}
               aria-label="Choose your city"
             >
               {cityOptions.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                  {c !== MARKET_CITY && !COMING_SOON_CITIES.includes(c) ? '' : c !== MARKET_CITY ? ' (coming soon)' : ''}
-                </option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
           </label>
         </span>
       )}
-      {nearestFirst && (
-        <span className="note">
-          — nearest first
-          {!precise && (
-            <>
-              {' · '}
-              <button className="exact" onClick={requestPrecise}>use my exact location</button>
-            </>
-          )}
-        </span>
-      )}
-      {!inMarket && status !== 'locating' && (
-        <span className="note">
-          — Pittsburgh is live now; <b>{activeCity}</b> is coming soon.
-        </span>
-      )}
+      {!!coords && <span className="note">— nearest first</span>}
     </div>
   );
 }
@@ -1380,25 +1346,27 @@ function DesktopEats({
   setMeal,
   cuisine,
   setCuisine,
-  inMarket,
-  activeCity,
+  inPittsburgh,
+  city,
   coords,
 }: {
   meal: string;
   setMeal: (m: string) => void;
   cuisine: string;
   setCuisine: (c: string) => void;
-  inMarket: boolean;
-  activeCity: string;
+  inPittsburgh: boolean;
+  city: string;
   coords: Coords | null;
 }) {
-  const live = useLivePlaces(coords, inMarket, meal, cuisine);
-  const filtered = RESTAURANTS.filter(
-    (r) =>
-      (meal === 'ALL' || r.meal.includes(meal)) &&
-      (cuisine === 'ALL' || r.cuisine.includes(cuisine)),
-  );
-  const featured = filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored);
+  const live = useLivePlaces(coords, !!coords, meal, cuisine);
+  // Curated seed + sponsored Square Cafe are the Pittsburgh home-market feature;
+  // everywhere else runs on the live Google results only.
+  const filtered = inPittsburgh
+    ? RESTAURANTS.filter(
+        (r) => (meal === 'ALL' || r.meal.includes(meal)) && (cuisine === 'ALL' || r.cuisine.includes(cuisine)),
+      )
+    : [];
+  const featured = inPittsburgh ? filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored) : undefined;
   const featuredShown = !!featured && filtered.some((r) => r.id === featured.id);
   // Live Google results (real photos/ratings) when available; else curated seed.
   const rest = live ?? byDistance(filtered.filter((r) => !r.sponsored), coords);
@@ -1417,24 +1385,22 @@ function DesktopEats({
                   <span className="eats">Eats &amp; Drinks</span>
                   <span className="hero-subtitle">
                     <span>Restaurants</span>
-                    <span className="it">picked by Pittsburgh</span>
+                    <span className="it">{inPittsburgh ? 'picked by Pittsburgh' : `top spots near ${city}`}</span>
                   </span>
                 </span>
                 <span className="fork-knife" aria-hidden="true" />
               </h1>
             </div>
             <p className="lede">
-              Real picks from the drivers, bartenders and regulars who live here. No sponsored
-              lists, no recycled top-tens — just the rooms, plates and bar stools our team keeps
-              coming back to.
+              {inPittsburgh
+                ? 'Real picks from the drivers, bartenders and regulars who live here. No sponsored lists, no recycled top-tens — just the rooms, plates and bar stools our team keeps coming back to.'
+                : `The best-reviewed restaurants, cafes and bars right around ${city} — pulled live and sorted by what's closest to you.`}
             </p>
           </div>
         </div>
       </section>
 
-      {!inMarket ? (
-        <CityComingSoon city={activeCity} />
-      ) : (
+      {(
         <>
       {/* FILTERS */}
       <div className="filters">
