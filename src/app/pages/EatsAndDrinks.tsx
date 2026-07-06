@@ -34,6 +34,10 @@ const ICON = '/eats/food-icons/';
 // cities show a friendly "expanding soon" note while still surfacing the picks.
 const MARKET_CITY = 'Pittsburgh';
 const COMING_SOON_CITIES = ['Cleveland', 'Columbus', 'Philadelphia', 'Detroit', 'Chicago', 'Buffalo'];
+// Pittsburgh metro center + radius — a visitor anywhere in the metro (any
+// suburb) counts as the Pittsburgh market, so auto-detected suburbs still work.
+const PGH_CENTER: [number, number] = [40.4406, -79.9959];
+const MARKET_RADIUS_MI = 45;
 
 const LOC_CSS = `
 .cbl-eats .locbar {
@@ -50,6 +54,8 @@ const LOC_CSS = `
 .cbl-eats .locbar select:focus { outline:none; border-color:${GOLD}; }
 .cbl-eats .locbar .note { color:#9a9a9a; }
 .cbl-eats .locbar .note b { color:#fff; }
+.cbl-eats .locbar .exact { background:none; border:0; padding:0; cursor:pointer; color:${GOLD}; font-family:inherit; font-size:inherit; letter-spacing:inherit; text-decoration:underline; }
+.cbl-eats .locbar .exact:hover { color:#DDB15F; }
 @media (max-width:640px){ .cbl-eats .locbar { font-size:11px; padding:10px 14px; } }
 
 .cbl-eats .city-soon { max-width:640px; margin:0 auto; text-align:center; padding:72px 24px 88px; }
@@ -87,9 +93,16 @@ function CityComingSoon({ city }: { city: string }) {
 
 type LocState = ReturnType<typeof useVisitorLocation>;
 
-function LocationBar({ city, status, coords, setManualCity }: LocState) {
-  const activeCity = city || MARKET_CITY;
-  const inMarket = activeCity.toLowerCase() === MARKET_CITY.toLowerCase();
+function LocationBar({
+  city,
+  status,
+  coords,
+  precise,
+  setManualCity,
+  requestPrecise,
+  inMarket,
+  activeCity,
+}: LocState & { inMarket: boolean; activeCity: string }) {
   const nearestFirst = inMarket && !!coords;
 
   const cityOptions = [MARKET_CITY, ...COMING_SOON_CITIES];
@@ -128,7 +141,17 @@ function LocationBar({ city, status, coords, setManualCity }: LocState) {
           </label>
         </span>
       )}
-      {nearestFirst && <span className="note">— nearest first</span>}
+      {nearestFirst && (
+        <span className="note">
+          — nearest first
+          {!precise && (
+            <>
+              {' · '}
+              <button className="exact" onClick={requestPrecise}>use my exact location</button>
+            </>
+          )}
+        </span>
+      )}
       {!inMarket && status !== 'locating' && (
         <span className="note">
           — Pittsburgh is live now; <b>{activeCity}</b> is coming soon.
@@ -1924,14 +1947,18 @@ export function EatsAndDrinks() {
 
   const loc = useVisitorLocation();
   const activeCity = loc.city || MARKET_CITY;
-  const inMarket = activeCity.toLowerCase() === MARKET_CITY.toLowerCase();
+  // A visitor anywhere in the Pittsburgh metro (by coordinates) is in-market;
+  // fall back to a city-name check before coordinates resolve.
+  const inMarket = loc.coords
+    ? milesBetween(loc.coords, PGH_CENTER) <= MARKET_RADIUS_MI
+    : activeCity.toLowerCase().includes('pittsburgh');
 
   return (
     <main className="cbl-eats">
       <style>{DESKTOP_CSS}</style>
       <style>{PARTNER_CSS}</style>
       <style>{LOC_CSS}</style>
-      <LocationBar {...loc} />
+      <LocationBar {...loc} inMarket={inMarket} activeCity={activeCity} />
       <DesktopEats
         meal={meal}
         setMeal={setMeal}
