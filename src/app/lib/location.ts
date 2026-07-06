@@ -23,25 +23,40 @@ function storeCity(city: string, state: string) {
   }
 }
 
-// Reverse-geocoding requires VITE_GOOGLE_MAPS_API_KEY; without it we skip
-// straight to the manual city picker rather than guessing at a free
-// alternative endpoint.
+// Reverse-geocoding: use Google's Geocoding API when VITE_GOOGLE_MAPS_API_KEY
+// is configured (most precise), otherwise fall back to BigDataCloud's free,
+// keyless client endpoint so location still works with no key or billing setup.
 async function reverseGeocode(lat: number, lng: number): Promise<StoredCity | null> {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  if (!apiKey) return null;
 
+  if (apiKey) {
+    try {
+      const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+      const data = await res.json();
+      const components = data?.results?.[0]?.address_components ?? [];
+      const city = components.find((c: { types: string[] }) => c.types.includes('locality'))?.long_name;
+      const state = components.find((c: { types: string[] }) => c.types.includes('administrative_area_level_1'))
+        ?.short_name;
+      if (city) return { city, state: state ?? '' };
+    } catch {
+      // fall through to the keyless provider
+    }
+  }
+
+  // Keyless fallback — no API key or billing required.
   try {
-    const res = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`);
+    const res = await fetch(
+      `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+    );
     const data = await res.json();
-    const components = data?.results?.[0]?.address_components ?? [];
-    const city = components.find((c: { types: string[] }) => c.types.includes('locality'))?.long_name;
-    const state = components.find((c: { types: string[] }) => c.types.includes('administrative_area_level_1'))
-      ?.short_name;
-    if (!city) return null;
-    return { city, state: state ?? '' };
+    const city: string | undefined = data?.city || data?.locality;
+    // principalSubdivisionCode looks like "US-PA" — take the state part.
+    const state: string = (data?.principalSubdivisionCode || '').split('-')[1] || '';
+    if (city) return { city, state };
   } catch {
     return null;
   }
+  return null;
 }
 
 export function useVisitorLocation() {
