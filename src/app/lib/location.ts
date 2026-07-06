@@ -61,43 +61,79 @@ async function reverseGeocode(lat: number, lng: number): Promise<StoredCity | nu
 
 export type Coords = { lat: number; lng: number };
 
+// Automatic, keyless IP-based geolocation — like the live site, this "just
+// picks up" the visitor's city instantly with NO permission prompt. Returns a
+// city-level location + approximate coordinates. Falls back across providers.
+async function ipLocate(): Promise<{ city: string; state: string; coords: Coords } | null> {
+  try {
+    const res = await fetch('https://ipwho.is/');
+    const d = await res.json();
+    if (d && d.success !== false && d.city && typeof d.latitude === 'number') {
+      return { city: d.city, state: d.region_code || '', coords: { lat: d.latitude, lng: d.longitude } };
+    }
+  } catch {
+    // try the next provider
+  }
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const d = await res.json();
+    if (d && d.city && typeof d.latitude === 'number') {
+      return { city: d.city, state: d.region_code || d.region || '', coords: { lat: d.latitude, lng: d.longitude } };
+    }
+  } catch {
+    // give up — caller keeps its default market
+  }
+  return null;
+}
+
 export function useVisitorLocation() {
   const [location, setLocation] = useState<StoredCity | null>(() => readStoredCity());
   const [coords, setCoords] = useState<Coords | null>(null);
+  const [precise, setPrecise] = useState(false);
   const [status, setStatus] = useState<VisitorLocationStatus>(location ? 'resolved' : 'idle');
 
   useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      if (!location) setStatus('unavailable');
-      return;
-    }
+    let cancelled = false;
+    const hadManualCity = !!location; // a stored city means the visitor chose it
+    if (!hadManualCity) setStatus('locating');
 
-    // Always try for precise coordinates (used to sort results by distance),
-    // even when we already know the city. Only reverse-geocode to a city name
-    // when we don't have one yet.
-    if (!location) setStatus('locating');
+    // Automatic IP lookup: no prompt, resolves instantly. Always sets coords
+    // (used to order results by distance); only sets the city name when the
+    // visitor hasn't already picked one.
+    ipLocate().then((r) => {
+      if (cancelled) return;
+      if (!r) {
+        if (!hadManualCity) setStatus('unavailable');
+        return;
+      }
+      setCoords((prev) => (precise ? prev : r.coords));
+      if (!hadManualCity) {
+        setLocation({ city: r.city, state: r.state });
+        setStatus('resolved');
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Run once on mount. IP city is intentionally not persisted so coords stay
+    // fresh each visit; only manual picks persist (see setManualCity).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Optional precision upgrade — GPS (prompts once) for exact nearest-first.
+  const requestPrecise = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      async (pos) => {
+      (pos) => {
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        if (!location) {
-          const resolved = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-          if (resolved) {
-            setLocation(resolved);
-            storeCity(resolved.city, resolved.state);
-            setStatus('resolved');
-          } else {
-            setStatus('unavailable');
-          }
-        }
+        setPrecise(true);
       },
       () => {
-        if (!location) setStatus('denied');
+        /* denied — the IP-based coords remain in effect */
       },
       { timeout: 8000 }
     );
-    // Run once on mount — a manual city change shouldn't re-prompt for GPS.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   const setManualCity = (city: string, state = '') => {
     setLocation({ city, state });
@@ -109,7 +145,11 @@ export function useVisitorLocation() {
     city: location?.city ?? null,
     state: location?.state ?? null,
     coords,
+    precise,
     status,
     setManualCity,
+    requestPrecise,
+    // Exposed for callers that want to reverse-geocode raw coordinates.
+    reverseGeocode,
   };
 }
