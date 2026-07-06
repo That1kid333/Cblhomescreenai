@@ -1,33 +1,49 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { authClient } from './supabase/authClient';
-import demoAvatar from '../../assets/cbl-demo-member.png';
 
 /**
  * Demo mode — for showing the member experience to the team without a real
  * account: open any page with ?demo-member (e.g. citybucketlist.com/?demo-member).
  * The flag persists in sessionStorage for the tab; "Sign out" ends the demo.
- * Demo data mirrors the rider-dashboard artwork (Alex Morgan / r/k2417).
+ * Personalized to Keith for demoing to the CBL team. Add `?demo-member` to
+ * any page to turn it on (persists for the tab); Sign out exits. Swap in a
+ * real headshot by setting `photo` to an imported image; until then the
+ * avatar shows the member's initial. Optional `?demo-member=Name` overrides
+ * the display name so anyone on the team can preview their own card.
  */
 const DEMO_KEY = 'cbl-demo-member';
+const DEMO_NAME_KEY = 'cbl-demo-name';
 const DEMO_PROFILE: MemberProfile = {
   id: 'demo',
-  name: 'Alex Morgan',
-  photo: demoAvatar,
-  referral_code: 'k2417',
+  name: 'Keith Schmiedlin',
+  photo: null, // no headshot yet → avatar shows the initial "K"
+  referral_code: 'keith',
   created_at: '2025-02-01T00:00:00Z',
 };
-const DEMO_SESSION = { user: { id: 'demo', email: 'alex.morgan@example.com' } } as unknown as Session;
+const DEMO_SESSION = { user: { id: 'demo', email: 'keith@citybucketlist.com' } } as unknown as Session;
 
 function demoRequested(): boolean {
   try {
-    if (new URLSearchParams(window.location.search).has('demo-member')) {
+    const param = new URLSearchParams(window.location.search).get('demo-member');
+    if (param !== null) {
       sessionStorage.setItem(DEMO_KEY, '1');
+      if (param) sessionStorage.setItem(DEMO_NAME_KEY, param);
     }
     return sessionStorage.getItem(DEMO_KEY) === '1';
   } catch {
     return false;
   }
+}
+
+function demoProfile(): MemberProfile {
+  try {
+    const name = sessionStorage.getItem(DEMO_NAME_KEY);
+    if (name) return { ...DEMO_PROFILE, name };
+  } catch {
+    /* ignore */
+  }
+  return DEMO_PROFILE;
 }
 
 /**
@@ -139,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [demo]);
 
   const value: AuthState = demo
-    ? { session: DEMO_SESSION, profile: DEMO_PROFILE, referralCount: 12, loading: false, signIn, signOut }
+    ? { session: DEMO_SESSION, profile: demoProfile(), referralCount: 12, loading: false, signIn, signOut }
     : { session, profile, referralCount, loading, signIn, signOut };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

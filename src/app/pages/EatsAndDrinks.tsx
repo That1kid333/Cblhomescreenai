@@ -1,6 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { useVisitorLocation } from '../lib/location';
+import { useVisitorLocation, type Coords } from '../lib/location';
+
+// Great-circle distance in miles — used to order results closest-first.
+function milesBetween(a: Coords, b: [number, number]): number {
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(b[0] - a.lat);
+  const dLng = toRad(b[1] - a.lng);
+  const lat1 = toRad(a.lat);
+  const lat2 = toRad(b[0]);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// Order restaurants nearest-first when we know the visitor's coordinates;
+// otherwise keep the curated order.
+function byDistance<T extends { coord: [number, number] }>(list: T[], coords: Coords | null): T[] {
+  if (!coords) return list;
+  return [...list].sort((x, y) => milesBetween(coords, x.coord) - milesBetween(coords, y.coord));
+}
 
 const GOLD = '#C99742';
 const DISPLAY = "'Myriad Pro', sans-serif";
@@ -68,9 +87,10 @@ function CityComingSoon({ city }: { city: string }) {
 
 type LocState = ReturnType<typeof useVisitorLocation>;
 
-function LocationBar({ city, status, setManualCity }: LocState) {
+function LocationBar({ city, status, coords, setManualCity }: LocState) {
   const activeCity = city || MARKET_CITY;
   const inMarket = activeCity.toLowerCase() === MARKET_CITY.toLowerCase();
+  const nearestFirst = inMarket && !!coords;
 
   const cityOptions = [MARKET_CITY, ...COMING_SOON_CITIES];
   // Ensure a detected non-listed city still appears as the selected value.
@@ -108,6 +128,7 @@ function LocationBar({ city, status, setManualCity }: LocState) {
           </label>
         </span>
       )}
+      {nearestFirst && <span className="note">— nearest first</span>}
       {!inMarket && status !== 'locating' && (
         <span className="note">
           — Pittsburgh is live now; <b>{activeCity}</b> is coming soon.
@@ -143,6 +164,7 @@ type Restaurant = {
   cuisine: string[];
   description: string;
   image: string;
+  coord: [number, number]; // [lat, lng]
 };
 
 const RESTAURANTS: Restaurant[] = [
@@ -160,6 +182,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       "Square Cafe is a bright, welcoming spot in Pittsburgh's East Liberty neighborhood serving fresh, seasonal dishes made with local ingredients. From creative breakfast plates to flavorful lunches, everything is made with care and a focus on quality.",
     image: IMG + 'sq-plate.jpg',
+    coord: [40.46008, -79.92513],
   },
   {
     id: 'italian-village',
@@ -174,6 +197,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Neighborhood slice shop. Thick crust, generous toppings, no frills — a North Hills staple.',
     image: IMG + 'iv-pies.jpg',
+    coord: [40.534, -80.01],
   },
   {
     id: 'mad-mex',
@@ -188,6 +212,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Pittsburgh favorite since 1993. Big burritos, Big Azz margaritas, dependable Tex-Mex energy.',
     image: IMG + 'mm-patio.jpg',
+    coord: [40.49455, -80.01179],
   },
   {
     id: 'npl-mccandless',
@@ -202,6 +227,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Classic American tavern menu — burgers, seafood, full bar, and sports on every screen.',
     image: IMG + 'npl-ext.jpg',
+    coord: [40.49455, -80.01179],
   },
   {
     id: 'primanti',
@@ -216,6 +242,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Iconic Pittsburgh sandwich shop. Fries and slaw piled inside every sandwich — by design.',
     image: IMG + 'pb-sand.jpg',
+    coord: [40.45068, -79.98546],
   },
   {
     id: 'tessaros',
@@ -230,6 +257,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       "Family-run Bloomfield tavern with an in-house butcher — locals swear it's the best hardwood-grilled burger in the city.",
     image: IMG + 'tessaros.jpg',
+    coord: [40.46273, -79.95071],
   },
   {
     id: 'chengdu-gourmet',
@@ -244,6 +272,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       "Chef Wei Zhu's fiery, peppercorn-laced Sichuan cooking — the real-deal benchmark locals send every out-of-towner to.",
     image: IMG + 'chengdu-gourmet.jpg',
+    coord: [40.43807, -79.92257],
   },
   {
     id: 'umami',
@@ -258,6 +287,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A moody Lawrenceville izakaya pairing robata skewers and one of the city’s best sushi menus with serious cocktails.',
     image: IMG + 'umami.jpg',
+    coord: [40.46671, -79.96426],
   },
   {
     id: 'senyai-thai',
@@ -272,6 +302,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       "Chef Tu cooks her mother's Bangkok recipes with grace; the boat noodles and curries keep Shadyside coming back.",
     image: IMG + 'senyai-thai.jpg',
+    coord: [40.45795, -79.93205],
   },
   {
     id: 'green-pepper',
@@ -286,6 +317,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A cozy, longtime Squirrel Hill favorite for bibimbap, bulgogi and bubbling stone-bowl comfort food.',
     image: IMG + 'green-pepper.jpg',
+    coord: [40.43849, -79.92299],
   },
   {
     id: 'trams-kitchen',
@@ -300,6 +332,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A no-frills Bloomfield staple whose pho and banh mi have quietly earned a fierce local following for years.',
     image: IMG + 'trams-kitchen.jpg',
+    coord: [40.46543, -79.95597],
   },
   {
     id: 'all-india',
@@ -314,6 +347,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A Craig Street favorite blending North and South Indian, with fresh-ground spices and a beloved dosa lineup.',
     image: IMG + 'all-india.jpg',
+    coord: [40.4522, -79.95267],
   },
   {
     id: 'luke-wholeys',
@@ -328,6 +362,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'The Wholey family’s riverside Strip spot for wild Alaskan salmon and king crab — casual, but seriously fresh.',
     image: IMG + 'luke-wholeys.jpg',
+    coord: [40.45173, -79.98289],
   },
   {
     id: 'apteka',
@@ -342,6 +377,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'All-vegan Eastern European cooking so good the national press took notice; the pierogi are essential.',
     image: IMG + 'apteka.jpg',
+    coord: [40.46573, -79.94931],
   },
   {
     id: 'carson-street-deli',
@@ -356,6 +392,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A South Side counter beloved for overstuffed sandwiches and a rotating wall of local craft taps.',
     image: IMG + 'carson-street-deli.jpg',
+    coord: [40.42903, -79.98303],
   },
   {
     id: 'tazza-doro',
@@ -370,6 +407,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       "Amy Enrico's warm Highland Park cafe has been the neighborhood's living room since 1999.",
     image: IMG + 'tazza-doro.jpg',
+    coord: [40.4747, -79.91885],
   },
   {
     id: 'pamelas-diner',
@@ -384,6 +422,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Crepe-thin, crispy-edged hotcakes so iconic that presidents have eaten them — the definitive Pittsburgh breakfast.',
     image: IMG + 'pamelas-diner.jpg',
+    coord: [40.45197, -79.98363],
   },
   {
     id: 'prantls',
@@ -398,6 +437,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'Home of the legendary Burnt Almond Torte, once crowned "best cake in America" — a Pittsburgh celebration staple.',
     image: IMG + 'prantls.jpg',
+    coord: [40.45156, -79.9329],
   },
   {
     id: 'pages-dairy-mart',
@@ -412,6 +452,7 @@ const RESTAURANTS: Restaurant[] = [
     description:
       'A seasonal walk-up window since 1951 where South Siders line up for soft serve and Yinzer sundaes.',
     image: IMG + 'pages-dairy-mart.jpg',
+    coord: [40.41117, -79.95583],
   },
 ];
 
@@ -873,6 +914,7 @@ function DesktopEats({
   setCuisine,
   inMarket,
   activeCity,
+  coords,
 }: {
   meal: string;
   setMeal: (m: string) => void;
@@ -880,6 +922,7 @@ function DesktopEats({
   setCuisine: (c: string) => void;
   inMarket: boolean;
   activeCity: string;
+  coords: Coords | null;
 }) {
   const filtered = RESTAURANTS.filter(
     (r) =>
@@ -888,7 +931,7 @@ function DesktopEats({
   );
   const featured = filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored);
   const featuredShown = !!featured && filtered.some((r) => r.id === featured.id);
-  const rest = filtered.filter((r) => !r.sponsored);
+  const rest = byDistance(filtered.filter((r) => !r.sponsored), coords);
   const availCuisines = cuisinesForMeal(meal);
 
   return (
@@ -1447,6 +1490,7 @@ function MobileFlow({
   setCuisine,
   inMarket,
   activeCity,
+  coords,
 }: {
   meal: string;
   setMeal: (m: string) => void;
@@ -1454,6 +1498,7 @@ function MobileFlow({
   setCuisine: (c: string | null) => void;
   inMarket: boolean;
   activeCity: string;
+  coords: Coords | null;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -1470,11 +1515,14 @@ function MobileFlow({
   }
 
   const featured = RESTAURANTS.find((r) => r.sponsored);
-  const matches = RESTAURANTS.filter(
-    (r) =>
-      !r.sponsored &&
-      r.meal.includes(activeMeal) &&
-      (!cuisine || r.cuisine.includes(cuisine)),
+  const matches = byDistance(
+    RESTAURANTS.filter(
+      (r) =>
+        !r.sponsored &&
+        r.meal.includes(activeMeal) &&
+        (!cuisine || r.cuisine.includes(cuisine)),
+    ),
+    coords,
   );
 
   return (
@@ -1869,7 +1917,8 @@ function PartnerBand() {
 export function EatsAndDrinks() {
   // Shared filter state. Desktop uses 'ALL' default for both; mobile flow
   // starts with no cuisine (null) so the landing/meal step shows first.
-  const [meal, setMeal] = useState('LUNCH');
+  // Open to the whole city (All Day), ordered closest-first once we have coords.
+  const [meal, setMeal] = useState('ALL');
   const [desktopCuisine, setDesktopCuisine] = useState('ALL');
   const [mobileCuisine, setMobileCuisine] = useState<string | null>(null);
 
@@ -1890,6 +1939,7 @@ export function EatsAndDrinks() {
         setCuisine={setDesktopCuisine}
         inMarket={inMarket}
         activeCity={activeCity}
+        coords={loc.coords}
       />
       <MobileFlow
         meal={meal}
@@ -1898,6 +1948,7 @@ export function EatsAndDrinks() {
         setCuisine={setMobileCuisine}
         inMarket={inMarket}
         activeCity={activeCity}
+        coords={loc.coords}
       />
       <PartnerBand />
     </main>
