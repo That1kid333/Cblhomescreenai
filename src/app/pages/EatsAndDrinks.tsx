@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords } from '../lib/location';
 
@@ -1295,6 +1295,86 @@ function Spotlight({ r }: { r: Restaurant }) {
   );
 }
 
+// ── Live Google Places layer (real listings + real photos near the visitor) ──
+// Falls back to the curated seed whenever the API isn't configured or returns
+// nothing, so the page is always populated.
+const LIVE_KEYWORD: Record<string, string> = {
+  ALL: 'restaurants', TACOS: 'tacos', PIZZA: 'pizza', CHINESE: 'chinese', VEGETARIAN: 'vegetarian vegan',
+  SUSHI: 'sushi', THAI: 'thai', AMERICAN: 'american restaurant', SEAFOOD: 'seafood', BURGERS: 'burgers',
+  ITALIAN: 'italian', COFFEE: 'coffee', SANDWICHES: 'sandwiches deli', KOREAN: 'korean', JAPANESE: 'japanese',
+  VIETNAMESE: 'vietnamese', INDIAN: 'indian', MEXICAN: 'mexican',
+};
+const LIVE_MEAL_KEYWORD: Record<string, string> = { BREAKFAST: 'breakfast', DESSERT: 'dessert bakery' };
+const LIVE_FALLBACK_IMG: Record<string, string> = {
+  CHINESE: 'chengdu-gourmet.jpg', SUSHI: 'umami.jpg', JAPANESE: 'umami.jpg', THAI: 'senyai-thai.jpg',
+  PIZZA: 'iv-pies.jpg', ITALIAN: 'iv-pies.jpg', TACOS: 'mm-patio.jpg', MEXICAN: 'mm-patio.jpg',
+  COFFEE: 'tazza-doro.jpg', SEAFOOD: 'luke-wholeys.jpg', BURGERS: 'tessaros.jpg', VEGETARIAN: 'apteka.jpg',
+  KOREAN: 'green-pepper.jpg', VIETNAMESE: 'trams-kitchen.jpg', INDIAN: 'all-india.jpg', SANDWICHES: 'carson-street-deli.jpg',
+};
+
+function liveKeyword(meal: string, cuisine: string | null): string {
+  if (cuisine && cuisine !== 'ALL') return LIVE_KEYWORD[cuisine] || cuisine.toLowerCase();
+  if (meal && meal !== 'ALL' && LIVE_MEAL_KEYWORD[meal]) return LIVE_MEAL_KEYWORD[meal];
+  return 'restaurants';
+}
+
+const liveCache = new Map<string, Restaurant[]>();
+
+function useLivePlaces(coords: Coords | null, enabled: boolean, meal: string, cuisine: string | null): Restaurant[] | null {
+  const [live, setLive] = useState<Restaurant[] | null>(null);
+  const kw = liveKeyword(meal, cuisine);
+  const tag = cuisine && cuisine !== 'ALL' ? cuisine : 'AMERICAN';
+  useEffect(() => {
+    if (!enabled || !coords) {
+      setLive(null);
+      return;
+    }
+    const cacheKey = `${kw}@${coords.lat.toFixed(2)},${coords.lng.toFixed(2)}`;
+    const cached = liveCache.get(cacheKey);
+    if (cached) {
+      setLive(cached);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/places?lat=${coords.lat}&lng=${coords.lng}&keyword=${encodeURIComponent(kw)}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        if (!d.configured || !d.results?.length) {
+          setLive(null);
+          return;
+        }
+        const mapped: Restaurant[] = d.results
+          .filter((p: { coord?: [number, number] }) => p.coord && p.coord[0] != null)
+          .map((p: { id: string; name: string; rating: number | null; reviews: number; price: string; open: boolean | null; address: string; coord: [number, number]; photo: string | null }) => ({
+            id: 'g-' + p.id,
+            name: p.name,
+            rating: p.rating ?? 4.5,
+            reviews: p.reviews ?? 0,
+            price: p.price || '$$',
+            open: p.open ?? true,
+            address: p.address,
+            meal: ['BREAKFAST', 'LUNCH', 'DINNER', 'DESSERT'],
+            cuisine: [tag],
+            description: p.reviews
+              ? `${p.reviews.toLocaleString()} local reviews · rated ${p.rating ?? '—'}★ nearby.`
+              : 'Popular local spot near you.',
+            image: p.photo || IMG + (LIVE_FALLBACK_IMG[tag] || 'sq-plate.jpg'),
+            coord: p.coord,
+          }));
+        liveCache.set(cacheKey, mapped);
+        setLive(mapped);
+      })
+      .catch(() => {
+        if (!cancelled) setLive(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, coords?.lat, coords?.lng, kw, tag]);
+  return live;
+}
+
 function DesktopEats({
   meal,
   setMeal,
@@ -1312,6 +1392,7 @@ function DesktopEats({
   activeCity: string;
   coords: Coords | null;
 }) {
+  const live = useLivePlaces(coords, inMarket, meal, cuisine);
   const filtered = RESTAURANTS.filter(
     (r) =>
       (meal === 'ALL' || r.meal.includes(meal)) &&
@@ -1319,7 +1400,8 @@ function DesktopEats({
   );
   const featured = filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored);
   const featuredShown = !!featured && filtered.some((r) => r.id === featured.id);
-  const rest = byDistance(filtered.filter((r) => !r.sponsored), coords);
+  // Live Google results (real photos/ratings) when available; else curated seed.
+  const rest = live ?? byDistance(filtered.filter((r) => !r.sponsored), coords);
   const availCuisines = cuisinesForMeal(meal);
 
   return (
@@ -1432,7 +1514,7 @@ function DesktopEats({
             <span className="it">for {meal === 'ALL' ? 'any time' : meal.toLowerCase()}</span>
           </h2>
           <div className="count">
-            <b>{filtered.length}</b> places · Pittsburgh
+            <b>{(featuredShown ? 1 : 0) + rest.length}</b> places · Pittsburgh
           </div>
         </div>
 
@@ -1892,6 +1974,7 @@ function MobileFlow({
 
   const activeMeal = MOBILE_MEALS.includes(meal) ? meal : 'LUNCH';
   const inResults = !!cuisine;
+  const live = useLivePlaces(coords, inMarket, activeMeal, cuisine);
 
   if (!inMarket) {
     return (
@@ -1903,15 +1986,17 @@ function MobileFlow({
   }
 
   const featured = RESTAURANTS.find((r) => r.sponsored);
-  const matches = byDistance(
-    RESTAURANTS.filter(
-      (r) =>
-        !r.sponsored &&
-        r.meal.includes(activeMeal) &&
-        (!cuisine || r.cuisine.includes(cuisine)),
-    ),
-    coords,
-  );
+  const matches =
+    live ??
+    byDistance(
+      RESTAURANTS.filter(
+        (r) =>
+          !r.sponsored &&
+          r.meal.includes(activeMeal) &&
+          (!cuisine || r.cuisine.includes(cuisine)),
+      ),
+      coords,
+    );
 
   return (
     <div className="cbl-eats-mobile" style={{ background: '#000' }}>
