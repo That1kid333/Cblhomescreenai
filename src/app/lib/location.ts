@@ -59,32 +59,45 @@ async function reverseGeocode(lat: number, lng: number): Promise<StoredCity | nu
   return null;
 }
 
+export type Coords = { lat: number; lng: number };
+
 export function useVisitorLocation() {
   const [location, setLocation] = useState<StoredCity | null>(() => readStoredCity());
+  const [coords, setCoords] = useState<Coords | null>(null);
   const [status, setStatus] = useState<VisitorLocationStatus>(location ? 'resolved' : 'idle');
 
   useEffect(() => {
-    if (location || typeof navigator === 'undefined' || !navigator.geolocation) {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
       if (!location) setStatus('unavailable');
       return;
     }
 
-    setStatus('locating');
+    // Always try for precise coordinates (used to sort results by distance),
+    // even when we already know the city. Only reverse-geocode to a city name
+    // when we don't have one yet.
+    if (!location) setStatus('locating');
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const resolved = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-        if (resolved) {
-          setLocation(resolved);
-          storeCity(resolved.city, resolved.state);
-          setStatus('resolved');
-        } else {
-          setStatus('unavailable');
+        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        if (!location) {
+          const resolved = await reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+          if (resolved) {
+            setLocation(resolved);
+            storeCity(resolved.city, resolved.state);
+            setStatus('resolved');
+          } else {
+            setStatus('unavailable');
+          }
         }
       },
-      () => setStatus('denied'),
+      () => {
+        if (!location) setStatus('denied');
+      },
       { timeout: 8000 }
     );
-  }, [location]);
+    // Run once on mount — a manual city change shouldn't re-prompt for GPS.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const setManualCity = (city: string, state = '') => {
     setLocation({ city, state });
@@ -95,6 +108,7 @@ export function useVisitorLocation() {
   return {
     city: location?.city ?? null,
     state: location?.state ?? null,
+    coords,
     status,
     setManualCity,
   };
