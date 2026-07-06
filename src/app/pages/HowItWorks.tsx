@@ -417,6 +417,31 @@ export function HowItWorks() {
           ))}
         </div>
       </section>
+
+      {/* Share your card, earn as you go — the member referral loop */}
+      <section className="band tight" style={{ paddingTop: 0 }}>
+        <div className="band-inner">
+          <div className="choice">
+            <div className="mark">✦</div>
+            <div>
+              <h3>Share Your Card, Earn As You Go</h3>
+              <p>
+                City Bucket List is a software-as-a-service platform, and every free membership
+                comes with a digital business card — your profile plus a personal QR code. Share it
+                with a restaurant you love, a rider, or a driver worth knowing. When they join under
+                your code, you're rewarded — the people and places you already recommend become real
+                value for you.
+              </p>
+            </div>
+            <div className="chips">
+              <span className="chip">+ Restaurants</span>
+              <span className="chip">+ Riders</span>
+              <span className="chip">+ Drivers</span>
+              <span className="chip">+ Local spots</span>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }

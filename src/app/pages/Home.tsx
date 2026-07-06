@@ -182,7 +182,7 @@ const APP_FEATURES = [
   { t: 'Meet Buckee', d: 'Your AI travel buddy builds personalized itineraries and local insider tips on demand.' },
   { t: 'Book in seconds', d: 'Trusted rides, dining, and attractions — all from one membership, on any device.' },
   { t: 'Your preferred driver', d: 'Schedule and message your own private driver, right from the dashboard.' },
-  { t: 'Share your QR code', d: 'Invite friends and family into your circle with one tap — everyone saves.' },
+  { t: 'Your digital business card', d: 'Every member gets a personal QR code to share with friends, drivers, and local spots — when they join under your code, you earn.' },
   { t: 'Save more', d: 'Member savings and partner offers across every city you visit. Joining is free.' },
 ];
 
