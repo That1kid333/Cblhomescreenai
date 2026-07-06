@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { authClient } from './supabase/authClient';
+import keithPhoto from '../../assets/cbl-keith.png';
 
 /**
  * Demo mode — for showing the member experience to the team without a real
@@ -17,8 +18,8 @@ const DEMO_NAME_KEY = 'cbl-demo-name';
 const DEMO_PROFILE: MemberProfile = {
   id: 'demo',
   name: 'Keith Schmiedlin',
-  photo: null, // no headshot yet → avatar shows the initial "K"
-  referral_code: 'keith',
+  photo: keithPhoto, // Keith's portrait from his app driver dashboard
+  referral_code: 'k2408a', // Keith's real CBL referral code
   created_at: '2025-02-01T00:00:00Z',
 };
 const DEMO_SESSION = { user: { id: 'demo', email: 'keith@citybucketlist.com' } } as unknown as Session;
