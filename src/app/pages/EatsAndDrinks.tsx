@@ -1480,7 +1480,7 @@ function DesktopEats({
             <span className="it">for {meal === 'ALL' ? 'any time' : meal.toLowerCase()}</span>
           </h2>
           <div className="count">
-            <b>{(featuredShown ? 1 : 0) + rest.length}</b> places · Pittsburgh
+            <b>{(featuredShown ? 1 : 0) + rest.length}</b> places · {city.toUpperCase()}
           </div>
         </div>
 
@@ -1491,10 +1491,10 @@ function DesktopEats({
           ) : !featuredShown ? (
             <div className="empty">
               <h4>
-                No {cuisine === 'ALL' ? '' : cuisine.toLowerCase() + ' '}spots{' '}
-                <span className="it">for {meal === 'ALL' ? 'any time' : meal.toLowerCase()}</span>
+                Finding {cuisine === 'ALL' ? '' : cuisine.toLowerCase() + ' '}spots{' '}
+                <span className="it">near {city}</span>
               </h4>
-              <p>Our Pittsburgh team is curating picks. Try another cuisine or meal time.</p>
+              <p>{coords ? 'Loading the best-rated local places…' : 'Turn on location or pick a city above to see what’s local.'}</p>
             </div>
           ) : null}
         </div>
@@ -1924,45 +1924,34 @@ function MobileFlow({
   setMeal,
   cuisine,
   setCuisine,
-  inMarket,
-  activeCity,
+  inPittsburgh,
   coords,
 }: {
   meal: string;
   setMeal: (m: string) => void;
   cuisine: string | null;
   setCuisine: (c: string | null) => void;
-  inMarket: boolean;
-  activeCity: string;
+  inPittsburgh: boolean;
   coords: Coords | null;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const activeMeal = MOBILE_MEALS.includes(meal) ? meal : 'LUNCH';
   const inResults = !!cuisine;
-  const live = useLivePlaces(coords, inMarket, activeMeal, cuisine);
+  const live = useLivePlaces(coords, !!coords, activeMeal, cuisine);
 
-  if (!inMarket) {
-    return (
-      <div className="cbl-eats-mobile" style={{ background: '#000' }}>
-        <EatsTitleBlock />
-        <CityComingSoon city={activeCity} />
-      </div>
-    );
-  }
-
-  const featured = RESTAURANTS.find((r) => r.sponsored);
+  // Square Cafe spotlight is Pittsburgh-only; live results power every city.
+  const featured = inPittsburgh ? RESTAURANTS.find((r) => r.sponsored) : undefined;
   const matches =
     live ??
-    byDistance(
-      RESTAURANTS.filter(
-        (r) =>
-          !r.sponsored &&
-          r.meal.includes(activeMeal) &&
-          (!cuisine || r.cuisine.includes(cuisine)),
-      ),
-      coords,
-    );
+    (inPittsburgh
+      ? byDistance(
+          RESTAURANTS.filter(
+            (r) => !r.sponsored && r.meal.includes(activeMeal) && (!cuisine || r.cuisine.includes(cuisine)),
+          ),
+          coords,
+        )
+      : []);
 
   return (
     <div className="cbl-eats-mobile" style={{ background: '#000' }}>
@@ -2224,9 +2213,9 @@ function MobileFlow({
                 marginBottom: 6,
               }}
             >
-              No {cuisine ? cuisine.toLowerCase() + ' ' : ''}spots for {activeMeal.toLowerCase()} yet.
+              Finding {cuisine ? cuisine.toLowerCase() + ' ' : ''}spots near you…
             </div>
-            Our Pittsburgh team is curating picks.
+            {coords ? 'Loading the best-rated local places…' : 'Turn on location to see what’s local.'}
             <br />
             {cuisine ? (
               <>
@@ -2363,10 +2352,16 @@ export function EatsAndDrinks() {
 
   const loc = useVisitorLocation();
   const activeCity = loc.city || MARKET_CITY;
-  // A visitor anywhere in the Pittsburgh metro (by coordinates) is in-market;
-  // fall back to a city-name check before coordinates resolve.
-  const inMarket = loc.coords
-    ? milesBetween(loc.coords, PGH_CENTER) <= MARKET_RADIUS_MI
+  // When the visitor picks a city from the dropdown, search that city's center;
+  // otherwise use their auto-detected (IP/GPS) coordinates.
+  const manualCoord = loc.status === 'manual' ? CITY_COORDS[activeCity] : undefined;
+  const searchCoords: Coords | null = manualCoord
+    ? { lat: manualCoord[0], lng: manualCoord[1] }
+    : loc.coords;
+  // Pittsburgh metro gets the curated home-market treatment (Square Cafe +
+  // hand-picked list); every other city runs on live Google results.
+  const inPittsburgh = searchCoords
+    ? milesBetween(searchCoords, PGH_CENTER) <= MARKET_RADIUS_MI
     : activeCity.toLowerCase().includes('pittsburgh');
 
   return (
@@ -2374,24 +2369,23 @@ export function EatsAndDrinks() {
       <style>{DESKTOP_CSS}</style>
       <style>{PARTNER_CSS}</style>
       <style>{LOC_CSS}</style>
-      <LocationBar {...loc} inMarket={inMarket} activeCity={activeCity} />
+      <LocationBar {...loc} activeCity={activeCity} />
       <DesktopEats
         meal={meal}
         setMeal={setMeal}
         cuisine={desktopCuisine}
         setCuisine={setDesktopCuisine}
-        inMarket={inMarket}
-        activeCity={activeCity}
-        coords={loc.coords}
+        inPittsburgh={inPittsburgh}
+        city={activeCity}
+        coords={searchCoords}
       />
       <MobileFlow
         meal={meal}
         setMeal={setMeal}
         cuisine={mobileCuisine}
         setCuisine={setMobileCuisine}
-        inMarket={inMarket}
-        activeCity={activeCity}
-        coords={loc.coords}
+        inPittsburgh={inPittsburgh}
+        coords={searchCoords}
       />
       <PartnerBand />
     </main>
