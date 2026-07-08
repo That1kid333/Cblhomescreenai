@@ -5,10 +5,56 @@ import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
 import { useAuth, firstNameOf } from '../lib/auth';
 import { MemberCard } from './MemberCard';
 
+// Mobile menu, grouped into the same categories as the desktop nav so the two
+// stay consistent. Collapsed by default (accordion) to keep it short.
+type MobileItem = { label: string; to?: string; href?: string; tag?: string };
+type MobileSection = { label: string; to?: string; items?: MobileItem[] };
+const MOBILE_NAV: MobileSection[] = [
+  {
+    label: 'About',
+    items: [
+      { label: 'Our Story', to: '/our-story' },
+      { label: 'Meet the Buckee Family', to: '/meet-buckee' },
+      { label: 'How It Works', to: '/how-it-works' },
+      { label: 'FAQ', to: '/faq' },
+      { label: 'Contact Us', to: '/contact' },
+    ],
+  },
+  {
+    label: 'Explore',
+    items: [
+      { label: 'Travels', to: '/travels' },
+      { label: 'Transportation', to: '/transportation' },
+      { label: 'Eats & Drinks', to: '/eats-and-drinks' },
+      { label: 'Attractions', to: '/attractions' },
+      { label: 'Delivery', to: '/delivery' },
+    ],
+  },
+  {
+    label: 'Affiliates',
+    items: [
+      { label: 'Hotel & Concierge Program', to: '/concierge' },
+      { label: 'Become An Affiliate', to: '/affiliates' },
+      { label: 'Partner Restaurants', to: '/partner-restaurants' },
+      { label: 'Partner Attractions', to: '/partner-attractions' },
+    ],
+  },
+  { label: 'CBL Blog', to: '/blog' },
+  {
+    label: 'Directory & Savings',
+    items: [
+      { label: 'Directory', to: '/directory', tag: 'New Design' },
+      { label: 'Local Classifieds', href: 'https://directory.citybucketlist.com/', tag: 'Live' },
+      { label: 'Shopping & Offers', href: 'https://directory.citybucketlist.com/', tag: 'Live' },
+    ],
+  },
+];
+
 export function Layout() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [closeTimeout, setCloseTimeout] = useState<NodeJS.Timeout | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const [cardOpen, setCardOpen] = useState(false);
   const { session, profile } = useAuth();
   const firstName = firstNameOf(profile, session);
@@ -217,44 +263,67 @@ export function Layout() {
             </div>
           </div>
 
-          {/* Mobile menu - shown when hamburger is tapped */}
+          {/* Mobile menu - categorized accordion, mirrors the desktop nav */}
           {mobileOpen && (
-            <nav className="lg:hidden mt-4 flex flex-col border-t border-white/10 pt-1">
-              {[
-                { to: '/our-story', label: 'Our Story' },
-                { to: '/meet-buckee', label: 'Meet the Buckee Family' },
-                { to: '/travels', label: 'Travels' },
-                { to: '/transportation', label: 'Transportation' },
-                { to: '/eats-and-drinks', label: 'Eats & Drinks' },
-                { to: '/attractions', label: 'Attractions' },
-                { to: '/delivery', label: 'Delivery' },
-                { to: '/blog', label: 'CBL Blog' },
-                { to: '/directory', label: 'Directory' },
-                { to: '/concierge', label: 'Hotel & Concierge Program' },
-                { to: '/affiliates', label: 'Affiliates' },
-                { to: '/partner-restaurants', label: 'Partner Restaurants' },
-                { to: '/partner-attractions', label: 'Partner Attractions' },
-                { to: '/faq', label: 'FAQ' },
-                { to: '/contact', label: 'Contact' },
-              ].map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMobileOpen(false)}
-                  className="py-3 text-sm text-white hover:text-[#FDB913] border-b border-gray-700 border-dotted transition-colors uppercase tracking-wide"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <a
-                href="https://directory.citybucketlist.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="py-3 text-sm text-white hover:text-[#FDB913] transition-colors uppercase tracking-wide"
-              >
-                Local Classifieds (Live)
-              </a>
+            <nav className="lg:hidden mt-4 flex flex-col border-t border-white/10">
+              {MOBILE_NAV.map((section) => {
+                // Direct-link section (e.g. CBL Blog) — no sub-items.
+                if (section.to && !section.items) {
+                  return (
+                    <Link
+                      key={section.label}
+                      to={section.to}
+                      onClick={() => setMobileOpen(false)}
+                      className="py-3.5 text-sm text-white hover:text-[#FDB913] border-b border-gray-700 border-dotted transition-colors uppercase tracking-wide font-semibold"
+                    >
+                      {section.label}
+                    </Link>
+                  );
+                }
+                const open = openSection === section.label;
+                const closeMenu = () => setMobileOpen(false);
+                return (
+                  <div key={section.label} className="border-b border-gray-700 border-dotted">
+                    <button
+                      onClick={() => setOpenSection(open ? null : section.label)}
+                      aria-expanded={open}
+                      className="w-full flex items-center justify-between py-3.5 text-sm text-white hover:text-[#FDB913] transition-colors uppercase tracking-wide font-semibold"
+                    >
+                      {section.label}
+                      <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${open ? 'rotate-90' : ''}`} />
+                    </button>
+                    {open && (
+                      <div className="flex flex-col pb-1.5">
+                        {section.items!.map((it) =>
+                          it.href ? (
+                            <a
+                              key={it.label}
+                              href={it.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={closeMenu}
+                              className="py-2.5 pl-4 text-[13px] text-[#B8B8B8] hover:text-[#FDB913] transition-colors uppercase tracking-wide"
+                            >
+                              {it.label}
+                              {it.tag && <span className="text-[#FDB913] ml-1.5 text-[11px]">· {it.tag}</span>}
+                            </a>
+                          ) : (
+                            <Link
+                              key={it.label}
+                              to={it.to!}
+                              onClick={closeMenu}
+                              className="py-2.5 pl-4 text-[13px] text-[#B8B8B8] hover:text-[#FDB913] transition-colors uppercase tracking-wide"
+                            >
+                              {it.label}
+                              {it.tag && <span className="text-[#FDB913] ml-1.5 text-[11px]">· {it.tag}</span>}
+                            </Link>
+                          ),
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </nav>
           )}
         </div>
