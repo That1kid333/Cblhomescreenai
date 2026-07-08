@@ -844,8 +844,10 @@ const FULL_CUISINES = [
   'TACOS', 'PIZZA', 'CHINESE', 'VEGETARIAN', 'SUSHI', 'THAI', 'AMERICAN', 'SEAFOOD',
   'BURGERS', 'ITALIAN', 'COFFEE', 'SANDWICHES', 'KOREAN', 'JAPANESE', 'VIETNAMESE', 'INDIAN', 'MEXICAN',
 ];
-const BREAKFAST_CUISINES = ['BREAKFAST', 'COFFEE', 'BAKERY', 'AMERICAN', 'VEGETARIAN'];
-const DESSERT_CUISINES = ['DESSERT', 'BAKERY', 'COFFEE'];
+// Don't repeat the meal name as a cuisine ("ALL" already means all breakfast /
+// all dessert on those tabs).
+const BREAKFAST_CUISINES = ['COFFEE', 'BAKERY', 'AMERICAN', 'VEGETARIAN'];
+const DESSERT_CUISINES = ['BAKERY', 'COFFEE'];
 function cuisineListForMeal(m: string): string[] {
   if (m === 'BREAKFAST') return BREAKFAST_CUISINES;
   if (m === 'DESSERT') return DESSERT_CUISINES;
