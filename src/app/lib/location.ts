@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export type VisitorLocationStatus = 'idle' | 'locating' | 'resolved' | 'denied' | 'unavailable' | 'manual';
 
@@ -90,6 +90,9 @@ export function useVisitorLocation() {
   const [location, setLocation] = useState<StoredCity | null>(() => readStoredCity());
   const [coords, setCoords] = useState<Coords | null>(null);
   const [precise, setPrecise] = useState(false);
+  // Ref mirror of `precise` so the (mount-time) IP callback checks the CURRENT
+  // value — otherwise its stale closure would overwrite precise GPS coords.
+  const preciseRef = useRef(false);
   const [status, setStatus] = useState<VisitorLocationStatus>(location ? 'resolved' : 'idle');
 
   useEffect(() => {
@@ -106,7 +109,7 @@ export function useVisitorLocation() {
         if (!hadManualCity) setStatus('unavailable');
         return;
       }
-      setCoords((prev) => (precise ? prev : r.coords));
+      setCoords((prev) => (preciseRef.current ? prev : r.coords));
       if (!hadManualCity) {
         setLocation({ city: r.city, state: r.state });
         setStatus('resolved');
@@ -125,6 +128,7 @@ export function useVisitorLocation() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        preciseRef.current = true;
         setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setPrecise(true);
       },
