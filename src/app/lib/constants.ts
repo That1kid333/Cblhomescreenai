@@ -18,6 +18,14 @@ export const BUCKEE_PUBLIC_URL =
 export const PARTNER_CHECKOUT_URL =
   'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/create-partner-checkout';
 
+// Member payout onboarding (Stripe Connect Express) — how a member turns on
+// cash payouts for referral commissions. Call with the member's access token
+// as the Authorization bearer (apikey = anon key for the gateway).
+export const MEMBER_CONNECT_ONBOARD_URL =
+  'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/create-member-connect-account';
+export const MEMBER_CONNECT_STATUS_URL =
+  'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/check-member-connect-status';
+
 // Anon key for the main-app Supabase project (public by design; RLS governs access —
 // same key already shipped in ridesClient.ts). Used only to pass the functions gateway.
 export const SUPABASE_ANON_KEY =

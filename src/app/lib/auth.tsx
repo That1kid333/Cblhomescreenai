@@ -22,6 +22,7 @@ const DEMO_PROFILE: MemberProfile = {
   photo: keithPhoto, // Keith's portrait from his app driver dashboard
   referral_code: 'k2408a', // Keith's real CBL referral code
   created_at: '2025-02-01T00:00:00Z',
+  payouts_enabled: false, // demo shows the "Set up cash payouts" CTA
 };
 const DEMO_SESSION = { user: { id: 'demo', email: 'keith@citybucketlist.com' } } as unknown as Session;
 
@@ -73,6 +74,7 @@ export type MemberProfile = {
   photo: string | null;
   referral_code: string | null;
   created_at: string | null;
+  payouts_enabled: boolean | null;
 };
 
 type AuthState = {
@@ -129,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const [{ data: rider }, { count }] = await Promise.all([
         authClient
           .from('riders')
-          .select('id, name, photo, referral_code, created_at')
+          .select('id, name, photo, referral_code, created_at, payouts_enabled')
           .eq('id', session.user.id)
           .maybeSingle(),
         authClient
