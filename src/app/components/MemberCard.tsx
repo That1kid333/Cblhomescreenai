@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
-import { APP_URL } from '../lib/constants';
+import { APP_URL, MEMBER_CONNECT_ONBOARD_URL, MEMBER_CONNECT_STATUS_URL, SUPABASE_ANON_KEY } from '../lib/constants';
 import { useAuth, firstNameOf } from '../lib/auth';
 
 /**
@@ -77,6 +77,18 @@ const CARD_CSS = `
 }
 .cbl-card .biz button:hover { background:${GOLD}; color:#000; }
 
+.cbl-card .payout { margin:10px 0 4px; }
+.cbl-card .payout button {
+  width:100%; cursor:pointer; background:transparent; border:1.5px solid rgba(255,255,255,.22);
+  border-radius:999px; padding:10px; color:#fff; font-family:${DISPLAY};
+  font-weight:800; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  transition:border-color .2s, color .2s;
+}
+.cbl-card .payout button:hover:not(:disabled) { border-color:${GOLD}; color:${GOLD}; }
+.cbl-card .payout button:disabled { opacity:.6; cursor:default; }
+.cbl-card .payout-on { font-family:${MONO}; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#4DBF66; text-align:center; padding:9px 10px; border:1px solid rgba(77,191,102,.35); border-radius:999px; background:rgba(77,191,102,.08); }
+.cbl-card .payout-note { font-family:${MONO}; font-size:10px; color:#B8B8B8; text-align:center; margin-top:7px; line-height:1.45; }
+
 .cbl-card .go {
   display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
   background:${GOLD}; color:#000; border:0; border-radius:999px; padding:13px 30px;
@@ -101,6 +113,13 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedBiz, setCopiedBiz] = useState(false);
+  const [payoutsOn, setPayoutsOn] = useState<boolean | null>(profile?.payouts_enabled ?? null);
+  const [payoutBusy, setPayoutBusy] = useState(false);
+  const [payoutNote, setPayoutNote] = useState<string | null>(null);
+
+  // A real signed-in member has an access token; the demo session doesn't.
+  const accessToken = session?.access_token;
+  const hasRealSession = !!accessToken;
 
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -165,6 +184,34 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
     };
   }, [open]);
 
+  // When the card opens for a real member, sync payout status from Stripe.
+  // This also catches the return from onboarding (?payouts=return): the member
+  // reopens their card and sees "Cash payouts active".
+  useEffect(() => {
+    if (!open || !hasRealSession) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(MEMBER_CONNECT_STATUS_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!cancelled && typeof data.onboarded === 'boolean') setPayoutsOn(data.onboarded);
+      } catch {
+        /* leave the current state; the button stays available */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open, hasRealSession, accessToken]);
+
   if (!open) return null;
 
   const copyLink = async () => {
@@ -217,6 +264,39 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
     }
   };
 
+  // Kick off Stripe Connect onboarding so the member can receive cash payouts.
+  // Requires a real signed-in member (the demo session has no access token).
+  const startPayoutOnboarding = async () => {
+    if (!hasRealSession) {
+      setPayoutNote('Sign in with your member account to set up cash payouts.');
+      return;
+    }
+    if (payoutBusy) return;
+    setPayoutBusy(true);
+    setPayoutNote(null);
+    try {
+      const res = await fetch(MEMBER_CONNECT_ONBOARD_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ returnUrl: `${window.location.origin}/` }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.url) {
+        window.location.href = data.url; // → Stripe Connect onboarding
+      } else {
+        setPayoutNote(data?.error || 'Could not start payout setup. Please try again.');
+        setPayoutBusy(false);
+      }
+    } catch {
+      setPayoutNote('Network error — please try again.');
+      setPayoutBusy(false);
+    }
+  };
+
   return (
     <div className="cbl-card" role="dialog" aria-modal="true" aria-labelledby="cbl-card-title">
       <style>{CARD_CSS}</style>
@@ -263,6 +343,17 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
             Send them your restaurant invite — earn <b>20%</b> when they join.
           </p>
           <button onClick={shareBiz}>{copiedBiz ? 'Copied ✓' : 'Send restaurant invite →'}</button>
+        </div>
+
+        <div className="payout">
+          {payoutsOn ? (
+            <div className="payout-on">✓ Cash payouts active</div>
+          ) : (
+            <button onClick={startPayoutOnboarding} disabled={payoutBusy}>
+              {payoutBusy ? 'Opening…' : 'Set up cash payouts →'}
+            </button>
+          )}
+          {payoutNote && <div className="payout-note">{payoutNote}</div>}
         </div>
 
         <a className="go" href={APP_URL}>Open your dashboard →</a>
