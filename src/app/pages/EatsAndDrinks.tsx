@@ -991,8 +991,8 @@ const DESKTOP_CSS = `
 .cbl-eats .hero-inner { display:grid; grid-template-columns:1fr; gap:0; align-items:start; max-width:1280px; margin:0 auto; }
 .cbl-eats .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
-  font-family:${MONO}; font-size:12px; letter-spacing:.14em;
-  color:#8a8a8a; text-transform:lowercase; margin-bottom:10px;
+  font-family:${MONO}; font-size:12px; letter-spacing:.14em; font-weight:700;
+  color:#fff; text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-eats .eyebrow::before {
   content:''; width:8px; height:8px; border-radius:50%;
