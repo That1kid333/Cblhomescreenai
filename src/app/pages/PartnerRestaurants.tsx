@@ -7,8 +7,9 @@
  * Shared Layout provides nav + footer. Hero reuses /eats/imagery/cbl-map-backdrop.jpg.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { APP_URL, PARTNER_CHECKOUT_URL, SUPABASE_ANON_KEY } from '../lib/constants';
+import { captureRefFromUrl, getStoredRef } from '../lib/referral';
 
 type Plan = 'bronze' | 'silver' | 'gold';
 
@@ -151,11 +152,18 @@ export function PartnerRestaurants() {
     typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('checkout'),
   );
 
+  // If a member sent this restaurant via their referral link (?ref=CODE),
+  // capture + persist it so it rides into checkout and credits their commission.
+  useEffect(() => {
+    captureRefFromUrl();
+  }, []);
+
   const startCheckout = async (plan: Plan) => {
     if (loadingPlan) return;
     setLoadingPlan(plan);
     setCheckoutError(null);
     try {
+      const ref = getStoredRef();
       const res = await fetch(PARTNER_CHECKOUT_URL, {
         method: 'POST',
         headers: {
@@ -163,7 +171,7 @@ export function PartnerRestaurants() {
           apikey: SUPABASE_ANON_KEY,
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify(ref ? { plan, ref } : { plan }),
       });
       const data = await res.json().catch(() => ({}));
       if (data?.url) {
