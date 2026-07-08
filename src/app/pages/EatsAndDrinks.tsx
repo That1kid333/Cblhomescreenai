@@ -365,7 +365,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: '4606 Penn Ave, Bloomfield, Pittsburgh',
     meal: ['DINNER'],
-    cuisine: ['VEGETARIAN'],
+    cuisine: ['VEGETARIAN', 'VEGAN'],
     description:
       'All-vegan Eastern European cooking so good the national press took notice; the pierogi are essential.',
     image: IMG + 'apteka.jpg',
@@ -638,7 +638,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: "639 East Warrington Avenue, Allentown, Pittsburgh",
     meal: ['LUNCH', 'DINNER'],
-    cuisine: ['VEGETARIAN'],
+    cuisine: ['VEGETARIAN', 'VEGAN'],
     description: "Metal-themed all-vegan kitchen in Allentown with a cult following.",
     image: IMG + 'apteka.jpg',
     coord: [40.42188, -79.99593],
@@ -652,7 +652,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: "279 Fisk Street, Central Lawrenceville, Pittsburgh",
     meal: ['BREAKFAST', 'LUNCH'],
-    cuisine: ['VEGETARIAN'],
+    cuisine: ['VEGETARIAN', 'VEGAN'],
     description: "Vegan Middle Eastern in Lawrenceville; the falafel converts skeptics.",
     image: IMG + 'apteka.jpg',
     coord: [40.46759, -79.95908],
@@ -851,13 +851,12 @@ const FULL_CUISINES = [
   'BURGERS', 'ITALIAN', 'COFFEE', 'SANDWICHES', 'KOREAN', 'JAPANESE', 'VIETNAMESE', 'INDIAN', 'MEXICAN',
 ];
 // Don't repeat the meal name as a cuisine ("ALL" already means all breakfast /
-// all dessert on those tabs).
+// all dessert on those tabs). Vegan/Gluten-Free are appended to every meal.
 const BREAKFAST_CUISINES = ['COFFEE', 'BAKERY', 'AMERICAN', 'VEGETARIAN'];
 const DESSERT_CUISINES = ['BAKERY', 'COFFEE'];
 function cuisineListForMeal(m: string): string[] {
-  if (m === 'BREAKFAST') return BREAKFAST_CUISINES;
-  if (m === 'DESSERT') return DESSERT_CUISINES;
-  return FULL_CUISINES;
+  const base = m === 'BREAKFAST' ? BREAKFAST_CUISINES : m === 'DESSERT' ? DESSERT_CUISINES : FULL_CUISINES;
+  return [...base, ...DIETARY];
 }
 
 const MEAL_ICON_FILE: Record<string, string> = {
@@ -1195,7 +1194,8 @@ const DESKTOP_CSS = `
 const DESKTOP_MEALS = ['ALL', 'BREAKFAST', 'LUNCH', 'DINNER', 'DESSERT'];
 const MOBILE_MEALS = ['BREAKFAST', 'LUNCH', 'DINNER', 'DESSERT'];
 
-const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
+const titleCase = (s: string) =>
+  s.split('-').map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join('-');
 
 // Cuisines that actually have a restaurant for a given meal. Used to limit the
 // cuisine chips so we never offer e.g. "Tacos" under Breakfast. ('ALL' meal =
@@ -1283,6 +1283,7 @@ const LIVE_KEYWORD: Record<string, string> = {
   ITALIAN: 'italian', COFFEE: 'coffee', SANDWICHES: 'sandwiches deli', KOREAN: 'korean', JAPANESE: 'japanese',
   VIETNAMESE: 'vietnamese', INDIAN: 'indian', MEXICAN: 'mexican',
   BREAKFAST: 'breakfast', BAKERY: 'bakery pastries', DESSERT: 'dessert',
+  VEGAN: 'vegan', 'GLUTEN-FREE': 'gluten free',
 };
 const LIVE_MEAL_KEYWORD: Record<string, string> = { BREAKFAST: 'breakfast', DESSERT: 'dessert bakery' };
 const LIVE_FALLBACK_IMG: Record<string, string> = {
@@ -1719,6 +1720,8 @@ function CuisineTile({
           fontSize: 13,
           letterSpacing: '.06em',
           textTransform: 'uppercase',
+          textAlign: 'center',
+          lineHeight: 1.15,
           color: active ? '#fff' : GOLD,
         }}
       >
@@ -2132,7 +2135,7 @@ function MobileFlow({
             {cuisineListForMeal(activeMeal).map((c) => (
               <CuisineTile
                 key={c}
-                label={c === 'VIETNAMESE' ? 'VIETNAM' : c}
+                label={c === 'VIETNAMESE' ? 'VIETNAM' : c === 'GLUTEN-FREE' ? 'GLUTEN FREE' : c}
                 cuisineKey={c}
                 active={cuisine === c}
                 onClick={() => {
