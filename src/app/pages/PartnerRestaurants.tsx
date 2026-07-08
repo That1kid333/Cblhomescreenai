@@ -184,7 +184,7 @@ export function PartnerRestaurants() {
 
       {checkoutStatus === 'success' && (
         <div className="checkout-note ok" role="status">
-          ✓ Payment received — welcome to CBL! Check your email for next steps to set up your listing.
+          ✓ Payment received — welcome to CBL! Your restaurant partner subscription is confirmed. We'll reach out to finish setting up your listing.
         </div>
       )}
       {checkoutStatus === 'cancelled' && (
