@@ -2286,7 +2286,7 @@ function PartnerBand() {
             <li>Build your own delivery driver network</li>
             <li>Reach CBL members and local drivers</li>
           </ul>
-          <Link to="/affiliates" className="cta">
+          <Link to="/partner-restaurants" className="cta">
             Become a Partner →
           </Link>
         </div>
