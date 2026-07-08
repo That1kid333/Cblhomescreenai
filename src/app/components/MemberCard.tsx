@@ -65,6 +65,18 @@ const CARD_CSS = `
 }
 .cbl-card .row button:hover { border-color:${GOLD}; color:${GOLD}; }
 
+.cbl-card .biz { margin:4px 0 14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.08); }
+.cbl-card .biz-cap { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin-bottom:5px; }
+.cbl-card .biz-sub { font-size:12.5px; line-height:1.5; color:#B8B8B8; margin:0 0 11px; }
+.cbl-card .biz-sub b { color:${GOLD}; font-weight:800; }
+.cbl-card .biz button {
+  width:100%; cursor:pointer; background:transparent; border:1.5px solid rgba(201,151,66,.5);
+  border-radius:999px; padding:11px 10px; color:${GOLD}; font-family:${DISPLAY};
+  font-weight:800; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  transition:background .2s, color .2s;
+}
+.cbl-card .biz button:hover { background:${GOLD}; color:#000; }
+
 .cbl-card .go {
   display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
   background:${GOLD}; color:#000; border:0; border-radius:999px; padding:13px 30px;
@@ -88,6 +100,7 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
   const { session, profile, referralCount, signOut } = useAuth();
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedBiz, setCopiedBiz] = useState(false);
 
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
@@ -97,6 +110,13 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
 
   const firstName = firstNameOf(profile, session);
   const referralLink = profile?.referral_code ? `${APP_URL}/r/${profile.referral_code}` : APP_URL;
+  // Restaurant-owner invite: points at this same site's partner page carrying
+  // the member's code, so a signup there credits them 20%. Uses the live origin
+  // so the link works on the preview host and on citybucketlist.com alike.
+  const siteOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://citybucketlist.com';
+  const restaurantInvite = profile?.referral_code
+    ? `${siteOrigin}/partner-restaurants?ref=${profile.referral_code}`
+    : `${siteOrigin}/partner-restaurants`;
   // Format in UTC so a midnight-UTC created_at doesn't drift into the prior
   // month for US timezones.
   const memberSince = profile?.created_at
@@ -173,6 +193,30 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
     copyLink();
   };
 
+  // Restaurant invite: prefer the native share sheet (best for sending an owner
+  // a text/email), fall back to copying the link with a "Copied ✓" toast.
+  const shareBiz = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Get your restaurant on City Bucket List',
+          text: `Love your spot — get listed on City Bucket List and reach local members & drivers. Sign up with my link:`,
+          url: restaurantInvite,
+        });
+        return;
+      } catch {
+        /* dismissed — fall through to copy */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(restaurantInvite);
+      setCopiedBiz(true);
+      setTimeout(() => setCopiedBiz(false), 1800);
+    } catch {
+      /* clipboard unavailable */
+    }
+  };
+
   return (
     <div className="cbl-card" role="dialog" aria-modal="true" aria-labelledby="cbl-card-title">
       <style>{CARD_CSS}</style>
@@ -212,6 +256,15 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
           <button onClick={shareLink}>Share</button>
           <button onClick={copyLink}>{copied ? 'Copied ✓' : 'Copy link'}</button>
         </div>
+
+        <div className="biz">
+          <div className="biz-cap">Own a spot you love?</div>
+          <p className="biz-sub">
+            Send them your restaurant invite — earn <b>20%</b> when they join.
+          </p>
+          <button onClick={shareBiz}>{copiedBiz ? 'Copied ✓' : 'Send restaurant invite →'}</button>
+        </div>
+
         <a className="go" href={APP_URL}>Open your dashboard →</a>
 
         <button
