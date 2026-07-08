@@ -86,6 +86,8 @@ function LocationBar({
   city,
   status,
   coords,
+  precise,
+  requestPrecise,
   setManualCity,
   activeCity,
 }: LocState & { activeCity: string }) {
@@ -122,7 +124,17 @@ function LocationBar({
           </label>
         </span>
       )}
-      {!!coords && <span className="note">— nearest first</span>}
+      {!!coords && (
+        <span className="note">
+          — nearest first
+          {!precise && (
+            <>
+              {' · '}
+              <button className="exact" onClick={requestPrecise}>use my exact location</button>
+            </>
+          )}
+        </span>
+      )}
     </div>
   );
 }
@@ -1368,8 +1380,9 @@ function DesktopEats({
     : [];
   const featured = inPittsburgh ? filtered.find((r) => r.sponsored) || RESTAURANTS.find((r) => r.sponsored) : undefined;
   const featuredShown = !!featured && filtered.some((r) => r.id === featured.id);
-  // Live Google results (real photos/ratings) when available; else curated seed.
-  const rest = live ?? byDistance(filtered.filter((r) => !r.sponsored), coords);
+  // Live Google results (real photos/ratings) when available; else curated seed
+  // — either way, ordered closest-to-you first.
+  const rest = byDistance(live ?? filtered.filter((r) => !r.sponsored), coords);
   const availCuisines = cuisinesForMeal(meal);
 
   return (
@@ -1942,16 +1955,15 @@ function MobileFlow({
 
   // Square Cafe spotlight is Pittsburgh-only; live results power every city.
   const featured = inPittsburgh ? RESTAURANTS.find((r) => r.sponsored) : undefined;
-  const matches =
+  const matches = byDistance(
     live ??
-    (inPittsburgh
-      ? byDistance(
-          RESTAURANTS.filter(
+      (inPittsburgh
+        ? RESTAURANTS.filter(
             (r) => !r.sponsored && r.meal.includes(activeMeal) && (!cuisine || r.cuisine.includes(cuisine)),
-          ),
-          coords,
-        )
-      : []);
+          )
+        : []),
+    coords,
+  );
 
   return (
     <div className="cbl-eats-mobile" style={{ background: '#000' }}>
@@ -2352,12 +2364,15 @@ export function EatsAndDrinks() {
 
   const loc = useVisitorLocation();
   const activeCity = loc.city || MARKET_CITY;
-  // When the visitor picks a city from the dropdown, search that city's center;
-  // otherwise use their auto-detected (IP/GPS) coordinates.
-  const manualCoord = loc.status === 'manual' ? CITY_COORDS[activeCity] : undefined;
-  const searchCoords: Coords | null = manualCoord
-    ? { lat: manualCoord[0], lng: manualCoord[1] }
-    : loc.coords;
+  // Prefer the visitor's actual coordinates so THEIR neighborhood sorts first.
+  // Only fall back to a city center when they've manually picked a city they're
+  // not physically in (e.g. browsing Chicago from Pittsburgh).
+  const cityCenter = CITY_COORDS[activeCity];
+  const nearPicked = !!cityCenter && !!loc.coords && milesBetween(loc.coords, cityCenter) <= MARKET_RADIUS_MI;
+  const searchCoords: Coords | null =
+    loc.status === 'manual' && cityCenter && !nearPicked
+      ? { lat: cityCenter[0], lng: cityCenter[1] }
+      : loc.coords;
   // Pittsburgh metro gets the curated home-market treatment (Square Cafe +
   // hand-picked list); every other city runs on live Google results.
   const inPittsburgh = searchCoords
