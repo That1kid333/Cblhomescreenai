@@ -7,7 +7,10 @@
  * Shared Layout provides nav + footer. Hero reuses /eats/imagery/cbl-map-backdrop.jpg.
  */
 
-import { APP_URL } from '../lib/constants';
+import { useState } from 'react';
+import { APP_URL, PARTNER_CHECKOUT_URL, SUPABASE_ANON_KEY } from '../lib/constants';
+
+type Plan = 'bronze' | 'silver' | 'gold';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -117,6 +120,11 @@ const CSS = `
 .cbl-partner-rest .pricing-list .gold-flag { display:inline-block; margin-left:6px; font-family:${MONO}; font-size:9px; font-weight:700; letter-spacing:.10em; text-transform:uppercase; color:#000; background:${GOLD}; padding:2px 7px; border-radius:3px; vertical-align:middle; }
 .cbl-partner-rest .pricing-cta { margin-top:28px; display:inline-flex; align-items:center; gap:8px; background:${GOLD}; color:#000; border:0; padding:14px 28px; border-radius:6px 0 6px 0; font-family:${DISPLAY}; font-weight:800; font-size:13px; letter-spacing:.10em; text-transform:uppercase; text-decoration:none; transition:background .2s, transform .2s; width:100%; justify-content:center; }
 .cbl-partner-rest .pricing-cta:hover { background:#DDB15F; transform:translateY(-1px); }
+.cbl-partner-rest .pricing-cta:disabled { opacity:.6; cursor:default; transform:none; }
+.cbl-partner-rest .checkout-note { text-align:center; padding:13px 20px; font-family:${MONO}; font-size:13px; letter-spacing:.03em; }
+.cbl-partner-rest .checkout-note.ok { background:rgba(77,191,102,.12); border-bottom:1px solid rgba(77,191,102,.4); color:#8fe0a3; }
+.cbl-partner-rest .checkout-note.cancel { background:rgba(201,151,66,.10); border-bottom:1px solid rgba(201,151,66,.35); color:#e0c088; }
+.cbl-partner-rest .checkout-err { text-align:center; color:#f0b3b3; font-family:${MONO}; font-size:12px; letter-spacing:.03em; margin:16px 0 0; }
 
 /* CTA band */
 .cbl-partner-rest .cta-band { background: radial-gradient(ellipse at 50% 0%, rgba(201,151,66,.16), transparent 60%), linear-gradient(180deg, #0F0F0F 0%, #0A0A0A 100%); text-align:center; }
@@ -136,9 +144,54 @@ const CSS = `
 `;
 
 export function PartnerRestaurants() {
+  const [loadingPlan, setLoadingPlan] = useState<Plan | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  // Stripe returns here with ?checkout=success|cancelled.
+  const [checkoutStatus] = useState<string | null>(() =>
+    typeof window === 'undefined' ? null : new URLSearchParams(window.location.search).get('checkout'),
+  );
+
+  const startCheckout = async (plan: Plan) => {
+    if (loadingPlan) return;
+    setLoadingPlan(plan);
+    setCheckoutError(null);
+    try {
+      const res = await fetch(PARTNER_CHECKOUT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ plan }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data?.url) {
+        window.location.href = data.url; // → Stripe Checkout
+      } else {
+        setCheckoutError('Could not start checkout. Please try again in a moment.');
+        setLoadingPlan(null);
+      }
+    } catch {
+      setCheckoutError('Network error — please try again.');
+      setLoadingPlan(null);
+    }
+  };
+
   return (
     <main className="cbl-partner-rest">
       <style>{CSS}</style>
+
+      {checkoutStatus === 'success' && (
+        <div className="checkout-note ok" role="status">
+          ✓ Payment received — welcome to CBL! Check your email for next steps to set up your listing.
+        </div>
+      )}
+      {checkoutStatus === 'cancelled' && (
+        <div className="checkout-note cancel" role="status">
+          Checkout cancelled — no charge was made. Pick a tier below whenever you're ready.
+        </div>
+      )}
 
       <section className="hero">
         <div className="hero-inner">
@@ -202,7 +255,9 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=bronze`}>Sign Up →</a>
+              <button className="pricing-cta" onClick={() => startCheckout('bronze')} disabled={!!loadingPlan}>
+                {loadingPlan === 'bronze' ? 'Loading…' : 'Sign Up →'}
+              </button>
             </div>
 
             <div className="pricing-card">
@@ -216,7 +271,9 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers 6&quot; x 6&quot; (4)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=silver`}>Sign Up →</a>
+              <button className="pricing-cta" onClick={() => startCheckout('silver')} disabled={!!loadingPlan}>
+                {loadingPlan === 'silver' ? 'Loading…' : 'Sign Up →'}
+              </button>
             </div>
 
             <div className="pricing-card gold-card">
@@ -232,9 +289,12 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers (8)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=gold`}>Sign Up →</a>
+              <button className="pricing-cta" onClick={() => startCheckout('gold')} disabled={!!loadingPlan}>
+                {loadingPlan === 'gold' ? 'Loading…' : 'Sign Up →'}
+              </button>
             </div>
           </div>
+          {checkoutError && <p className="checkout-err" role="alert">{checkoutError}</p>}
         </div>
       </section>
 
