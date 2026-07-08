@@ -836,7 +836,13 @@ const CUISINE_ICON_FILE: Record<string, string> = {
   BREAKFAST: 'breakfast.svg',
   BAKERY: 'french-food.svg',
   DESSERT: 'cake.svg',
+  // Dietary filters — shown across every meal (they cut across cuisines)
+  VEGAN: 'vegan.svg',
+  'GLUTEN-FREE': 'gluten-free.svg',
 };
+
+// Dietary filters appended to every meal's chip list.
+const DIETARY = ['VEGAN', 'GLUTEN-FREE'];
 
 // Which cuisines make sense per meal. Breakfast and dessert are curated so we
 // don't surface Seafood/Sushi at 8am; lunch & dinner keep the full list.
