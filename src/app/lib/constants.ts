@@ -12,6 +12,12 @@ export const BUCKEE_PUBLIC_URL =
   import.meta.env.VITE_BUCKEE_PUBLIC_URL ||
   'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/buckee-public';
 
+// Restaurant-partner Stripe Checkout (Supabase edge function in the main-app
+// project). POST { plan: 'bronze'|'silver'|'gold' } → { url, mode }; redirect
+// to url. Test mode until app_settings.stripe_live_payments_enabled = "true".
+export const PARTNER_CHECKOUT_URL =
+  'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/create-partner-checkout';
+
 // Anon key for the main-app Supabase project (public by design; RLS governs access —
 // same key already shipped in ridesClient.ts). Used only to pass the functions gateway.
 export const SUPABASE_ANON_KEY =
