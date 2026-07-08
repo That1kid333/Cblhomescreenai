@@ -202,7 +202,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=bronze`}>Sign Up →</a>
             </div>
 
             <div className="pricing-card">
@@ -216,7 +216,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers 6&quot; x 6&quot; (4)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=silver`}>Sign Up →</a>
             </div>
 
             <div className="pricing-card gold-card">
@@ -232,7 +232,7 @@ export function PartnerRestaurants() {
                 <li>Fundraising Solutions</li>
                 <li>Door Sticker 12&quot; x 12&quot; (1) &amp; Table Stickers (8)</li>
               </ul>
-              <a className="pricing-cta" href={`${APP_URL}/partner/signup`}>Sign Up →</a>
+              <a className="pricing-cta" href={`${APP_URL}/partner/signup?plan=gold`}>Sign Up →</a>
             </div>
           </div>
         </div>
