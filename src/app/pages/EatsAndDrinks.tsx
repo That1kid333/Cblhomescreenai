@@ -2331,17 +2331,10 @@ export function EatsAndDrinks() {
     loc.requestPrecise(); // GPS: pinpoint the visitor for true closest-first
   };
 
-  // If the visitor has already granted location, auto-sharpen to precise GPS on
-  // load (no new prompt) so "near me" works without a click. First-timers keep
-  // the instant IP city + the "Near me" button.
+  // Auto-locate on load so the list opens to the restaurants closest to you.
+  // Prompts once for GPS; if declined we keep the instant IP city + "Near me".
   useEffect(() => {
-    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
-    navigator.permissions
-      .query({ name: 'geolocation' as PermissionName })
-      .then((s) => {
-        if (s.state === 'granted') loc.requestPrecise();
-      })
-      .catch(() => {});
+    loc.requestPrecise();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
