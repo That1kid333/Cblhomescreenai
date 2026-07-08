@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { useVisitorLocation, type Coords } from '../lib/location';
+import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 
 // Great-circle distance in miles — used to order results closest-first.
 function milesBetween(a: Coords, b: [number, number]): number {
@@ -24,7 +24,7 @@ function byDistance<T extends { coord: [number, number] }>(list: T[], coords: Co
 const GOLD = '#C99742';
 const DISPLAY = "'Myriad Pro', sans-serif";
 const BODY = "'Myriad Pro', sans-serif";
-const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
+const MONO = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace";
 const ITALIC = "'Playfair Display', serif";
 
 const IMG = '/eats/imagery/';
@@ -39,15 +39,7 @@ const MARKET_CITY = 'Pittsburgh';
 const PGH_CENTER: [number, number] = [40.4406, -79.9959];
 const MARKET_RADIUS_MI = 45;
 // Coordinates for the manual city picker so choosing a city actually relocates
-// the live search (the auto-detected location is used until the visitor picks).
-const CITY_COORDS: Record<string, [number, number]> = {
-  Pittsburgh: [40.4406, -79.9959], Cleveland: [41.4993, -81.6944], Columbus: [39.9612, -82.9988],
-  Philadelphia: [39.9526, -75.1652], Detroit: [42.3314, -83.0458], Chicago: [41.8781, -87.6298],
-  Buffalo: [42.8864, -78.8784], 'New York': [40.7128, -74.006], 'Los Angeles': [34.0522, -118.2437],
-  Miami: [25.7617, -80.1918], Austin: [30.2672, -97.7431], Nashville: [36.1627, -86.7816],
-};
-const DROPDOWN_CITIES = Object.keys(CITY_COORDS);
-
+// the live search (the auto-detected location is used until the visitor searches).
 const LOC_CSS = `
 .cbl-eats .locbar {
   display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap;
@@ -56,16 +48,18 @@ const LOC_CSS = `
 }
 .cbl-eats .locbar .pin { color:${GOLD}; display:inline-flex; }
 .cbl-eats .locbar b { color:${GOLD}; font-weight:700; letter-spacing:.04em; }
-.cbl-eats .locbar select {
-  background:#141414; color:#fff; border:1px solid rgba(201,151,66,.4); border-radius:999px;
-  padding:6px 12px; font-family:${MONO}; font-size:12px; letter-spacing:.04em; cursor:pointer;
-}
-.cbl-eats .locbar select:focus { outline:none; border-color:${GOLD}; }
+.cbl-eats .locbar .search { display:inline-flex; align-items:center; gap:6px; background:#141414; border:1px solid rgba(201,151,66,.4); border-radius:999px; padding:4px 5px 4px 14px; }
+.cbl-eats .locbar .search:focus-within { border-color:${GOLD}; }
+.cbl-eats .locbar .search input { background:transparent; border:0; outline:none; color:#fff; font-family:${MONO}; font-size:12px; letter-spacing:.04em; width:190px; max-width:46vw; }
+.cbl-eats .locbar .search input::placeholder { color:#7a7a7a; }
+.cbl-eats .locbar .search .go { background:${GOLD}; color:#000; border:0; border-radius:999px; width:26px; height:26px; display:grid; place-items:center; cursor:pointer; flex-shrink:0; }
+.cbl-eats .locbar .search .go:hover { background:#DDB15F; }
+.cbl-eats .locbar .nearme { display:inline-flex; align-items:center; gap:6px; background:transparent; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:6px 14px; color:${GOLD}; font-family:${MONO}; font-size:12px; letter-spacing:.04em; cursor:pointer; }
+.cbl-eats .locbar .nearme:hover { background:rgba(201,151,66,.1); }
+.cbl-eats .locbar .nearme:disabled { opacity:.6; cursor:default; }
 .cbl-eats .locbar .note { color:#9a9a9a; }
 .cbl-eats .locbar .note b { color:#fff; }
-.cbl-eats .locbar .exact { background:none; border:0; padding:0; cursor:pointer; color:${GOLD}; font-family:inherit; font-size:inherit; letter-spacing:inherit; text-decoration:underline; }
-.cbl-eats .locbar .exact:hover { color:#DDB15F; }
-@media (max-width:640px){ .cbl-eats .locbar { font-size:11px; padding:10px 14px; } }
+@media (max-width:640px){ .cbl-eats .locbar { font-size:11px; padding:10px 14px; gap:8px; } .cbl-eats .locbar .search input { width:150px; } }
 
 .cbl-eats .city-soon { max-width:640px; margin:0 auto; text-align:center; padding:72px 24px 88px; }
 .cbl-eats .city-soon .eyebrow { display:inline-flex; align-items:center; gap:9px; font-family:${MONO}; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin-bottom:14px; }
@@ -80,23 +74,20 @@ const LOC_CSS = `
 .cbl-eats .city-soon .btn.ghost:hover { border-color:${GOLD}; color:${GOLD}; }
 `;
 
-type LocState = ReturnType<typeof useVisitorLocation>;
-
 function LocationBar({
-  city,
   status,
-  coords,
-  precise,
-  requestPrecise,
-  setManualCity,
   activeCity,
-}: LocState & { activeCity: string }) {
-  const cityOptions = [...DROPDOWN_CITIES];
-  // Ensure a detected non-listed city still appears as the selected value.
-  if (city && !cityOptions.some((c) => c.toLowerCase() === city.toLowerCase())) {
-    cityOptions.splice(1, 0, city);
-  }
-
+  onSearchCity,
+  onNearMe,
+  searching,
+}: {
+  status: VisitorLocationStatus;
+  activeCity: string;
+  onSearchCity: (q: string) => void;
+  onNearMe: () => void;
+  searching: boolean;
+}) {
+  const [q, setQ] = useState('');
   return (
     <div className="locbar">
       <span className="pin" aria-hidden="true">
@@ -105,36 +96,36 @@ function LocationBar({
           <circle cx="12" cy="10" r="3" />
         </svg>
       </span>
-      {status === 'locating' ? (
-        <span>Finding local spots near you…</span>
-      ) : (
-        <span>
-          Showing local spots near{' '}
-          <label>
-            <span className="sr-only">Choose your city</span>
-            <select
-              value={cityOptions.find((c) => c.toLowerCase() === activeCity.toLowerCase()) || activeCity}
-              onChange={(e) => setManualCity(e.target.value, '')}
-              aria-label="Choose your city"
-            >
-              {cityOptions.map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </label>
-        </span>
-      )}
-      {!!coords && (
-        <span className="note">
-          — nearest first
-          {!precise && (
-            <>
-              {' · '}
-              <button className="exact" onClick={requestPrecise}>use my exact location</button>
-            </>
-          )}
-        </span>
-      )}
+      <span>
+        Local spots near <b>{status === 'locating' ? 'you…' : activeCity}</b>
+      </span>
+      <form
+        className="search"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (q.trim()) onSearchCity(q.trim());
+        }}
+      >
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search a city or town…"
+          aria-label="Search a city or town"
+        />
+        <button type="submit" className="go" aria-label="Search">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        </button>
+      </form>
+      <button className="nearme" onClick={onNearMe} disabled={searching}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+        </svg>
+        {searching ? 'Locating…' : 'Near me'}
+      </button>
     </div>
   );
 }
@@ -179,7 +170,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: '134 S Highland Ave, Pittsburgh, PA 15206',
     meal: ['BREAKFAST', 'LUNCH'],
-    cuisine: ['AMERICAN', 'COFFEE'],
+    cuisine: ['AMERICAN', 'COFFEE', 'BREAKFAST'],
     description:
       "Square Cafe is a bright, welcoming spot in Pittsburgh's East Liberty neighborhood serving fresh, seasonal dishes made with local ingredients. From creative breakfast plates to flavorful lunches, everything is made with care and a focus on quality.",
     image: IMG + 'sq-plate.jpg',
@@ -419,7 +410,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: '60 21st St, Strip District, Pittsburgh',
     meal: ['BREAKFAST', 'LUNCH'],
-    cuisine: ['AMERICAN'],
+    cuisine: ['AMERICAN', 'BREAKFAST'],
     description:
       'Crepe-thin, crispy-edged hotcakes so iconic that presidents have eaten them — the definitive Pittsburgh breakfast.',
     image: IMG + 'pamelas-diner.jpg',
@@ -434,7 +425,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: '5525 Walnut St, Shadyside, Pittsburgh',
     meal: ['DESSERT'],
-    cuisine: ['COFFEE'],
+    cuisine: ['COFFEE', 'BAKERY', 'DESSERT'],
     description:
       'Home of the legendary Burnt Almond Torte, once crowned "best cake in America" — a Pittsburgh celebration staple.',
     image: IMG + 'prantls.jpg',
@@ -449,7 +440,7 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: '4112 E Carson St, South Side, Pittsburgh',
     meal: ['DESSERT'],
-    cuisine: ['AMERICAN'],
+    cuisine: ['AMERICAN', 'DESSERT'],
     description:
       'A seasonal walk-up window since 1951 where South Siders line up for soft serve and Yinzer sundaes.',
     image: IMG + 'pages-dairy-mart.jpg',
@@ -467,7 +458,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['CHINESE'],
     description: "Xiao long bao and hand-pulled noodles made right in the window — a Squirrel Hill must.",
-    image: IMG + 'CHINESE',
+    image: IMG + 'chengdu-gourmet.jpg',
     coord: [40.4382, -79.92011],
   },
   {
@@ -481,7 +472,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['CHINESE'],
     description: "Fiery, no-frills Sichuan locals swear by for cumin lamb and dry pots.",
-    image: IMG + 'CHINESE',
+    image: IMG + 'chengdu-gourmet.jpg',
     coord: [40.43792, -79.91948],
   },
   {
@@ -495,7 +486,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['CHINESE'],
     description: "Pittsburgh's classic Chinatown holdout, doing Cantonese comfort for decades.",
-    image: IMG + 'CHINESE',
+    image: IMG + 'chengdu-gourmet.jpg',
     coord: [40.43709, -79.99733],
   },
   {
@@ -509,7 +500,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['JAPANESE', 'SUSHI'],
     description: "Hibachi theatrics and a deep sushi list — a South Side date-night staple.",
-    image: IMG + 'SUSHI',
+    image: IMG + 'umami.jpg',
     coord: [40.42907, -79.98222],
   },
   {
@@ -523,7 +514,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['JAPANESE', 'SUSHI'],
     description: "Shadyside standby with generous rolls and a lively bar.",
-    image: IMG + 'SUSHI',
+    image: IMG + 'umami.jpg',
     coord: [40.4509, -79.93425],
   },
   {
@@ -537,7 +528,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['THAI'],
     description: "Highland Park neighborhood favorite; the drunken noodles have a following.",
-    image: IMG + 'THAI',
+    image: IMG + 'senyai-thai.jpg',
     coord: [40.47577, -79.91965],
   },
   {
@@ -551,7 +542,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['MEXICAN', 'TACOS'],
     description: "Downtown's upscale taqueria — creative tacos and a serious margarita program.",
-    image: IMG + 'TACOS',
+    image: IMG + 'mm-patio.jpg',
     coord: [40.4423, -80.00212],
   },
   {
@@ -565,7 +556,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['BREAKFAST', 'LUNCH'],
     cuisine: ['MEXICAN', 'TACOS'],
     description: "Strip District mercado with a taqueria counter locals line up for.",
-    image: IMG + 'TACOS',
+    image: IMG + 'mm-patio.jpg',
     coord: [40.45165, -79.98338],
   },
   {
@@ -579,7 +570,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['PIZZA', 'ITALIAN'],
     description: "The Murray Ave institution — half of Pittsburgh's 'best slice' argument.",
-    image: IMG + 'PIZZA',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.43295, -79.92321],
   },
   {
@@ -593,7 +584,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['PIZZA', 'ITALIAN'],
     description: "The other half of that argument, right next door on Murray.",
-    image: IMG + 'PIZZA',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.43327, -79.92316],
   },
   {
@@ -607,7 +598,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['ITALIAN'],
     description: "Strip District trattoria beloved for house pasta and porchetta.",
-    image: IMG + 'ITALIAN',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.45487, -79.97877],
   },
   {
@@ -621,7 +612,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['ITALIAN'],
     description: "Cozy Shadyside spot for handmade Italian.",
-    image: IMG + 'ITALIAN',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.45116, -79.93473],
   },
   {
@@ -635,7 +626,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['ITALIAN'],
     description: "Lawrenceville's northern-Italian charmer with a wood oven.",
-    image: IMG + 'ITALIAN',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.467, -79.96439],
   },
   {
@@ -649,7 +640,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['VEGETARIAN'],
     description: "Metal-themed all-vegan kitchen in Allentown with a cult following.",
-    image: IMG + 'VEGETARIAN',
+    image: IMG + 'apteka.jpg',
     coord: [40.42188, -79.99593],
   },
   {
@@ -663,7 +654,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['BREAKFAST', 'LUNCH'],
     cuisine: ['VEGETARIAN'],
     description: "Vegan Middle Eastern in Lawrenceville; the falafel converts skeptics.",
-    image: IMG + 'VEGETARIAN',
+    image: IMG + 'apteka.jpg',
     coord: [40.46759, -79.95908],
   },
   {
@@ -675,9 +666,9 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: "1100 Smallman Street, Strip District, Pittsburgh",
     meal: ['BREAKFAST', 'LUNCH'],
-    cuisine: ['COFFEE'],
+    cuisine: ['COFFEE', 'BREAKFAST'],
     description: "Strip District espresso bar pulling old-world shots for decades.",
-    image: IMG + 'COFFEE',
+    image: IMG + 'tazza-doro.jpg',
     coord: [40.44557, -79.99384],
   },
   {
@@ -689,9 +680,9 @@ const RESTAURANTS: Restaurant[] = [
     open: true,
     address: "5827 Forbes Avenue, Squirrel Hill North, Pittsburgh",
     meal: ['BREAKFAST', 'LUNCH'],
-    cuisine: ['COFFEE'],
+    cuisine: ['COFFEE', 'BREAKFAST'],
     description: "Local roaster's airy Squirrel Hill cafe.",
-    image: IMG + 'COFFEE',
+    image: IMG + 'tazza-doro.jpg',
     coord: [40.43819, -79.9219],
   },
   {
@@ -705,7 +696,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['BREAKFAST', 'LUNCH'],
     cuisine: ['AMERICAN', 'BREAKFAST'],
     description: "The Strip's line-out-the-door breakfast institution.",
-    image: IMG + 'BREAKFAST',
+    image: IMG + 'pamelas-diner.jpg',
     coord: [40.45156, -79.98376],
   },
   {
@@ -719,7 +710,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['JAPANESE', 'SUSHI'],
     description: "Tucked-away Squirrel Hill spot for tidy nigiri and bento.",
-    image: IMG + 'SUSHI',
+    image: IMG + 'umami.jpg',
     coord: [40.4378, -79.921],
   },
   {
@@ -733,7 +724,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['THAI'],
     description: "Garden-set Lawrenceville gem plating refined, family-recipe Thai.",
-    image: IMG + 'THAI',
+    image: IMG + 'senyai-thai.jpg',
     coord: [40.48239, -79.95221],
   },
   {
@@ -747,7 +738,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['THAI'],
     description: "North Side go-to with a patio and a big, dependable menu.",
-    image: IMG + 'THAI',
+    image: IMG + 'senyai-thai.jpg',
     coord: [40.45223, -80.01625],
   },
   {
@@ -761,7 +752,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['MEXICAN', 'TACOS'],
     description: "Lawrenceville cantina for street tacos and mezcal on the patio.",
-    image: IMG + 'TACOS',
+    image: IMG + 'mm-patio.jpg',
     coord: [40.46673, -79.96428],
   },
   {
@@ -775,7 +766,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['PIZZA'],
     description: "Award-winning pies and a huge draft list in Bloomfield.",
-    image: IMG + 'PIZZA',
+    image: IMG + 'iv-pies.jpg',
     coord: [40.46233, -79.95013],
   },
   {
@@ -789,7 +780,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['BREAKFAST', 'LUNCH'],
     cuisine: ['SEAFOOD'],
     description: "The Strip's legendary fish market and counter for over a century.",
-    image: IMG + 'SEAFOOD',
+    image: IMG + 'luke-wholeys.jpg',
     coord: [40.45004, -79.986],
   },
   {
@@ -803,7 +794,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['BURGERS', 'AMERICAN'],
     description: "Market Square burgers-and-whiskey tucked down an alley.",
-    image: IMG + 'BURGERS',
+    image: IMG + 'tessaros.jpg',
     coord: [40.44073, -80.00256],
   },
   {
@@ -817,7 +808,7 @@ const RESTAURANTS: Restaurant[] = [
     meal: ['LUNCH', 'DINNER'],
     cuisine: ['BURGERS', 'AMERICAN'],
     description: "Lawrenceville favorite for creative dogs, burgers and local drafts.",
-    image: IMG + 'BURGERS',
+    image: IMG + 'tessaros.jpg',
     coord: [40.46695, -79.96403],
   },
 ];
@@ -841,7 +832,25 @@ const CUISINE_ICON_FILE: Record<string, string> = {
   VIETNAMESE: 'vietnamese.svg',
   INDIAN: 'pretzel.svg',
   MEXICAN: 'mexican.svg',
+  // Breakfast / dessert-appropriate types (shown only on those meal tabs)
+  BREAKFAST: 'breakfast.svg',
+  BAKERY: 'french-food.svg',
+  DESSERT: 'cake.svg',
 };
+
+// Which cuisines make sense per meal. Breakfast and dessert are curated so we
+// don't surface Seafood/Sushi at 8am; lunch & dinner keep the full list.
+const FULL_CUISINES = [
+  'TACOS', 'PIZZA', 'CHINESE', 'VEGETARIAN', 'SUSHI', 'THAI', 'AMERICAN', 'SEAFOOD',
+  'BURGERS', 'ITALIAN', 'COFFEE', 'SANDWICHES', 'KOREAN', 'JAPANESE', 'VIETNAMESE', 'INDIAN', 'MEXICAN',
+];
+const BREAKFAST_CUISINES = ['BREAKFAST', 'COFFEE', 'BAKERY', 'AMERICAN', 'VEGETARIAN'];
+const DESSERT_CUISINES = ['DESSERT', 'BAKERY', 'COFFEE'];
+function cuisineListForMeal(m: string): string[] {
+  if (m === 'BREAKFAST') return BREAKFAST_CUISINES;
+  if (m === 'DESSERT') return DESSERT_CUISINES;
+  return FULL_CUISINES;
+}
 
 const MEAL_ICON_FILE: Record<string, string> = {
   BREAKFAST: 'coffee-toast.svg',
@@ -1176,19 +1185,7 @@ const DESKTOP_CSS = `
 `;
 
 const DESKTOP_MEALS = ['ALL', 'BREAKFAST', 'LUNCH', 'DINNER', 'DESSERT'];
-const DESKTOP_CUISINES = [
-  'ALL', 'TACOS', 'PIZZA', 'CHINESE', 'VEGETARIAN',
-  'SUSHI', 'THAI', 'AMERICAN', 'SEAFOOD',
-  'BURGERS', 'ITALIAN', 'COFFEE', 'SANDWICHES',
-  'KOREAN', 'JAPANESE', 'VIETNAMESE', 'INDIAN', 'MEXICAN',
-];
 const MOBILE_MEALS = ['BREAKFAST', 'LUNCH', 'DINNER', 'DESSERT'];
-const MOBILE_CUISINES = [
-  'TACOS', 'PIZZA', 'CHINESE', 'VEGETARIAN',
-  'SUSHI', 'THAI', 'AMERICAN', 'SEAFOOD',
-  'BURGERS', 'ITALIAN', 'COFFEE', 'SANDWICHES',
-  'KOREAN', 'JAPANESE', 'VIETNAMESE', 'INDIAN', 'MEXICAN',
-];
 
 const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
@@ -1196,11 +1193,7 @@ const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 // cuisine chips so we never offer e.g. "Tacos" under Breakfast. ('ALL' meal =
 // every populated cuisine.)
 function cuisinesForMeal(m: string): Set<string> {
-  const set = new Set<string>();
-  RESTAURANTS.forEach((r) => {
-    if (m === 'ALL' || r.meal.includes(m)) r.cuisine.forEach((c) => set.add(c));
-  });
-  return set;
+  return new Set(cuisineListForMeal(m));
 }
 
 // ── Desktop pieces ──────────────────────────────────────────────────────────
@@ -1281,6 +1274,7 @@ const LIVE_KEYWORD: Record<string, string> = {
   SUSHI: 'sushi', THAI: 'thai', AMERICAN: 'american restaurant', SEAFOOD: 'seafood', BURGERS: 'burgers',
   ITALIAN: 'italian', COFFEE: 'coffee', SANDWICHES: 'sandwiches deli', KOREAN: 'korean', JAPANESE: 'japanese',
   VIETNAMESE: 'vietnamese', INDIAN: 'indian', MEXICAN: 'mexican',
+  BREAKFAST: 'breakfast', BAKERY: 'bakery pastries', DESSERT: 'dessert',
 };
 const LIVE_MEAL_KEYWORD: Record<string, string> = { BREAKFAST: 'breakfast', DESSERT: 'dessert bakery' };
 const LIVE_FALLBACK_IMG: Record<string, string> = {
@@ -1383,7 +1377,6 @@ function DesktopEats({
   // Live Google results (real photos/ratings) when available; else curated seed
   // — either way, ordered closest-to-you first.
   const rest = byDistance(live ?? filtered.filter((r) => !r.sponsored), coords);
-  const availCuisines = cuisinesForMeal(meal);
 
   return (
     <div className="cbl-eats-desktop">
@@ -1456,7 +1449,7 @@ function DesktopEats({
             ))}
           </div>
           <div className="cuisine-row">
-            {DESKTOP_CUISINES.filter((c) => c === 'ALL' || availCuisines.has(c)).map((c) => {
+            {['ALL', ...cuisineListForMeal(meal)].map((c) => {
               const active = cuisine === c;
               return (
                 <button
@@ -2121,60 +2114,14 @@ function MobileFlow({
           style={{
             background: '#0A0A0A',
             boxShadow: 'inset 0 8px 12px -8px rgba(0,0,0,.9)',
-            padding: '14px 12px 18px',
+            padding: '8px 12px 12px',
             borderBottom: '1px solid rgba(255,255,255,.06)',
             animation: 'cblSlideDown .35s cubic-bezier(.2,.8,.2,1)',
           }}
         >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '0 6px 10px',
-            }}
-          >
-            <div
-              style={{
-                fontFamily: DISPLAY,
-                fontWeight: 900,
-                fontSize: 20,
-                color: '#fff',
-                textTransform: 'uppercase',
-                letterSpacing: '.02em',
-              }}
-            >
-              Pick a cuisine
-              <span
-                style={{
-                  fontFamily: ITALIC,
-                  fontStyle: 'italic',
-                  fontWeight: 600,
-                  color: GOLD,
-                  marginLeft: 6,
-                  textTransform: 'none',
-                  fontSize: 18,
-                }}
-              >
-                for {activeMeal.toLowerCase()}
-              </span>
-            </div>
-            <button
-              onClick={() => setSheetOpen(false)}
-              style={{
-                background: 'transparent',
-                border: 0,
-                color: '#888',
-                fontSize: 22,
-                cursor: 'pointer',
-                padding: 4,
-              }}
-            >
-              ✕
-            </button>
-          </div>
+          {/* No header here — the pill above already labels it and its arrow toggles the sheet. */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 2 }}>
-            {MOBILE_CUISINES.filter((c) => cuisinesForMeal(activeMeal).has(c)).map((c) => (
+            {cuisineListForMeal(activeMeal).map((c) => (
               <CuisineTile
                 key={c}
                 label={c === 'VIETNAMESE' ? 'VIETNAM' : c}
@@ -2363,16 +2310,45 @@ export function EatsAndDrinks() {
   const [mobileCuisine, setMobileCuisine] = useState<string | null>(null);
 
   const loc = useVisitorLocation();
-  const activeCity = loc.city || MARKET_CITY;
-  // Prefer the visitor's actual coordinates so THEIR neighborhood sorts first.
-  // Only fall back to a city center when they've manually picked a city they're
-  // not physically in (e.g. browsing Chicago from Pittsburgh).
-  const cityCenter = CITY_COORDS[activeCity];
-  const nearPicked = !!cityCenter && !!loc.coords && milesBetween(loc.coords, cityCenter) <= MARKET_RADIUS_MI;
-  const searchCoords: Coords | null =
-    loc.status === 'manual' && cityCenter && !nearPicked
-      ? { lat: cityCenter[0], lng: cityCenter[1] }
-      : loc.coords;
+  // A city the visitor typed into the search box (geocoded). When set, it
+  // overrides the auto-detected location; "Near me" clears it back to GPS/IP.
+  const [searched, setSearched] = useState<{ city: string; coords: Coords } | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  const onSearchCity = async (q: string) => {
+    setSearching(true);
+    try {
+      const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`).then((res) => res.json());
+      if (r.coord) setSearched({ city: r.city || q, coords: { lat: r.coord[0], lng: r.coord[1] } });
+    } catch {
+      /* ignore — keep current location */
+    } finally {
+      setSearching(false);
+    }
+  };
+  const onNearMe = () => {
+    setSearched(null);
+    loc.requestPrecise(); // GPS: pinpoint the visitor for true closest-first
+  };
+
+  // If the visitor has already granted location, auto-sharpen to precise GPS on
+  // load (no new prompt) so "near me" works without a click. First-timers keep
+  // the instant IP city + the "Near me" button.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.permissions?.query) return;
+    navigator.permissions
+      .query({ name: 'geolocation' as PermissionName })
+      .then((s) => {
+        if (s.state === 'granted') loc.requestPrecise();
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const activeCity = searched?.city || loc.city || MARKET_CITY;
+  // Use the visitor's real coordinates (GPS/IP) so THEIR neighborhood sorts
+  // first; a searched city overrides with that city's coordinates.
+  const searchCoords: Coords | null = searched?.coords || loc.coords;
   // Pittsburgh metro gets the curated home-market treatment (Square Cafe +
   // hand-picked list); every other city runs on live Google results.
   const inPittsburgh = searchCoords
@@ -2384,7 +2360,13 @@ export function EatsAndDrinks() {
       <style>{DESKTOP_CSS}</style>
       <style>{PARTNER_CSS}</style>
       <style>{LOC_CSS}</style>
-      <LocationBar {...loc} activeCity={activeCity} />
+      <LocationBar
+        status={loc.status}
+        activeCity={activeCity}
+        onSearchCity={onSearchCity}
+        onNearMe={onNearMe}
+        searching={searching}
+      />
       <DesktopEats
         meal={meal}
         setMeal={setMeal}
