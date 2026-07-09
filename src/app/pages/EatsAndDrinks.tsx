@@ -155,6 +155,8 @@ type Restaurant = {
   meal: string[];
   cuisine: string[];
   description: string;
+  /** Tighter blurb for the mobile sponsored card, where vertical space is scarce. */
+  shortDescription?: string;
   image: string;
   coord: [number, number]; // [lat, lng]
 };
@@ -173,6 +175,8 @@ const RESTAURANTS: Restaurant[] = [
     cuisine: ['AMERICAN', 'COFFEE', 'BREAKFAST'],
     description:
       "Square Cafe is a bright, welcoming spot in Pittsburgh's East Liberty neighborhood serving fresh, seasonal dishes made with local ingredients. From creative breakfast plates to flavorful lunches, everything is made with care and a focus on quality.",
+    shortDescription:
+      'A bright, welcoming East Liberty spot serving fresh, seasonal dishes made with local ingredients.',
     image: IMG + 'sq-plate.jpg',
     coord: [40.46008, -79.92513],
   },
@@ -1526,10 +1530,10 @@ function EatsTitleBlock() {
     <div
       style={{
         position: 'relative',
-        padding: '14px 16px',
+        padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
-        gap: 8,
+        gap: 6,
         background: `url(${IMG}cbl-map-backdrop.jpg) center/cover no-repeat`,
       }}
     >
@@ -1545,7 +1549,7 @@ function EatsTitleBlock() {
         alt="Buckee"
         style={{
           position: 'relative',
-          width: 'clamp(96px,30vw,150px)',
+          width: 'clamp(84px,25vw,132px)',
           height: 'auto',
           objectFit: 'contain',
           flexShrink: 0,
@@ -1557,7 +1561,7 @@ function EatsTitleBlock() {
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          gap: 4,
+          gap: 2,
           minWidth: 0,
         }}
       >
@@ -1566,7 +1570,7 @@ function EatsTitleBlock() {
             fontFamily: DISPLAY,
             fontWeight: 900,
             fontSize: 'clamp(34px,11vw,50px)',
-            lineHeight: 0.85,
+            lineHeight: 0.82,
             color: '#fff',
             textTransform: 'uppercase',
             letterSpacing: '-.02em',
@@ -1595,7 +1599,7 @@ function EatsTitleBlock() {
         alt="Fork and knife"
         style={{
           position: 'relative',
-          width: 'clamp(56px,18vw,100px)',
+          width: 'clamp(50px,15vw,88px)',
           height: 'auto',
           objectFit: 'contain',
           flexShrink: 0,
@@ -1783,7 +1787,9 @@ function SponsoredCard({ r }: { r: Restaurant }) {
           </button>
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+          {/* The name owns its row so it never wraps to a second line on narrow
+              phones; the cuisine glyph rides beside it and the rating sits below. */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div
               style={{
                 fontFamily: DISPLAY,
@@ -1791,12 +1797,21 @@ function SponsoredCard({ r }: { r: Restaurant }) {
                 fontSize: 22,
                 color: '#fff',
                 letterSpacing: '-.01em',
+                flex: 1,
+                minWidth: 0,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               {r.name}
             </div>
-            <CardCornerGlyph cuisine={r.cuisine} />
-            <BucketRating value={5} size={14} />
+            <div style={{ flexShrink: 0, display: 'flex' }}>
+              <CardCornerGlyph cuisine={r.cuisine} />
+            </div>
+          </div>
+          <div style={{ margin: '3px 0 5px' }}>
+            <BucketRating value={5} size={13} />
           </div>
           <div
             style={{
@@ -1810,8 +1825,8 @@ function SponsoredCard({ r }: { r: Restaurant }) {
           >
             {r.address}
           </div>
-          <p style={{ margin: 0, color: '#D4D4D4', fontSize: 12, lineHeight: 1.55 }}>
-            {r.description}
+          <p style={{ margin: 0, color: '#D4D4D4', fontSize: 12, lineHeight: 1.5 }}>
+            {r.shortDescription ?? r.description}
           </p>
         </div>
       </div>
