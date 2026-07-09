@@ -30,4 +30,4 @@ export const MEMBER_CONNECT_STATUS_URL =
 // same key already shipped in ridesClient.ts). Used only to pass the functions gateway.
 export const SUPABASE_ANON_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpnYmFxemdrZHFxdnhtcXl0Z3N4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExODg5NzksImV4cCI6MjA0Njc2NDk3OX0.XpmQLQy2Mm2vgWg6UourHAapIee3JfuS1Ncz5mt8610';
+    'sb_publishable_ftx_EkI4-nj0vfUqbP0FzQ_XRGsXZJ9';
