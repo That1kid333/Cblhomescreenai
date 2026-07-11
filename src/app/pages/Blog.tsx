@@ -359,10 +359,10 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-inner">
-        <div className="eyebrow">where the locals go · one city at a time</div>
+        <div className="eyebrow">where the locals go</div>
         <h1 className="hero-title">
           <span className="title-stack">
-            <span className="h1-main">Blog<span style={{ color: '#C99742' }}>.</span></span>
+            <span className="h1-main">CBL Blog<span style={{ color: '#C99742' }}>.</span></span>
             <span className="hero-subtitle">
               <span>Field notes</span>
               <span className="it">from your city.</span>
@@ -371,8 +371,8 @@ function Hero() {
           <BlogIconHero />
         </h1>
         <p className="lede">
-          City experiences told by the people who actually know the place — including the drivers and
-          riders who live here. The spots worth your list, one city at a time. New posts weekly.
+          City experiences from the people who actually know the place — the drivers and riders who
+          live here. New posts weekly.
         </p>
       </div>
     </section>
