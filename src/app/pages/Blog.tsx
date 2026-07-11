@@ -320,11 +320,15 @@ function fmtDate(iso: string | null): string {
 }
 
 function toCard(p: BlogCard, likes: number): Card {
-  const cat = VERTICAL_CAT[(p.vertical || '').toLowerCase()] || 'LOCALS';
+  const catKey = VERTICAL_CAT[(p.vertical || '').toLowerCase()];
+  const cat = catKey || 'ALL';
+  // Pill shows the brand category (matches the rail); unmapped verticals fall
+  // back to a title-cased label so the pill is never blank.
+  const catLabel = (catKey && CATS.find((c) => c.key === catKey)?.label) || (p.vertical ? titleCase(p.vertical) : 'Story');
   return {
     slug: p.slug,
     cat,
-    catLabel: p.vertical ? titleCase(p.vertical) : 'Story',
+    catLabel,
     title: p.title,
     excerpt: p.excerpt || '',
     author: p.author_name || 'City Bucket List',
