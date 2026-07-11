@@ -7,6 +7,7 @@ import { OurStory } from './pages/OurStory';
 import { HowItWorks } from './pages/HowItWorks';
 import { MeetBuckee } from './pages/MeetBuckee';
 import { Blog } from './pages/Blog';
+import { BlogPost } from './pages/BlogPost';
 import { Directory } from './pages/Directory';
 import { EatsAndDrinks } from './pages/EatsAndDrinks';
 import { Delivery } from './pages/Delivery';
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'how-it-works', Component: HowItWorks },
       { path: 'meet-buckee', Component: MeetBuckee },
       { path: 'blog', Component: Blog },
+      { path: 'blog/:slug', Component: BlogPost },
       { path: 'directory', Component: Directory },
       { path: 'eats-and-drinks', Component: EatsAndDrinks },
       { path: 'delivery', Component: Delivery },
