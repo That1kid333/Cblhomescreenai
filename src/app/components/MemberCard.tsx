@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
 import { APP_URL, MEMBER_CONNECT_ONBOARD_URL, MEMBER_CONNECT_STATUS_URL, SUPABASE_ANON_KEY } from '../lib/constants';
 import { useAuth, firstNameOf } from '../lib/auth';
+import { studioIsAdmin } from '../lib/blog';
 
 /**
  * MemberCard — the signed-in member's digital business card.
@@ -96,6 +97,8 @@ const CARD_CSS = `
   text-transform:uppercase; text-decoration:none; transition:background .2s;
 }
 .cbl-card .go:hover { background:#DDB15F; }
+.cbl-card .studio-link { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; margin-top:10px; background:transparent; border:1.5px solid rgba(201,151,66,.5); border-radius:999px; padding:11px 20px; color:${GOLD}; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.1em; text-transform:uppercase; text-decoration:none; transition:background .2s, color .2s; }
+.cbl-card .studio-link:hover { background:${GOLD}; color:#000; }
 
 .cbl-card .signout { margin-top:14px; background:transparent; border:0; cursor:pointer; font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8a8a8a; }
 .cbl-card .signout:hover { color:#fff; }
@@ -116,6 +119,7 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
   const [payoutsOn, setPayoutsOn] = useState<boolean | null>(profile?.payouts_enabled ?? null);
   const [payoutBusy, setPayoutBusy] = useState(false);
   const [payoutNote, setPayoutNote] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   // A real signed-in member has an access token; the demo session doesn't.
   const accessToken = session?.access_token;
@@ -154,6 +158,19 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
       cancelled = true;
     };
   }, [open, referralLink]);
+
+  // Show the Studio link only to real admins (checked server-side via authClient,
+  // independent of the preview demo session). Non-admins never see it.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    studioIsAdmin().then((ok) => {
+      if (!cancelled) setIsAdmin(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -357,6 +374,10 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
         </div>
 
         <a className="go" href={APP_URL}>Open your dashboard →</a>
+
+        {isAdmin && (
+          <a className="studio-link" href="/studio">CBL Studio — write a story →</a>
+        )}
 
         <button
           className="signout"
