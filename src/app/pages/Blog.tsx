@@ -82,8 +82,25 @@ const BLOG_CSS = `
   background:rgba(10,10,10,.94); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(255,255,255,.06); padding:8px 48px 0;
 }
-.cbl-blog .filters-inner { max-width:1280px; margin:0 auto; }
-.cbl-blog .cat-row { display:flex; gap:6px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.06); overflow-x:auto; scrollbar-width:none; }
+.cbl-blog .filters-inner { max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:20px; }
+.cbl-blog .cat-row { flex:1; min-width:0; display:flex; gap:6px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,.06); overflow-x:auto; scrollbar-width:none; }
+
+/* Keyword search */
+.cbl-blog .search { flex:none; position:relative; display:flex; align-items:center; }
+.cbl-blog .search .mag { position:absolute; left:15px; display:flex; color:#8a8a8a; pointer-events:none; }
+.cbl-blog .search input {
+  width:216px; background:#141414; border:1px solid rgba(255,255,255,.10); border-radius:999px;
+  padding:10px 34px 10px 40px; font-family:${MONO}; font-size:13px; letter-spacing:.02em; color:#fff; outline:0;
+  transition:border-color .2s, width .25s ease, background .2s;
+}
+.cbl-blog .search input::placeholder { color:#666; }
+.cbl-blog .search input:focus { border-color:#C99742; width:264px; background:#191919; }
+.cbl-blog .search input::-webkit-search-cancel-button { -webkit-appearance:none; appearance:none; }
+.cbl-blog .search .clear {
+  position:absolute; right:8px; width:22px; height:22px; border:0; background:transparent; color:#888;
+  font-size:16px; line-height:1; border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+.cbl-blog .search .clear:hover { color:#C99742; background:rgba(201,151,66,.12); }
 .cbl-blog .cat-row::-webkit-scrollbar { display:none; }
 .cbl-blog .cat-btn {
   flex-shrink:0; background:transparent; border:0; color:#888; padding:6px 22px 10px;
@@ -186,6 +203,10 @@ const BLOG_CSS = `
   .cbl-blog .post .excerpt { font-size:15px; line-height:1.6; }
   .cbl-blog .spotlight h3 { font-size:34px; }
   .cbl-blog .spotlight p { font-size:15px; line-height:1.6; }
+  .cbl-blog .filters-inner { flex-wrap:wrap; gap:0; }
+  .cbl-blog .cat-row { order:1; width:100%; }
+  .cbl-blog .search { order:2; width:100%; padding:8px 0 10px; }
+  .cbl-blog .search input, .cbl-blog .search input:focus { width:100%; }
 }
 `;
 
@@ -354,7 +375,19 @@ function Hero() {
   );
 }
 
-function Filters({ cats, cat, setCat }: { cats: CatDef[]; cat: string; setCat: (v: string) => void }) {
+function Filters({
+  cats,
+  cat,
+  setCat,
+  q,
+  setQ,
+}: {
+  cats: CatDef[];
+  cat: string;
+  setCat: (v: string) => void;
+  q: string;
+  setQ: (v: string) => void;
+}) {
   return (
     <div className="filters">
       <div className="filters-inner">
@@ -365,6 +398,27 @@ function Filters({ cats, cat, setCat }: { cats: CatDef[]; cat: string; setCat: (
               {c.label}
             </button>
           ))}
+        </div>
+        <div className="search" role="search">
+          <span className="mag" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+              <circle cx="11" cy="11" r="7" />
+              <line x1="21" y1="21" x2="16.5" y2="16.5" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search stories…"
+            aria-label="Search stories by keyword"
+            spellCheck={false}
+          />
+          {q && (
+            <button type="button" className="clear" aria-label="Clear search" onClick={() => setQ('')}>
+              ×
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -450,6 +504,7 @@ export function Blog() {
   const [raw, setRaw] = useState<BlogCard[] | null>(null);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [cat, setCat] = useState('ALL');
+  const [q, setQ] = useState('');
 
   useEffect(() => {
     let live = true;
@@ -463,8 +518,13 @@ export function Blog() {
   const posts = (raw ?? []).map((p) => toCard(p, counts[p.slug] ?? 0));
 
   const cats = CATS;
-  const filtered = cat === 'ALL' ? posts : posts.filter((p) => p.cat === cat);
-  const featured = filtered.find((p) => p.featured);
+  const query = q.trim().toLowerCase();
+  const matchesQuery = (p: Card) =>
+    !query || [p.title, p.excerpt, p.author, p.city, p.catLabel].some((f) => f.toLowerCase().includes(query));
+  const filtered = posts.filter((p) => (cat === 'ALL' || p.cat === cat) && matchesQuery(p));
+  const searching = query.length > 0;
+  const catLabel = cats.find((c) => c.key === cat)?.label;
+  const featured = searching ? undefined : filtered.find((p) => p.featured);
   const rest = filtered.filter((p) => p.slug !== featured?.slug);
 
   return (
@@ -472,16 +532,18 @@ export function Blog() {
       <style>{BLOG_CSS}</style>
 
       <Hero />
-      {cats.length > 1 && <Filters cats={cats} cat={cat} setCat={setCat} />}
+      {cats.length > 1 && <Filters cats={cats} cat={cat} setCat={setCat} q={q} setQ={setQ} />}
 
       <section className="band">
         <div className="band-inner">
           <div className="section-head">
             <div>
-              <div className="section-eyebrow">latest · refreshed weekly</div>
+              <div className="section-eyebrow">{searching ? `results · “${q.trim()}”` : 'latest · refreshed weekly'}</div>
               <h2 className="section-h2">
-                {cat === 'ALL' ? 'Latest stories' : cats.find((c) => c.key === cat)?.label}
-                <span className="it">from the CBL network</span>
+                {searching ? 'Search results' : cat === 'ALL' ? 'Latest stories' : catLabel}
+                <span className="it">
+                  {searching ? (cat === 'ALL' ? 'across the CBL network' : `in ${catLabel}`) : 'from the CBL network'}
+                </span>
               </h2>
             </div>
             <div className="count"><b>{filtered.length}</b> {filtered.length === 1 ? 'story' : 'stories'}</div>
@@ -492,7 +554,11 @@ export function Blog() {
           ) : posts.length === 0 ? (
             <div className="state">Our first field notes are being finalized. Check back soon.</div>
           ) : filtered.length === 0 ? (
-            <div className="state">New {cats.find((c) => c.key === cat)?.label} stories are on the way — check back soon.</div>
+            searching ? (
+              <div className="state">No stories match “{q.trim()}”{cat === 'ALL' ? '' : ` in ${catLabel}`} — try another word or clear the search.</div>
+            ) : (
+              <div className="state">New {catLabel} stories are on the way — check back soon.</div>
+            )
           ) : (
             <>
               {featured && <Spotlight p={featured} />}
