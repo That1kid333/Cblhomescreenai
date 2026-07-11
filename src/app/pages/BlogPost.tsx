@@ -19,7 +19,9 @@ const CSS = `
 .cbl-post { background:#0A0A0A; color:#EDEDED; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; min-height:100vh; }
 .cbl-post *,.cbl-post *::before,.cbl-post *::after { box-sizing:border-box; }
 .cbl-post a { color:${GOLD}; }
-.cbl-post .col { max-width:720px; margin:0 auto; padding:0 22px; }
+.cbl-post .col { padding:0 22px; }
+.cbl-post .col-inner { max-width:1080px; margin:0 auto; }
+.cbl-post .col-inner > .body, .cbl-post .col-inner > .gallery, .cbl-post .col-inner > .likebar, .cbl-post .col-inner > .foot { max-width:720px; }
 
 .cbl-post .back { display:inline-block; margin:26px 0 4px; font-family:${MONO}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#8a8a8a; }
 .cbl-post .back:hover { color:${GOLD}; }
@@ -35,6 +37,9 @@ const CSS = `
 .cbl-post .head-inner { max-width:1080px; margin:0 auto; display:grid; grid-template-columns:1.05fr .95fr; gap:42px; align-items:center; padding:6px 0 30px; }
 .cbl-post .head-text { min-width:0; }
 .cbl-post .head-media img { width:100%; border-radius:16px 0 16px 0; display:block; box-shadow:0 16px 44px rgba(0,0,0,.55); }
+/* no hero photo: collapse to a single left-aligned column (title + body align left) */
+.cbl-post .head-inner.no-media { grid-template-columns:1fr; }
+.cbl-post .head-inner.no-media .head-text { max-width:760px; }
 @media (max-width:860px){
   .cbl-post .head-inner { grid-template-columns:1fr; gap:20px; padding-bottom:20px; }
   .cbl-post .head-media { margin-top:4px; }
@@ -52,6 +57,12 @@ const CSS = `
 .cbl-post .body blockquote { margin:30px 0; padding:20px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.07); border-radius:0 10px 10px 0; }
 .cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; }
 .cbl-post .body blockquote p:last-child { margin:0; }
+
+/* Driver's Take — a dedicated optional callout (renders only when the field is filled) */
+.cbl-post .dtake { max-width:720px; margin:38px 0 6px; padding:22px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.08); border-radius:0 14px 14px 0; }
+.cbl-post .dtake .dtake-label { font-family:${MONO}; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:10px; }
+.cbl-post .dtake blockquote { margin:0; font-family:${ITALIC}; font-style:italic; font-size:21px; line-height:1.5; color:#F0E6D2; }
+.cbl-post .dtake .dtake-by { margin-top:10px; font-family:${DISPLAY}; font-weight:800; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:#fff; }
 
 /* media gallery */
 .cbl-post .gallery { margin:40px 0 20px; display:flex; flex-direction:column; gap:22px; }
@@ -106,7 +117,7 @@ export function BlogPost() {
     <main className="cbl-post">
       <style>{CSS}</style>
       <div className="head">
-        <div className="head-inner">
+        <div className={`head-inner${hero ? '' : ' no-media'}`}>
           <div className="head-text">
             <Link to="/blog" className="back">← The CBL Blog</Link>
             {post.kicker && <div className="kick">{post.kicker}</div>}
@@ -128,7 +139,23 @@ export function BlogPost() {
       </div>
 
       <div className="col">
+        <div className="col-inner">
         <div className="body">{post.body_md && <Markdown source={post.body_md} />}</div>
+
+        {post.drivers_take && (
+          <div className="dtake">
+            <div className="dtake-label">Driver's Take</div>
+            <blockquote>{post.drivers_take}</blockquote>
+            {post.drivers_take_name && <div className="dtake-by">— {post.drivers_take_name}</div>}
+          </div>
+        )}
+        {post.riders_take && (
+          <div className="dtake">
+            <div className="dtake-label">Rider's Take</div>
+            <blockquote>{post.riders_take}</blockquote>
+            {post.riders_take_name && <div className="dtake-by">— {post.riders_take_name}</div>}
+          </div>
+        )}
 
         {gallery.length > 0 && (
           <div className="gallery">
@@ -161,6 +188,7 @@ export function BlogPost() {
 
         <div className="foot">
           <Link to="/blog" className="more">← More from the CBL Blog</Link>
+        </div>
         </div>
       </div>
     </main>

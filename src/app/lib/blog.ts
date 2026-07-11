@@ -34,6 +34,8 @@ export type BlogPost = BlogCard & {
   media: BlogMedia[];
   drivers_take: string | null;
   drivers_take_name: string | null;
+  riders_take: string | null;
+  riders_take_name: string | null;
   seo_title: string | null;
   seo_description: string | null;
 };
@@ -41,7 +43,7 @@ export type BlogPost = BlogCard & {
 const CARD_COLS =
   'slug, title, subtitle, kicker, vertical, city, excerpt, hero_image, author_name, featured, published_at';
 const FULL_COLS =
-  `${CARD_COLS}, body_md, media, drivers_take, drivers_take_name, seo_title, seo_description`;
+  `${CARD_COLS}, body_md, media, drivers_take, drivers_take_name, riders_take, riders_take_name, seo_title, seo_description`;
 
 export async function getPublishedPosts(): Promise<BlogCard[]> {
   const { data, error } = await ridesClient
