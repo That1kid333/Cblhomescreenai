@@ -20,6 +20,7 @@ import { PartnerRestaurants } from './pages/PartnerRestaurants';
 import { PartnerAttractions } from './pages/PartnerAttractions';
 import { Feedback } from './pages/Feedback';
 import { Login } from './pages/Login';
+import { Studio } from './pages/Studio';
 import { TermsAndConditions } from './pages/TermsAndConditions';
 
 export const router = createBrowserRouter([
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: 'partner-attractions', Component: PartnerAttractions },
       { path: 'feedback', Component: Feedback },
       { path: 'login', Component: Login },
+      { path: 'studio', Component: Studio },
     ],
   },
 ]);
