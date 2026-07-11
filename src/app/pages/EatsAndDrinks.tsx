@@ -157,6 +157,8 @@ type Restaurant = {
   description: string;
   /** Tighter blurb for the mobile sponsored card, where vertical space is scarce. */
   shortDescription?: string;
+  /** One-line address for the mobile sponsored card (street + neighborhood). */
+  shortAddress?: string;
   image: string;
   coord: [number, number]; // [lat, lng]
 };
@@ -177,6 +179,7 @@ const RESTAURANTS: Restaurant[] = [
       "Square Cafe is a bright, welcoming spot in Pittsburgh's East Liberty neighborhood serving fresh, seasonal dishes made with local ingredients. From creative breakfast plates to flavorful lunches, everything is made with care and a focus on quality.",
     shortDescription:
       'A bright, welcoming East Liberty spot serving fresh, seasonal dishes made with local ingredients.',
+    shortAddress: '134 S Highland Ave · East Liberty',
     image: IMG + 'sq-plate.jpg',
     coord: [40.46008, -79.92513],
   },
@@ -1822,9 +1825,12 @@ function SponsoredCard({ r }: { r: Restaurant }) {
               letterSpacing: '.04em',
               textTransform: 'uppercase',
               marginBottom: 6,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
-            {r.address}
+            {r.shortAddress ?? r.address}
           </div>
           <p style={{ margin: 0, color: '#D4D4D4', fontSize: 12, lineHeight: 1.5 }}>
             {r.shortDescription ?? r.description}
