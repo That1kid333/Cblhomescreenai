@@ -359,7 +359,7 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-inner">
-        <div className="eyebrow">where the locals go</div>
+        <div className="eyebrow">What's on your bucketlist?</div>
         <h1 className="hero-title">
           <span className="title-stack">
             <span className="h1-main">CBL Blog<span style={{ color: '#C99742' }}>.</span></span>
