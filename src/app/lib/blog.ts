@@ -1,4 +1,5 @@
 import { ridesClient } from './supabase/ridesClient';
+import { authClient } from './supabase/authClient';
 
 /**
  * CBL Blog data access. Reads public `blog_posts` from the CBL-Rides Supabase
