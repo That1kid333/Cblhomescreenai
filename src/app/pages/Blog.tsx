@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { getPublishedPosts, getLikeCounts, type BlogCard } from '../lib/blog';
 import keithPhoto from '../../assets/cbl-keith.png';
 
@@ -308,6 +308,17 @@ const VERTICAL_CAT: Record<string, string> = {
   itinerary: 'ATTRACTIONS',
 };
 
+// Maps a ?category= URL slug (from the CBL Blog nav dropdown) to a filter key.
+const CATEGORY_PARAM: Record<string, string> = {
+  all: 'ALL',
+  transportation: 'TRANSPO',
+  transpo: 'TRANSPO',
+  travels: 'TRAVELS',
+  eats: 'EATS',
+  'eats-and-drinks': 'EATS',
+  attractions: 'ATTRACTIONS',
+};
+
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 
 function fmtDate(iso: string | null): string {
@@ -509,6 +520,7 @@ export function Blog() {
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [cat, setCat] = useState('ALL');
   const [q, setQ] = useState('');
+  const [searchParams] = useSearchParams();
 
   useEffect(() => {
     let live = true;
@@ -518,6 +530,13 @@ export function Blog() {
       live = false;
     };
   }, []);
+
+  // Deep-link from the CBL Blog nav dropdown: /blog?category=transportation
+  // pre-selects that category filter.
+  useEffect(() => {
+    const c = (searchParams.get('category') || '').toLowerCase();
+    if (c && CATEGORY_PARAM[c]) setCat(CATEGORY_PARAM[c]);
+  }, [searchParams]);
 
   const posts = (raw ?? []).map((p) => toCard(p, counts[p.slug] ?? 0));
 

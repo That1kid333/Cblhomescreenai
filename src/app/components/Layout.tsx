@@ -39,7 +39,16 @@ const MOBILE_NAV: MobileSection[] = [
       { label: 'Partner Attractions', to: '/partner-attractions' },
     ],
   },
-  { label: 'CBL Blog', to: '/blog' },
+  {
+    label: 'CBL Blog',
+    items: [
+      { label: 'All Stories', to: '/blog' },
+      { label: 'Transportation', to: '/blog?category=transportation' },
+      { label: 'Travels', to: '/blog?category=travels' },
+      { label: 'Eats & Drinks', to: '/blog?category=eats' },
+      { label: 'Attractions', to: '/blog?category=attractions' },
+    ],
+  },
   {
     label: 'Directory & Savings',
     items: [
@@ -204,10 +213,35 @@ export function Layout() {
                 )}
               </div>
 
-              <div className="relative">
+              <div
+                className="relative"
+                onMouseEnter={() => handleMouseEnter('blog')}
+                onMouseLeave={handleMouseLeave}
+              >
                 <Link to="/blog" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
-                  CBL BLOG
+                  CBL BLOG <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'blog' ? 'rotate-90' : ''}`} />
                 </Link>
+                {activeDropdown === 'blog' && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
+                    <div className="py-2">
+                      <Link to="/blog?category=transportation" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Transportation
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/blog?category=travels" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Travels
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/blog?category=eats" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Eats &amp; Drinks
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/blog?category=attractions" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Attractions
+                      </Link>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div
