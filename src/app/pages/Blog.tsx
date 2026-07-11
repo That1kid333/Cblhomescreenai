@@ -257,16 +257,34 @@ const IconTravel = ({ s }: { s?: number }) => (
   <BrandIcon s={s} paths={<path d="M232.63,25.99c2.31,6.92-3.42,19.87-9.4,28.16-6.96,9.63-39.07,35.86-39.07,35.86l22.75,100.97-9.63,9.81-43.88-82.95-44.15,42.01,7.76,36.66-5.62,4.28-21.99-34.89-34.61-21.72,4.28-5.62,36.66,7.76,42.01-44.15L54.77,58.29l9.81-9.63,100.97,22.75s26.22-32.11,35.86-39.07c8.47-6.12,22.05-12.58,28.59-9.2,0,0,2.2,1.58,2.63,2.86Z" />} />
 );
 
-// vertical (from blog_posts) → one of Keith's brand icons
-const VERTICAL_ICON: Record<string, (p: { s?: number }) => JSX.Element> = {
-  ATTRACTIONS: IconAttractions,
-  EATS: IconEats,
-  ENTERTAINMENT: IconBlog,
-  EVENTS: IconAttractions,
-  ITINERARY: IconTravel,
-  TRANSPO: IconTransport,
-  STAYS: IconStays,
-  FLIGHTS: IconTravel,
+// Fixed topic set — advertises the blog's scope (the kinds of stories we post)
+// even before every category has content. Post `vertical` values map onto these
+// keys. Edit this list to change the topics shown in the rail.
+// The brand's canonical category set — same as the site/app nav (Transportation,
+// Travels, Eats & Drinks, Attractions). Everything stems from these; "Where the
+// Locals Go" and "Perfect Saturdays" live as THEMES inside them (see the kicker),
+// not as separate tabs. Keep this list in sync with the site/app categories.
+const CATS: CatDef[] = [
+  { key: 'ALL', label: 'All Posts', Icon: IconBlog },
+  { key: 'TRANSPO', label: 'Transportation', Icon: IconTransport },
+  { key: 'TRAVELS', label: 'Travels', Icon: IconTravel },
+  { key: 'EATS', label: 'Eats & Drinks', Icon: IconEats },
+  { key: 'ATTRACTIONS', label: 'Attractions', Icon: IconAttractions },
+];
+
+// A post's `vertical` (from blog_posts) maps to one of the brand categories above.
+const VERTICAL_CAT: Record<string, string> = {
+  transpo: 'TRANSPO',
+  drivers: 'TRANSPO',
+  riders: 'TRANSPO',
+  travels: 'TRAVELS',
+  flights: 'TRAVELS',
+  stays: 'TRAVELS',
+  eats: 'EATS',
+  entertainment: 'ATTRACTIONS',
+  events: 'ATTRACTIONS',
+  attractions: 'ATTRACTIONS',
+  itinerary: 'ATTRACTIONS',
 };
 
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
@@ -281,9 +299,10 @@ function fmtDate(iso: string | null): string {
 }
 
 function toCard(p: BlogCard, likes: number): Card {
+  const cat = VERTICAL_CAT[(p.vertical || '').toLowerCase()] || 'LOCALS';
   return {
     slug: p.slug,
-    cat: (p.vertical || '').toUpperCase(),
+    cat,
     catLabel: p.vertical ? titleCase(p.vertical) : 'Story',
     title: p.title,
     excerpt: p.excerpt || '',
@@ -443,13 +462,7 @@ export function Blog() {
 
   const posts = (raw ?? []).map((p) => toCard(p, counts[p.slug] ?? 0));
 
-  // Category tabs derived from the verticals actually present (no empty tabs).
-  const present = Array.from(new Set(posts.map((p) => p.cat).filter(Boolean)));
-  const cats: CatDef[] = [
-    { key: 'ALL', label: 'All Posts', Icon: IconBlog },
-    ...present.map((v) => ({ key: v, label: titleCase(v), Icon: VERTICAL_ICON[v] || IconBlog })),
-  ];
-
+  const cats = CATS;
   const filtered = cat === 'ALL' ? posts : posts.filter((p) => p.cat === cat);
   const featured = filtered.find((p) => p.featured);
   const rest = filtered.filter((p) => p.slug !== featured?.slug);
@@ -478,6 +491,8 @@ export function Blog() {
             <div className="state">Loading stories…</div>
           ) : posts.length === 0 ? (
             <div className="state">Our first field notes are being finalized. Check back soon.</div>
+          ) : filtered.length === 0 ? (
+            <div className="state">New {cats.find((c) => c.key === cat)?.label} stories are on the way — check back soon.</div>
           ) : (
             <>
               {featured && <Spotlight p={featured} />}
