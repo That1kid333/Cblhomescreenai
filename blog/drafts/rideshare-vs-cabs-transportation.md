@@ -4,7 +4,7 @@ TRANSPORTATION  ·  RIDERS & DRIVERS  ·  NATIONAL / PITTSBURGH  ·  ~7 MIN
 
 ### *The app says one price, the meter says another, and half the time they've swapped places since last week. Here's what a driver sees — and the option neither one puts on your screen.*
 
-**By Brian Uhler · CBL Network** — *Pittsburgh CBL driver*
+**By Brian Uhler & Keith Schmiedlin · CBL Network** — *Pittsburgh CBL drivers*
 
 ---
 
@@ -48,6 +48,14 @@ That's not a knock on the apps or the cabs — they're built for *on-demand,* sp
 
 **Not on-demand. On your schedule.** Different tool for a different job.
 
+## Drivers: this is the opening
+
+If you're the one behind the wheel, you already know the *other* half of that Gridwise number. Riders paid about 9.6% more in 2025; drivers earned about 3.6% more. The difference didn't disappear — it went to the platform. Every surged fare a rider grumbles about, the driver saw maybe a third of.
+
+CBL is built to flip that math. The **Private Membership is a flat $19.99 a month — no per-ride commission, no cut of your fare.** You build your *own* book of private, scheduled riders, you set a fair price you both agree on up front, and you keep it. That means on the trips that matter you can come in **under a surged app fare and under a cab meter** — and *still* take home more per ride than the app would ever hand you, because nobody's skimming the middle.
+
+It's not about chasing pings across town. It's a private, scheduled ride service you actually own — the airport regulars, the standing weekly appointments, the riders who'd rather text their driver than gamble on a screen. Rideshare and cabs are the on-demand tools. This is the one where the driver builds something that's *theirs* — and it's exactly how both of us ended up driving for CBL in the first place.
+
 ## This isn't just a Pittsburgh story
 
 The surge-vs-meter squeeze is playing out in every city — only the names change. Curb, Flywheel, zTrip, the local Yellow successor, whatever the town calls it. That's what makes this a piece we can run **city by city**, each one told by a real CBL driver in that market: same question, local answer. Pittsburgh's just first because Brian's driving it.
@@ -60,11 +68,11 @@ The surge-vs-meter squeeze is playing out in every city — only the names chang
 
 ## — NOTES FOR THE TEAM (not for publication) —
 
-**Byline:** Brian Uhler (Keith's call — spread the voices; Transportation is Brian's beat as a Pittsburgh driver).
+**Byline:** Brian Uhler **&** Keith Schmiedlin (Keith's call — co-bylined so it's not all coming from Keith, and because the piece now speaks to *both* riders and drivers). Easy to drop to a single byline if we'd rather.
 
-**Why this one:** the "rideshare vs. cabs in 2026" question is high-interest and *not* heavily covered from a driver's-seat angle — good shot at organic traction/SEO. Straight comparison title on purpose.
+**Why this one:** the "rideshare vs. cabs in 2026" question is high-interest and *not* heavily covered from a driver's-seat angle — good shot at organic traction/SEO. Straight comparison title on purpose. Doubles as a **driver-recruitment** piece: the "Drivers: this is the opening" section is the segue into the **$19.99/mo CBL Private Membership** — build your own clientele, come in under both, keep your fare.
 
-**Positioning guardrail (must hold):** CBL is a SaaS platform — scheduled, by-invitation, your-own-driver. We are **not** an Uber/Lyft/cab competitor and never use hail/summon/surge language *about CBL.* The piece is "smart about rideshare," not a rideshare blog. The CBL turn is the *third path*, not "we're cheaper than Uber."
+**Positioning guardrail (must hold):** CBL is a SaaS platform — scheduled, by-invitation, your-own-driver. We are **not** an Uber/Lyft/cab competitor and never use hail/summon/surge language *about CBL.* The piece is "smart about rideshare," not a rideshare blog. The CBL turn is the *third path*, not "we're cheaper than Uber." On the driver section: CBL provides the software/membership — drivers are independent contractors who set their own rates with their own riders (scheduled/appointment only). Don't promise specific earnings; "keep your fare / no per-ride commission" is the true, on-brand hook.
 
 **Brian — need your take on:**
 1. The real Pittsburgh cab brand(s) riders actually use now, and whether "Zip"/zTrip is the right name to cite.
