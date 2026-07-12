@@ -221,7 +221,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
           <>
             <div className="eyebrow">join the list</div>
             <h2 id="cbl-join-title">Get in <span className="it">free.</span></h2>
-            <p className="sub">First name and email — that's it. No password, no spam.</p>
+            <p className="sub">First name, email, and cell — that's it. No password, no spam.</p>
 
             {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
@@ -254,7 +254,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
                 />
               </div>
               <div className="field">
-                <label htmlFor="cbl-join-cell">Cell <span style={{ textTransform: 'none', letterSpacing: 0 }}>(optional)</span></label>
+                <label htmlFor="cbl-join-cell">Cell <span className="req">*</span></label>
                 <input
                   id="cbl-join-cell"
                   type="tel"
@@ -266,6 +266,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
                   placeholder="(555) 123-4567"
                   autoComplete="tel"
                   maxLength={30}
+                  required
                 />
               </div>
 
