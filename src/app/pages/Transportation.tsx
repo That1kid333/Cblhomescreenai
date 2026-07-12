@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { JoinModal } from '../components/JoinModal';
+import { APP_URL } from '../lib/constants';
 
 /**
  * Transportation — ported from the CBL "New Website" handoff bundle
@@ -61,30 +64,30 @@ const PROVIDERS: Provider[] = [
     key: 'uber',
     name: 'Uber X',
     logo: 'U',
-    blurb: 'On-demand pickup via Uber. Affiliate-linked through CBL.',
-    eta: '3 min',
-    price: '$22',
-    badges: [{ k: 'affiliate', t: 'Affiliate · 4% to CBL' }],
+    blurb: 'On-demand pickup via Uber — a partner option coming soon for trips CBL Private does not cover.',
+    eta: 'Soon',
+    price: '—',
+    badges: [{ k: 'pending', t: 'Coming Soon' }],
   },
   {
     key: 'lyft',
     name: 'Lyft Standard',
     logo: 'L',
-    blurb: 'On-demand pickup via Lyft. Affiliate-linked through CBL.',
-    eta: '5 min',
-    price: '$21',
-    badges: [{ k: 'affiliate', t: 'Affiliate · 4% to CBL' }],
+    blurb: 'On-demand pickup via Lyft — a partner option coming soon for trips CBL Private does not cover.',
+    eta: 'Soon',
+    price: '—',
+    badges: [{ k: 'pending', t: 'Coming Soon' }],
   },
   {
     key: 'waymo',
     name: 'Waymo',
     logo: 'W',
-    blurb: 'Fully autonomous, no driver. Available in select zones.',
-    eta: '7 min',
-    price: '$24',
+    blurb: 'Fully autonomous, no driver — an autonomous partner option coming soon.',
+    eta: 'Soon',
+    price: '—',
     badges: [
       { k: 'av', t: 'Autonomous' },
-      { k: 'affiliate', t: 'Affiliate · 6% to CBL' },
+      { k: 'pending', t: 'Coming Soon' },
     ],
   },
   {
@@ -118,7 +121,7 @@ const AUDIENCES: Audience[] = [
     num: '01',
     name: 'Riders',
     blurb:
-      'Schedule rides with a trusted local driver — or tap into Uber, Lyft, and autonomous fleets through one app.',
+      'Schedule rides with a trusted local driver you already know. Partner options (Uber, Lyft, autonomous) are coming soon.',
     price: 'FREE',
     priceLabel: 'to join',
     bullets: [
@@ -166,16 +169,16 @@ const AUDIENCES: Audience[] = [
 
 const PARTNERS = [
   { name: 'CBL Private', sub: 'Service Fee · $0.01–$0.99', rev: '100%', revLbl: 'to driver' },
-  { name: 'Uber', sub: 'Affiliate API · Live', rev: '4%', revLbl: 'per ride' },
-  { name: 'Lyft', sub: 'Affiliate API · Live', rev: '4%', revLbl: 'per ride' },
-  { name: 'Waymo', sub: 'Affiliate API · Beta', rev: '6%', revLbl: 'per ride' },
-  { name: 'Tesla Cybercab', sub: 'Pending · Q4 2026', rev: 'TBD', revLbl: '' },
+  { name: 'Uber', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
+  { name: 'Lyft', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
+  { name: 'Waymo', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
+  { name: 'Tesla Cybercab', sub: 'Pending · Q4 2026', rev: 'Soon', revLbl: '' },
 ];
 
 const FAQS = [
   {
     q: 'Is CityBucketList a rideshare company?',
-    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors — and aggregates third-party providers (Uber, Lyft, Waymo, etc.) for instant coverage when an independent driver is unavailable.',
+    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors they already know. Third-party partner options (Uber, Lyft, Waymo) are coming soon for trips an independent driver can not cover.',
   },
   {
     q: 'Why offer Uber, Lyft and autonomous options?',
@@ -652,7 +655,7 @@ function Hero() {
     <section className="hero">
       <div className="hero-inner">
         <div>
-          <div className="eyebrow">100% coverage · cbl private + affiliates</div>
+          <div className="eyebrow">cbl private · scheduled rides · partners soon</div>
           <div className="hero-title-row">
             <h1 className="hero-title">
               <span className="title-stack">
@@ -668,10 +671,49 @@ function Hero() {
             </h1>
           </div>
           <p className="lede">
-            Schedule a trusted local driver — or tap Uber, Lyft, Waymo and (soon) Tesla Cybercab
-            through the same app. 100% coverage, one place to book. CBL earns a small affiliate cut
-            on every third-party ride, so the platform stays free for riders.
+            Schedule a trusted local driver you already know — booked ahead, never on-demand, never a
+            stranger. Uber, Lyft and autonomous partner options are coming soon for the trips CBL does
+            not cover. One membership, one place to plan every ride.
           </p>
+          <div style={{ display: 'flex', gap: 14, marginTop: 28, flexWrap: 'wrap' }}>
+            <button
+              onClick={() => window.open(APP_URL, '_blank', 'noopener,noreferrer')}
+              style={{
+                background: '#C99742',
+                color: '#000',
+                border: 0,
+                borderRadius: 999,
+                padding: '14px 30px',
+                fontFamily: DISPLAY,
+                fontWeight: 800,
+                fontSize: 14,
+                letterSpacing: '.04em',
+                textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}
+            >
+              Book a Private Ride →
+            </button>
+            <a
+              href="#pick"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                padding: '14px 26px',
+                borderRadius: 999,
+                border: '1.5px solid rgba(255,255,255,.25)',
+                color: '#fff',
+                textDecoration: 'none',
+                fontFamily: DISPLAY,
+                fontWeight: 700,
+                fontSize: 14,
+                letterSpacing: '.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              See how it works
+            </a>
+          </div>
         </div>
       </div>
     </section>
@@ -682,10 +724,12 @@ function AudienceCard({
   a,
   active,
   onClick,
+  onCta,
 }: {
   a: Audience;
   active: boolean;
   onClick: () => void;
+  onCta: () => void;
 }) {
   return (
     <div className={'audience-card' + (active ? ' active' : '')} onClick={onClick}>
@@ -702,13 +746,28 @@ function AudienceCard({
           <li key={b}>{b}</li>
         ))}
       </ul>
-      <button className="audience-cta">{a.cta} →</button>
+      <button
+        className="audience-cta"
+        onClick={(e) => {
+          e.stopPropagation();
+          onCta();
+        }}
+      >
+        {a.cta} →
+      </button>
     </div>
   );
 }
 
 function Audiences() {
   const [active, setActive] = useState('RIDERS');
+  const [joinOpen, setJoinOpen] = useState(false);
+  const navigate = useNavigate();
+  const ctaFor = (key: string) => {
+    if (key === 'RIDERS') return () => setJoinOpen(true);
+    if (key === 'DRIVERS') return () => window.open(APP_URL, '_blank', 'noopener,noreferrer');
+    return () => navigate('/concierge#apply');
+  };
   return (
     <section className="band">
       <div className="band-inner">
@@ -728,10 +787,12 @@ function Audiences() {
               a={a}
               active={active === a.key}
               onClick={() => setActive(a.key)}
+              onCta={ctaFor(a.key)}
             />
           ))}
         </div>
       </div>
+      <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} source="transportation-rider" />
     </section>
   );
 }
@@ -773,15 +834,21 @@ function ProviderCard({
         <div className="price-lbl">est. fare</div>
       </div>
       {p.commission && <div className="commission-note">{p.commission}</div>}
-      <button className="pick-btn">
-        {p.cbl ? (
-          <>
-            Book This Ride <CarIconInline size={14} color="#000" />
-          </>
-        ) : (
-          'Open in ' + p.name
-        )}
-      </button>
+      {p.cbl ? (
+        <button
+          className="pick-btn"
+          onClick={(e) => {
+            e.stopPropagation();
+            window.open(APP_URL, '_blank', 'noopener,noreferrer');
+          }}
+        >
+          Book This Ride <CarIconInline size={14} color="#000" />
+        </button>
+      ) : (
+        <button className="pick-btn" disabled style={{ opacity: 0.45, cursor: 'default' }}>
+          Coming Soon
+        </button>
+      )}
     </div>
   );
 }
@@ -791,16 +858,16 @@ function RideAggregator() {
   const [selected, setSelected] = useState('cbl');
 
   return (
-    <section className="band agg-band">
+    <section className="band agg-band" id="pick">
       <div className="band-inner">
-        <div className="section-eyebrow">one app · five ways to get there</div>
+        <div className="section-eyebrow">cbl private · partners coming soon</div>
         <h2 className="section-h2">
           Pick your ride <span className="it">private or partner</span>
         </h2>
         <p className="section-lede">
-          Every ride request hits CBL Private Drivers first. Need it faster, or headed somewhere CBL
-          doesn't cover yet? Tap a partner. We earn a small affiliate fee on each third-party ride —
-          you pay the network's standard rate.
+          CBL Private is scheduled, by-invitation, your-own-driver — every ride is booked at least 12
+          hours ahead, so you always know who is picking you up. Partner options for the trips CBL
+          does not cover yet (Uber, Lyft, autonomous) are coming soon.
         </p>
 
         <div className="agg-toggle">
@@ -982,7 +1049,11 @@ function RideAggregator() {
                   <div className="big-lbl">commission cut</div>
                 </div>
               </div>
-              <button className="audience-cta" style={{ width: 'auto', padding: '14px 32px' }}>
+              <button
+                className="audience-cta"
+                style={{ width: 'auto', padding: '14px 32px' }}
+                onClick={() => window.open(APP_URL, '_blank', 'noopener,noreferrer')}
+              >
                 Start 30-Day Free Trial →
               </button>
             </div>
@@ -1029,11 +1100,12 @@ function AffiliateBand() {
       <div className="band-inner">
         <div className="section-eyebrow">platform economics</div>
         <h2 className="section-h2">
-          Affiliate program <span className="it">100% coverage</span>
+          Affiliate program <span className="it">coming soon</span>
         </h2>
         <p className="section-lede">
-          Every ride — CBL Private or partner — keeps the platform healthy. Riders never pay extra
-          for the affiliate routing; CBL earns directly from the network on the back end.
+          Here is the roadmap. CBL Private scheduled rides are live today; the partner affiliate
+          options below are coming soon. Riders will never pay extra for partner routing — CBL earns
+          from the network on the back end, not from you.
         </p>
 
         <div className="affiliate-grid">
@@ -1069,9 +1141,9 @@ function AffiliateBand() {
               <div>
                 <h4>Partner fallback for 100% coverage</h4>
                 <p>
-                  If no independent driver is available — or the rider prefers Uber, Lyft or autonomous —
-                  the booking routes through our affiliate links. The partner pays CBL a small
-                  per-ride commission.
+                  Coming soon: for trips no independent driver can cover — or when a rider prefers
+                  Uber, Lyft or autonomous — the booking will hand off to that partner. CBL is not
+                  signed up with the affiliate networks yet; this is on the roadmap.
                 </p>
               </div>
             </div>
@@ -1080,9 +1152,9 @@ function AffiliateBand() {
               <div>
                 <h4>Free for riders, sustainable for CBL</h4>
                 <p>
-                  Affiliate revenue is paid by the network, not the rider. The flat membership model
-                  + small service fee on private rides + partner commissions keep the platform
-                  running.
+                  Affiliate revenue, once live, is paid by the network — not the rider. The flat
+                  membership model plus a small service fee on private rides keeps the platform
+                  running today.
                 </p>
               </div>
             </div>
