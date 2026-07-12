@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Link } from 'react-router';
+import { RIDER_BOOK_URL } from '../lib/constants';
 
 /**
  * Travels — ported from the CBL "New Website" handoff bundle
@@ -718,7 +720,7 @@ function SearchBar() {
             <div className="lbl">Guests</div>
             <div className="ctl"><input defaultValue="2 adults" /></div>
           </div>
-          <button className="search-btn">Search →</button>
+          <button className="search-btn" disabled title="Travel booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Search →</button>
         </div>
       </div>
       <div className="providers">
@@ -790,8 +792,8 @@ function StayCard({ s }: { s: Stay }) {
           </div>
         </div>
         <div className="cta-row">
-          <button className="cta">Book Now</button>
-          <button className="cta ghost">Details</button>
+          <button className="cta" disabled title="Booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Now</button>
+          <button className="cta ghost" disabled title="Coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Details</button>
         </div>
       </div>
     </article>
@@ -810,7 +812,7 @@ function TripCard({ t }: { t: Trip }) {
           <span className="pill">{t.loc.split('·')[0].trim()}</span>
         </div>
         <p>{t.p}</p>
-        <button className="cta">Plan This Trip →</button>
+        <Link className="cta" to="/login" style={{ textDecoration: 'none' }}>Plan This Trip →</Link>
       </div>
     </article>
   );
@@ -845,8 +847,8 @@ function FlightRow({ f }: { f: Flight }) {
         <div className="src">via {f.src}</div>
       </div>
       <div className="actions">
-        <button>Book Flight</button>
-        <button className="ride">
+        <button disabled title="Flight booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Flight</button>
+        <button className="ride" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>
           <RideGlyph size={12} color="#C99742" strokeWidth={14} />
           Ride to Airport
         </button>
@@ -874,7 +876,7 @@ function AirportRideBanner() {
           picking you up.
         </p>
       </div>
-      <button className="cta">Schedule Airport Ride →</button>
+      <button className="cta" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>Schedule Airport Ride →</button>
     </div>
   );
 }
@@ -918,7 +920,7 @@ function BuckeeBand() {
               </div>
             </div>
             <div className="buckee-cta-row">
-              <button className="buckee-cta">Sign Up — Start Planning →</button>
+              <Link className="buckee-cta" to="/login" style={{ textDecoration: 'none' }}>Sign Up — Start Planning →</Link>
               <span className="buckee-note">free to join · buckee unlocked at signup</span>
             </div>
           </div>
