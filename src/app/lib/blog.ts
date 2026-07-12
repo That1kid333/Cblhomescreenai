@@ -325,3 +325,44 @@ export async function submitStory(input: StorySubmission): Promise<{ error: stri
   }
   return { error: null };
 }
+
+/* ── CBL Studio: review community submissions + subscriber count (admin, RLS-gated) ── */
+
+export type Submission = {
+  id: string;
+  name: string | null;
+  email: string | null;
+  city: string | null;
+  category: string | null;
+  title: string | null;
+  body: string | null;
+  status: string;
+  created_at: string;
+};
+
+export async function getStudioSubmissions(): Promise<Submission[]> {
+  const { data, error } = await authClient.from('story_submissions').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('getStudioSubmissions', error.message);
+    return [];
+  }
+  return (data as Submission[]) ?? [];
+}
+
+export async function setSubmissionStatus(id: string, status: string): Promise<{ error: string | null }> {
+  const { error } = await authClient.from('story_submissions').update({ status }).eq('id', id);
+  return { error: error?.message ?? null };
+}
+
+export async function deleteSubmission(id: string): Promise<{ error: string | null }> {
+  const { error } = await authClient.from('story_submissions').delete().eq('id', id);
+  return { error: error?.message ?? null };
+}
+
+export async function getSubscriberCount(): Promise<number> {
+  const { count } = await authClient
+    .from('newsletter_subscribers')
+    .select('id', { count: 'exact', head: true })
+    .eq('status', 'active');
+  return count ?? 0;
+}

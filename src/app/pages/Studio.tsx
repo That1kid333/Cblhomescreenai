@@ -7,8 +7,13 @@ import {
   getStudioPost,
   savePost,
   deleteStudioPost,
+  getStudioSubmissions,
+  setSubmissionStatus,
+  deleteSubmission,
+  getSubscriberCount,
   type StudioListItem,
   type StudioInput,
+  type Submission,
 } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
 
@@ -155,6 +160,12 @@ const CSS = `
 .cbl-studio .preview .md ul { margin:0 0 12px; padding-left:20px; }
 .cbl-studio .preview .md blockquote { border-left:3px solid #C99742; padding-left:14px; color:#f0e6d2; font-style:italic; margin:12px 0; }
 
+.cbl-studio .sectnav { display:flex; align-items:center; gap:6px; margin-bottom:20px; border-bottom:1px solid rgba(255,255,255,.08); }
+.cbl-studio .sectbtn { background:transparent; border:0; color:#8a8a8a; font-family:${MONO}; font-size:12px; letter-spacing:.1em; text-transform:uppercase; padding:8px 2px 12px; margin-right:20px; border-bottom:2px solid transparent; margin-bottom:-1px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; }
+.cbl-studio .sectbtn:hover { color:#c9c9c9; }
+.cbl-studio .sectbtn.on { color:#fff; border-bottom-color:#C99742; }
+.cbl-studio .pill-n { background:#C99742; color:#000; border-radius:999px; font-size:10px; font-weight:800; padding:1px 7px; letter-spacing:0; }
+.cbl-studio .subcount { font-family:${MONO}; font-size:11px; color:#C99742; letter-spacing:.04em; }
 .cbl-studio table { width:100%; border-collapse:collapse; }
 .cbl-studio th { text-align:left; font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#777; padding:0 12px 10px; border-bottom:1px solid rgba(255,255,255,.08); }
 .cbl-studio td { padding:14px 12px; border-bottom:1px solid rgba(255,255,255,.05); font-size:14px; vertical-align:middle; }
@@ -272,14 +283,25 @@ function Admin({ email }: { email: string }) {
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string; slug?: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
+  const [section, setSection] = useState<'stories' | 'submissions'>('stories');
+  const [subs, setSubs] = useState<Submission[] | null>(null);
+  const [subCount, setSubCount] = useState<number | null>(null);
+
   const loadList = useCallback(async () => {
     setList(null);
     setList(await getStudioPosts());
   }, []);
+  const loadSubs = useCallback(async () => {
+    setSubs(null);
+    setSubs(await getStudioSubmissions());
+  }, []);
 
   useEffect(() => {
-    if (mode === 'list') loadList();
-  }, [mode, loadList]);
+    if (mode !== 'list') return;
+    loadList();
+    loadSubs();
+    getSubscriberCount().then(setSubCount);
+  }, [mode, loadList, loadSubs]);
 
   function openNew() {
     setForm(EMPTY);
@@ -350,16 +372,53 @@ function Admin({ email }: { email: string }) {
     else loadList();
   }
 
+  // Community submissions → prefill the editor from a reader's pitch.
+  const CAT_TO_VERTICAL: Record<string, string> = { eats: 'eats', transportation: 'transpo', attractions: 'attractions', travels: 'travels' };
+  async function openFromSubmission(s: Submission) {
+    setForm({
+      ...EMPTY,
+      title: s.title || '',
+      body_md: s.body || '',
+      city: s.city || '',
+      vertical: CAT_TO_VERTICAL[s.category || ''] || 'transpo',
+      author_name: s.name || '',
+      slug: slugify(s.title || ''),
+    });
+    setTagsText('');
+    setEditId(null);
+    setExistingPub(null);
+    setSlugTouched(true);
+    setMsg(null);
+    setShowPreview(false);
+    if (s.status === 'new') setSubmissionStatus(s.id, 'reviewing');
+    setMode('edit');
+  }
+  async function subAction(id: string, status: string) {
+    await setSubmissionStatus(id, status);
+    loadSubs();
+  }
+  async function subDelete(id: string) {
+    if (!window.confirm('Delete this submission? This can’t be undone.')) return;
+    await deleteSubmission(id);
+    loadSubs();
+  }
+
   // ── Dashboard ──
   if (mode === 'list') {
+    const pendingSubs = subs?.filter((s) => s.status === 'new').length ?? 0;
     return (
       <>
         <div className="top">
           <div>
             <div className="brandmark">CBL Studio</div>
-            <h1 className="st-title">Your stories</h1>
+            <h1 className="st-title">{section === 'stories' ? 'Your stories' : 'Reader submissions'}</h1>
           </div>
           <div className="whoami">
+            {subCount !== null && (
+              <span className="subcount">
+                {subCount} subscriber{subCount === 1 ? '' : 's'}
+              </span>
+            )}
             <span>
               <b>{email}</b>
             </span>
@@ -372,47 +431,115 @@ function Admin({ email }: { email: string }) {
           </div>
         </div>
 
-        {list === null ? (
+        <div className="sectnav">
+          <button className={'sectbtn' + (section === 'stories' ? ' on' : '')} onClick={() => setSection('stories')}>
+            Stories
+          </button>
+          <button className={'sectbtn' + (section === 'submissions' ? ' on' : '')} onClick={() => setSection('submissions')}>
+            Submissions{pendingSubs > 0 && <span className="pill-n">{pendingSubs}</span>}
+          </button>
+        </div>
+
+        {section === 'stories' ? (
+          list === null ? (
+            <div className="empty">Loading…</div>
+          ) : list.length === 0 ? (
+            <div className="empty">No stories yet. Hit “+ New story” to write the first one.</div>
+          ) : (
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th style={{ textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {list.map((p) => (
+                  <tr key={p.id}>
+                    <td>
+                      <span className="pt">
+                        {p.title}
+                        {p.featured ? ' ★' : ''}
+                      </span>
+                      <span className="ps">/blog/{p.slug}</span>
+                    </td>
+                    <td>{VERTICALS.find((v) => v.v === p.vertical)?.label ?? p.vertical ?? '—'}</td>
+                    <td>
+                      <span className={`badge ${p.status === 'published' ? 'published' : 'draft'}`}>{p.status}</span>
+                    </td>
+                    <td className="ps">{fmt(p.updated_at)}</td>
+                    <td>
+                      <div className="rowbtns">
+                        {p.status === 'published' && (
+                          <Link className="btn btn-ghost mini" to={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
+                            View
+                          </Link>
+                        )}
+                        <button className="btn btn-ghost mini" onClick={() => openEdit(p.id)}>
+                          Edit
+                        </button>
+                        <button className="btn btn-danger mini" onClick={() => doDelete(p.id, p.title)}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )
+        ) : subs === null ? (
           <div className="empty">Loading…</div>
-        ) : list.length === 0 ? (
-          <div className="empty">No stories yet. Hit “+ New story” to write the first one.</div>
+        ) : subs.length === 0 ? (
+          <div className="empty">No submissions yet. They show up here when readers use “Share your story” on the blog.</div>
         ) : (
           <table>
             <thead>
               <tr>
-                <th>Title</th>
+                <th>Story</th>
+                <th>From</th>
                 <th>Category</th>
                 <th>Status</th>
-                <th>Updated</th>
+                <th>Received</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {list.map((p) => (
-                <tr key={p.id}>
+              {subs.map((s) => (
+                <tr key={s.id}>
                   <td>
-                    <span className="pt">
-                      {p.title}
-                      {p.featured ? ' ★' : ''}
+                    <span className="pt">{s.title || '(no headline)'}</span>
+                    <span className="ps">
+                      {(s.body || '').slice(0, 90)}
+                      {(s.body || '').length > 90 ? '…' : ''}
                     </span>
-                    <span className="ps">/blog/{p.slug}</span>
                   </td>
-                  <td>{VERTICALS.find((v) => v.v === p.vertical)?.label ?? p.vertical ?? '—'}</td>
                   <td>
-                    <span className={`badge ${p.status === 'published' ? 'published' : 'draft'}`}>{p.status}</span>
+                    <span className="pt" style={{ fontWeight: 700 }}>
+                      {s.name || '—'}
+                      {s.city ? ` · ${s.city}` : ''}
+                    </span>
+                    {s.email && <span className="ps">{s.email}</span>}
                   </td>
-                  <td className="ps">{fmt(p.updated_at)}</td>
+                  <td>{s.category || '—'}</td>
+                  <td>
+                    <span className={`badge ${s.status === 'new' ? 'published' : 'draft'}`}>{s.status}</span>
+                  </td>
+                  <td className="ps">{fmt(s.created_at)}</td>
                   <td>
                     <div className="rowbtns">
-                      {p.status === 'published' && (
-                        <Link className="btn btn-ghost mini" to={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
-                          View
-                        </Link>
-                      )}
-                      <button className="btn btn-ghost mini" onClick={() => openEdit(p.id)}>
-                        Edit
+                      <button className="btn btn-gold mini" onClick={() => openFromSubmission(s)}>
+                        Use as story →
                       </button>
-                      <button className="btn btn-danger mini" onClick={() => doDelete(p.id, p.title)}>
+                      {s.status !== 'archived' && (
+                        <button className="btn btn-ghost mini" onClick={() => subAction(s.id, 'archived')}>
+                          Archive
+                        </button>
+                      )}
+                      <button className="btn btn-danger mini" onClick={() => subDelete(s.id)}>
                         Delete
                       </button>
                     </div>
