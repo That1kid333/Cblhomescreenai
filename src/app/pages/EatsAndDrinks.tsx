@@ -1225,9 +1225,16 @@ function cuisinesForMeal(m: string): Set<string> {
 // partner's site, else a Google menu search. (Rich per-card website/reservable
 // for the LIVE Google listings would need a Google Place Details call — a small
 // backend add; see SAAS/EATS handoff notes.)
+// Live Google listings carry a `g-`-prefixed place_id (see useLivePlaces); the
+// curated seed uses plain slugs. Returns the real place_id or null.
+const placeIdOf = (r: Restaurant) => {
+  const id = r.id.replace(/^g-/, '');
+  return /^ChI/.test(id) ? id : null;
+};
 const gMaps = (r: Restaurant) => {
   const q = encodeURIComponent(`${r.name}, ${r.address}`);
-  const pid = /^ChI/.test(r.id) ? `&query_place_id=${encodeURIComponent(r.id)}` : '';
+  const id = placeIdOf(r);
+  const pid = id ? `&query_place_id=${encodeURIComponent(id)}` : '';
   return `https://www.google.com/maps/search/?api=1&query=${q}${pid}`;
 };
 const reserveUrlFor = (r: Restaurant) =>
@@ -2419,8 +2426,9 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
     // Live Google listings (place_id ids) get real hours/website/reviews.
     let cancelled = false;
     setDetails(null);
-    if (/^ChI/.test(r.id)) {
-      fetch(`/api/place-details?place_id=${encodeURIComponent(r.id)}`)
+    const pid = placeIdOf(r);
+    if (pid) {
+      fetch(`/api/place-details?place_id=${encodeURIComponent(pid)}`)
         .then((res) => res.json())
         .then((d) => {
           if (!cancelled && d && d.found) setDetails(d);
@@ -2432,7 +2440,9 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
-  }, [r, onClose]);
+    // Depend on r only — onClose is recreated each parent render, and including it
+    // would tear this down and cancel the Place Details fetch mid-flight.
+  }, [r]);
   if (!r) return null;
   const website = details?.website || r.website || null;
   const phone = details?.phone || r.phone || null;
