@@ -1225,7 +1225,6 @@ function cuisinesForMeal(m: string): Set<string> {
 // partner's site, else a Google menu search. (Rich per-card website/reservable
 // for the LIVE Google listings would need a Google Place Details call — a small
 // backend add; see SAAS/EATS handoff notes.)
-const gSearch = (r: Restaurant) => `https://www.google.com/search?q=${encodeURIComponent(`${r.name} ${r.address}`)}`;
 const gMaps = (r: Restaurant) => {
   const q = encodeURIComponent(`${r.name}, ${r.address}`);
   const pid = /^ChI/.test(r.id) ? `&query_place_id=${encodeURIComponent(r.id)}` : '';
@@ -1272,7 +1271,6 @@ function RestaurantCard({ r }: { r: Restaurant }) {
         </div>
         <div className="cta-row">
           <button className="cta" onClick={() => openModal(r)}>More Info</button>
-          <button className="cta ghost" onClick={() => openModal(r)}>View on Map</button>
         </div>
       </div>
     </article>
@@ -1978,23 +1976,6 @@ function GridCard({ r }: { r: Restaurant }) {
           >
             More Info
           </button>
-          <button
-            style={{
-              flex: 1,
-              background: '#2A2A2A',
-              color: '#fff',
-              border: 0,
-              borderRadius: 999,
-              padding: '6px 0',
-              fontFamily: BODY,
-              fontWeight: 600,
-              fontSize: 11,
-              cursor: 'pointer',
-            }}
-            onClick={() => openModal(r)}
-          >
-            View on Map
-          </button>
         </div>
       </div>
     </div>
@@ -2400,27 +2381,65 @@ const MODAL_CSS = `
 .cbl-rmodal .mmeta b { color:#fff; } .cbl-rmodal .mopen { color:#8CC084; font-weight:700; }
 .cbl-rmodal .mdesc { font-size:14.5px; line-height:1.6; color:#C7C7C7; margin-bottom:16px; }
 .cbl-rmodal .mmap { width:100%; height:230px; border:0; border-radius:12px 0 12px 0; margin-bottom:16px; display:block; background:#0A0A0A; }
+.cbl-rmodal .mhours, .cbl-rmodal .mrev { margin-bottom:16px; padding:12px 14px; background:#0f0f0f; border:1px solid rgba(255,255,255,.07); border-radius:10px; }
+.cbl-rmodal .mh-label { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; margin-bottom:8px; }
+.cbl-rmodal .mh-row { display:flex; justify-content:space-between; gap:16px; font-size:12.5px; color:#B8B8B8; line-height:1.9; }
+.cbl-rmodal .mh-row .today { color:#fff; font-weight:700; }
+.cbl-rmodal .mrev p { margin:0 0 6px; font-size:13.5px; line-height:1.55; color:#D4D4D4; font-style:italic; }
+.cbl-rmodal .mrev-by { font-family:${MONO}; font-size:11px; color:#888; }
 .cbl-rmodal .macts { display:flex; gap:10px; flex-wrap:wrap; }
 .cbl-rmodal .macts a { flex:1 1 140px; text-align:center; text-decoration:none; padding:12px 14px; border-radius:999px; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
 .cbl-rmodal .macts .primary { background:${GOLD}; color:#000; } .cbl-rmodal .macts .primary:hover { background:#DDB15F; }
 .cbl-rmodal .macts .ghost { background:transparent; border:1.5px solid rgba(255,255,255,.2); color:#fff; } .cbl-rmodal .macts .ghost:hover { border-color:${GOLD}; color:${GOLD}; }
 `;
 
+type PlaceDetails = {
+  website: string | null;
+  phone: string | null;
+  googleUrl: string | null;
+  hours: string[] | null;
+  openNow: boolean | null;
+  summary: string | null;
+  review: { author: string; rating: number; text: string; when: string } | null;
+};
+
 function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => void }) {
+  const [details, setDetails] = useState<PlaceDetails | null>(null);
   useEffect(() => {
-    if (!r) return;
+    if (!r) {
+      setDetails(null);
+      return;
+    }
     const prev = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', onKey);
+    // Live Google listings (place_id ids) get real hours/website/reviews.
+    let cancelled = false;
+    setDetails(null);
+    if (/^ChI/.test(r.id)) {
+      fetch(`/api/place-details?place_id=${encodeURIComponent(r.id)}`)
+        .then((res) => res.json())
+        .then((d) => {
+          if (!cancelled && d && d.found) setDetails(d);
+        })
+        .catch(() => {});
+    }
     return () => {
+      cancelled = true;
       document.body.style.overflow = prev;
       document.removeEventListener('keydown', onKey);
     };
   }, [r, onClose]);
   if (!r) return null;
+  const website = details?.website || r.website || null;
+  const phone = details?.phone || r.phone || null;
+  const desc = r.description || details?.summary || null;
+  const openNow = details?.openNow ?? r.open;
+  const reservable = r.reservable || r.reserveUrl;
+  const todayIdx = (new Date().getDay() + 6) % 7; // Google weekday_text is Monday-first
   return (
     <div className="cbl-rmodal" role="dialog" aria-modal="true" aria-label={r.name}>
       <style>{MODAL_CSS}</style>
@@ -2447,31 +2466,56 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
             <span>({r.reviews.toLocaleString()} reviews)</span>
             <span>·</span>
             <span>{r.price}</span>
-            {r.open && (
+            {openNow && (
               <>
                 <span>·</span>
                 <span className="mopen">Open Now</span>
               </>
             )}
           </div>
-          {r.description && <p className="mdesc">{r.description}</p>}
+          {desc && <p className="mdesc">{desc}</p>}
           <iframe className="mmap" src={mapEmbed(r)} loading="lazy" title={`Map of ${r.name}`} />
+          {details?.hours && details.hours.length > 0 && (
+            <div className="mhours">
+              <div className="mh-label">Hours</div>
+              {details.hours.map((h, i) => {
+                const [day, ...rest] = h.split(': ');
+                return (
+                  <div key={i} className="mh-row">
+                    <span className={i === todayIdx ? 'today' : ''}>{day}</span>
+                    <span className={i === todayIdx ? 'today' : ''}>{rest.join(': ')}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {details?.review && (
+            <div className="mrev">
+              <div className="mh-label">What people say</div>
+              <p>&ldquo;{details.review.text}&rdquo;</p>
+              <div className="mrev-by">
+                — {details.review.author}
+                {details.review.when ? `, ${details.review.when}` : ''}
+              </div>
+            </div>
+          )}
           <div className="macts">
             <a className="primary" href={gMaps(r)} target="_blank" rel="noreferrer">
               Get Directions →
             </a>
-            {(r.reservable || r.reserveUrl) && (
+            {website && (
+              <a className="ghost" href={website} target="_blank" rel="noreferrer">
+                Website
+              </a>
+            )}
+            {reservable && (
               <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noreferrer">
                 Reserve
               </a>
             )}
-            {r.website ? (
-              <a className="ghost" href={r.website} target="_blank" rel="noreferrer">
-                Website
-              </a>
-            ) : (
-              <a className="ghost" href={gSearch(r)} target="_blank" rel="noreferrer">
-                More on Google
+            {phone && (
+              <a className="ghost" href={`tel:${phone.replace(/[^+\d]/g, '')}`}>
+                Call
               </a>
             )}
           </div>
