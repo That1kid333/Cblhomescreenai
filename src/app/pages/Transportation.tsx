@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { JoinModal } from '../components/JoinModal';
-import { APP_URL } from '../lib/constants';
+import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 
 /**
  * Transportation — ported from the CBL "New Website" handoff bundle
@@ -765,7 +765,7 @@ function Audiences() {
   const navigate = useNavigate();
   const ctaFor = (key: string) => {
     if (key === 'RIDERS') return () => setJoinOpen(true);
-    if (key === 'DRIVERS') return () => window.open(APP_URL, '_blank', 'noopener,noreferrer');
+    if (key === 'DRIVERS') return () => window.open(DRIVER_SIGNUP_URL, '_blank', 'noopener,noreferrer');
     return () => navigate('/concierge#apply');
   };
   return (
@@ -1052,7 +1052,7 @@ function RideAggregator() {
               <button
                 className="audience-cta"
                 style={{ width: 'auto', padding: '14px 32px' }}
-                onClick={() => window.open(APP_URL, '_blank', 'noopener,noreferrer')}
+                onClick={() => window.open(DRIVER_SIGNUP_URL, '_blank', 'noopener,noreferrer')}
               >
                 Start 30-Day Free Trial →
               </button>
