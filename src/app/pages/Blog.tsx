@@ -498,7 +498,7 @@ function Newsletter() {
           <div>
             <div className="section-eyebrow">weekly · the cbl dispatch</div>
             <h2 className="section-h2">
-              One email a week <span className="it">that's worth opening</span>
+              One email a week<br /><span className="it">that's worth opening</span>
             </h2>
             <p style={{ color: '#B0B0B0', fontSize: 15, lineHeight: 1.55, maxWidth: '52ch', marginBottom: 20 }}>
               Top picks for the week, member-only deals, and the occasional dispatch from Buckee. No spam,
