@@ -137,16 +137,16 @@ const AUDIENCES: Audience[] = [
     num: '02',
     name: 'Drivers',
     blurb:
-      'Independent Contractor model. Keep 100% of every fare. Work only when you choose.',
+      'Build your own private rider base. Independent-contractor model — keep 100% of every fare and work only when you choose.',
     price: '$19.99',
     priceLabel: '/mo · first month free',
     bullets: [
+      'Build a private rider base that is yours to keep',
       'Keep 100% of earnings · no commissions',
       'Stripe Connect instant payouts',
       'Scheduled rides only — no on-demand pressure',
-      'Share a ride · keep a portion of the fare',
     ],
-    cta: 'Become a Driver',
+    cta: 'Become an Independent Driver',
   },
   {
     key: 'CONCIERGE',
@@ -1032,8 +1032,8 @@ function RideAggregator() {
                 }}
               >
                 No commission, no surge cuts, no platform percentage. CBL is a Private Membership
-                Platform — Independent Drivers use our tools to manage their own scheduled rides
-                and keep every dollar earned.
+                Platform — Independent Drivers use our software to build their own private rider base,
+                manage their own scheduled rides, and keep every dollar earned.
               </p>
               <div style={{ display: 'flex', gap: 32, marginBottom: 24, flexWrap: 'wrap' }}>
                 <div>
@@ -1060,6 +1060,10 @@ function RideAggregator() {
             <div>
               <div className="pillar-list">
                 {[
+                  {
+                    t: 'Build your own rider base',
+                    d: 'Bring your riders onto CBL and grow a private client list that stays yours — CBL is the software, the relationship is yours.',
+                  },
                   {
                     t: 'Scheduled rides only',
                     d: 'No on-demand pressure. Riders book ahead — you choose what to accept.',
