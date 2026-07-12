@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
 import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission } from '../lib/blog';
+import { useAuth } from '../lib/auth';
 import keithPhoto from '../../assets/cbl-keith.png';
 
 /**
@@ -194,6 +195,11 @@ const BLOG_CSS = `
 .cbl-blog .share-form button { margin-top:2px; background:#C99742; color:#000; border:0; border-radius:999px; padding:14px; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.12em; text-transform:uppercase; }
 .cbl-blog .share-form button:hover { background:#DDB15F; }
 .cbl-blog .share-form button:disabled { opacity:.6; cursor:default; }
+.cbl-blog .ref-nudge { font-size:12.5px; line-height:1.45; color:#DDB15F; background:rgba(201,151,66,.09); border-left:2px solid #C99742; border-radius:0 8px 8px 0; padding:9px 12px; }
+.cbl-blog .ref-check { display:flex; align-items:flex-start; gap:9px; font-size:13px; color:#C7C7C7; line-height:1.4; cursor:pointer; }
+.cbl-blog .ref-check input { width:16px; height:16px; margin-top:1px; accent-color:#C99742; flex-shrink:0; }
+.cbl-blog .share-done .sd-cta { display:inline-block; margin-top:18px; background:#C99742; color:#000; padding:11px 22px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:12px; letter-spacing:.1em; text-transform:uppercase; text-decoration:none; }
+.cbl-blog .share-done .sd-cta:hover { background:#DDB15F; }
 .cbl-blog .share-msg { font-family:${MONO}; font-size:12px; color:#e08a8a; }
 .cbl-blog .share-done { background:#141414; border:1px solid rgba(77,191,102,.35); border-radius:24px 0 24px 0; padding:36px 28px; text-align:center; }
 .cbl-blog .share-done .sd-check { width:52px; height:52px; margin:0 auto 14px; border-radius:50%; background:rgba(77,191,102,.12); border:1px solid rgba(77,191,102,.5); color:#4DBF66; font-size:24px; display:flex; align-items:center; justify-content:center; }
@@ -577,12 +583,26 @@ function Newsletter() {
   );
 }
 
+// A boast about a restaurant or a driver is a referral waiting to happen —
+// nudge it at submit time (restaurant → 20% commission; driver → your private
+// driver via QR), and route them to the action on success.
+const REF_NUDGE: Record<string, string> = {
+  eats: 'Love this spot? Put them on CBL and earn 20% when they join under your code.',
+  transportation: 'Is this your CBL driver? Ask them to add you with their QR so you can book them privately.',
+};
+const REF_CHECK: Record<string, string> = {
+  eats: "I'd like to get this spot on CBL (and earn my referral).",
+  transportation: "I'd like to make them my private driver.",
+};
+
 function ShareStory() {
-  const [f, setF] = useState<StorySubmission>({ name: '', email: '', city: '', category: '', title: '', body: '' });
+  const { profile } = useAuth();
+  const refCode = profile?.referral_code || '';
+  const [f, setF] = useState<StorySubmission>({ name: '', email: '', city: '', category: '', title: '', body: '', wants_referral: false });
   const [hp, setHp] = useState('');
   const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle');
   const [msg, setMsg] = useState('');
-  const set = (k: keyof StorySubmission, v: string) => setF((s) => ({ ...s, [k]: v }));
+  const set = <K extends keyof StorySubmission>(k: K, v: StorySubmission[K]) => setF((s) => ({ ...s, [k]: v }));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -598,6 +618,8 @@ function ShareStory() {
     setState('done');
   }
 
+  const referable = f.category === 'eats' || f.category === 'transportation';
+
   return (
     <section className="band share-band">
       <div className="band-inner">
@@ -609,7 +631,8 @@ function ShareStory() {
             </h2>
             <p>
               The best restaurant nobody's writing about. A rideshare driver worth knowing. The hidden gem only
-              locals find. Got a story? We'll help you tell it — with your name on it.
+              locals find. Got a story? We'll help you tell it — with your name on it. And if it's a spot or a
+              driver, you can turn it into rewards.
             </p>
           </div>
           {state === 'done' ? (
@@ -617,6 +640,16 @@ function ShareStory() {
               <div className="sd-check">✓</div>
               <h3>Got it — thank you!</h3>
               <p>Our team reads every one. If we run your story, we'll reach out.</p>
+              {f.category === 'eats' && (
+                <a className="sd-cta" href={`/partner-restaurants${refCode ? `?ref=${refCode}` : ''}`}>
+                  Put them on CBL &amp; earn 20% →
+                </a>
+              )}
+              {f.category === 'transportation' && (
+                <a className="sd-cta" href="/transportation">
+                  Make them your private driver →
+                </a>
+              )}
             </div>
           ) : (
             <form className="share-form" onSubmit={submit}>
@@ -635,8 +668,15 @@ function ShareStory() {
                 </select>
                 <input type="email" placeholder="Email (so we can reach you)" value={f.email} onChange={(e) => set('email', e.target.value)} aria-label="Your email" />
               </div>
+              {referable && <div className="ref-nudge">{REF_NUDGE[f.category]}</div>}
               <input placeholder="Give it a headline" value={f.title} onChange={(e) => set('title', e.target.value)} aria-label="Headline" />
               <textarea rows={4} placeholder="Tell us the story — what makes it worth the list?" value={f.body} onChange={(e) => set('body', e.target.value)} aria-label="Your story" />
+              {referable && (
+                <label className="ref-check">
+                  <input type="checkbox" checked={f.wants_referral} onChange={(e) => set('wants_referral', e.target.checked)} />
+                  {REF_CHECK[f.category]}
+                </label>
+              )}
               <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={(e) => setHp(e.target.value)} />
               {msg && <div className="share-msg">{msg}</div>}
               <button type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Sending…' : 'Share your story →'}</button>

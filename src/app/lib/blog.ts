@@ -305,6 +305,7 @@ export type StorySubmission = {
   category: string;
   title: string;
   body: string;
+  wants_referral: boolean;
 };
 
 /** Submit a community story pitch — lands in `story_submissions` for CBL Studio. */
@@ -318,6 +319,7 @@ export async function submitStory(input: StorySubmission): Promise<{ error: stri
     category: nn(input.category),
     title: nn(input.title),
     body: nn(input.body),
+    wants_referral: input.wants_referral,
   });
   if (error) {
     console.error('submitStory', error.message);
@@ -337,6 +339,7 @@ export type Submission = {
   title: string | null;
   body: string | null;
   status: string;
+  wants_referral: boolean;
   created_at: string;
 };
 

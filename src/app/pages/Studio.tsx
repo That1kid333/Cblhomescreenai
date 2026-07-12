@@ -166,6 +166,7 @@ const CSS = `
 .cbl-studio .sectbtn.on { color:#fff; border-bottom-color:#C99742; }
 .cbl-studio .pill-n { background:#C99742; color:#000; border-radius:999px; font-size:10px; font-weight:800; padding:1px 7px; letter-spacing:0; }
 .cbl-studio .subcount { font-family:${MONO}; font-size:11px; color:#C99742; letter-spacing:.04em; }
+.cbl-studio .reftag { margin-left:6px; font-family:${MONO}; font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:#000; background:#C99742; padding:2px 6px; border-radius:4px; font-weight:700; }
 .cbl-studio table { width:100%; border-collapse:collapse; }
 .cbl-studio th { text-align:left; font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#777; padding:0 12px 10px; border-bottom:1px solid rgba(255,255,255,.08); }
 .cbl-studio td { padding:14px 12px; border-bottom:1px solid rgba(255,255,255,.05); font-size:14px; vertical-align:middle; }
@@ -527,6 +528,7 @@ function Admin({ email }: { email: string }) {
                   <td>{s.category || '—'}</td>
                   <td>
                     <span className={`badge ${s.status === 'new' ? 'published' : 'draft'}`}>{s.status}</span>
+                    {s.wants_referral && <span className="reftag">referral</span>}
                   </td>
                   <td className="ps">{fmt(s.created_at)}</td>
                   <td>
