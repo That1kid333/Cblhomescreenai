@@ -581,10 +581,13 @@ const TRANSPORT_CSS = `
 @media (max-width:1100px){
   .cbl-transport section.band { padding:36px 24px 48px; }
   .cbl-transport .hero { padding:22px 24px 12px; }
-  .cbl-transport .booking-grid { grid-template-columns:1fr; }
+  .cbl-transport .booking-grid { grid-template-columns:minmax(0,1fr); }
   .cbl-transport .audience-grid { grid-template-columns:1fr; }
   .cbl-transport .affiliate-grid { grid-template-columns:1fr; gap:24px; }
-  .cbl-transport .provider { grid-template-columns:56px 1fr; }
+  .cbl-transport .provider { grid-template-columns:56px minmax(0,1fr); }
+  .cbl-transport .provider > * { min-width:0; }
+  .cbl-transport .field-row { grid-template-columns:1fr; }
+  .cbl-transport .field input { min-width:0; }
   .cbl-transport .provider .eta-block,
   .cbl-transport .provider .price-block { grid-column:auto; text-align:left; }
   .cbl-transport .drivers-row { grid-template-columns:repeat(2,1fr); }
