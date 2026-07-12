@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 
@@ -1236,9 +1236,14 @@ const reserveUrlFor = (r: Restaurant) =>
 const menuUrlFor = (r: Restaurant) =>
   r.website || `https://www.google.com/search?q=${encodeURIComponent(`${r.name} ${r.address} menu`)}`;
 const openExt = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
+// Keyless interactive Google map embed (no API key needed / exposed).
+const mapEmbed = (r: Restaurant) => `https://maps.google.com/maps?q=${encodeURIComponent(`${r.name}, ${r.address}`)}&z=15&output=embed`;
+// Lets any card open the on-site detail panel instead of leaving for Google.
+const EatsModalCtx = createContext<(r: Restaurant) => void>(() => {});
 
 // ── Desktop pieces ──────────────────────────────────────────────────────────
 function RestaurantCard({ r }: { r: Restaurant }) {
+  const openModal = useContext(EatsModalCtx);
   return (
     <article className="card">
       <div className="img" style={{ backgroundImage: `url(${r.image})` }}>
@@ -1266,8 +1271,8 @@ function RestaurantCard({ r }: { r: Restaurant }) {
           <span className="open">Open Now</span>
         </div>
         <div className="cta-row">
-          <button className="cta" onClick={() => openExt(gSearch(r))}>More Info</button>
-          <button className="cta ghost" onClick={() => openExt(gMaps(r))}>View on Map</button>
+          <button className="cta" onClick={() => openModal(r)}>More Info</button>
+          <button className="cta ghost" onClick={() => openModal(r)}>View on Map</button>
         </div>
       </div>
     </article>
@@ -1771,6 +1776,7 @@ function CuisineTile({
 }
 
 function SponsoredCard({ r }: { r: Restaurant }) {
+  const openModal = useContext(EatsModalCtx);
   return (
     <div style={{ padding: '0 18px' }}>
       <div
@@ -1817,7 +1823,7 @@ function SponsoredCard({ r }: { r: Restaurant }) {
               alignSelf: 'flex-start',
               boxShadow: '0 2px 4px rgba(0,0,0,.4)',
             }}
-            onClick={() => openExt(gSearch(r))}
+            onClick={() => openModal(r)}
           >
             More Info
           </button>
@@ -1875,6 +1881,7 @@ function SponsoredCard({ r }: { r: Restaurant }) {
 }
 
 function GridCard({ r }: { r: Restaurant }) {
+  const openModal = useContext(EatsModalCtx);
   return (
     <div
       style={{
@@ -1967,7 +1974,7 @@ function GridCard({ r }: { r: Restaurant }) {
               cursor: 'pointer',
               boxShadow: '0 2px 4px rgba(0,0,0,.4)',
             }}
-            onClick={() => openExt(gSearch(r))}
+            onClick={() => openModal(r)}
           >
             More Info
           </button>
@@ -1984,7 +1991,7 @@ function GridCard({ r }: { r: Restaurant }) {
               fontSize: 11,
               cursor: 'pointer',
             }}
-            onClick={() => openExt(gMaps(r))}
+            onClick={() => openModal(r)}
           >
             View on Map
           </button>
@@ -2370,6 +2377,110 @@ function PartnerBand() {
   );
 }
 
+// On-site restaurant detail panel — opens over the page (no jump to Google).
+// "More Info" / "View on Map" open this; the map is a keyless Google embed, and
+// the outbound actions (Directions / Reserve / Website) are deliberate buttons.
+const MODAL_CSS = `
+.cbl-rmodal { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:16px; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; }
+.cbl-rmodal * { box-sizing:border-box; }
+.cbl-rmodal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(2px); }
+@keyframes cbl-rmodal-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+.cbl-rmodal .panel { position:relative; width:min(560px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#141414; border:1px solid rgba(201,151,66,.4); border-radius:22px 0 22px 0; box-shadow:0 20px 50px rgba(0,0,0,.6); animation:cbl-rmodal-in .26s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .cbl-rmodal .panel { animation:none; } }
+.cbl-rmodal .shot { position:relative; height:196px; background-size:cover; background-position:center; }
+.cbl-rmodal .shot::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,20,20,0) 45%,rgba(20,20,20,.92)); }
+.cbl-rmodal .mtags { position:absolute; top:14px; left:14px; display:flex; gap:6px; z-index:2; }
+.cbl-rmodal .mtag { font-family:${MONO}; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:${GOLD}; background:rgba(0,0,0,.7); padding:5px 10px; border-radius:4px; border:1px solid rgba(201,151,66,.4); }
+.cbl-rmodal .close { position:absolute; top:12px; right:12px; z-index:3; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.2); color:#fff; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
+.cbl-rmodal .close:hover { border-color:${GOLD}; color:${GOLD}; }
+.cbl-rmodal .mbody { padding:20px 24px 24px; color:#EDEDED; }
+.cbl-rmodal h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.05; letter-spacing:-.01em; text-transform:uppercase; color:#fff; margin:0 0 6px; }
+.cbl-rmodal .maddr { font-family:${MONO}; font-size:12px; letter-spacing:.05em; color:${GOLD}; margin-bottom:12px; }
+.cbl-rmodal .mmeta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; font-size:13px; color:#B8B8B8; }
+.cbl-rmodal .mmeta b { color:#fff; } .cbl-rmodal .mopen { color:#8CC084; font-weight:700; }
+.cbl-rmodal .mdesc { font-size:14.5px; line-height:1.6; color:#C7C7C7; margin-bottom:16px; }
+.cbl-rmodal .mmap { width:100%; height:230px; border:0; border-radius:12px 0 12px 0; margin-bottom:16px; display:block; background:#0A0A0A; }
+.cbl-rmodal .macts { display:flex; gap:10px; flex-wrap:wrap; }
+.cbl-rmodal .macts a { flex:1 1 140px; text-align:center; text-decoration:none; padding:12px 14px; border-radius:999px; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+.cbl-rmodal .macts .primary { background:${GOLD}; color:#000; } .cbl-rmodal .macts .primary:hover { background:#DDB15F; }
+.cbl-rmodal .macts .ghost { background:transparent; border:1.5px solid rgba(255,255,255,.2); color:#fff; } .cbl-rmodal .macts .ghost:hover { border-color:${GOLD}; color:${GOLD}; }
+`;
+
+function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!r) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [r, onClose]);
+  if (!r) return null;
+  return (
+    <div className="cbl-rmodal" role="dialog" aria-modal="true" aria-label={r.name}>
+      <style>{MODAL_CSS}</style>
+      <div className="backdrop" onClick={onClose} />
+      <div className="panel">
+        <div className="shot" style={{ backgroundImage: `url(${r.image})` }}>
+          <div className="mtags">
+            {r.cuisine.slice(0, 2).map((c) => (
+              <span key={c} className="mtag">
+                {c}
+              </span>
+            ))}
+          </div>
+          <button className="close" aria-label="Close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        <div className="mbody">
+          <h2>{r.name}</h2>
+          <div className="maddr">{r.address}</div>
+          <div className="mmeta">
+            <BucketGlyph value={Math.round(r.rating)} />
+            <b>{r.rating.toFixed(1)}</b>
+            <span>({r.reviews.toLocaleString()} reviews)</span>
+            <span>·</span>
+            <span>{r.price}</span>
+            {r.open && (
+              <>
+                <span>·</span>
+                <span className="mopen">Open Now</span>
+              </>
+            )}
+          </div>
+          {r.description && <p className="mdesc">{r.description}</p>}
+          <iframe className="mmap" src={mapEmbed(r)} loading="lazy" title={`Map of ${r.name}`} />
+          <div className="macts">
+            <a className="primary" href={gMaps(r)} target="_blank" rel="noreferrer">
+              Get Directions →
+            </a>
+            {(r.reservable || r.reserveUrl) && (
+              <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noreferrer">
+                Reserve
+              </a>
+            )}
+            {r.website ? (
+              <a className="ghost" href={r.website} target="_blank" rel="noreferrer">
+                Website
+              </a>
+            ) : (
+              <a className="ghost" href={gSearch(r)} target="_blank" rel="noreferrer">
+                More on Google
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function EatsAndDrinks() {
   // Shared filter state. Desktop uses 'ALL' default for both; mobile flow
   // starts with no cuisine (null) so the landing/meal step shows first.
@@ -2383,6 +2494,7 @@ export function EatsAndDrinks() {
   // overrides the auto-detected location; "Near me" clears it back to GPS/IP.
   const [searched, setSearched] = useState<{ city: string; coords: Coords } | null>(null);
   const [searching, setSearching] = useState(false);
+  const [modalR, setModalR] = useState<Restaurant | null>(null);
 
   const onSearchCity = async (q: string) => {
     setSearching(true);
@@ -2418,6 +2530,7 @@ export function EatsAndDrinks() {
     : activeCity.toLowerCase().includes('pittsburgh');
 
   return (
+    <EatsModalCtx.Provider value={setModalR}>
     <main className="cbl-eats">
       <style>{DESKTOP_CSS}</style>
       <style>{PARTNER_CSS}</style>
@@ -2447,6 +2560,8 @@ export function EatsAndDrinks() {
         coords={searchCoords}
       />
       <PartnerBand />
+      <RestaurantModal r={modalR} onClose={() => setModalR(null)} />
     </main>
+    </EatsModalCtx.Provider>
   );
 }
