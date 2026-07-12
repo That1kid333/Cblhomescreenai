@@ -4,7 +4,7 @@ TRANSPORTATION  ·  RIDERS & DRIVERS  ·  NATIONAL / PITTSBURGH  ·  ~7 MIN
 
 ### *The app says one price, the meter says another, and half the time they've swapped places since last week. Here's what a driver sees — and the option neither one puts on your screen.*
 
-**By Brian Uhler & Keith Schmiedlin · CBL Network** — *Pittsburgh CBL drivers*
+**By Brian Uhler & Keith Schmiedlin · CBL Network** — *Pittsburgh drivers on CBL*
 
 ---
 
@@ -58,7 +58,7 @@ It's not about chasing pings across town. It's a private, scheduled ride service
 
 ## This isn't just a Pittsburgh story
 
-The surge-vs-meter squeeze is playing out in every city — only the names change. Curb, Flywheel, zTrip, the local Yellow successor, whatever the town calls it. That's what makes this a piece we can run **city by city**, each one told by a real CBL driver in that market: same question, local answer. Pittsburgh's just first because Brian's driving it.
+The surge-vs-meter squeeze is playing out in every city — only the names change. Curb, Flywheel, zTrip, the local Yellow successor, whatever the town calls it. That's what makes this a piece we can run **city by city**, each one told by a real independent driver in that market: same question, local answer. Pittsburgh's just first because Brian's driving it.
 
 ---
 
