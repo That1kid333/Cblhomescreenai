@@ -1,7 +1,7 @@
 import riderImage from '../../assets/rider_meeting_driver_neutral.png';
 import driverImage from '../../assets/driver_at_wheel.jpg';
 import conciergeImage from '../../assets/concierge_professional.jpg';
-import { APP_URL } from '../lib/constants';
+import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 import { Link } from 'react-router';
 
 /**
@@ -236,6 +236,8 @@ const AUDIENCES: Audience[] = [
     ],
     primary: 'Learn About Membership',
     secondary: 'How to Find a Driver',
+    primaryTo: '/faq',
+    secondaryTo: '/transportation',
   },
   {
     num: '02',
@@ -267,6 +269,8 @@ const AUDIENCES: Audience[] = [
     ],
     primary: 'Start Driving',
     secondary: 'Driver FAQ',
+    primaryHref: DRIVER_SIGNUP_URL,
+    secondaryTo: '/faq',
   },
   {
     num: '03',
