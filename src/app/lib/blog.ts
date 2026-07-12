@@ -276,3 +276,52 @@ export async function deleteStudioPost(id: string): Promise<{ error: string | nu
   const { error } = await authClient.from('blog_posts').delete().eq('id', id);
   return { error: error?.message ?? null };
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Newsletter + community story submissions (the "boast about your city"
+   flywheel). Public can INSERT via the anon key (RLS `*_public_insert`); the
+   list/submissions are admin-only. Feeds CBL Studio + the weekly digest agent.
+   ═════════════════════════════════════════════════════════════════════════ */
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+/** Add an email to the weekly-dispatch list. Duplicate = already subscribed. */
+export async function subscribeEmail(email: string): Promise<{ error: string | null; already?: boolean }> {
+  const clean = email.trim().toLowerCase();
+  if (!EMAIL_RE.test(clean)) return { error: 'Please enter a valid email address.' };
+  const { error } = await ridesClient.from('newsletter_subscribers').insert({ email: clean, source: 'blog' });
+  if (error) {
+    if (error.code === '23505') return { error: null, already: true }; // unique(lower(email)) → already on the list
+    console.error('subscribeEmail', error.message);
+    return { error: 'Could not subscribe right now — please try again.' };
+  }
+  return { error: null };
+}
+
+export type StorySubmission = {
+  name: string;
+  email: string;
+  city: string;
+  category: string;
+  title: string;
+  body: string;
+};
+
+/** Submit a community story pitch — lands in `story_submissions` for CBL Studio. */
+export async function submitStory(input: StorySubmission): Promise<{ error: string | null }> {
+  if (!input.body.trim() && !input.title.trim()) return { error: 'Tell us a little about your story first.' };
+  if (input.email.trim() && !EMAIL_RE.test(input.email.trim())) return { error: 'That email doesn’t look right.' };
+  const { error } = await ridesClient.from('story_submissions').insert({
+    name: nn(input.name),
+    email: nn(input.email),
+    city: nn(input.city),
+    category: nn(input.category),
+    title: nn(input.title),
+    body: nn(input.body),
+  });
+  if (error) {
+    console.error('submitStory', error.message);
+    return { error: 'Could not send right now — please try again.' };
+  }
+  return { error: null };
+}

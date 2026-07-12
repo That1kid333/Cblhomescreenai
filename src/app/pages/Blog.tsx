@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { getPublishedPosts, getLikeCounts, type BlogCard } from '../lib/blog';
+import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission } from '../lib/blog';
 import keithPhoto from '../../assets/cbl-keith.png';
 
 /**
@@ -175,6 +175,30 @@ const BLOG_CSS = `
 .cbl-blog .news-form input:focus { border-color:#C99742; }
 .cbl-blog .news-form button { background:#C99742; color:#000; border:0; padding:14px 28px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.14em; text-transform:uppercase; }
 .cbl-blog .news-form button:hover { background:#DDB15F; }
+.cbl-blog .news-form .hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+.cbl-blog .news-done { font-family:${MONO}; font-size:14px; color:#4DBF66; letter-spacing:.02em; padding:14px 0; }
+.cbl-blog .news-msg { font-family:${MONO}; font-size:12px; color:#e08a8a; margin-top:8px; }
+
+/* Share your story band */
+.cbl-blog .share-band { background:radial-gradient(ellipse at top left, rgba(201,151,66,.10), transparent 55%), linear-gradient(180deg,#0A0A0A,#0d0d0d); border-top:1px solid rgba(255,255,255,.06); }
+.cbl-blog .share-grid { display:grid; grid-template-columns:1fr 1.05fr; gap:48px; align-items:start; }
+.cbl-blog .share-copy p { color:#B0B0B0; font-size:15px; line-height:1.6; max-width:46ch; margin-top:10px; }
+.cbl-blog .share-form { display:flex; flex-direction:column; gap:12px; background:#141414; border:1px solid rgba(201,151,66,.28); border-radius:24px 0 24px 0; padding:24px; position:relative; }
+.cbl-blog .share-form .sf-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.cbl-blog .share-form input, .cbl-blog .share-form select, .cbl-blog .share-form textarea { width:100%; background:#0A0A0A; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:12px 14px; color:#fff; font-family:${DISPLAY}; font-size:15px; outline:0; transition:border-color .15s; }
+.cbl-blog .share-form textarea { resize:vertical; line-height:1.5; }
+.cbl-blog .share-form input::placeholder, .cbl-blog .share-form textarea::placeholder { color:#666; }
+.cbl-blog .share-form input:focus, .cbl-blog .share-form select:focus, .cbl-blog .share-form textarea:focus { border-color:#C99742; }
+.cbl-blog .share-form select option { background:#141414; }
+.cbl-blog .share-form .hp { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+.cbl-blog .share-form button { margin-top:2px; background:#C99742; color:#000; border:0; border-radius:999px; padding:14px; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.12em; text-transform:uppercase; }
+.cbl-blog .share-form button:hover { background:#DDB15F; }
+.cbl-blog .share-form button:disabled { opacity:.6; cursor:default; }
+.cbl-blog .share-msg { font-family:${MONO}; font-size:12px; color:#e08a8a; }
+.cbl-blog .share-done { background:#141414; border:1px solid rgba(77,191,102,.35); border-radius:24px 0 24px 0; padding:36px 28px; text-align:center; }
+.cbl-blog .share-done .sd-check { width:52px; height:52px; margin:0 auto 14px; border-radius:50%; background:rgba(77,191,102,.12); border:1px solid rgba(77,191,102,.5); color:#4DBF66; font-size:24px; display:flex; align-items:center; justify-content:center; }
+.cbl-blog .share-done h3 { font-family:${DISPLAY}; font-weight:900; font-size:22px; color:#fff; text-transform:uppercase; margin-bottom:8px; }
+.cbl-blog .share-done p { color:#B0B0B0; font-size:14px; line-height:1.5; }
 
 .cbl-blog .state { text-align:center; padding:70px 24px; color:#888; font-family:${MONO}; letter-spacing:.06em; }
 
@@ -187,6 +211,7 @@ const BLOG_CSS = `
   .cbl-blog .spotlight { grid-template-columns:1fr; }
   .cbl-blog .spotlight .shot { aspect-ratio:16/9; min-height:0; }
   .cbl-blog .news-grid { grid-template-columns:1fr; gap:24px; }
+  .cbl-blog .share-grid { grid-template-columns:1fr; gap:24px; }
 }
 @media (max-width:720px) {
   .cbl-blog h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
@@ -207,6 +232,7 @@ const BLOG_CSS = `
   .cbl-blog .cat-row { order:1; width:100%; }
   .cbl-blog .search { order:2; width:100%; padding:8px 0 10px; }
   .cbl-blog .search input, .cbl-blog .search input:focus { width:100%; }
+  .cbl-blog .share-form .sf-row { grid-template-columns:1fr; }
 }
 `;
 
@@ -491,6 +517,27 @@ function PostCard({ p }: { p: Card }) {
 }
 
 function Newsletter() {
+  const [email, setEmail] = useState('');
+  const [hp, setHp] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [msg, setMsg] = useState('');
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (hp) return; // honeypot — drop bots silently
+    setState('sending');
+    setMsg('');
+    const { error, already } = await subscribeEmail(email);
+    if (error) {
+      setState('idle');
+      setMsg(error);
+      return;
+    }
+    setState('done');
+    setMsg(already ? "You're already on the list — thanks!" : "You're in. Watch your inbox for the next dispatch.");
+    setEmail('');
+  }
+
   return (
     <section className="band tight news-band">
       <div className="band-inner">
@@ -505,10 +552,96 @@ function Newsletter() {
               no algorithm tricks — written by real people who actually know your city, wherever that is.
             </p>
           </div>
-          <form className="news-form" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="you@yourcity.com" />
-            <button type="submit">Subscribe →</button>
-          </form>
+          <div>
+            {state === 'done' ? (
+              <div className="news-done">✓ {msg}</div>
+            ) : (
+              <form className="news-form" onSubmit={submit}>
+                <input
+                  type="email"
+                  placeholder="you@yourcity.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  aria-label="Your email"
+                />
+                <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={(e) => setHp(e.target.value)} />
+                <button type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Joining…' : 'Subscribe →'}</button>
+              </form>
+            )}
+            {msg && state !== 'done' && <div className="news-msg">{msg}</div>}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ShareStory() {
+  const [f, setF] = useState<StorySubmission>({ name: '', email: '', city: '', category: '', title: '', body: '' });
+  const [hp, setHp] = useState('');
+  const [state, setState] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [msg, setMsg] = useState('');
+  const set = (k: keyof StorySubmission, v: string) => setF((s) => ({ ...s, [k]: v }));
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (hp) return; // honeypot
+    setState('sending');
+    setMsg('');
+    const { error } = await submitStory(f);
+    if (error) {
+      setState('idle');
+      setMsg(error);
+      return;
+    }
+    setState('done');
+  }
+
+  return (
+    <section className="band share-band">
+      <div className="band-inner">
+        <div className="share-grid">
+          <div className="share-copy">
+            <div className="section-eyebrow">your city · your call</div>
+            <h2 className="section-h2">
+              Boast about <span className="it">your city</span>
+            </h2>
+            <p>
+              The best restaurant nobody's writing about. A rideshare driver worth knowing. The hidden gem only
+              locals find. Got a story? We'll help you tell it — with your name on it.
+            </p>
+          </div>
+          {state === 'done' ? (
+            <div className="share-done">
+              <div className="sd-check">✓</div>
+              <h3>Got it — thank you!</h3>
+              <p>Our team reads every one. If we run your story, we'll reach out.</p>
+            </div>
+          ) : (
+            <form className="share-form" onSubmit={submit}>
+              <div className="sf-row">
+                <input placeholder="Your name" value={f.name} onChange={(e) => set('name', e.target.value)} aria-label="Your name" />
+                <input placeholder="Your city" value={f.city} onChange={(e) => set('city', e.target.value)} aria-label="Your city" />
+              </div>
+              <div className="sf-row">
+                <select value={f.category} onChange={(e) => set('category', e.target.value)} aria-label="What's it about?">
+                  <option value="">What's it about?</option>
+                  <option value="eats">Eats &amp; Drinks</option>
+                  <option value="transportation">Transportation</option>
+                  <option value="attractions">Attractions</option>
+                  <option value="travels">Travels</option>
+                  <option value="other">Something else</option>
+                </select>
+                <input type="email" placeholder="Email (so we can reach you)" value={f.email} onChange={(e) => set('email', e.target.value)} aria-label="Your email" />
+              </div>
+              <input placeholder="Give it a headline" value={f.title} onChange={(e) => set('title', e.target.value)} aria-label="Headline" />
+              <textarea rows={4} placeholder="Tell us the story — what makes it worth the list?" value={f.body} onChange={(e) => set('body', e.target.value)} aria-label="Your story" />
+              <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={(e) => setHp(e.target.value)} />
+              {msg && <div className="share-msg">{msg}</div>}
+              <button type="submit" disabled={state === 'sending'}>{state === 'sending' ? 'Sending…' : 'Share your story →'}</button>
+            </form>
+          )}
         </div>
       </div>
     </section>
@@ -595,6 +728,7 @@ export function Blog() {
         </div>
       </section>
 
+      <ShareStory />
       <Newsletter />
     </main>
   );
