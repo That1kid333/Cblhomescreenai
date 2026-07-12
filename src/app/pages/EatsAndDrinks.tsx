@@ -164,6 +164,7 @@ type Restaurant = {
   /** Optional real links for a sponsored/curated partner's action buttons. */
   website?: string;
   phone?: string;
+  reservable?: boolean; // true → show "Reserve a Table"; false/undefined (e.g. walk-in) → "Get Directions"
   reserveUrl?: string; // direct OpenTable/Resy page; else we search OpenTable by name+location
 };
 
@@ -1293,9 +1294,15 @@ function Spotlight({ r }: { r: Restaurant }) {
             <span className="addr">{r.address}</span>
           </div>
           <div className="actions">
-            <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(reserveUrlFor(r))}>
-              Reserve a Table
-            </button>
+            {r.reservable || r.reserveUrl ? (
+              <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(reserveUrlFor(r))}>
+                Reserve a Table
+              </button>
+            ) : (
+              <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(gMaps(r))}>
+                Get Directions
+              </button>
+            )}
             <button className="cta ghost" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(menuUrlFor(r))}>
               View Menu
             </button>
