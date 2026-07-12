@@ -696,6 +696,16 @@ function Hero() {
 }
 
 function SearchBar() {
+  const [dest, setDest] = useState('Pittsburgh, PA');
+  const [guests, setGuests] = useState('2 adults');
+  const search = () => {
+    const n = parseInt(guests, 10);
+    window.open(
+      kayakHotelSearch({ destination: dest, guests: Number.isFinite(n) ? n : undefined }),
+      '_blank',
+      'noopener,noreferrer',
+    );
+  };
   return (
     <>
       <div className="search-band">
@@ -706,7 +716,12 @@ function SearchBar() {
               <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
                 <path d="M7 1c3 0 5 2 5 5 0 4-5 9-5 9S2 10 2 6c0-3 2-5 5-5z" stroke="#C99742" strokeWidth="1.6" />
               </svg>
-              <input defaultValue="Pittsburgh, PA" />
+              <input
+                value={dest}
+                onChange={(e) => setDest(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && search()}
+                placeholder="Where to?"
+              />
             </div>
           </div>
           <div className="search-field">
@@ -719,9 +734,11 @@ function SearchBar() {
           </div>
           <div className="search-field">
             <div className="lbl">Guests</div>
-            <div className="ctl"><input defaultValue="2 adults" /></div>
+            <div className="ctl">
+              <input value={guests} onChange={(e) => setGuests(e.target.value)} />
+            </div>
           </div>
-          <button className="search-btn" disabled title="Travel booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Search →</button>
+          <button className="search-btn" onClick={search}>Search →</button>
         </div>
       </div>
       <div className="providers">
@@ -790,8 +807,8 @@ function StayCard({ s }: { s: Stay }) {
           </div>
         </div>
         <div className="cta-row">
-          <button className="cta" disabled title="Booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Now</button>
-          <button className="cta ghost" disabled title="Coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Details</button>
+          <button className="cta" onClick={() => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer')}>Book Now</button>
+          <button className="cta ghost" onClick={() => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer')}>Details</button>
         </div>
       </div>
     </article>
