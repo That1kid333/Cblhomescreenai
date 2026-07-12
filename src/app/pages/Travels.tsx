@@ -3,6 +3,12 @@ import { Link } from 'react-router';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
 
+// Travel booking (search + Book Now) is gated OFF until a booking-partner contract
+// is live (KAYAK still in case-by-case review; Travelpayouts' Booking.com/Expedia
+// tier pending a project re-review). The KAYAK links in lib/kayak.ts are wired and
+// ready behind this ONE flag — flip to true (and swap KAYAK_AFFILIATE_ID) to go live.
+const BOOKING_LIVE: boolean = false;
+
 /**
  * Travels — ported from the CBL "New Website" handoff bundle
  * (`Travels Desktop.html`).
@@ -672,7 +678,7 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-inner">
-        <div className="eyebrow">cbl curated · powered by kayak</div>
+        <div className="eyebrow">cbl curated · booking launching soon</div>
         <h1 className="hero-title">
           <span className="title-stack">
             <span className="h1-main">Travels</span>
@@ -687,8 +693,8 @@ function Hero() {
         </h1>
         <p className="lede">
           Hotels, B&amp;Bs, short-term rentals, weekend day trips, and full
-          multi-day itineraries — searched live through KAYAK, curated by CBL.
-          Buckee plans the rest.
+          multi-day itineraries — curated by CBL, with full hotel &amp; flight
+          booking launching soon. Buckee plans the rest.
         </p>
       </div>
     </section>
@@ -738,13 +744,22 @@ function SearchBar() {
               <input value={guests} onChange={(e) => setGuests(e.target.value)} />
             </div>
           </div>
-          <button className="search-btn" onClick={search}>Search →</button>
+          <button
+            className="search-btn"
+            onClick={BOOKING_LIVE ? search : undefined}
+            disabled={!BOOKING_LIVE}
+            title={BOOKING_LIVE ? undefined : 'Hotel & flight booking launching soon'}
+            style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
+          >
+            Search →
+          </button>
         </div>
       </div>
       <div className="providers">
-        <span className="pl">powered by →</span>
-        <span className="prov-chip cbl">CBL Curated</span>
-        <span className="prov-chip">KAYAK</span>
+        <span className="prov-chip cbl">Launching Soon</span>
+        <span className="pl">
+          Full hotel &amp; flight booking is being finalized — curated by CBL, with Buckee planning the rest.
+        </span>
       </div>
     </>
   );
@@ -789,7 +804,7 @@ function StayCard({ s }: { s: Stay }) {
     <article className="stay-card">
       <div className="img" style={{ backgroundImage: `url(${s.img})` }}>
         <span className="tag">{s.tag}</span>
-        <span className="src">via KAYAK</span>
+        <span className="src">CBL Pick</span>
       </div>
       <div className="body">
         <h3>{s.name}</h3>
@@ -807,8 +822,24 @@ function StayCard({ s }: { s: Stay }) {
           </div>
         </div>
         <div className="cta-row">
-          <button className="cta" onClick={() => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer')}>Book Now</button>
-          <button className="cta ghost" onClick={() => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer')}>Details</button>
+          <button
+            className="cta"
+            onClick={BOOKING_LIVE ? () => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer') : undefined}
+            disabled={!BOOKING_LIVE}
+            title={BOOKING_LIVE ? undefined : 'Booking launching soon'}
+            style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
+          >
+            {BOOKING_LIVE ? 'Book Now' : 'Coming Soon'}
+          </button>
+          <button
+            className="cta ghost"
+            onClick={BOOKING_LIVE ? () => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer') : undefined}
+            disabled={!BOOKING_LIVE}
+            title={BOOKING_LIVE ? undefined : 'Coming soon'}
+            style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
+          >
+            Details
+          </button>
         </div>
       </div>
     </article>
@@ -859,7 +890,7 @@ function FlightRow({ f }: { f: Flight }) {
       <span className="f-tag">{f.tag}</span>
       <div className="price-block">
         <div className="price">{f.price}</div>
-        <div className="src">via KAYAK</div>
+        <div className="src">CBL Pick</div>
       </div>
       <div className="actions">
         <button disabled title="Flight booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Flight</button>
