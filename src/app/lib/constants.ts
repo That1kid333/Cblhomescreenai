@@ -8,6 +8,13 @@ export const APP_URL = 'https://app.citybucketlist.com';
 // users to /driver/login, not signup — so acquisition CTAs point straight at signup.)
 export const DRIVER_SIGNUP_URL = `${APP_URL}/driver/signup`;
 
+// Rider booking entry in the app (Justin's `/rider/login` route). Unlike the driver
+// side, this one URL does it all: it auto-redirects an already-logged-in rider
+// straight to /rider/dashboard, shows the login form for returning riders, and has a
+// "Don't have an account? Sign up" link for new ones — i.e. "dashboard if logged-in,
+// sign-in/up if logged-out." Use for "Book a Ride" CTAs.
+export const RIDER_BOOK_URL = `${APP_URL}/rider/login`;
+
 // Justin's standalone classifieds/business directory app — posting, featured
 // upgrades, and sign-in already work there; the marketing site only renders
 // a read-only preview of the same data (see lib/supabase/directoryClient.ts).

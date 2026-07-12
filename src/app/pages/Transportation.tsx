@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { JoinModal } from '../components/JoinModal';
-import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
+import { RIDER_BOOK_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 
 /**
  * Transportation — ported from the CBL "New Website" handoff bundle
@@ -677,7 +677,7 @@ function Hero() {
           </p>
           <div style={{ display: 'flex', gap: 14, marginTop: 28, flexWrap: 'wrap' }}>
             <button
-              onClick={() => window.open(APP_URL, '_blank', 'noopener,noreferrer')}
+              onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}
               style={{
                 background: '#C99742',
                 color: '#000',
@@ -839,7 +839,7 @@ function ProviderCard({
           className="pick-btn"
           onClick={(e) => {
             e.stopPropagation();
-            window.open(APP_URL, '_blank', 'noopener,noreferrer');
+            window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer');
           }}
         >
           Book This Ride <CarIconInline size={14} color="#000" />
