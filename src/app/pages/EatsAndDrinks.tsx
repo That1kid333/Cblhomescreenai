@@ -1231,17 +1231,8 @@ const placeIdOf = (r: Restaurant) => {
   const id = r.id.replace(/^g-/, '');
   return /^ChI/.test(id) ? id : null;
 };
-const gMaps = (r: Restaurant) => {
-  const q = encodeURIComponent(`${r.name}, ${r.address}`);
-  const id = placeIdOf(r);
-  const pid = id ? `&query_place_id=${encodeURIComponent(id)}` : '';
-  return `https://www.google.com/maps/search/?api=1&query=${q}${pid}`;
-};
 const reserveUrlFor = (r: Restaurant) =>
   r.reserveUrl || `https://www.opentable.com/s?term=${encodeURIComponent(r.name)}&latitude=${r.coord[0]}&longitude=${r.coord[1]}`;
-const menuUrlFor = (r: Restaurant) =>
-  r.website || `https://www.google.com/search?q=${encodeURIComponent(`${r.name} ${r.address} menu`)}`;
-const openExt = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
 // Keyless interactive Google map embed (no API key needed / exposed).
 const mapEmbed = (r: Restaurant) => `https://maps.google.com/maps?q=${encodeURIComponent(`${r.name}, ${r.address}`)}&z=15&output=embed`;
 // Lets any card open the on-site detail panel instead of leaving for Google.
@@ -1285,6 +1276,7 @@ function RestaurantCard({ r }: { r: Restaurant }) {
 }
 
 function Spotlight({ r }: { r: Restaurant }) {
+  const openModal = useContext(EatsModalCtx);
   return (
     <div className="card sponsored-card" style={{ padding: 0, overflow: 'hidden' }}>
       <div className="spotlight" style={{ border: 0, borderRadius: 0 }}>
@@ -1304,17 +1296,8 @@ function Spotlight({ r }: { r: Restaurant }) {
             <span className="addr">{r.address}</span>
           </div>
           <div className="actions">
-            {r.reservable || r.reserveUrl ? (
-              <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(reserveUrlFor(r))}>
-                Reserve a Table
-              </button>
-            ) : (
-              <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(gMaps(r))}>
-                Get Directions
-              </button>
-            )}
-            <button className="cta ghost" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(menuUrlFor(r))}>
-              View Menu
+            <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openModal(r)}>
+              More Info
             </button>
           </div>
         </div>
@@ -2379,8 +2362,9 @@ const MODAL_CSS = `
 .cbl-rmodal .shot::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,20,20,0) 45%,rgba(20,20,20,.92)); }
 .cbl-rmodal .mtags { position:absolute; top:14px; left:14px; display:flex; gap:6px; z-index:2; }
 .cbl-rmodal .mtag { font-family:${MONO}; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:${GOLD}; background:rgba(0,0,0,.7); padding:5px 10px; border-radius:4px; border:1px solid rgba(201,151,66,.4); }
-.cbl-rmodal .close { position:absolute; top:12px; right:12px; z-index:3; width:34px; height:34px; border-radius:50%; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.2); color:#fff; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center; }
-.cbl-rmodal .close:hover { border-color:${GOLD}; color:${GOLD}; }
+.cbl-rmodal .close { position:absolute; top:12px; right:12px; z-index:3; width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,.82); border:1.5px solid ${GOLD}; color:${GOLD}; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.5); transition:transform .15s ease, background .15s ease, color .15s ease; }
+.cbl-rmodal .close:hover { background:${GOLD}; color:#000; transform:scale(1.08); }
+.cbl-rmodal .close:focus-visible { outline:2px solid ${GOLD}; outline-offset:2px; }
 .cbl-rmodal .mbody { padding:20px 24px 24px; color:#EDEDED; }
 .cbl-rmodal h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.05; letter-spacing:-.01em; text-transform:uppercase; color:#fff; margin:0 0 6px; }
 .cbl-rmodal .maddr { font-family:${MONO}; font-size:12px; letter-spacing:.05em; color:${GOLD}; margin-bottom:12px; }
@@ -2509,26 +2493,25 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
               </div>
             </div>
           )}
-          <div className="macts">
-            <a className="primary" href={gMaps(r)} target="_blank" rel="noreferrer">
-              Get Directions →
-            </a>
-            {website && (
-              <a className="ghost" href={website} target="_blank" rel="noreferrer">
-                Website
-              </a>
-            )}
-            {reservable && (
-              <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noreferrer">
-                Reserve
-              </a>
-            )}
-            {phone && (
-              <a className="ghost" href={`tel:${phone.replace(/[^+\d]/g, '')}`}>
-                Call
-              </a>
-            )}
-          </div>
+          {(website || reservable || phone) && (
+            <div className="macts">
+              {website && (
+                <a className="primary" href={website} target="_blank" rel="noreferrer">
+                  Visit Website →
+                </a>
+              )}
+              {reservable && (
+                <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noreferrer">
+                  Reserve
+                </a>
+              )}
+              {phone && (
+                <a className="ghost" href={`tel:${phone.replace(/[^+\d]/g, '')}`}>
+                  Call
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
