@@ -36,7 +36,7 @@ type Card = {
 };
 
 const BLOG_CSS = `
-.cbl-blog { background:#0A0A0A; color:#fff; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; min-height:100vh; }
+.cbl-blog { background:#0A0A0A; color:#fff; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; min-height:100vh; overflow-x:clip; }
 .cbl-blog *,.cbl-blog *::before,.cbl-blog *::after { box-sizing:border-box; margin:0; padding:0; }
 .cbl-blog a { color:inherit; text-decoration:none; }
 .cbl-blog button { font-family:inherit; cursor:pointer; }
