@@ -1,8 +1,8 @@
 import buckeeConcierge from '../../assets/buckee.png';
 import driverImg from '../../assets/driver_at_wheel.jpg';
 import riderImg from '../../assets/rider_meeting_driver_neutral.png';
+import { Link } from 'react-router';
 import { Globe, QrCode, Share2, TrendingUp } from 'lucide-react';
-import { APP_URL } from '../lib/constants';
 
 /**
  * Our Story — re-skinned to match the Explore pages (Travels / Transportation /
@@ -154,7 +154,7 @@ const STORY_CSS = `
   background:#C99742; color:#000; border:0;
   padding:14px 32px; border-radius:999px;
   font-family:${DISPLAY}; font-weight:900;
-  font-size:14px; letter-spacing:.14em; text-transform:uppercase;
+  font-size:14px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer;
 }
 .cbl-story .cta-band .cta:hover { background:#DDB15F; }
 
@@ -361,9 +361,9 @@ export function OurStory() {
             Ready to start <span className="it">your journey?</span>
           </h2>
           <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
-          <a className="cta" href={APP_URL}>
+          <Link className="cta" to="/login">
             Join City Bucket List →
-          </a>
+          </Link>
         </div>
       </section>
     </main>
