@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
@@ -318,7 +319,7 @@ export function MeetBuckee() {
             {chat.gated ? (
               <div className="bkgate">
                 <div>{BUCKEE_GATE_LINE[lang]}</div>
-                <a className="btn-gold" href={APP_URL}>Join now — free</a>
+                <Link className="btn-gold" to="/login">Join now — free</Link>
               </div>
             ) : (
               <form className="bkinput" onSubmit={(e) => { e.preventDefault(); chat.send(chat.input); }}>

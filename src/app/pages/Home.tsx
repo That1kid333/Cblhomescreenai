@@ -866,7 +866,7 @@ export function Home() {
               {gated ? (
                 <div className="buckee-gate">
                   <div className="buckee-gate-text">{GATE_LINE[talkLang]}</div>
-                  <a className="btn-primary" href={APP_URL}>Join now — free</a>
+                  <Link className="btn-primary" to="/login">Join now — free</Link>
                 </div>
               ) : (
                 <form className="buckee-input" onSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); }}>
@@ -1021,9 +1021,9 @@ export function Home() {
             What's on <span className="it">your bucket list?</span>
           </h2>
           <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
-          <a className="btn-primary" href={APP_URL}>
+          <Link className="btn-primary" to="/login">
             Join City Bucket List
-          </a>
+          </Link>
         </div>
       </section>
 

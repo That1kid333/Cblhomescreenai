@@ -365,7 +365,7 @@ export function HowItWorks() {
             met. Need a quick one-off? Use whatever rideshare you like. We're not here to replace
             on-demand apps. We're here to give drivers a network of their own.
           </p>
-          <a className="hero-cta" href={APP_URL}>Join CBL — Free for Riders →</a>
+          <Link className="hero-cta" to="/login">Join CBL — Free for Riders →</Link>
         </div>
       </section>
 
