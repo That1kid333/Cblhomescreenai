@@ -184,9 +184,9 @@ const TRIPS: Trip[] = [
 type Deal = { disc: string; partner: string; title: string; body: string };
 
 const DEALS: Deal[] = [
-  { disc: '15%', partner: 'Booking.com', title: 'CBL Member Rate — Hotels', body: 'Save 15% on flexible hotel bookings worldwide. Stacks with loyalty points.' },
-  { disc: '$50', partner: 'Kayak', title: '$50 off Flight + Hotel bundles', body: 'Bundle round-trip flight + 3+ nights and save $50 instantly. Members only.' },
-  { disc: '2x', partner: 'CBL Concierge', title: '2× points on weekday stays', body: 'Earn double CBL points on any Mon–Thu lodging booking through the platform.' },
+  { disc: '100+', partner: 'KAYAK', title: 'Every site, one search', body: 'KAYAK compares hundreds of travel sites at once to surface the lowest fare and room rate — no promo code needed, every search.' },
+  { disc: 'AI', partner: 'Buckee', title: 'Buckee plans it for you', body: 'Tell Buckee your dates and budget; he builds the itinerary and schedules the CBL rides between every stop. Free with membership.' },
+  { disc: 'QR', partner: 'CBL Members', title: 'Share your card, earn rewards', body: 'Every member gets a digital business card — refer friends, drivers and local spots, and earn rewards when they join under your code.' },
 ];
 
 // ── Scoped CSS (from Travels Desktop.html, namespaced under .cbl-travels) ────
@@ -671,7 +671,7 @@ function Hero() {
   return (
     <section className="hero">
       <div className="hero-inner">
-        <div className="eyebrow">100% coverage · cbl curated + affiliate</div>
+        <div className="eyebrow">cbl curated · powered by kayak</div>
         <h1 className="hero-title">
           <span className="title-stack">
             <span className="h1-main">Travels</span>
@@ -686,8 +686,8 @@ function Hero() {
         </h1>
         <p className="lede">
           Hotels, B&amp;Bs, short-term rentals, weekend day trips, and full
-          multi-day itineraries — booked through CBL or our affiliate partners
-          (Booking.com, Kayak). Members get the best rates and Buckee plans the rest.
+          multi-day itineraries — searched live through KAYAK, curated by CBL.
+          Buckee plans the rest.
         </p>
       </div>
     </section>
@@ -724,12 +724,9 @@ function SearchBar() {
         </div>
       </div>
       <div className="providers">
-        <span className="pl">searches across →</span>
+        <span className="pl">powered by →</span>
         <span className="prov-chip cbl">CBL Curated</span>
-        <span className="prov-chip">Booking.com</span>
-        <span className="prov-chip">Kayak</span>
-        <span className="prov-chip">Airbnb</span>
-        <span className="prov-chip">VRBO</span>
+        <span className="prov-chip">KAYAK</span>
       </div>
     </>
   );
@@ -774,7 +771,7 @@ function StayCard({ s }: { s: Stay }) {
     <article className="stay-card">
       <div className="img" style={{ backgroundImage: `url(${s.img})` }}>
         <span className="tag">{s.tag}</span>
-        <span className="src">via {s.src}</span>
+        <span className="src">via KAYAK</span>
       </div>
       <div className="body">
         <h3>{s.name}</h3>
@@ -844,7 +841,7 @@ function FlightRow({ f }: { f: Flight }) {
       <span className="f-tag">{f.tag}</span>
       <div className="price-block">
         <div className="price">{f.price}</div>
-        <div className="src">via {f.src}</div>
+        <div className="src">via KAYAK</div>
       </div>
       <div className="actions">
         <button disabled title="Flight booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Flight</button>
