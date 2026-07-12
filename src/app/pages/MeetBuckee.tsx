@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
-import { APP_URL } from '../lib/constants';
 import { useBuckeeChat, BUCKEE_GREETING, BUCKEE_GATE_LINE } from '../lib/useBuckeeChat';
 
 /**
@@ -205,12 +204,12 @@ export function MeetBuckee() {
             room, or build a bucket list for your next city. Just ask.
           </p>
           <div className="hero-cta">
-            <a className="btn-gold" href={APP_URL} target="_blank" rel="noopener noreferrer">
-              Open the app
-            </a>
-            <button className="btn-ghost" onClick={scrollToChat}>
+            <button className="btn-gold" onClick={scrollToChat}>
               Say hi to Buckee ↓
             </button>
+            <Link className="btn-ghost" to="/login">
+              Join free →
+            </Link>
           </div>
         </div>
       </section>
@@ -419,12 +418,13 @@ const CSS = `
 .cbl-buckee .btn-gold {
   display:inline-block; background:var(--gold); color:#111; font-weight:800; font-size:15px;
   padding:13px 26px; border-radius:var(--corner-sm); transition:background .2s;
+  border:0; cursor:pointer; font-family:inherit; text-decoration:none;
 }
 .cbl-buckee .btn-gold:hover { background:#DDB15F; }
 .cbl-buckee .btn-ghost {
   display:inline-block; border:1px solid rgba(255,255,255,.25); color:#fff; font-weight:700; font-size:15px;
   padding:12px 24px; border-radius:var(--corner-sm); transition:border-color .2s,color .2s;
-  background:transparent; cursor:pointer; font-family:inherit;
+  background:transparent; cursor:pointer; font-family:inherit; text-decoration:none;
 }
 .cbl-buckee .btn-ghost:hover { border-color:var(--gold); color:var(--gold); }
 
