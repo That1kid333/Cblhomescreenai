@@ -382,8 +382,8 @@ function Hero() {
           <BlogIconHero />
         </h1>
         <p className="lede">
-          City experiences from the people who actually know the place — the drivers and riders who
-          live here. New posts weekly.
+          City experiences told by the people who actually know the place — the drivers and riders who
+          live there. The spots worth your bucket list, one city at a time. New posts weekly.
         </p>
       </div>
     </section>
@@ -502,7 +502,7 @@ function Newsletter() {
             </h2>
             <p style={{ color: '#B0B0B0', fontSize: 15, lineHeight: 1.55, maxWidth: '52ch', marginBottom: 20 }}>
               Top picks for the week, member-only deals, and the occasional dispatch from Buckee. No spam,
-              no algorithm tricks — written by humans in Pittsburgh.
+              no algorithm tricks — written by real people who actually know your city, wherever that is.
             </p>
           </div>
           <form className="news-form" onSubmit={(e) => e.preventDefault()}>
