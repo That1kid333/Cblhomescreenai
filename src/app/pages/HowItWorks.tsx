@@ -229,7 +229,7 @@ const AUDIENCES: Audience[] = [
       </p>
     ),
     steps: [
-      'Meet a CBL driver in person — in their car',
+      'Meet your independent driver in person — in their car',
       'Scan their QR code to sign up as a PMA member',
       'Schedule rides with your driver, on your time',
       'Use any on-demand rideshare for one-off trips',
@@ -260,7 +260,7 @@ const AUDIENCES: Audience[] = [
     steps: [
       'Apply to drive with CBL',
       'Pass background & vehicle checks',
-      'Get your CBL driver kit + personal QR code',
+      'Get your driver kit + personal QR code',
       'Invite riders to sign up — right from your car',
       'Schedule private rides with your members',
       'Keep your full fare — no CBL commission',
@@ -279,18 +279,18 @@ const AUDIENCES: Audience[] = [
       </>
     ),
     lede:
-      'Concierge Partners are the local backbone — hotels, senior communities, venues, small businesses — that connect riders to CBL drivers who fit their needs. When your referrals sign up, drivers earn, riders get a trusted ride, and you share in every trip that follows.',
+      'Concierge Partners are the local backbone — hotels, senior communities, venues, small businesses — that connect riders to independent drivers who fit their needs. When your referrals sign up, drivers earn, riders get a trusted ride, and you share in every trip that follows.',
     callout: (
       <p>
         <b>Your role →</b> You're the bridge. You know who in your community needs reliable,
-        scheduled rides — and you introduce them to a CBL driver who can serve them for the long
+        scheduled rides — and you introduce them to an independent driver who can serve them for the long
         haul.
       </p>
     ),
     steps: [
       'Apply as a concierge partner',
       'Complete short onboarding',
-      'Match your customers with a CBL driver',
+      'Match your customers with an independent driver',
       'Drivers onboard them via QR code sign-up',
       'Earn a share on every ride from your referrals',
     ],

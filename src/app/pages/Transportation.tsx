@@ -175,7 +175,7 @@ const PARTNERS = [
 const FAQS = [
   {
     q: 'Is CityBucketList a rideshare company?',
-    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors — and aggregates third-party providers (Uber, Lyft, Waymo, etc.) for instant coverage when a CBL driver is unavailable.',
+    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors — and aggregates third-party providers (Uber, Lyft, Waymo, etc.) for instant coverage when an independent driver is unavailable.',
   },
   {
     q: 'Why offer Uber, Lyft and autonomous options?',
@@ -1059,7 +1059,7 @@ function AffiliateBand() {
               <div>
                 <h4>CBL Private comes first</h4>
                 <p>
-                  Every ride request searches local Independent Drivers first. If a CBL driver
+                  Every ride request searches local Independent Drivers first. If an independent driver
                   accepts, the rider gets transparent pricing and the driver keeps 100% of the fare.
                 </p>
               </div>
@@ -1069,7 +1069,7 @@ function AffiliateBand() {
               <div>
                 <h4>Partner fallback for 100% coverage</h4>
                 <p>
-                  If no CBL driver is available — or the rider prefers Uber, Lyft or autonomous —
+                  If no independent driver is available — or the rider prefers Uber, Lyft or autonomous —
                   the booking routes through our affiliate links. The partner pays CBL a small
                   per-ride commission.
                 </p>

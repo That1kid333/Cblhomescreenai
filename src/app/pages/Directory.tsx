@@ -966,7 +966,7 @@ export function Directory() {
             <SectionHead section="RIDERS" />
             <ComingSoonSection
               title="Rider Requests — Coming Soon"
-              blurb="Posting a ride request (events, recurring schedules, airport runs) for CBL Drivers to respond to is launching on the directory app soon."
+              blurb="Posting a ride request (events, recurring schedules, airport runs) for independent drivers to respond to is launching on the directory app soon."
             />
           </div>
         </section>

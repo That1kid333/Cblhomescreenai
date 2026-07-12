@@ -202,7 +202,7 @@ export function OurStory() {
             <div className="split-media">
               <img
                 src={driverImg}
-                alt="CBL driver"
+                alt="An independent driver on CityBucketList"
               />
             </div>
             <div className="split-body">
@@ -224,7 +224,7 @@ export function OurStory() {
             <div className="split-media">
               <img
                 src={riderImg}
-                alt="Rider meeting their CBL driver"
+                alt="A rider meeting their independent driver"
               />
             </div>
             <div className="split-body">
