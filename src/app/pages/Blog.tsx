@@ -588,11 +588,12 @@ function Newsletter() {
 // driver via QR), and route them to the action on success.
 const REF_NUDGE: Record<string, string> = {
   eats: 'Love this spot? Put them on CBL and earn 20% when they join under your code.',
-  transportation: 'Is this your CBL driver? Ask them to add you with their QR so you can book them privately.',
+  transportation:
+    "Got a driver you'd ride with anytime? They can join the CBL Private Membership and become your own scheduled driver — booked directly, on your terms.",
 };
 const REF_CHECK: Record<string, string> = {
   eats: "I'd like to get this spot on CBL (and earn my referral).",
-  transportation: "I'd like to make them my private driver.",
+  transportation: "I'd like to set my driver up on CBL's Private Membership.",
 };
 
 function ShareStory() {
@@ -647,7 +648,7 @@ function ShareStory() {
               )}
               {f.category === 'transportation' && (
                 <a className="sd-cta" href="/transportation">
-                  Make them your private driver →
+                  Set up your own driver →
                 </a>
               )}
             </div>
