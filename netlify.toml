@@ -5,6 +5,22 @@
 [functions]
   node_bundler = "esbuild"
 
+# Prerender the blog for crawlers/AI engines: inject real HTML + SEO metadata
+# into the SPA shell for /blog and /blog/:slug. Static assets under /blog/*/*
+# (images) have multiple path segments, so they don't match /blog/:slug.
+[[edge_functions]]
+  path = "/blog"
+  function = "prerender"
+
+[[edge_functions]]
+  path = "/blog/:slug"
+  function = "prerender"
+
+# Dynamic sitemap listing static pages + all published blog posts.
+[[edge_functions]]
+  path = "/sitemap.xml"
+  function = "sitemap"
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
