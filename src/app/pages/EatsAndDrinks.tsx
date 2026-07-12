@@ -161,6 +161,10 @@ type Restaurant = {
   shortAddress?: string;
   image: string;
   coord: [number, number]; // [lat, lng]
+  /** Optional real links for a sponsored/curated partner's action buttons. */
+  website?: string;
+  phone?: string;
+  reserveUrl?: string; // direct OpenTable/Resy page; else we search OpenTable by name+location
 };
 
 const RESTAURANTS: Restaurant[] = [
@@ -182,6 +186,8 @@ const RESTAURANTS: Restaurant[] = [
     shortAddress: '134 S Highland Ave · East Liberty',
     image: IMG + 'sq-plate.jpg',
     coord: [40.46008, -79.92513],
+    website: 'https://square-cafe.com/', // Square Cafe is walk-in only (no online reservations)
+    phone: '+14122448002',
   },
   {
     id: 'italian-village',
@@ -1211,6 +1217,25 @@ function cuisinesForMeal(m: string): Set<string> {
   return new Set(cuisineListForMeal(m));
 }
 
+// External actions for the cards. "More Info" and "View on Map" work for every
+// card straight from name+address+coords (no backend). "Reserve a Table" routes
+// to OpenTable (searching the spot by name near its coords); a per-partner
+// `reserveUrl` (direct OpenTable/Resy page) overrides. "View Menu" → the
+// partner's site, else a Google menu search. (Rich per-card website/reservable
+// for the LIVE Google listings would need a Google Place Details call — a small
+// backend add; see SAAS/EATS handoff notes.)
+const gSearch = (r: Restaurant) => `https://www.google.com/search?q=${encodeURIComponent(`${r.name} ${r.address}`)}`;
+const gMaps = (r: Restaurant) => {
+  const q = encodeURIComponent(`${r.name}, ${r.address}`);
+  const pid = /^ChI/.test(r.id) ? `&query_place_id=${encodeURIComponent(r.id)}` : '';
+  return `https://www.google.com/maps/search/?api=1&query=${q}${pid}`;
+};
+const reserveUrlFor = (r: Restaurant) =>
+  r.reserveUrl || `https://www.opentable.com/s?term=${encodeURIComponent(r.name)}&latitude=${r.coord[0]}&longitude=${r.coord[1]}`;
+const menuUrlFor = (r: Restaurant) =>
+  r.website || `https://www.google.com/search?q=${encodeURIComponent(`${r.name} ${r.address} menu`)}`;
+const openExt = (url: string) => window.open(url, '_blank', 'noopener,noreferrer');
+
 // ── Desktop pieces ──────────────────────────────────────────────────────────
 function RestaurantCard({ r }: { r: Restaurant }) {
   return (
@@ -1240,8 +1265,8 @@ function RestaurantCard({ r }: { r: Restaurant }) {
           <span className="open">Open Now</span>
         </div>
         <div className="cta-row">
-          <button className="cta">More Info</button>
-          <button className="cta ghost">View on Map</button>
+          <button className="cta" onClick={() => openExt(gSearch(r))}>More Info</button>
+          <button className="cta ghost" onClick={() => openExt(gMaps(r))}>View on Map</button>
         </div>
       </div>
     </article>
@@ -1268,10 +1293,10 @@ function Spotlight({ r }: { r: Restaurant }) {
             <span className="addr">{r.address}</span>
           </div>
           <div className="actions">
-            <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }}>
+            <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(reserveUrlFor(r))}>
               Reserve a Table
             </button>
-            <button className="cta ghost" style={{ padding: '14px 28px', flex: '0 0 auto' }}>
+            <button className="cta ghost" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openExt(menuUrlFor(r))}>
               View Menu
             </button>
           </div>
@@ -1785,6 +1810,7 @@ function SponsoredCard({ r }: { r: Restaurant }) {
               alignSelf: 'flex-start',
               boxShadow: '0 2px 4px rgba(0,0,0,.4)',
             }}
+            onClick={() => openExt(gSearch(r))}
           >
             More Info
           </button>
@@ -1934,6 +1960,7 @@ function GridCard({ r }: { r: Restaurant }) {
               cursor: 'pointer',
               boxShadow: '0 2px 4px rgba(0,0,0,.4)',
             }}
+            onClick={() => openExt(gSearch(r))}
           >
             More Info
           </button>
@@ -1950,6 +1977,7 @@ function GridCard({ r }: { r: Restaurant }) {
               fontSize: 11,
               cursor: 'pointer',
             }}
+            onClick={() => openExt(gMaps(r))}
           >
             View on Map
           </button>
