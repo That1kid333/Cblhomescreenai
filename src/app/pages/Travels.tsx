@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { RIDER_BOOK_URL } from '../lib/constants';
+import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
 
 /**
  * Travels — ported from the CBL "New Website" handoff bundle
