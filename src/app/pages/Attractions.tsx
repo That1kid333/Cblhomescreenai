@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { RIDER_BOOK_URL } from '../lib/constants';
 
 /**
  * Attractions — ported from the CBL "New Website" handoff bundle
@@ -1084,11 +1085,11 @@ function EventCard({ e }: { e: EventItem }) {
           <span className="price-pill">{e.price}</span>
         </div>
         <div className="cta-row">
-          <button className="cta">
+          <button className="cta" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>
             <CarMini size={14} color="#000" />
             Book a Ride
           </button>
-          <button className="cta ghost">Tickets</button>
+          <button className="cta ghost" disabled title="Ticketing coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Tickets</button>
         </div>
       </div>
     </article>
@@ -1140,11 +1141,11 @@ function Spotlight({ e }: { e: EventItem }) {
           </span>
         </div>
         <div className="actions">
-          <button className="cta">
+          <button className="cta" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>
             <CarMini size={14} color="#000" />
             Book a Ride to This Event
           </button>
-          <button className="cta ghost">Get Tickets</button>
+          <button className="cta ghost" disabled title="Ticketing coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Get Tickets</button>
         </div>
       </div>
     </div>
