@@ -27,6 +27,10 @@ export const handler = async (event) => {
   const lng = Number(q.lng);
   const keyword = String(q.keyword || 'restaurants').slice(0, 40);
   const radius = Math.min(Number(q.radius) || 8000, 50000);
+  // Place type: 'restaurant' for Eats; 'tourist_attraction' / 'museum' / 'park' /
+  // 'stadium' / 'art_gallery' / 'night_club' etc. for Attractions. Sanitized to
+  // Google's a-z_ type tokens; defaults to restaurant so Eats is unchanged.
+  const type = String(q.type || 'restaurant').replace(/[^a-z_]/g, '').slice(0, 40) || 'restaurant';
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     return json(400, { error: 'lat and lng are required' });
   }
@@ -34,7 +38,7 @@ export const handler = async (event) => {
   try {
     const url =
       `https://maps.googleapis.com/maps/api/place/nearbysearch/json` +
-      `?location=${lat},${lng}&radius=${radius}&type=restaurant` +
+      `?location=${lat},${lng}&radius=${radius}&type=${type}` +
       `&keyword=${encodeURIComponent(keyword)}&key=${key}`;
     const res = await fetch(url);
     const data = await res.json();
