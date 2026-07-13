@@ -59,7 +59,8 @@ empty while testing. They only surface for their own city (city filtering is
 live), so they don't pollute the Pittsburgh default — but remove/replace them
 before the public launch:
 - **Schmieddy's BBQ (Atlanta)** — sample business in the `cbl-directory` project's
-  `businesses` table. Only shows when a visitor searches Atlanta / is in GA.
+  `businesses` table. **Already deactivated 2026-07-13** (`is_active=false`, row
+  id `b2fb99cf-…`) so it no longer shows; hard-delete the row at launch if desired.
 - Any other seeded `businesses` rows that aren't real partners.
 (Square Cafe is a real CBL partner — keep it.)
 
