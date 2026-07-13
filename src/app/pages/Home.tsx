@@ -435,21 +435,24 @@ const HOME_CSS = `
   /* Buckee joins the opening screen: Buckee (left) · big Speak icon (center) ·
      languages (2×2, right), with the "Talk to Buckee" copy centered underneath. */
   .cbl-home section.band.talk-band { padding:2px 20px 24px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { flex-direction:row; align-items:center; gap:12px; }
+  .cbl-home .talk-wrap { flex-direction:row; align-items:flex-start; gap:10px; }
   .cbl-home .talk-buckee { width:98px; height:98px; }
-  /* No box on mobile — Buckee, mic and languages sit on the black background,
-     the "Talk to Buckee" copy runs down below (per Keith's mockup). */
+  .cbl-home .talk-buckee-wrap { align-self:flex-start; margin-top:-14px; } /* lift Buckee so his feet sit at the mic line */
+  /* No box on mobile — Buckee, mic and languages sit on the black background;
+     the "Talk to Buckee" copy is centered on the mic and the reply runs below. */
   .cbl-home .talk-card {
-    flex:1; min-width:0; padding:4px 0 0; background:none; border:0; box-shadow:none;
+    flex:1; min-width:0; padding:0; background:none; border:0; box-shadow:none;
     display:grid; grid-template-columns:1fr auto;
-    grid-template-areas:"mic lang" "text text"; align-items:center; gap:12px;
+    grid-template-areas:"mic lang" "text ."; align-items:center; gap:10px;
   }
   .cbl-home .talk-card .mic-btn { grid-area:mic; width:92px; height:92px; justify-self:center; }
   .cbl-home .talk-card .mic-btn svg { width:36px; height:36px; }
-  .cbl-home .talk-card .talk-text { grid-area:text; text-align:center; }
+  .cbl-home .talk-card .talk-text { grid-area:text; text-align:center; } /* centered under the mic (col 1) */
   .cbl-home .talk-card .talk-lede { font-size:15px; line-height:1.35; }
-  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; }
+  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:start; }
   .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; }
+  /* Buckee's reply opens BELOW the bar on mobile (under the copy), not above. */
+  .cbl-home .buckee-chat { top:calc(100% + 12px); bottom:auto; max-width:none; border-radius:18px 18px 18px 18px; }
 }
 
 /* ── Meet the Buckee Family teaser ── */
