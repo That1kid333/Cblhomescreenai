@@ -956,7 +956,8 @@ function ConductDisclaimer() {
             Community &amp; Conduct Policy
           </div>
           <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>
-            The City Bucket List Directory is a member-powered marketplace. Listings are submitted by
+            The City Bucket List Directory, operated by <b style={{ color: "#C0C0C0" }}>Citybucketlist.com, LLC</b>{" "}
+            (&ldquo;City Bucket List&rdquo;), is a member-powered marketplace. Listings are submitted by
             members and are <b style={{ color: "#C0C0C0" }}>not verified, endorsed, or guaranteed</b> by
             City Bucket List. <b style={{ color: "#C0C0C0" }}>We have zero tolerance for malicious activity.</b>{" "}
             Anything illegal, fraudulent, or harmful — including solicitation, adult or sexual content,
