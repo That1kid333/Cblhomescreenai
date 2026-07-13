@@ -51,11 +51,7 @@ const MOBILE_NAV: MobileSection[] = [
   },
   {
     label: 'Directory & Savings',
-    items: [
-      { label: 'Directory', to: '/directory', tag: 'New Design' },
-      { label: 'Local Classifieds', href: 'https://directory.citybucketlist.com/', tag: 'Live' },
-      { label: 'Shopping & Offers', href: 'https://directory.citybucketlist.com/', tag: 'Live' },
-    ],
+    to: '/directory',
   },
 ];
 
@@ -244,32 +240,12 @@ export function Layout() {
                 )}
               </div>
 
-              <div
-                className="relative"
-                onMouseEnter={() => handleMouseEnter('directory')}
-                onMouseLeave={handleMouseLeave}
+              <Link
+                to="/directory"
+                className="text-white hover:text-[var(--brand-yellow)] transition-colors text-sm"
               >
-                <Link to="/directory" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
-                  DIRECTORY & SAVINGS <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'directory' ? 'rotate-90' : ''}`} />
-                </Link>
-                {activeDropdown === 'directory' && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
-                    <div className="py-2">
-                      <Link to="/directory" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Directory <span className="text-[#FDB913]">· New Design</span>
-                      </Link>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Local Classifieds <span className="text-gray-500">· Live</span>
-                      </a>
-                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
-                      <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
-                        Shopping & Offers <span className="text-gray-500">· Live</span>
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
+                DIRECTORY &amp; SAVINGS
+              </Link>
             </nav>
 
             {/* Right slot — keeps the nav centered on desktop (min 88px) and
