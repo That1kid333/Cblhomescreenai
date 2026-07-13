@@ -971,6 +971,21 @@ function ConductDisclaimer() {
             and to suspend or terminate any account at our sole discretion. Posting to the Directory
             constitutes acceptance of these terms.
           </p>
+          <p
+            style={{
+              fontSize: 12.5, lineHeight: 1.6, color: "#B8B8B8", margin: "14px 0 0",
+              paddingTop: 14, borderTop: "1px solid rgba(255,255,255,.07)",
+            }}
+          >
+            See something that doesn&rsquo;t belong here? Email us at{" "}
+            <a
+              href="mailto:info@citybucketlist.com?subject=Directory%20report"
+              style={{ color: "#C99742", fontWeight: 700, textDecoration: "underline" }}
+            >
+              info@citybucketlist.com
+            </a>{" "}
+            and we&rsquo;ll review it.
+          </p>
         </div>
       </div>
     </section>
