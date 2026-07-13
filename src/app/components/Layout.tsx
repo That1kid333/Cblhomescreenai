@@ -51,7 +51,13 @@ const MOBILE_NAV: MobileSection[] = [
   },
   {
     label: 'Directory & Savings',
-    to: '/directory',
+    items: [
+      { label: 'Classifieds', to: '/directory?section=CLASSIFIEDS' },
+      { label: 'Driver Posts', to: '/directory?section=DRIVERS' },
+      { label: 'Rider Requests', to: '/directory?section=RIDERS' },
+      { label: 'Shopping', to: '/directory?section=SHOP' },
+      { label: 'Coupons & Offers', to: '/directory?section=COUPONS' },
+    ],
   },
 ];
 
@@ -240,12 +246,26 @@ export function Layout() {
                 )}
               </div>
 
-              <Link
-                to="/directory"
-                className="text-white hover:text-[var(--brand-yellow)] transition-colors text-sm"
+              <div
+                className="relative"
+                onMouseEnter={() => handleMouseEnter('directory')}
+                onMouseLeave={handleMouseLeave}
               >
-                DIRECTORY &amp; SAVINGS
-              </Link>
+                <Link to="/directory" className="text-white hover:text-[var(--brand-yellow)] transition-colors flex items-center gap-1 text-sm">
+                  DIRECTORY & SAVINGS <ChevronRight className={`w-4 h-4 text-[#FDB913] transition-transform ${activeDropdown === 'directory' ? 'rotate-90' : ''}`} />
+                </Link>
+                {activeDropdown === 'directory' && (
+                  <div className="absolute top-full left-0 mt-2 w-56 bg-black shadow-xl z-50">
+                    <div className="py-2">
+                      <Link to="/directory?section=CLASSIFIEDS" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">Classifieds</Link>
+                      <Link to="/directory?section=DRIVERS" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">Driver Posts</Link>
+                      <Link to="/directory?section=RIDERS" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">Rider Requests</Link>
+                      <Link to="/directory?section=SHOP" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">Shopping</Link>
+                      <Link to="/directory?section=COUPONS" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">Coupons &amp; Offers</Link>
+                    </div>
+                  </div>
+                )}
+              </div>
             </nav>
 
             {/* Right slot — keeps the nav centered on desktop (min 88px) and

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router";
 import { getActivePartners, type Partner } from "../lib/supabase/ridesClient";
 import {
   getActiveBusinesses,
@@ -885,7 +886,16 @@ function EmptyState({ city }: { city: string | null }) {
 }
 
 export function Directory() {
-  const [section, setSection] = useState("CLASSIFIEDS");
+  const [searchParams] = useSearchParams();
+  const paramSection = searchParams.get("section");
+  const [section, setSection] = useState(
+    paramSection && SECTIONS.some((s) => s.key === paramSection) ? paramSection : "CLASSIFIEDS",
+  );
+  // Follow the ?section= deep-link (from the header Directory dropdown).
+  useEffect(() => {
+    const p = searchParams.get("section");
+    if (p && SECTIONS.some((s) => s.key === p)) setSection(p);
+  }, [searchParams]);
   const [cat, setCat] = useState("ALL");
   const { city, setManualCity } = useVisitorLocation();
 
