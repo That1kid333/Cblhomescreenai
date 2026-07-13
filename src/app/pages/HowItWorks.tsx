@@ -434,7 +434,9 @@ export function HowItWorks() {
                 comes with a digital business card — your profile plus a personal QR code. Share it
                 with a restaurant you love, a rider, or a driver worth knowing. When they join under
                 your code, you're rewarded — the people and places you already recommend become real
-                value for you.
+                value for you. Manage your card, and every listing you post, from{' '}
+                <a href="/studio" style={{ color: '#C99742', fontWeight: 700 }}>CBL Studio</a> —
+                your member hub, one tap from your profile avatar.
               </p>
             </div>
             <div className="chips">
