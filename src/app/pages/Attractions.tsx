@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 
@@ -409,6 +409,10 @@ function useWeather(coords: Coords | null): Weather {
 }
 
 // ── Live attractions (Google Places proxy) ──────────────────────────────────
+// Keep the family-friendly city-guide vibe: filter adult venues (gentlemen's
+// clubs / strip joints) out of live results by name.
+const ADULT_RE = /(cabaret|gentlem[ae]n'?s|strip[\s-]?club|topless|exotic danc|adult entertain|adult club|\bxxx\b|showgirl|\bnude\b|men'?s club|go[\s-]?go bar)/i;
+
 const attractionCache = new Map<string, Attraction[]>();
 
 function useLiveAttractions(coords: Coords | null, category: Category): Attraction[] | null {
@@ -437,7 +441,10 @@ function useLiveAttractions(coords: Coords | null, category: Category): Attracti
           return;
         }
         const mapped: Attraction[] = d.results
-          .filter((p: { coord?: [number, number] }) => p.coord && p.coord[0] != null)
+          .filter(
+            (p: { coord?: [number, number]; name?: string }) =>
+              p.coord && p.coord[0] != null && !ADULT_RE.test(p.name || ''),
+          )
           .map(
             (p: {
               id: string;
@@ -1136,6 +1143,7 @@ function RatingLine({ a }: { a: Attraction }) {
 }
 
 function EventCard({ a }: { a: Attraction }) {
+  const openModal = useContext(AttractionModalCtx);
   return (
     <article className="event-card">
       <div className="img" style={{ backgroundImage: `url(${a.photo})` }}>
@@ -1154,8 +1162,8 @@ function EventCard({ a }: { a: Attraction }) {
             <CarMini size={14} color="#000" />
             Book a Ride There
           </button>
-          <button className="cta ghost" onClick={() => openDirections(a)}>
-            Directions
+          <button className="cta ghost" onClick={() => openModal(a)}>
+            More Info
           </button>
         </div>
       </div>
@@ -1164,6 +1172,7 @@ function EventCard({ a }: { a: Attraction }) {
 }
 
 function Spotlight({ a }: { a: Attraction }) {
+  const openModal = useContext(AttractionModalCtx);
   return (
     <div className="spotlight">
       <div className="shot">
@@ -1206,8 +1215,8 @@ function Spotlight({ a }: { a: Attraction }) {
             <CarMini size={14} color="#000" />
             Book a Ride There
           </button>
-          <button className="cta ghost" onClick={() => openDirections(a)}>
-            Directions
+          <button className="cta ghost" onClick={() => openModal(a)}>
+            More Info
           </button>
         </div>
       </div>
@@ -1251,8 +1260,170 @@ function TopRated({ items }: { items: Attraction[] }) {
   );
 }
 
+// ── On-site detail panel (More Info) — same treatment as the Eats cards ───────
+// Keeps visitors on-site: photo, rating, live hours/reviews (Place Details), an
+// embedded Google map, then deliberate outbound actions. Opens from a card's
+// "More Info" instead of jumping straight to Google.
+const mapEmbed = (a: Attraction) =>
+  `https://maps.google.com/maps?q=${encodeURIComponent(`${a.name}, ${a.address}`)}&z=15&output=embed`;
+
+const AttractionModalCtx = createContext<(a: Attraction) => void>(() => {});
+
+type PlaceDetails = {
+  website: string | null;
+  hours: string[] | null;
+  openNow: boolean | null;
+  summary: string | null;
+  review: { author: string; rating: number; text: string; when: string } | null;
+};
+
+const AMODAL_CSS = `
+.cbl-amodal { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:16px; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; }
+.cbl-amodal * { box-sizing:border-box; }
+.cbl-amodal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(2px); }
+@keyframes cbl-amodal-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+.cbl-amodal .panel { position:relative; width:min(560px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#141414; border:1px solid rgba(201,151,66,.4); border-radius:22px 0 22px 0; box-shadow:0 20px 50px rgba(0,0,0,.6); animation:cbl-amodal-in .26s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .cbl-amodal .panel { animation:none; } }
+.cbl-amodal .shot { position:relative; height:200px; background-size:cover; background-position:center; }
+.cbl-amodal .shot::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,20,20,0) 45%,rgba(20,20,20,.92)); }
+.cbl-amodal .mtags { position:absolute; top:14px; left:14px; display:flex; gap:6px; z-index:2; }
+.cbl-amodal .mtag { font-family:${MONO}; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:${GOLD}; background:rgba(0,0,0,.7); padding:5px 10px; border-radius:4px; border:1px solid rgba(201,151,66,.4); }
+.cbl-amodal .close { position:absolute; top:12px; right:12px; z-index:3; width:40px; height:40px; border-radius:50%; background:rgba(0,0,0,.82); border:1.5px solid ${GOLD}; color:${GOLD}; cursor:pointer; font-size:18px; line-height:1; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,0,0,.5); transition:transform .15s ease, background .15s ease, color .15s ease; }
+.cbl-amodal .close:hover { background:${GOLD}; color:#000; transform:scale(1.08); }
+.cbl-amodal .close:focus-visible { outline:2px solid ${GOLD}; outline-offset:2px; }
+.cbl-amodal .mbody { padding:20px 24px 24px; color:#EDEDED; }
+.cbl-amodal h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.05; letter-spacing:-.01em; text-transform:uppercase; color:#fff; margin:0 0 6px; }
+.cbl-amodal .maddr { font-family:${MONO}; font-size:12px; letter-spacing:.05em; color:${GOLD}; margin-bottom:12px; }
+.cbl-amodal .mmeta { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; font-size:13px; color:#B8B8B8; }
+.cbl-amodal .mmeta b { color:#fff; } .cbl-amodal .mopen { color:#8CC084; font-weight:700; }
+.cbl-amodal .mdesc { font-size:14.5px; line-height:1.6; color:#C7C7C7; margin-bottom:16px; }
+.cbl-amodal .mmap { width:100%; height:230px; border:0; border-radius:12px 0 12px 0; margin-bottom:16px; display:block; background:#0A0A0A; }
+.cbl-amodal .mhours, .cbl-amodal .mrev { margin-bottom:16px; padding:12px 14px; background:#0f0f0f; border:1px solid rgba(255,255,255,.07); border-radius:10px; }
+.cbl-amodal .mh-label { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; margin-bottom:8px; }
+.cbl-amodal .mh-row { display:flex; justify-content:space-between; gap:16px; font-size:12.5px; color:#B8B8B8; line-height:1.9; }
+.cbl-amodal .mh-row .today { color:#fff; font-weight:700; }
+.cbl-amodal .mrev p { margin:0 0 6px; font-size:13.5px; line-height:1.55; color:#D4D4D4; font-style:italic; }
+.cbl-amodal .mrev-by { font-family:${MONO}; font-size:11px; color:#888; }
+.cbl-amodal .macts { display:flex; gap:10px; flex-wrap:wrap; }
+.cbl-amodal .macts a { flex:1 1 140px; text-align:center; text-decoration:none; padding:12px 14px; border-radius:999px; font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; }
+.cbl-amodal .macts .primary { background:${GOLD}; color:#000; } .cbl-amodal .macts .primary:hover { background:#DDB15F; }
+.cbl-amodal .macts .ghost { background:transparent; border:1.5px solid rgba(255,255,255,.2); color:#fff; } .cbl-amodal .macts .ghost:hover { border-color:${GOLD}; color:${GOLD}; }
+`;
+
+function AttractionModal({ a, onClose }: { a: Attraction | null; onClose: () => void }) {
+  const [details, setDetails] = useState<PlaceDetails | null>(null);
+  useEffect(() => {
+    if (!a) {
+      setDetails(null);
+      return;
+    }
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    let cancelled = false;
+    setDetails(null);
+    const pid = placeIdOf(a);
+    if (pid) {
+      fetch(`/api/place-details?place_id=${encodeURIComponent(pid)}`)
+        .then((r) => r.json())
+        .then((d) => {
+          if (!cancelled && d && d.found) setDetails(d);
+        })
+        .catch(() => {});
+    }
+    return () => {
+      cancelled = true;
+      document.body.style.overflow = prev;
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [a]);
+  if (!a) return null;
+  const website = details?.website || null;
+  const desc = a.desc || details?.summary || null;
+  const openNow = details?.openNow ?? a.open;
+  const todayIdx = (new Date().getDay() + 6) % 7; // Google weekday_text is Monday-first
+  return (
+    <div className="cbl-amodal" role="dialog" aria-modal="true" aria-label={a.name}>
+      <style>{AMODAL_CSS}</style>
+      <div className="backdrop" onClick={onClose} />
+      <div className="panel">
+        <div className="shot" style={{ backgroundImage: `url(${a.photo})` }}>
+          <div className="mtags">
+            <span className="mtag">{CAT_TAG[a.cat]}</span>
+          </div>
+          <button className="close" aria-label="Close" onClick={onClose}>
+            ✕
+          </button>
+        </div>
+        <div className="mbody">
+          <h2>{a.name}</h2>
+          <div className="maddr">{a.address}</div>
+          <div className="mmeta">
+            {a.rating != null && (
+              <>
+                <BucketGlyph value={Math.round(a.rating)} />
+                <b>{a.rating.toFixed(1)}</b>
+              </>
+            )}
+            {a.reviews ? <span>({a.reviews.toLocaleString()} reviews)</span> : null}
+            {openNow && (
+              <>
+                <span>·</span>
+                <span className="mopen">Open Now</span>
+              </>
+            )}
+          </div>
+          {desc && <p className="mdesc">{desc}</p>}
+          <iframe className="mmap" src={mapEmbed(a)} loading="lazy" title={`Map of ${a.name}`} />
+          {details?.hours && details.hours.length > 0 && (
+            <div className="mhours">
+              <div className="mh-label">Hours</div>
+              {details.hours.map((h, i) => {
+                const [day, ...rest] = h.split(': ');
+                return (
+                  <div key={i} className="mh-row">
+                    <span className={i === todayIdx ? 'today' : ''}>{day}</span>
+                    <span className={i === todayIdx ? 'today' : ''}>{rest.join(': ')}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {details?.review && (
+            <div className="mrev">
+              <div className="mh-label">What people say</div>
+              <p>&ldquo;{details.review.text}&rdquo;</p>
+              <div className="mrev-by">
+                — {details.review.author}
+                {details.review.when ? `, ${details.review.when}` : ''}
+              </div>
+            </div>
+          )}
+          <div className="macts">
+            <a className="primary" href={RIDER_BOOK_URL} target="_blank" rel="noreferrer">
+              Book a Ride There →
+            </a>
+            <a className="ghost" href={gMaps(a)} target="_blank" rel="noreferrer">
+              Directions
+            </a>
+            {website && (
+              <a className="ghost" href={website} target="_blank" rel="noreferrer">
+                Website
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Attractions() {
   const [cat, setCat] = useState<Category>('ALL');
+  const [modalA, setModalA] = useState<Attraction | null>(null);
 
   const loc = useVisitorLocation();
   // A city the visitor typed into the search box (geocoded). When set, it
@@ -1302,6 +1473,7 @@ export function Attractions() {
   const activeLabel = CATS.find((c) => c.key === cat)?.label ?? 'Top Picks';
 
   return (
+    <AttractionModalCtx.Provider value={setModalA}>
     <main className="cbl-attractions">
       <style>{ATTRACTIONS_CSS}</style>
       <Hero />
@@ -1351,6 +1523,8 @@ export function Attractions() {
           </div>
         </div>
       </section>
+      <AttractionModal a={modalA} onClose={() => setModalA(null)} />
     </main>
+    </AttractionModalCtx.Provider>
   );
 }
