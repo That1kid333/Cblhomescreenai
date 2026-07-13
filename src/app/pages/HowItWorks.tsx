@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import riderImage from '../../assets/rider_meeting_driver_neutral.png';
 import driverImage from '../../assets/driver_at_wheel.jpg';
 import conciergeImage from '../../assets/concierge_professional.jpg';
+import driverFace from '../../assets/mock-driver-headshot.jpg'; // Unsplash (free/commercial license) — example driver headshot
 import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 import { Link } from 'react-router';
 
@@ -17,18 +18,16 @@ function BizCardMock() {
     <div className="bizcard" role="img" aria-label="Example: a driver's CBL digital business card with photo, name, and a scannable QR code">
       <div className="bc-eyebrow">Example — a driver's card</div>
       <div className="bc-top">
-        <div className="bc-face bc-face-mock" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2.2c-5 0-8.6 2.5-8.6 5.8v0.5h17.2v-0.5c0-3.3-3.6-5.8-8.6-5.8z" /></svg>
-        </div>
+        <img src={driverFace} alt="" className="bc-face" />
         <div>
           <div className="bc-verified">★ Verified CBL Driver</div>
-          <div className="bc-name">Marcus D.</div>
+          <div className="bc-name">Simone D.</div>
           <div className="bc-role">Airport Runs · Pittsburgh</div>
         </div>
       </div>
       <div className="bc-bottom">
         <div className="bc-qr">{qr && <img src={qr} alt="" />}</div>
-        <div className="bc-scan">Scan to <b>connect</b> — or join under Marcus's code and he earns.</div>
+        <div className="bc-scan">Scan to <b>connect</b> — or join under Simone's code and she earns.</div>
       </div>
     </div>
   );
@@ -147,8 +146,6 @@ const HOW_CSS = `
 .cbl-how .choice .card-chips { margin-top:16px; justify-content:flex-start; }
 /* Share-Your-Card variant: no ✦ mark column — copy fills the width, card on the right. */
 .cbl-how .card-choice { grid-template-columns:1fr auto; }
-.cbl-how .bizcard .bc-face-mock { background:radial-gradient(circle at 50% 32%, #3c3c3c, #1a1a1a); display:flex; align-items:center; justify-content:center; overflow:hidden; }
-.cbl-how .bizcard .bc-face-mock svg { width:62%; height:62%; color:#8f8f8f; }
 .cbl-how .bizcard {
   width:262px; max-width:100%; flex-shrink:0; background:linear-gradient(180deg,#161616,#0c0c0c);
   border:1px solid rgba(201,151,66,.4); border-radius:16px 0 16px 0; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,.5);
