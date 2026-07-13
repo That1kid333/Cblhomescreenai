@@ -454,7 +454,7 @@ export function Login() {
                     />
                   </div>
                   <div className="field">
-                    <label className="label" htmlFor="cell">Cell <span className="opt">(optional)</span></label>
+                    <label className="label" htmlFor="cell">Cell <span className="req">*</span></label>
                     <input
                       type="tel"
                       id="cell"
@@ -467,6 +467,7 @@ export function Login() {
                         if (!e.target.value.trim()) setSmsConsent(false);
                       }}
                       maxLength={30}
+                      required
                     />
                   </div>
                 </div>
