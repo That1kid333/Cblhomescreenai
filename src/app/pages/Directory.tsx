@@ -530,9 +530,9 @@ function partnerToCard(p: Partner): Listing {
 
 const PRICING: Tier[] = [
   { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats"], cta: "Post Free Ad" },
-  { name: "Photo Boost", price: "$2.99", per: "per listing", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
-  { name: "Featured", price: "$4.99", per: "per week", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "60 days active", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
-  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
+  { name: "Photo Boost", price: "$2.99", per: "per listing", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos", soon: true },
+  { name: "Featured", price: "$4.99", per: "per week", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "60 days active", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured", soon: true },
+  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro", soon: true },
 ];
 
 const Check = () => (
