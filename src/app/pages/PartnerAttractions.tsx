@@ -147,6 +147,7 @@ export function PartnerAttractions() {
             hotel guests planning their week — reaching travelers and locals exactly when they’re
             deciding what to do.
           </p>
+          <a className="apply" href={`${APP_URL}/partner/signup`} style={{ marginTop: 22 }}>Apply Now →</a>
         </div>
       </section>
 
