@@ -1657,6 +1657,12 @@ export function Directory() {
   // /directory?boost=success&session_id=… — verify + apply the boost, banner it,
   // refresh listings, then strip the query so a refresh doesn't re-run it.
   const [boostBanner, setBoostBanner] = useState<{ ok: boolean; msg: string } | null>(null);
+  // Auto-dismiss the banner so it never lingers as a stale "add your photos" nag.
+  useEffect(() => {
+    if (!boostBanner) return;
+    const t = window.setTimeout(() => setBoostBanner(null), 9000);
+    return () => window.clearTimeout(t);
+  }, [boostBanner]);
   // Photo editor: which listing (if any) is open for adding photos.
   const [editId, setEditId] = useState<string | null>(null);
   // Current member's auth id — lets an owner reopen the photo editor on their listing.
