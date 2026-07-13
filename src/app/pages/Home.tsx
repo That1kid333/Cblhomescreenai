@@ -434,7 +434,7 @@ const HOME_CSS = `
 @media (max-width:1000px) {
   /* Buckee joins the opening screen: Buckee (left) · big Speak icon (center) ·
      languages (2×2, right), with the "Talk to Buckee" copy centered underneath. */
-  .cbl-home .talk-band { padding:6px 20px 26px; }
+  .cbl-home section.band.talk-band { padding:2px 20px 24px; } /* beat the generic section.band 48px */
   .cbl-home .talk-wrap { flex-direction:row; align-items:center; gap:12px; }
   .cbl-home .talk-buckee { width:98px; height:98px; }
   .cbl-home .talk-card {
@@ -590,17 +590,17 @@ const HOME_CSS = `
 
 /* ── Responsive ── */
 @media (max-width:1000px){
-  .cbl-home .hero { padding:16px 20px 28px; }
+  .cbl-home .hero { padding:14px 20px 8px; }
   .cbl-home section.band { padding:48px 22px; }
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:8px; }
-  .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:14px; }
+  .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:10px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(120px,26vh,200px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(104px,20vh,158px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
-  .cbl-home h1.hero-title { font-size:clamp(36px,7.8vw,52px); margin-bottom:12px; text-align:center; line-height:1.02; }
+  .cbl-home h1.hero-title { font-size:clamp(31px,7.1vw,44px); margin-bottom:8px; text-align:center; line-height:1.02; }
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
