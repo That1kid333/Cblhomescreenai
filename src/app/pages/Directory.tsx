@@ -7,6 +7,7 @@ import {
   type DirectoryListing,
 } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing } from "../lib/supabase/authClient";
+import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import { useVisitorLocation } from "../lib/location";
 import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
@@ -49,7 +50,6 @@ type Listing = {
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
   muted?: string[]; accent?: boolean; badge?: string; cta: string;
-  soon?: boolean; // paid boosts aren't wired to checkout yet → "Coming Soon"
 };
 
 const DIR_CSS = `
@@ -264,10 +264,6 @@ const DIR_CSS = `
 .cbl-dir .tier.accent .cta { background:#C99742; color:#000; border-color:#C99742; }
 .cbl-dir .tier .cta:hover { background:rgba(201,151,66,.12); }
 .cbl-dir .tier.accent .cta:hover { background:#DDB15F; }
-.cbl-dir .tier.soon { opacity:.82; }
-.cbl-dir .tier .badge.soon-badge { background:#1C1C1C; color:#C99742; border:1px solid rgba(201,151,66,.55); box-shadow:none; }
-.cbl-dir .tier .cta:disabled, .cbl-dir .tier.accent .cta:disabled { background:transparent; color:#7A7A7A; border-color:rgba(255,255,255,.16); cursor:not-allowed; }
-.cbl-dir .tier .cta:disabled:hover { background:transparent; }
 
 /* Pickup banner */
 .cbl-dir .pickup-banner { background:linear-gradient(135deg, rgba(201,151,66,.16), rgba(201,151,66,.04)); border:1px solid rgba(201,151,66,.4); border-radius:18px 0 18px 0; padding:22px 28px; display:grid; grid-template-columns:auto 1fr auto; gap:24px; align-items:center; margin-top:24px; }
@@ -534,9 +530,9 @@ function partnerToCard(p: Partner): Listing {
 
 const PRICING: Tier[] = [
   { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats"], cta: "Post Free Ad" },
-  { name: "Photo Boost", price: "$2.99", per: "per listing", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos", soon: true },
-  { name: "Featured", price: "$4.99", per: "per week", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "60 days active", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured", soon: true },
-  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro", soon: true },
+  { name: "Photo Boost", price: "$2.99", per: "one-time", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
+  { name: "Featured", price: "$4.99", per: "for 30 days", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "Featured for 30 days", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
+  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
 ];
 
 const Check = () => (
@@ -897,8 +893,8 @@ function Pricing({ onPost }: { onPost: () => void }) {
         </p>
         <div className="tiers">
           {PRICING.map((t) => (
-            <div key={t.name} className={"tier" + (t.accent ? " accent" : "") + (t.soon ? " soon" : "")}>
-              {t.soon ? <div className="badge soon-badge">Coming Soon</div> : t.badge && <div className="badge">{t.badge}</div>}
+            <div key={t.name} className={"tier" + (t.accent ? " accent" : "")}>
+              {t.badge && <div className="badge">{t.badge}</div>}
               <div className="name">{t.name}</div>
               <div className="price-block">
                 <div className="price">{t.price}</div>
@@ -912,14 +908,10 @@ function Pricing({ onPost }: { onPost: () => void }) {
                   <li key={b} className="muted"><Cross /> {b}</li>
                 ))}
               </ul>
-              {/* Paid boosts land once Stripe checkout + the boost webhook are wired
-                  (see STRIPE-BOOST-SETUP.md). Until then paid tiers are "Coming Soon";
-                  only Basic/Free posts. */}
-              {t.soon ? (
-                <button type="button" className="cta" disabled aria-disabled="true">Coming Soon</button>
-              ) : (
-                <button type="button" className="cta" onClick={onPost}>{t.cta}</button>
-              )}
+              {/* You post a listing first (free), then choose a boost on the success
+                  screen — so every tier's CTA opens the post flow. Free just posts;
+                  paid tiers guide you to Featured/Pro after posting. */}
+              <button type="button" className="cta" onClick={onPost}>{t.cta}</button>
             </div>
           ))}
         </div>
@@ -1211,6 +1203,16 @@ const POST_CSS = `
 .cbl-post .success h3 { font-family:${DISPLAY}; font-weight:900; font-size:28px; text-transform:uppercase; color:#fff; margin:0 0 8px; }
 .cbl-post .success h3 .g { color:#C99742; }
 .cbl-post .success p { font-size:14px; line-height:1.55; color:#B8B8B8; margin:0 0 18px; }
+.cbl-post .boost-opts { display:flex; flex-direction:column; gap:10px; text-align:left; margin:0 0 14px; }
+.cbl-post .boost-btn { display:flex; flex-direction:column; gap:3px; width:100%; cursor:pointer; border-radius:14px 0 14px 0; padding:13px 16px; background:#141414; border:1px solid rgba(255,255,255,.12); transition:border-color .18s, background .18s; }
+.cbl-post .boost-btn:hover:not(:disabled) { border-color:#C99742; background:rgba(201,151,66,.08); }
+.cbl-post .boost-btn.feat { border-color:rgba(201,151,66,.55); background:linear-gradient(180deg, rgba(201,151,66,.12), rgba(201,151,66,.02)); }
+.cbl-post .boost-btn:disabled { opacity:.6; cursor:not-allowed; }
+.cbl-post .boost-btn .bt-name { font-family:${DISPLAY}; font-weight:800; font-size:14.5px; color:#fff; display:flex; align-items:center; gap:8px; }
+.cbl-post .boost-btn .bt-tag { font-family:${MONO}; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:#000; background:#C99742; border-radius:999px; padding:2px 7px; }
+.cbl-post .boost-btn .bt-price { font-size:12.5px; color:#9A9A9A; }
+.cbl-post .submit.ghost { background:transparent; color:#9A9A9A; border:1px solid rgba(255,255,255,.16); }
+.cbl-post .submit.ghost:hover { background:rgba(255,255,255,.05); color:#C8C8C8; }
 .cbl-post .gate-btn { display:inline-block; border:0; cursor:pointer; border-radius:999px; padding:14px 32px; background:#C99742; color:#000; font-family:${DISPLAY}; font-weight:900; font-size:13.5px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s; }
 .cbl-post .gate-btn:hover { background:#DDB15F; }
 @media (max-width:480px) { .cbl-post .panel { padding:24px 20px; } .cbl-post h2 { font-size:26px; } }
@@ -1236,6 +1238,9 @@ function PostListingModal({
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [newId, setNewId] = useState<string | null>(null); // id of the just-posted listing (to boost)
+  const [boosting, setBoosting] = useState<BoostTier | "">("");
+  const [boostErr, setBoostErr] = useState("");
 
   // Hold onClose in a ref so the open-effect (session check + form reset) never
   // re-runs when the parent re-renders and recreates the callback.
@@ -1254,6 +1259,9 @@ function PostListingModal({
     setDescription("");
     setStatus("idle");
     setErrorMsg("");
+    setNewId(null);
+    setBoosting("");
+    setBoostErr("");
     setCityField(defaultCity ?? "");
     setJoinOpen(false);
 
@@ -1292,7 +1300,7 @@ function PostListingModal({
     }
     setStatus("pending");
     setErrorMsg("");
-    const { error } = await postDirectoryListing({
+    const { error, id } = await postDirectoryListing({
       title: title.trim(),
       category,
       description: description.trim() || undefined,
@@ -1304,8 +1312,21 @@ function PostListingModal({
       setStatus("error");
       setErrorMsg(error);
     } else {
+      setNewId(id);
       setStatus("success");
       onPosted(); // re-run the page's getDirectoryListings().then(setListings)
+    }
+  };
+
+  // Kick off a paid boost for the listing that was just posted → Stripe Checkout.
+  const startBoost = async (tier: BoostTier) => {
+    if (!newId || boosting) return;
+    setBoostErr("");
+    setBoosting(tier);
+    const { error } = await startListingBoost(newId, tier); // redirects on success
+    if (error) {
+      setBoosting("");
+      setBoostErr(error);
     }
   };
 
@@ -1341,8 +1362,30 @@ function PostListingModal({
             <div className="success">
               <div className="mark" aria-hidden="true">✓</div>
               <h3>Your listing is <span className="g">live.</span></h3>
-              <p>It's posted to your local directory. Thanks for adding to your city.</p>
-              <button type="button" className="submit" onClick={onClose}>Done</button>
+              <p>Posted to your local directory — free. Want it to sell faster? Boost it to
+                the top with photos and a Featured badge.</p>
+              {newId ? (
+                <>
+                  <div className="boost-opts">
+                    <button type="button" className="boost-btn" disabled={!!boosting} onClick={() => startBoost("photo")}>
+                      <span className="bt-name">📷 Photo Boost</span>
+                      <span className="bt-price">{boosting === "photo" ? "Redirecting…" : "$2.99 · add up to 5 photos"}</span>
+                    </button>
+                    <button type="button" className="boost-btn feat" disabled={!!boosting} onClick={() => startBoost("featured")}>
+                      <span className="bt-name">⭐ Featured <span className="bt-tag">Most popular</span></span>
+                      <span className="bt-price">{boosting === "featured" ? "Redirecting…" : "$4.99 · top of results, 30 days"}</span>
+                    </button>
+                    <button type="button" className="boost-btn" disabled={!!boosting} onClick={() => startBoost("pro")}>
+                      <span className="bt-name">🚀 Business Pro</span>
+                      <span className="bt-price">{boosting === "pro" ? "Redirecting…" : "$29.99/mo · unlimited + analytics"}</span>
+                    </button>
+                  </div>
+                  {boostErr && <div className="alert" role="alert" style={{ marginTop: 12 }}>{boostErr}</div>}
+                  <button type="button" className="submit ghost" onClick={onClose}>No thanks — I&rsquo;m done</button>
+                </>
+              ) : (
+                <button type="button" className="submit" onClick={onClose}>Done</button>
+              )}
             </div>
           ) : (
             <>
@@ -1425,10 +1468,10 @@ function PostListingModal({
                 <button type="submit" className="submit" disabled={status === "pending"}>
                   {status === "pending" ? "Posting…" : "Post Listing — Free"}
                 </button>
-                {/* Every site-posted listing publishes as tier:'basic' for now —
-                    paid Featured / Business Pro upgrades are a later phase. */}
+                {/* Posts free as tier:'basic'; the success screen then offers the
+                    paid Photo/Featured/Pro boosts for this listing. */}
                 <p className="tier-note">
-                  Publishes as a free basic listing. Featured &amp; Pro upgrades coming soon.
+                  Publishes free — you can boost it to Featured on the next step.
                 </p>
               </form>
             </>
@@ -1443,7 +1486,7 @@ function PostListingModal({
 }
 
 export function Directory() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const paramSection = searchParams.get("section");
   const [section, setSection] = useState(
     paramSection && SECTIONS.some((s) => s.key === paramSection) ? paramSection : "CLASSIFIEDS",
@@ -1453,6 +1496,35 @@ export function Directory() {
     const p = searchParams.get("section");
     if (p && SECTIONS.some((s) => s.key === p)) setSection(p);
   }, [searchParams]);
+
+  // Boost return handler: Stripe sends the buyer back to
+  // /directory?boost=success&session_id=… — verify + apply the boost, banner it,
+  // refresh listings, then strip the query so a refresh doesn't re-run it.
+  const [boostBanner, setBoostBanner] = useState<{ ok: boolean; msg: string } | null>(null);
+  useEffect(() => {
+    const boost = searchParams.get("boost");
+    if (!boost) return;
+    if (boost === "success") {
+      const sid = searchParams.get("session_id");
+      if (sid) {
+        applyListingBoost(sid).then((r) => {
+          if (r?.applied) {
+            setBoostBanner({ ok: true, msg: "Payment received — your listing is boosted and now stands out. 🎉" });
+            getDirectoryListings().then(setListings);
+          } else {
+            setBoostBanner({ ok: true, msg: "Payment received — your boost is being applied and will show shortly." });
+          }
+        });
+      }
+    } else if (boost === "cancelled") {
+      setBoostBanner({ ok: false, msg: "Boost cancelled — no charge. Your listing is still posted, free." });
+    }
+    setSearchParams(
+      (prev) => { prev.delete("boost"); prev.delete("session_id"); prev.delete("tier"); return prev; },
+      { replace: true },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Per-page SEO title + meta description (Google renders JS; prerender covers bots).
   useEffect(() => {
@@ -1556,6 +1628,29 @@ export function Directory() {
     <DirModalCtx.Provider value={setModalL}>
     <main className="cbl-dir">
       <style>{DIR_CSS}</style>
+
+      {boostBanner && (
+        <div
+          role="status"
+          style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 14,
+            padding: "12px 18px", textAlign: "center", fontSize: 14, fontWeight: 600,
+            background: boostBanner.ok ? "rgba(77,191,102,.12)" : "rgba(201,151,66,.12)",
+            borderBottom: `1px solid ${boostBanner.ok ? "rgba(77,191,102,.4)" : "rgba(201,151,66,.4)"}`,
+            color: boostBanner.ok ? "#8FE0A2" : "#E6C588",
+          }}
+        >
+          <span>{boostBanner.msg}</span>
+          <button
+            type="button"
+            onClick={() => setBoostBanner(null)}
+            aria-label="Dismiss"
+            style={{ background: "none", border: 0, color: "inherit", fontSize: 18, cursor: "pointer", lineHeight: 1 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       <Hero onPost={openPost} />
       <LocationBar
