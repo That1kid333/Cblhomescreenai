@@ -38,6 +38,10 @@ const faqData = [
     answer: 'City Bucket List is a software-as-a-service platform, and every free member account includes a digital business card — your profile plus a personal QR code, built right into the site and app. Share it with anyone: a restaurant owner you love, a friend, or a driver worth knowing. When they join under your code, you earn rewards. It turns the local spots and people you already recommend into value for you — and helps grow the community.',
   },
   {
+    question: 'Where do I manage or edit my directory listings?',
+    answer: 'Everything you post lives in CBL Studio — your member hub. Open it from your profile avatar (top-right) or the "Manage my posts" link on the Directory. There you can edit any listing’s title, price, and photos, pause or delete it, boost it to Featured, and share your digital business card — all in one place. Active Private Membership drivers also get a "Verified CBL Driver" QR card that rides along on their driver posts so riders can connect in the app.',
+  },
+  {
     question: 'Do Riders pay a monthly fee?',
     answer: 'No. Rider membership is completely free. First-time members may receive special onboarding incentives depending on availability.',
   },
