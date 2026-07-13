@@ -432,13 +432,22 @@ const HOME_CSS = `
   .cbl-home .talk-band.talk-in .talk-buckee { animation:none !important; }
 }
 @media (max-width:1000px) {
-  .cbl-home .talk-band { padding:14px 22px 0; }
-  .cbl-home .talk-wrap { flex-direction:column; gap:14px; }
-  .cbl-home .talk-buckee { width:84px; height:84px; }
-  .cbl-home .talk-card { flex-wrap:wrap; gap:14px; width:100%; }
-  .cbl-home .talk-text { flex:1 1 auto; }
-  .cbl-home .lang-chips { width:100%; }
-  .cbl-home .lang-chip { flex:1; }
+  /* Buckee joins the opening screen: Buckee (left) · big Speak icon (center) ·
+     languages (2×2, right), with the "Talk to Buckee" copy centered underneath. */
+  .cbl-home .talk-band { padding:6px 20px 26px; }
+  .cbl-home .talk-wrap { flex-direction:row; align-items:center; gap:12px; }
+  .cbl-home .talk-buckee { width:98px; height:98px; }
+  .cbl-home .talk-card {
+    flex:1; min-width:0; padding:16px 16px 18px;
+    display:grid; grid-template-columns:1fr auto;
+    grid-template-areas:"mic lang" "text text"; align-items:center; gap:12px;
+  }
+  .cbl-home .talk-card .mic-btn { grid-area:mic; width:92px; height:92px; justify-self:center; }
+  .cbl-home .talk-card .mic-btn svg { width:36px; height:36px; }
+  .cbl-home .talk-card .talk-text { grid-area:text; text-align:center; }
+  .cbl-home .talk-card .talk-lede { font-size:15px; line-height:1.35; }
+  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; }
+  .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; }
 }
 
 /* ── Meet the Buckee Family teaser ── */
