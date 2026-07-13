@@ -178,6 +178,17 @@ const CATEGORIES = [
   { key: 'attractions', label: 'Attractions', to: '/attractions' },
 ];
 
+// The category each rotating slide belongs to — used for the mobile banner's single
+// contextual pill (replaces the redundant 6-button grid on phones).
+const SLIDE_CAT: Record<string, { label: string; to: string }> = {
+  transportation: { label: 'Transportation', to: '/transportation' },
+  travels: { label: 'Travels', to: '/travels' },
+  eats: { label: 'Eats & Drinks', to: '/eats-and-drinks' },
+  attractions: { label: 'Attractions', to: '/attractions' },
+  blog: { label: 'CBL Blog', to: '/blog' },
+  directory: { label: 'Directory', to: '/directory' },
+};
+
 const APP_FEATURES = [
   { t: 'Meet Buckee', d: 'Your AI travel buddy builds personalized itineraries and local insider tips on demand.' },
   { t: 'Book in seconds', d: 'Trusted rides, dining, and attractions — all from one membership, on any device.' },
@@ -331,6 +342,7 @@ const HOME_CSS = `
 .cbl-home .hero-lede .cap-link:hover { text-decoration:underline; }
 /* Keep the arrow on the same line as its link text. */
 .cbl-home .cap-link { white-space:nowrap; }
+.cbl-home .hero-cat-pill { display:none; } /* mobile-only banner category pill */
 
 .cbl-home .btn-primary {
   display:inline-flex; align-items:center; gap:10px;
@@ -587,10 +599,15 @@ const HOME_CSS = `
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
   .cbl-home .micon .chip-ic { width:44px; height:44px; }
-  /* Option B: text-only pills, 2-column grid (icons removed, labels centered) */
-  .cbl-home .chip-row { margin-top:22px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-  .cbl-home .chip { padding:11px 12px; font-size:11.5px; gap:0; justify-content:center; min-width:0; }
-  .cbl-home .chip .chip-ic { display:none; }
+  /* The 6-button category grid is redundant on mobile — the icon row above covers
+     categories. Each rotating slide instead carries one contextual category pill. */
+  .cbl-home .chip-row { display:none; }
+  .cbl-home .hero-lede .cap-link { display:none; } /* action link replaced by the category pill */
+  .cbl-home .hero-cat-pill {
+    display:inline-flex; align-items:center; margin-left:8px; vertical-align:middle;
+    padding:5px 15px; border-radius:999px; border:1px solid ${GOLD}; color:${GOLD};
+    font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+  }
   .cbl-home .app-grid { grid-template-columns:1fr; gap:32px; }
   .cbl-home .app-grid .device-wrap { order:-1; }
   .cbl-home .app-phone { width:min(74vw, 360px); }
@@ -760,6 +777,11 @@ export function Home() {
               </h1>
               <p className="hero-lede" style={fadeStyle}>
                 {slide.caption}
+                {SLIDE_CAT[slide.key] && (
+                  <Link className="hero-cat-pill" to={SLIDE_CAT[slide.key].to}>
+                    {SLIDE_CAT[slide.key].label}
+                  </Link>
+                )}
               </p>
               <button className="btn-primary" onClick={() => setJoinOpen(true)}>
                 Join Now — Free
