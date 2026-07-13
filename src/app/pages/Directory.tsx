@@ -264,6 +264,10 @@ const DIR_CSS = `
 .cbl-dir .tier.accent .cta { background:#C99742; color:#000; border-color:#C99742; }
 .cbl-dir .tier .cta:hover { background:rgba(201,151,66,.12); }
 .cbl-dir .tier.accent .cta:hover { background:#DDB15F; }
+.cbl-dir .tier.soon { opacity:.82; }
+.cbl-dir .tier .badge.soon-badge { background:#1C1C1C; color:#C99742; border:1px solid rgba(201,151,66,.55); box-shadow:none; }
+.cbl-dir .tier .cta:disabled, .cbl-dir .tier.accent .cta:disabled { background:transparent; color:#7A7A7A; border-color:rgba(255,255,255,.16); cursor:not-allowed; }
+.cbl-dir .tier .cta:disabled:hover { background:transparent; }
 
 /* Pickup banner */
 .cbl-dir .pickup-banner { background:linear-gradient(135deg, rgba(201,151,66,.16), rgba(201,151,66,.04)); border:1px solid rgba(201,151,66,.4); border-radius:18px 0 18px 0; padding:22px 28px; display:grid; grid-template-columns:auto 1fr auto; gap:24px; align-items:center; margin-top:24px; }
@@ -893,8 +897,8 @@ function Pricing({ onPost }: { onPost: () => void }) {
         </p>
         <div className="tiers">
           {PRICING.map((t) => (
-            <div key={t.name} className={"tier" + (t.accent ? " accent" : "")}>
-              {t.badge && <div className="badge">{t.badge}</div>}
+            <div key={t.name} className={"tier" + (t.accent ? " accent" : "") + (t.soon ? " soon" : "")}>
+              {t.soon ? <div className="badge soon-badge">Coming Soon</div> : t.badge && <div className="badge">{t.badge}</div>}
               <div className="name">{t.name}</div>
               <div className="price-block">
                 <div className="price">{t.price}</div>
@@ -908,11 +912,64 @@ function Pricing({ onPost }: { onPost: () => void }) {
                   <li key={b} className="muted"><Cross /> {b}</li>
                 ))}
               </ul>
-              {/* All tiers post as tier:'basic' for now — paid Featured / Pro
-                  upgrades (photos, top placement, analytics) are a later phase. */}
-              <button type="button" className="cta" onClick={onPost}>{t.cta}</button>
+              {/* Paid boosts land once Stripe checkout + the boost webhook are wired
+                  (see STRIPE-BOOST-SETUP.md). Until then paid tiers are "Coming Soon";
+                  only Basic/Free posts. */}
+              {t.soon ? (
+                <button type="button" className="cta" disabled aria-disabled="true">Coming Soon</button>
+              ) : (
+                <button type="button" className="cta" onClick={onPost}>{t.cta}</button>
+              )}
             </div>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// Firm conduct / legal disclaimer shown at the foot of every Directory section.
+// Plain-language policy — Keith should have counsel review before relying on it
+// as binding terms in your jurisdiction.
+function ConductDisclaimer() {
+  return (
+    <section className="band" style={{ borderTop: "1px solid rgba(255,255,255,.08)" }}>
+      <div className="band-inner" style={{ maxWidth: 900 }}>
+        <div
+          role="note"
+          style={{
+            background: "#0F0F0F",
+            border: "1px solid rgba(201,151,66,.28)",
+            borderRadius: "18px 0 18px 0",
+            padding: "20px 22px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase",
+              color: "#C99742", marginBottom: 10, display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" />
+            </svg>
+            Community &amp; Conduct Policy
+          </div>
+          <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>
+            The City Bucket List Directory is a member-powered marketplace. Listings are submitted by
+            members and are <b style={{ color: "#C0C0C0" }}>not verified, endorsed, or guaranteed</b> by
+            City Bucket List. <b style={{ color: "#C0C0C0" }}>We have zero tolerance for malicious activity.</b>{" "}
+            Anything illegal, fraudulent, or harmful — including solicitation, adult or sexual content,
+            harassment, hate speech, threats, scams, spam, impersonation, or misuse of another person's
+            information — is strictly prohibited. Violations result in{" "}
+            <b style={{ color: "#DDB15F" }}>immediate removal of your content and a permanent ban from the
+            City Bucket List platform, including termination of your Private Membership without refund</b>,
+            and may be reported to law enforcement. Members interact and transact{" "}
+            <b style={{ color: "#C0C0C0" }}>at their own risk</b>; City Bucket List is not a party to, and
+            accepts no liability for, dealings between members. We reserve the right to remove any listing
+            and to suspend or terminate any account at our sole discretion. Posting to the Directory
+            constitutes acceptance of these terms.
+          </p>
         </div>
       </div>
     </section>
@@ -1571,6 +1628,8 @@ export function Directory() {
           </div>
         </section>
       )}
+
+      <ConductDisclaimer />
 
       <Newsletter />
 
