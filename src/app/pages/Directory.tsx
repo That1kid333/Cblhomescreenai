@@ -1041,6 +1041,8 @@ function EmptyState({ city, onPost }: { city: string | null; onPost: () => void 
  */
 const CATEGORY_OPTIONS: { v: string; l: string }[] = [
   { v: "general", l: "General" },
+  { v: "ride_request", l: "Ride Request (need a ride)" },
+  { v: "driver_post", l: "Driver Available (offering rides)" },
   { v: "vehicles", l: "Vehicles" },
   { v: "electronics", l: "Electronics" },
   { v: "furniture", l: "Furniture" },
@@ -1375,10 +1377,23 @@ export function Directory() {
     [...items].sort((a, b) => Number(cityMatches(b.city, city)) - Number(cityMatches(a.city, city)));
 
   const classifiedsLive = useMemo(() => {
+    // Classifieds excludes ride/driver posts — those show in their own sections.
+    const base = listings.filter((l) => l.category !== "ride_request" && l.category !== "driver_post");
     const slug = CLASSIFIEDS_CHIP_TO_SLUG[cat];
-    const filtered = slug ? listings.filter((l) => l.category === slug) : listings;
+    const filtered = slug ? base.filter((l) => l.category === slug) : base;
     return sortByCityMatch(filtered).map(listingToCard);
   }, [listings, cat, city]);
+
+  // Driver Posts + Rider Requests are just public classified-style posts, filtered
+  // by category — the same simple post flow, no special form.
+  const driversLive = useMemo(
+    () => sortByCityMatch(listings.filter((l) => l.category === "driver_post")).map(listingToCard),
+    [listings, city],
+  );
+  const ridersLive = useMemo(
+    () => sortByCityMatch(listings.filter((l) => l.category === "ride_request")).map(listingToCard),
+    [listings, city],
+  );
 
   const shopLive = useMemo(() => {
     const pinnedPartners = sortByCityMatch(partners).map(partnerToCard);
@@ -1418,10 +1433,13 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="DRIVERS" onPost={openPost} />
-            <ComingSoonSection
-              title="Driver Posts — Coming Soon"
-              blurb="Independent drivers will be able to post weekly schedules and self-promote with a personal CBL QR code. This is launching on the directory app soon."
-            />
+            {driversLive.length === 0 ? (
+              <EmptyState city={city} onPost={openPost} />
+            ) : (
+              <div className="listings-grid">
+                {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -1430,10 +1448,13 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="RIDERS" onPost={openPost} />
-            <ComingSoonSection
-              title="Rider Requests — Coming Soon"
-              blurb="Posting a ride request (events, recurring schedules, airport runs) for independent drivers to respond to is launching on the directory app soon."
-            />
+            {ridersLive.length === 0 ? (
+              <EmptyState city={city} onPost={openPost} />
+            ) : (
+              <div className="listings-grid">
+                {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+              </div>
+            )}
           </div>
         </section>
       )}
@@ -1458,8 +1479,8 @@ export function Directory() {
           <div className="band-inner">
             <SectionHead section="COUPONS" onPost={openPost} />
             <ComingSoonSection
-              title="Member Coupons — Coming Soon"
-              blurb="Member-only offers from local partners are on the way. Check back soon."
+              title="Affiliate Coupons — Coming Soon"
+              blurb="Coupons and deals from local affiliates and partners — free for everyone to browse. (Posting an offer requires a partner account.) Coming soon."
             />
             <CompareBand onPost={openPost} />
           </div>
