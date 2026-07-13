@@ -363,7 +363,9 @@ const HOME_CSS = `
 
 /* ── Talk to Buckee voice bar ── */
 .cbl-home .talk-band { padding:18px 48px 0; }
-.cbl-home .talk-wrap { position:relative; max-width:1280px; margin:0 auto; display:flex; align-items:center; gap:20px; }
+.cbl-home .talk-wrap { position:relative; max-width:1280px; margin:0 auto; }
+.cbl-home .talk-row { display:flex; align-items:center; gap:20px; }
+.cbl-home .tb-note { text-transform:none; letter-spacing:0; color:#B8B8B8; font-weight:400; }
 .cbl-home .buckee-bubble { position:absolute; bottom:calc(100% + 12px); left:0; z-index:20; max-width:560px; background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:18px 18px 18px 0; padding:16px 20px; box-shadow:0 18px 44px rgba(0,0,0,.55); animation:cbl-bubble-pop .26s cubic-bezier(.2,.9,.3,1.25) both; }
 .cbl-home .buckee-bubble::after { content:''; position:absolute; bottom:-9px; left:30px; width:18px; height:18px; background:#141414; border-right:1px solid rgba(201,151,66,.45); border-bottom:1px solid rgba(201,151,66,.45); transform:rotate(45deg); }
 .cbl-home .bubble-eyebrow { font-family:${MONO}; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:6px; }
@@ -432,27 +434,28 @@ const HOME_CSS = `
   .cbl-home .talk-band.talk-in .talk-buckee { animation:none !important; }
 }
 @media (max-width:1000px) {
-  /* Buckee joins the opening screen: Buckee (left) · big Speak icon (center) ·
-     languages (2×2, right), with the "Talk to Buckee" copy centered underneath. */
-  .cbl-home section.band.talk-band { padding:2px 20px 24px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { flex-direction:row; align-items:flex-start; gap:10px; }
+  /* Buckee joins the opening screen: a [Buckee · big Speak mic · languages 2×2] row,
+     the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
+     IN-FLOW right below (no box). */
+  .cbl-home section.band.talk-band { padding:0 20px 22px; } /* beat the generic section.band 48px */
+  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:6px; }
+  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:flex-start; gap:10px; width:100%; }
   .cbl-home .talk-buckee { width:98px; height:98px; }
-  .cbl-home .talk-buckee-wrap { align-self:flex-start; margin-top:-14px; } /* lift Buckee so his feet sit at the mic line */
-  /* No box on mobile — Buckee, mic and languages sit on the black background;
-     the "Talk to Buckee" copy is centered on the mic and the reply runs below. */
+  .cbl-home .talk-buckee-wrap { align-self:flex-start; margin-top:-6px; } /* lift Buckee so his feet sit at the mic line */
   .cbl-home .talk-card {
     flex:1; min-width:0; padding:0; background:none; border:0; box-shadow:none;
     display:grid; grid-template-columns:1fr auto;
-    grid-template-areas:"mic lang" "text ."; align-items:center; gap:10px;
+    grid-template-areas:"mic lang" "text ."; align-items:center; gap:8px;
   }
-  .cbl-home .talk-card .mic-btn { grid-area:mic; width:92px; height:92px; justify-self:center; }
-  .cbl-home .talk-card .mic-btn svg { width:36px; height:36px; }
+  .cbl-home .talk-card .mic-btn { grid-area:mic; width:88px; height:88px; justify-self:center; }
+  .cbl-home .talk-card .mic-btn svg { width:34px; height:34px; }
   .cbl-home .talk-card .talk-text { grid-area:text; text-align:center; } /* centered under the mic (col 1) */
-  .cbl-home .talk-card .talk-lede { font-size:15px; line-height:1.35; }
+  .cbl-home .talk-card .talk-lede { display:none; } /* redundant with the chat greeting */
+  .cbl-home .talk-card .talk-eyebrow { margin-bottom:0; }
   .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:start; }
   .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; }
-  /* Buckee's reply opens BELOW the bar on mobile (under the copy), not above. */
-  .cbl-home .buckee-chat { top:calc(100% + 12px); bottom:auto; max-width:none; border-radius:18px 18px 18px 18px; }
+  /* Chat auto-shows in the flow, just under the "Speak to Buckee" label. */
+  .cbl-home .buckee-chat { order:2; position:static; width:100%; max-width:none; margin:0; border-radius:16px; }
 }
 
 /* ── Meet the Buckee Family teaser ── */
@@ -600,7 +603,7 @@ const HOME_CSS = `
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:8px; }
   .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:10px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(104px,20vh,158px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(94px,17vh,136px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
@@ -612,10 +615,10 @@ const HOME_CSS = `
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
-  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:2px 0 8px; }
+  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:0 0 4px; }
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
-  .cbl-home .micon .chip-ic { width:44px; height:44px; }
+  .cbl-home .micon .chip-ic { width:40px; height:40px; }
   /* The 6-button category grid is redundant on mobile — the icon row above covers
      categories. Each rotating slide instead carries one contextual category pill. */
   .cbl-home .chip-row { display:none; }
@@ -679,7 +682,9 @@ export function Home() {
   };
   const LANG_LOCALE: Record<string, string> = { EN: 'en-US', ES: 'es-ES', FR: 'fr-FR', PT: 'pt-BR' };
 
-  const [chatOpen, setChatOpen] = useState(false);
+  // Auto-open Buckee's chat on mobile so his greeting shows without a tap; on
+  // desktop it stays click-to-open (the bar opens the panel).
+  const [chatOpen, setChatOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 1000);
   const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -922,6 +927,7 @@ export function Home() {
               )}
             </div>
           )}
+          <div className="talk-row">
           <span className="talk-buckee-wrap">
             <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
           </span>
@@ -935,7 +941,7 @@ export function Home() {
               </svg>
             </button>
             <div className="talk-text">
-              <div className="talk-eyebrow">Talk to Buckee</div>
+              <div className="talk-eyebrow">Speak to Buckee <span className="tb-note">(Multilingual)</span></div>
               <div className="talk-lede">Your AI concierge — ask him anything about the city.</div>
             </div>
             <div className="lang-chips">
@@ -949,6 +955,7 @@ export function Home() {
                 </button>
               ))}
             </div>
+          </div>
           </div>
         </div>
       </section>
