@@ -1,8 +1,37 @@
+import { useEffect, useState } from 'react';
+import QRCode from 'qrcode';
 import riderImage from '../../assets/rider_meeting_driver_neutral.png';
 import driverImage from '../../assets/driver_at_wheel.jpg';
 import conciergeImage from '../../assets/concierge_professional.jpg';
+import driverFace from '../../assets/cbl-keith.png';
 import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 import { Link } from 'react-router';
+
+// Little example of the member digital business card — a driver's shareable card.
+function BizCardMock() {
+  const [qr, setQr] = useState('');
+  useEffect(() => {
+    QRCode.toDataURL(`${APP_URL}/r/demo`, { margin: 0, width: 200, color: { dark: '#000000', light: '#FFFFFF' } })
+      .then(setQr).catch(() => setQr(''));
+  }, []);
+  return (
+    <div className="bizcard" role="img" aria-label="Example: a driver's CBL digital business card with photo, name, and a scannable QR code">
+      <div className="bc-eyebrow">Example — a driver's card</div>
+      <div className="bc-top">
+        <img src={driverFace} alt="" className="bc-face" />
+        <div>
+          <div className="bc-verified">★ Verified CBL Driver</div>
+          <div className="bc-name">Marcus D.</div>
+          <div className="bc-role">Airport Runs · Pittsburgh</div>
+        </div>
+      </div>
+      <div className="bc-bottom">
+        <div className="bc-qr">{qr && <img src={qr} alt="" />}</div>
+        <div className="bc-scan">Scan to <b>connect</b> — or join under Marcus's code and he earns.</div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * How It Works — re-skinned to match the Explore pages (Travels / Transportation
@@ -114,6 +143,22 @@ const HOW_CSS = `
   font-family:${MONO}; font-size:11px; letter-spacing:.1em; text-transform:uppercase;
   color:#B8B8B8; border:1px solid rgba(255,255,255,.16); padding:6px 12px; border-radius:999px; white-space:nowrap;
 }
+.cbl-how .choice .card-chips { margin-top:16px; justify-content:flex-start; }
+.cbl-how .bizcard {
+  width:262px; max-width:100%; flex-shrink:0; background:linear-gradient(180deg,#161616,#0c0c0c);
+  border:1px solid rgba(201,151,66,.4); border-radius:16px 0 16px 0; padding:18px; box-shadow:0 14px 40px rgba(0,0,0,.5);
+}
+.cbl-how .bizcard .bc-eyebrow { font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; margin-bottom:12px; }
+.cbl-how .bizcard .bc-top { display:flex; gap:12px; align-items:center; margin-bottom:14px; }
+.cbl-how .bizcard .bc-face { width:54px; height:54px; border-radius:50%; object-fit:cover; object-position:top center; border:2px solid #C99742; flex-shrink:0; }
+.cbl-how .bizcard .bc-verified { font-family:${MONO}; font-size:9px; letter-spacing:.06em; text-transform:uppercase; color:#8FE0A2; margin-bottom:3px; }
+.cbl-how .bizcard .bc-name { font-family:${DISPLAY}; font-weight:800; font-size:16px; color:#fff; line-height:1.1; }
+.cbl-how .bizcard .bc-role { font-size:11.5px; color:#9a9a9a; margin-top:2px; }
+.cbl-how .bizcard .bc-bottom { display:flex; gap:12px; align-items:center; border-top:1px solid rgba(255,255,255,.08); padding-top:14px; }
+.cbl-how .bizcard .bc-qr { width:66px; height:66px; background:#fff; border-radius:8px; padding:5px; flex-shrink:0; }
+.cbl-how .bizcard .bc-qr img { width:100%; height:100%; display:block; }
+.cbl-how .bizcard .bc-scan { font-size:12px; color:#C8C8C8; line-height:1.4; }
+.cbl-how .bizcard .bc-scan b { color:#C99742; }
 
 /* ── Audience rows ── */
 .cbl-how .row {
@@ -438,13 +483,14 @@ export function HowItWorks() {
                 <a href="/studio" style={{ color: '#C99742', fontWeight: 700 }}>CBL Studio</a> —
                 your member hub, one tap from your profile avatar.
               </p>
+              <div className="chips card-chips">
+                <span className="chip">+ Restaurants</span>
+                <span className="chip">+ Riders</span>
+                <span className="chip">+ Drivers</span>
+                <span className="chip">+ Local spots</span>
+              </div>
             </div>
-            <div className="chips">
-              <span className="chip">+ Restaurants</span>
-              <span className="chip">+ Riders</span>
-              <span className="chip">+ Drivers</span>
-              <span className="chip">+ Local spots</span>
-            </div>
+            <BizCardMock />
           </div>
         </div>
       </section>
