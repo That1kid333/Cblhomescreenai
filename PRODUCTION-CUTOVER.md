@@ -53,6 +53,16 @@ public and already baked in as fallbacks. Only set them to override a default
 - [ ] `/sitemap.xml` returns the page list + blog posts; `robots.txt` points to it
 - [ ] Submit the homepage "Join Now" + `/contact` → email lands at info@ (proves `RESEND_API_KEY`)
 
+## Before flipping the domain: pull the sample/demo listings
+The Directory shows a couple of hand-seeded **demo** entries so the page isn't
+empty while testing. They only surface for their own city (city filtering is
+live), so they don't pollute the Pittsburgh default — but remove/replace them
+before the public launch:
+- **Schmieddy's BBQ (Atlanta)** — sample business in the `cbl-directory` project's
+  `businesses` table. Only shows when a visitor searches Atlanta / is in GA.
+- Any other seeded `businesses` rows that aren't real partners.
+(Square Cafe is a real CBL partner — keep it.)
+
 ## Related, NOT part of this cutover
 - **Weekly CBL Dispatch** needs `RESEND_API_KEY` as a **Supabase** function secret
   (different from Netlify) — see `blog/WEEKLY-DIGEST-ACTIVATION.md`.
