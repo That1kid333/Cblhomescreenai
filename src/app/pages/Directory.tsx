@@ -896,6 +896,28 @@ export function Directory() {
     const p = searchParams.get("section");
     if (p && SECTIONS.some((s) => s.key === p)) setSection(p);
   }, [searchParams]);
+
+  // Per-page SEO title + meta description (Google renders JS; prerender covers bots).
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = "Local Directory — Classifieds, Shopping & Deals | City Bucket List";
+    const desc =
+      "Browse local classifieds, driver posts, rider requests, shopping, and member coupons near you — free to browse, sign in to post. City Bucket List's community directory.";
+    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    const prevDesc = meta.getAttribute("content");
+    meta.setAttribute("content", desc);
+    return () => {
+      document.title = prevTitle;
+      if (created) meta?.remove();
+      else if (prevDesc !== null) meta?.setAttribute("content", prevDesc);
+    };
+  }, []);
   const [cat, setCat] = useState("ALL");
   const { city, setManualCity } = useVisitorLocation();
 

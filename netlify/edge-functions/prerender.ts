@@ -186,6 +186,39 @@ export default async function handler(req: Request, context: Context): Promise<R
       return finish();
     }
 
+    if (path === '/directory') {
+      const title = 'Local Directory — Classifieds, Shopping & Deals | City Bucket List';
+      const description =
+        'Browse local classifieds, driver posts, rider requests, shopping, and member coupons near you — free to browse, sign in to post. City Bucket List community directory.';
+      const sections = ['Classifieds', 'Driver Posts', 'Rider Requests', 'Shopping', 'Coupons & Offers'];
+      const jsonld = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: title,
+        description,
+        url: `${origin}/directory`,
+        mainEntity: {
+          '@type': 'ItemList',
+          name: 'Directory sections',
+          itemListElement: sections.map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s })),
+        },
+      };
+      html = injectHead(html, {
+        title,
+        description,
+        url: `${origin}/directory`,
+        image: absUrl(origin, null),
+        type: 'website',
+        jsonld,
+      });
+      const list = sections.map((s) => `<li>${esc(s)}</li>`).join('');
+      html = injectRoot(
+        html,
+        `<main><p>classifieds · drivers · riders · shopping · coupons</p><h1>Local Directory</h1><p>${esc(description)}</p><h2>Browse the directory</h2><ul>${list}</ul><p>Free to browse. Sign in to post. City Bucket List is a software-as-a-service platform.</p></main>`,
+      );
+      return finish();
+    }
+
     if (path === '/attractions') {
       const title = 'Attractions Near You — Top-Rated Things To Do | City Bucket List';
       const description =
