@@ -218,6 +218,7 @@ export function PartnerRestaurants() {
             with a partner badge and a full profile — and reach CBL members and local drivers
             exploring your city.
           </p>
+          <a className="apply" href="#plans" style={{ marginTop: 22 }}>See Plans →</a>
         </div>
       </section>
 
@@ -242,7 +243,7 @@ export function PartnerRestaurants() {
         </div>
       </section>
 
-      <section className="band pricing-band">
+      <section className="band pricing-band" id="plans">
         <div className="band-inner">
           <div className="section-eyebrow">restaurant partner pricing</div>
           <h2 className="section-h2">Choose your <span className="it">tier</span></h2>
