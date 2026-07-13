@@ -78,14 +78,20 @@ Rather than edit Justin's shared partner webhook, boosts use a self-contained
 - (Stripe's headless Sandbox card UI blocks bot entry, so the real-card click-through
   is best done by a human with test card `4242 4242 4242 4242`.)
 
-## Left before flipping the paid tiers live
-1. **Frontend flow:** a member posts free, then a **"⚡ Boost this listing"** entry
-   (recommended: on the post-success screen, using the new listing's id) calls
-   `create-listing-boost-checkout` → redirect to Stripe; on return `?boost=success`
-   the site calls `apply-listing-boost` and shows the Featured badge. Then swap the
-   pricing-card "Coming Soon" buttons to live CTAs.
-2. **Go live:** flip `app_settings.stripe_live_payments_enabled='true'` (also confirm
-   the live `STRIPE_SECRET_KEY` is set). Until then it's test-card only.
+## Frontend — WIRED + live on preview (2026-07-13)
+- Post a listing free → the **success screen** offers Photo / Featured / Pro boosts
+  for that listing → `create-listing-boost-checkout` → Stripe Checkout.
+- **Boost your listing** pricing cards: "Coming Soon" removed; all CTAs open the post
+  flow (you boost on the success screen). Featured shows the 30-day model.
+- On return `/directory?boost=success&session_id=…` the site calls
+  `apply-listing-boost`, banners the result, refetches, and strips the query.
+- Verified on preview: pricing live, success + cancelled banners fire, URL self-cleans.
+
+## The ONLY thing left to charge real cards
+**Flip `app_settings.stripe_live_payments_enabled='true'`** (and confirm the live
+`STRIPE_SECRET_KEY` is set) — at/after the production cutover. Until then the whole
+flow runs in **Stripe TEST mode**: test card `4242 4242 4242 4242` works; real cards
+aren't charged. So on the live domain, keep it test-mode until you flip the switch.
 
 **Not a blocker:** boosts do NOT depend on rotating the exposed service-role key —
 `apply-listing-boost` uses that key successfully today. (Rotation is still worth
