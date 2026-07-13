@@ -1355,7 +1355,7 @@ export function Directory() {
     };
   }, []);
   const [cat, setCat] = useState("ALL");
-  const { city, setManualCity } = useVisitorLocation();
+  const { city, state, setManualCity } = useVisitorLocation();
 
   const [partners, setPartners] = useState<Partner[]>([]);
   const [businesses, setBusinesses] = useState<DirectoryBusiness[]>([]);
@@ -1373,8 +1373,27 @@ export function Directory() {
   }, []);
 
 
-  const sortByCityMatch = <T extends { city?: string | null }>(items: T[]) =>
-    [...items].sort((a, b) => Number(cityMatches(b.city, city)) - Number(cityMatches(a.city, city)));
+  // FILTER to the selected/detected location (not just sort) so a search actually
+  // narrows results — "Florida" shows Florida listings only (empty here), not a
+  // Pittsburgh shop floated down the list. Two ways a listing counts:
+  //   1. City name matches (forgiving contains-match, so "Pittsburgh" catches
+  //      "Pittsburgh, PA") — this is the only test for a TYPED search.
+  //   2. Same state — but ONLY when we auto-detected the visitor's state (IP/GPS).
+  //      Typing a city clears state (""), so a typed search stays strict; an
+  //      auto-detected SUBURB (e.g. West View, PA) still sees its metro's
+  //      listings (Pittsburgh, PA). Mirrors the "suburbs count" market logic.
+  // No city set yet → show everything.
+  const filterByLocation = <T extends { city?: string | null; state?: string | null }>(items: T[]) => {
+    if (!city) return items;
+    const c = city.trim().toLowerCase();
+    const s = (state ?? "").trim().toLowerCase();
+    return items.filter((i) => {
+      const ic = (i.city ?? "").trim().toLowerCase();
+      if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
+      const is = (i.state ?? "").trim().toLowerCase();
+      return !!s && !!is && is === s;
+    });
+  };
 
   const classifiedsLive = useMemo(() => {
     // Classifieds excludes ride/driver posts — those show in their own sections.
