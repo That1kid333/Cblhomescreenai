@@ -64,7 +64,8 @@ export async function postDirectoryListing(
     if (drv) {
       const status = String(drv.subscription_status ?? '');
       const notExpired = !drv.subscription_end || new Date(drv.subscription_end as string) > new Date();
-      const active = !!drv.manual_subscription_override || (['active', 'trial'].includes(status) && notExpired);
+      // 'canceled_grace_period' still has PAID access until the period ends.
+      const active = !!drv.manual_subscription_override || (['active', 'trial', 'canceled_grace_period'].includes(status) && notExpired);
       if (active) driverCode = (drv.referral_code as string | null) ?? null;
     }
   }

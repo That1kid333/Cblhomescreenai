@@ -102,6 +102,7 @@ export async function getMyDriver(): Promise<MyDriver | null> {
   if (error || !data) return null;
   const status = String(data.subscription_status ?? '');
   const notExpired = !data.subscription_end || new Date(data.subscription_end as string) > new Date();
-  const active = !!data.manual_subscription_override || (['active', 'trial'].includes(status) && notExpired);
+  // 'canceled_grace_period' still has PAID access until the period ends.
+  const active = !!data.manual_subscription_override || (['active', 'trial', 'canceled_grace_period'].includes(status) && notExpired);
   return { referralCode: (data.referral_code as string | null) ?? null, active, name: (data.name as string | null) ?? null };
 }
