@@ -1872,16 +1872,8 @@ export function Directory() {
       )}
 
       <Hero onPost={openPost} />
-      <LocationBar
-        city={city}
-        onChangeCity={setManualCity}
-        scope={scope}
-        onScope={setScope}
-        metroLabel={metroLabel}
-        showScope={!!state}
-      />
       {sessionUid && (
-        <div className="band tight" style={{ paddingTop: 0 }}>
+        <div className="band tight" style={{ paddingBottom: 0 }}>
           <div className="band-inner">
             <a
               href="/studio"
@@ -1892,6 +1884,14 @@ export function Directory() {
           </div>
         </div>
       )}
+      <LocationBar
+        city={city}
+        onChangeCity={setManualCity}
+        scope={scope}
+        onScope={setScope}
+        metroLabel={metroLabel}
+        showScope={!!state}
+      />
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
