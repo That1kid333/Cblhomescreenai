@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { RIDER_BOOK_URL } from '../lib/constants';
+import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 
 /**
@@ -1421,6 +1422,86 @@ function AttractionModal({ a, onClose }: { a: Attraction | null; onClose: () => 
   );
 }
 
+// Footer band: community "suggest a spot" + the attraction/venue sponsorship
+// pitch (top placement → /partner-attractions, which carries the tiers).
+function SuggestBand() {
+  return (
+    <section className="band tight" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
+      <div className="band-inner">
+        <div className="section-eyebrow">add to the list</div>
+        <h2 className="section-h2">
+          Know a spot? <span className="it">Put it on the map.</span>
+        </h2>
+        <p style={{ color: '#B0B0B0', fontSize: 15, lineHeight: 1.55, maxWidth: '62ch', margin: '10px 0 0' }}>
+          Ratings come live from Google — but the best local picks come from people who actually go.
+          Missing your favorite attraction or venue? Tell us. Run one? Get featured up top.
+        </p>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: 18,
+            marginTop: 30,
+          }}
+        >
+          <div
+            style={{
+              background: '#141414',
+              border: '1px solid rgba(255,255,255,.08)',
+              borderRadius: '18px 0 18px 0',
+              padding: '26px 28px',
+            }}
+          >
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: '#8CC084', marginBottom: 10 }}>
+              For members
+            </div>
+            <h3 style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, textTransform: 'uppercase', margin: '0 0 8px', color: '#fff' }}>
+              Suggest a spot
+            </h3>
+            <p style={{ color: '#B0B0B0', fontSize: 14.5, lineHeight: 1.6, margin: '0 0 18px' }}>
+              Got a favorite attraction, venue, or hidden gem we&rsquo;re missing? Send it our way — the
+              best local picks make the list.
+            </p>
+            <Link
+              to="/contact"
+              style={{ display: 'inline-block', padding: '12px 24px', borderRadius: 999, border: `1.5px solid ${GOLD}`, color: GOLD, textDecoration: 'none', fontFamily: DISPLAY, fontWeight: 800, fontSize: 12.5, letterSpacing: '.06em', textTransform: 'uppercase' }}
+            >
+              Suggest a spot →
+            </Link>
+          </div>
+
+          <div
+            style={{
+              background: 'linear-gradient(135deg, rgba(201,151,66,.12), rgba(201,151,66,.03))',
+              border: `1px solid ${GOLD}`,
+              borderRadius: '18px 0 18px 0',
+              padding: '26px 28px',
+            }}
+          >
+            <div style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '.14em', textTransform: 'uppercase', color: GOLD, marginBottom: 10 }}>
+              For attractions &amp; venues
+            </div>
+            <h3 style={{ fontFamily: DISPLAY, fontWeight: 900, fontSize: 22, textTransform: 'uppercase', margin: '0 0 8px', color: '#fff' }}>
+              Get featured — sponsored placement
+            </h3>
+            <p style={{ color: '#C7C7C7', fontSize: 14.5, lineHeight: 1.6, margin: '0 0 18px' }}>
+              Run an attraction, venue, or experience? Partner with CBL for{' '}
+              <b style={{ color: '#fff' }}>top placement</b> — sponsored spots appear first — plus
+              ticketed bookings and a partner badge.
+            </p>
+            <Link
+              to="/partner-attractions"
+              style={{ display: 'inline-block', padding: '12px 26px', borderRadius: 999, background: GOLD, color: '#000', textDecoration: 'none', fontFamily: DISPLAY, fontWeight: 800, fontSize: 12.5, letterSpacing: '.06em', textTransform: 'uppercase' }}
+            >
+              Partner with CBL →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Attractions() {
   const [cat, setCat] = useState<Category>('ALL');
   const [modalA, setModalA] = useState<Attraction | null>(null);
@@ -1523,6 +1604,7 @@ export function Attractions() {
           </div>
         </div>
       </section>
+      <SuggestBand />
       <AttractionModal a={modalA} onClose={() => setModalA(null)} />
     </main>
     </AttractionModalCtx.Provider>
