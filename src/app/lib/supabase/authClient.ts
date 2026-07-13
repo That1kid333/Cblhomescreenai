@@ -40,32 +40,37 @@ export type PostListingInput = {
 
 export async function postDirectoryListing(
   input: PostListingInput,
-): Promise<{ error: string | null }> {
+): Promise<{ error: string | null; id: string | null }> {
   const {
     data: { session },
   } = await authClient.auth.getSession();
-  if (!session?.user) return { error: 'Please sign in to post.' };
+  if (!session?.user) return { error: 'Please sign in to post.', id: null };
 
   // Auto-screen for solicitation / adult / hateful content BEFORE saving — no
   // approval queue, no manual moderation. Blocked posts never reach the table.
   const screen = screenListing(input.title, input.description);
-  if (!screen.ok) return { error: screen.reason };
+  if (!screen.ok) return { error: screen.reason, id: null };
 
-  const { error } = await authClient.from('directory_listings').insert({
-    user_id: session.user.id, // MUST equal auth.uid() for the RLS WITH CHECK
-    title: input.title,
-    category: input.category,
-    description: input.description ?? null,
-    price_type: input.priceType ?? 'fixed',
-    price: input.priceType === 'free' ? null : (input.price ?? null),
-    // city/state have DB defaults ('Atlanta' / 'GA') — only send when provided
-    // so an unset field falls back to its default instead of a null override.
-    ...(input.city !== undefined ? { city: input.city } : {}),
-    ...(input.state !== undefined ? { state: input.state } : {}),
-    posted_by_email: session.user.email ?? null,
-    posted_by_name: (session.user.user_metadata?.name as string) ?? null,
-    source: 'citybucketlist',
-  });
+  // Return the new row's id so the caller can immediately offer to BOOST it.
+  const { data, error } = await authClient
+    .from('directory_listings')
+    .insert({
+      user_id: session.user.id, // MUST equal auth.uid() for the RLS WITH CHECK
+      title: input.title,
+      category: input.category,
+      description: input.description ?? null,
+      price_type: input.priceType ?? 'fixed',
+      price: input.priceType === 'free' ? null : (input.price ?? null),
+      // city/state have DB defaults ('Atlanta' / 'GA') — only send when provided
+      // so an unset field falls back to its default instead of a null override.
+      ...(input.city !== undefined ? { city: input.city } : {}),
+      ...(input.state !== undefined ? { state: input.state } : {}),
+      posted_by_email: session.user.email ?? null,
+      posted_by_name: (session.user.user_metadata?.name as string) ?? null,
+      source: 'citybucketlist',
+    })
+    .select('id')
+    .single();
 
-  return { error: error?.message ?? null };
+  return { error: error?.message ?? null, id: data?.id != null ? String(data.id) : null };
 }
