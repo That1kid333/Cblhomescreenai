@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { screenListing } from '../moderation';
 
 // Member sign-in against the main app's Supabase (CBL-Rides) — the SAME
 // accounts as app.citybucketlist.com. Unlike ridesClient/directoryClient
@@ -44,6 +45,11 @@ export async function postDirectoryListing(
     data: { session },
   } = await authClient.auth.getSession();
   if (!session?.user) return { error: 'Please sign in to post.' };
+
+  // Auto-screen for solicitation / adult / hateful content BEFORE saving — no
+  // approval queue, no manual moderation. Blocked posts never reach the table.
+  const screen = screenListing(input.title, input.description);
+  if (!screen.ok) return { error: screen.reason };
 
   const { error } = await authClient.from('directory_listings').insert({
     user_id: session.user.id, // MUST equal auth.uid() for the RLS WITH CHECK

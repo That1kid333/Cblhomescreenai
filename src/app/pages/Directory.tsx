@@ -1343,6 +1343,11 @@ function PostListingModal({
                     maxLength={2000}
                   />
                 </div>
+                <p style={{ fontSize: 11.5, lineHeight: 1.4, color: "#8A8A8A", margin: "2px 0 12px" }}>
+                  Keep it friendly and legit — no solicitation, adult content, or
+                  hateful/harassing posts. Anything that breaks our community
+                  guidelines is removed and the account can be banned.
+                </p>
                 <button type="submit" className="submit" disabled={status === "pending"}>
                   {status === "pending" ? "Posting…" : "Post Listing — Free"}
                 </button>
