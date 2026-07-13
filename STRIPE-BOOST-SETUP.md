@@ -52,30 +52,41 @@ The amount is **never** sent by the browser — the client only picks which tier
 
 ---
 
-## What I've built / what's left (my side)
+## Architecture (built + deployed 2026-07-13)
 
-**Done**
-- `supabase/functions/create-listing-boost-checkout/` — the Checkout session
-  creator (auto-provisions prices, test/live-gated, stamps
-  `metadata.cbl_source='listing-boost'`, `cbl_boost_tier`, `cbl_listing_id`).
-- Paid tiers gated to "Coming Soon" on the Directory page.
+Rather than edit Justin's shared partner webhook, boosts use a self-contained
+**verify-on-return** pair — no new Stripe webhook endpoint needed:
 
-**Left before flipping it on**
-1. **Deploy** `create-listing-boost-checkout` to CBL-Rides (I'll do this via Supabase).
-2. **Extend `stripe-partner-webhook`** to also handle `cbl_source==='listing-boost'`:
-   on `checkout.session.completed`, update `directory_listings` for
-   `metadata.cbl_listing_id` — set `tier`, `featured=true` (for featured/pro),
-   bump `expires_at`. Idempotent on `stripe_session_id` like the partner path.
-   *(Uses the service-role key already in the webhook's secrets — works today.)*
-3. **Frontend flow:** a member posts free, then a **"⚡ Boost this listing"** button
-   (in their listing's detail panel) calls the function and redirects to Stripe;
-   on return `?boost=success` we refresh and show the Featured badge. Then swap the
-   pricing-card "Coming Soon" buttons back to live CTAs.
-4. **Time-boxed "Featured" decision:** `directory_listings` has no `featured_until`
-   column. Options: (a) add `featured_until timestamptz` + a nightly job to clear
-   expired features (true "per week"); or (b) keep it simple — Featured stays on for
-   the listing's 30-day life for a flat $4.99. Recommend (b) for launch. *(Your call.)*
+1. **`create-listing-boost-checkout`** (deployed, `verify_jwt=false`) — makes the
+   Checkout session. Auto-provisions prices via lookup keys, test/live-gated,
+   stamps `metadata.cbl_source='listing-boost' + cbl_boost_tier + cbl_listing_id`.
+2. **`apply-listing-boost`** (deployed, `verify_jwt=false`) — on return from Stripe
+   (`/directory?boost=success&session_id=…`) the site calls this; it retrieves the
+   session straight from Stripe, confirms `payment_status==='paid'` + the boost
+   metadata, then flips `directory_listings` for that id: `tier`, `featured=true`
+   (featured/pro), `expires_at = now()+30 days`. Idempotent; the unguessable
+   session id is the proof of payment.
 
-**Not a blocker:** this does NOT depend on rotating the exposed service-role key —
-the webhook already uses that key successfully. (Rotation is still worth doing for
-security, but it doesn't hold up boosts.)
+**Featured = flat 30-day life** (Keith's call 2026-07-13) — one-time $4.99, no
+`featured_until` column or expiry cron needed.
+
+## Verified 2026-07-13 (test mode)
+- Checkout → valid `cs_test` session, correct product/price ($4.99), metadata stamped. ✅
+- `apply-listing-boost` on an **unpaid** session → correctly **refuses** (`applied:false,
+  payment_status=unpaid`) — no pay, no boost. ✅
+- The flip write → `basic → featured=true, tier=featured, 30-day expiry`. ✅
+- (Stripe's headless Sandbox card UI blocks bot entry, so the real-card click-through
+  is best done by a human with test card `4242 4242 4242 4242`.)
+
+## Left before flipping the paid tiers live
+1. **Frontend flow:** a member posts free, then a **"⚡ Boost this listing"** entry
+   (recommended: on the post-success screen, using the new listing's id) calls
+   `create-listing-boost-checkout` → redirect to Stripe; on return `?boost=success`
+   the site calls `apply-listing-boost` and shows the Featured badge. Then swap the
+   pricing-card "Coming Soon" buttons to live CTAs.
+2. **Go live:** flip `app_settings.stripe_live_payments_enabled='true'` (also confirm
+   the live `STRIPE_SECRET_KEY` is set). Until then it's test-card only.
+
+**Not a blocker:** boosts do NOT depend on rotating the exposed service-role key —
+`apply-listing-boost` uses that key successfully today. (Rotation is still worth
+doing for security, but it doesn't hold up boosts.)
