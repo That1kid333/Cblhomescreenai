@@ -1932,7 +1932,10 @@ export function Directory() {
       <EditListingModal
         listingId={editId}
         onClose={() => setEditId(null)}
-        onSaved={refetchListings}
+        onSaved={() => {
+          refetchListings();
+          setBoostBanner({ ok: true, msg: "Photos added 🎉 Your ad is live and looking sharp." });
+        }}
       />
     </main>
     </DirModalCtx.Provider>
