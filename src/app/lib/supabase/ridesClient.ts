@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { DirectoryListing } from './directoryClient';
 
 // CBL-Rides is the main app's database (app.citybucketlist.com). The anon key
 // is safe to fall back to here — it's already public in the app's own client
@@ -46,4 +47,38 @@ export async function getActivePartners(opts: { city?: string; businessType?: st
     return [];
   }
   return data ?? [];
+}
+
+// Classifieds live in CBL-Rides `directory_listings` — the SAME project as member
+// auth, so members post via RLS (no bridge). Public read = active listings only
+// (RLS enforces status='active' AND not expired). Mapped to the DirectoryListing
+// shape so the existing card mapping keeps working (neighborhood → subcategory).
+export async function getDirectoryListings(
+  opts: { city?: string; category?: string } = {},
+): Promise<DirectoryListing[]> {
+  let query = ridesClient
+    .from('directory_listings')
+    .select('id, title, description, category, price, price_type, city, state, neighborhood, photos, featured, urgent')
+    .eq('status', 'active');
+  if (opts.city) query = query.ilike('city', opts.city);
+  if (opts.category) query = query.eq('category', opts.category);
+  const { data, error } = await query.order('featured', { ascending: false }).limit(60);
+  if (error) {
+    console.error('[ridesClient] getDirectoryListings failed:', error.message);
+    return [];
+  }
+  return (data ?? []).map((r: Record<string, unknown>) => ({
+    id: String(r.id),
+    title: r.title as string,
+    description: (r.description as string | null) ?? null,
+    category: r.category as string,
+    subcategory: (r.neighborhood as string | null) ?? null,
+    price: (r.price as number | null) ?? null,
+    price_type: (r.price_type as string | null) ?? null,
+    city: (r.city as string | null) ?? null,
+    state: (r.state as string | null) ?? null,
+    photos: (r.photos as string[] | null) ?? null,
+    featured: (r.featured as boolean | null) ?? null,
+    urgent: (r.urgent as boolean | null) ?? null,
+  }));
 }

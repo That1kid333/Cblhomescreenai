@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
-import { getActivePartners, type Partner } from "../lib/supabase/ridesClient";
+import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import {
   getActiveBusinesses,
-  getActiveListings,
   type DirectoryBusiness,
   type DirectoryListing,
 } from "../lib/supabase/directoryClient";
@@ -928,7 +927,7 @@ export function Directory() {
   useEffect(() => {
     getActivePartners().then(setPartners);
     getActiveBusinesses().then(setBusinesses);
-    getActiveListings().then(setListings);
+    getDirectoryListings().then(setListings);
   }, []);
 
   const availableCities = useMemo(() => {
