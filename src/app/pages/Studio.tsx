@@ -16,6 +16,7 @@ import {
   type Submission,
 } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
+import { MemberStudio } from './StudioMember';
 
 /**
  * CBL Studio — the admin authoring editor at /studio. Keith, Brian, and Justin
@@ -204,8 +205,16 @@ export function Studio() {
       <div className="wrap">
         {phase === 'loading' && <div className="empty">Checking your access…</div>}
         {phase === 'anon' && <SignIn />}
-        {phase === 'notadmin' && <NotAdmin email={userEmail} onSignOut={() => authClient.auth.signOut()} />}
-        {phase === 'admin' && <Admin email={userEmail} />}
+        {phase === 'notadmin' && (
+          <MemberStudio email={userEmail} onSignOut={() => authClient.auth.signOut()} />
+        )}
+        {phase === 'admin' && (
+          <MemberStudio
+            email={userEmail}
+            onSignOut={() => authClient.auth.signOut()}
+            blog={<Admin email={userEmail} />}
+          />
+        )}
       </div>
     </main>
   );
@@ -230,8 +239,8 @@ function SignIn() {
   return (
     <div className="gate">
       <div className="brandmark">CBL Studio</div>
-      <h2>Sign in to write</h2>
-      <p>Use your CityBucketList admin account — the same email and password as the app.</p>
+      <h2>Sign in to your studio</h2>
+      <p>Use your CityBucketList account — the same email and password as the app — to manage your listings and business card.</p>
       {err && <div className="alert">{err}</div>}
       <form onSubmit={submit}>
         <div className="fld">
@@ -247,7 +256,7 @@ function SignIn() {
         </button>
       </form>
       <p className="note">
-        This is separate from the preview “demo member” — Studio always needs a real admin login. Forgot your password?
+        This is separate from the preview “demo member” — Studio always needs a real login. Forgot your password?
         Reset it in the <a href={APP_URL}>app</a>.
       </p>
     </div>

@@ -1840,6 +1840,18 @@ export function Directory() {
         metroLabel={metroLabel}
         showScope={!!state}
       />
+      {sessionUid && (
+        <div className="band tight" style={{ paddingTop: 0 }}>
+          <div className="band-inner">
+            <a
+              href="/studio"
+              style={{ color: "#C99742", fontFamily: MONO, fontSize: 12, letterSpacing: ".07em", textTransform: "uppercase", fontWeight: 700 }}
+            >
+              ▸ Manage my posts in CBL Studio
+            </a>
+          </div>
+        </div>
+      )}
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
