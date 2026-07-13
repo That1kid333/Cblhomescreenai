@@ -49,6 +49,7 @@ type Listing = {
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
   muted?: string[]; accent?: boolean; badge?: string; cta: string;
+  soon?: boolean; // paid boosts aren't wired to checkout yet → "Coming Soon"
 };
 
 const DIR_CSS = `
