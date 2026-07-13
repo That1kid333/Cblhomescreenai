@@ -1781,6 +1781,19 @@ export function Directory() {
     getDirectoryListings().then(setListings);
   }, []);
 
+  // Deep-link from CBL Studio's "View" button: /directory?listing=<id> opens that
+  // listing's detail panel once listings load (searches the raw set so the location
+  // filter can't hide the owner's own listing). Strip the param so refresh won't reopen.
+  const openedListingRef = useRef(false);
+  useEffect(() => {
+    const lid = searchParams.get("listing");
+    if (!lid || openedListingRef.current || !listings.length) return;
+    openedListingRef.current = true;
+    const found = listings.find((l) => String(l.id) === lid);
+    if (found) setModalL(listingToCard(found));
+    setSearchParams((prev) => { prev.delete("listing"); return prev; }, { replace: true });
+  }, [searchParams, listings, setSearchParams]);
+
 
   // FILTER to the selected/detected location (not just sort) so a search actually
   // narrows results — "Florida" shows Florida listings only (empty here), not a

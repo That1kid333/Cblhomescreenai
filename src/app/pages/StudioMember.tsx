@@ -72,6 +72,13 @@ function money(l: MyListing) {
   return l.price != null ? `$${l.price}` : 'Contact for price';
 }
 
+// Which public Directory section a listing lives in, so "View" jumps to the right place.
+function sectionForCategory(cat: string): string {
+  if (cat === 'driver_post') return 'DRIVERS';
+  if (cat === 'ride_request') return 'RIDERS';
+  return 'CLASSIFIEDS';
+}
+
 // ── Business card (referral QR) + optional Verified CBL Driver card ──
 function BusinessCard({ referralCode, driver }: { referralCode: string | null; driver: MyDriver | null }) {
   const link = referralCode ? `${APP_URL}/r/${referralCode}` : APP_URL;
@@ -302,6 +309,17 @@ export function MemberStudio({ email, blog, onSignOut }: { email: string; blog?:
                     </div>
                   </div>
                   <div className="macts">
+                    {l.status === 'active' && (
+                      <a
+                        className="btn btn-ghost mini"
+                        href={`/directory?section=${sectionForCategory(l.category)}&listing=${l.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="See your live listing where it's posted"
+                      >
+                        View
+                      </a>
+                    )}
                     <button type="button" className="btn btn-ghost mini" disabled={busyId === l.id} onClick={() => setEditing(l)}>Edit</button>
                     {l.tier === 'basic' || !l.tier ? (
                       <button type="button" className="btn btn-gold mini" disabled={busyId === l.id} onClick={() => boost(l, 'featured')}>{busyId === l.id ? '…' : 'Boost'}</button>
