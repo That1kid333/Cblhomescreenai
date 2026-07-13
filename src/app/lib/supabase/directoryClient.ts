@@ -51,6 +51,7 @@ export type DirectoryListing = {
   urgent: boolean | null;
   tier?: string | null;
   user_id?: string | null; // owner (CBL-Rides listings only) — enables "edit my listing"
+  driver_referral_code?: string | null; // active-driver posts → "Verified CBL Driver" QR
 };
 
 export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {

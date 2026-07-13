@@ -58,7 +58,7 @@ export async function getDirectoryListings(
 ): Promise<DirectoryListing[]> {
   let query = ridesClient
     .from('directory_listings')
-    .select('id, title, description, category, price, price_type, city, state, neighborhood, photos, featured, urgent, tier, user_id')
+    .select('id, title, description, category, price, price_type, city, state, neighborhood, photos, featured, urgent, tier, user_id, driver_referral_code')
     .eq('status', 'active');
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('category', opts.category);
@@ -82,5 +82,6 @@ export async function getDirectoryListings(
     urgent: (r.urgent as boolean | null) ?? null,
     tier: (r.tier as string | null) ?? null,
     user_id: (r.user_id as string | null) ?? null,
+    driver_referral_code: (r.driver_referral_code as string | null) ?? null,
   }));
 }

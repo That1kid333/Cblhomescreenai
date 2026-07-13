@@ -51,6 +51,24 @@ export async function postDirectoryListing(
   const screen = screenListing(input.title, input.description);
   if (!screen.ok) return { error: screen.reason, id: null };
 
+  // If an active $19.99 driver is posting a driver-availability post, stamp their
+  // referral code so a "Verified CBL Driver" QR business card can ride along on the
+  // public post. Read from their OWN driver row (RLS self-read); null otherwise.
+  let driverCode: string | null = null;
+  if (input.category === 'driver_post') {
+    const { data: drv } = await authClient
+      .from('drivers')
+      .select('referral_code, subscription_status, subscription_end, manual_subscription_override')
+      .eq('auth_user_id', session.user.id)
+      .maybeSingle();
+    if (drv) {
+      const status = String(drv.subscription_status ?? '');
+      const notExpired = !drv.subscription_end || new Date(drv.subscription_end as string) > new Date();
+      const active = !!drv.manual_subscription_override || (['active', 'trial'].includes(status) && notExpired);
+      if (active) driverCode = (drv.referral_code as string | null) ?? null;
+    }
+  }
+
   // Return the new row's id so the caller can immediately offer to BOOST it.
   const { data, error } = await authClient
     .from('directory_listings')
@@ -61,6 +79,7 @@ export async function postDirectoryListing(
       description: input.description ?? null,
       price_type: input.priceType ?? 'fixed',
       price: input.priceType === 'free' ? null : (input.price ?? null),
+      driver_referral_code: driverCode,
       // city/state have DB defaults ('Atlanta' / 'GA') — only send when provided
       // so an unset field falls back to its default instead of a null override.
       ...(input.city !== undefined ? { city: input.city } : {}),
