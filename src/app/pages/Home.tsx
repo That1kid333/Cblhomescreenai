@@ -437,8 +437,10 @@ const HOME_CSS = `
   .cbl-home section.band.talk-band { padding:2px 20px 24px; } /* beat the generic section.band 48px */
   .cbl-home .talk-wrap { flex-direction:row; align-items:center; gap:12px; }
   .cbl-home .talk-buckee { width:98px; height:98px; }
+  /* No box on mobile — Buckee, mic and languages sit on the black background,
+     the "Talk to Buckee" copy runs down below (per Keith's mockup). */
   .cbl-home .talk-card {
-    flex:1; min-width:0; padding:16px 16px 18px;
+    flex:1; min-width:0; padding:4px 0 0; background:none; border:0; box-shadow:none;
     display:grid; grid-template-columns:1fr auto;
     grid-template-areas:"mic lang" "text text"; align-items:center; gap:12px;
   }
@@ -601,6 +603,9 @@ const HOME_CSS = `
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
   .cbl-home h1.hero-title { font-size:clamp(31px,7.1vw,44px); margin-bottom:8px; text-align:center; line-height:1.02; }
+  /* Two-line headline on mobile: drop the 3rd phrase, make the 2nd line orange. */
+  .cbl-home h1.hero-title .ln.gold { display:none; }
+  .cbl-home h1.hero-title .ln:nth-of-type(2) { color:${GOLD}; }
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
