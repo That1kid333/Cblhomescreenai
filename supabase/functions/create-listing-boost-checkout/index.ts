@@ -27,7 +27,7 @@ const corsHeaders = {
 // Server-side source of truth. amount in cents. `mode` = one-time vs subscription.
 const BOOSTS: Record<string, { name: string; amount: number; lookupKey: string; mode: 'payment' | 'subscription'; interval?: 'month' }> = {
   photo:    { name: 'CBL Listing — Photo Boost',        amount: 299,  lookupKey: 'cbl_listing_photo_boost',   mode: 'payment' },
-  featured: { name: 'CBL Listing — Featured (1 week)',  amount: 499,  lookupKey: 'cbl_listing_featured_week', mode: 'payment' },
+  featured: { name: 'CBL Listing — Featured (30 days)', amount: 499,  lookupKey: 'cbl_listing_featured_30d',  mode: 'payment' },
   pro:      { name: 'CBL Business Pro (Monthly)',       amount: 2999, lookupKey: 'cbl_business_pro_monthly',  mode: 'subscription', interval: 'month' },
 }
 
