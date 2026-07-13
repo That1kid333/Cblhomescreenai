@@ -35,7 +35,7 @@ export type PostListingInput = {
   price?: number | null;
   priceType?: 'fixed' | 'free';
   city?: string;
-  state?: string;
+  state?: string | null;
 };
 
 export async function postDirectoryListing(
