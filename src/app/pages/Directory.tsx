@@ -8,6 +8,9 @@ import {
 } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing } from "../lib/supabase/authClient";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
+import {
+  getOwnListing, uploadListingPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
+} from "../lib/listingPhotos";
 import { useVisitorLocation } from "../lib/location";
 import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
@@ -46,6 +49,7 @@ type Listing = {
   id: string | number; name: string; loc: string; desc: string; price: string;
   photos?: number; badges?: { t: string; k?: string }[];
   img?: string; featured?: boolean; placeholder?: boolean;
+  ownerId?: string | null; tier?: string | null; // for the owner's "edit photos" affordance
 };
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
@@ -496,6 +500,8 @@ function listingToCard(l: DirectoryListing): Listing {
     badges: l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : [],
     featured: !!l.featured,
     placeholder: !l.photos?.length,
+    ownerId: l.user_id ?? null,
+    tier: l.tier ?? null,
   };
 }
 
@@ -767,7 +773,14 @@ const LMODAL_CSS = `
 .cbl-lmodal .note { margin:14px 0 0; font-size:12.5px; line-height:1.5; color:#888; }
 `;
 
-function DirListingModal({ l, onClose }: { l: Listing | null; onClose: () => void }) {
+function DirListingModal({
+  l, onClose, canEditPhotos, onEditPhotos,
+}: {
+  l: Listing | null;
+  onClose: () => void;
+  canEditPhotos?: boolean;
+  onEditPhotos?: () => void;
+}) {
   useEffect(() => {
     if (!l) return;
     const prev = document.body.style.overflow;
@@ -813,6 +826,20 @@ function DirListingModal({ l, onClose }: { l: Listing | null; onClose: () => voi
           <div className="loc">{l.loc}</div>
           <div className="price">{l.price}</div>
           {l.desc && <p className="desc">{l.desc}</p>}
+          {canEditPhotos && onEditPhotos && (
+            <button
+              type="button"
+              onClick={onEditPhotos}
+              style={{
+                marginTop: 18, width: "100%", cursor: "pointer", borderRadius: 999,
+                padding: "12px 18px", background: "transparent", color: "#C99742",
+                border: "1px solid #C99742", fontFamily: DISPLAY, fontWeight: 800,
+                fontSize: 13, letterSpacing: ".1em", textTransform: "uppercase",
+              }}
+            >
+              ＋ Add / edit photos
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -1485,6 +1512,135 @@ function PostListingModal({
   );
 }
 
+const EDIT_CSS = `
+.cbl-edit { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; }
+.cbl-edit .backdrop { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(3px); }
+.cbl-edit .panel { position:relative; width:100%; max-width:520px; max-height:90vh; overflow:auto; background:#0F0F0F; border:1px solid rgba(201,151,66,.3); border-radius:20px 0 20px 0; padding:30px 28px; }
+.cbl-edit .close { position:absolute; top:14px; right:16px; background:none; border:0; color:#888; font-size:20px; cursor:pointer; }
+.cbl-edit .eyebrow { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; margin-bottom:8px; }
+.cbl-edit h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; text-transform:uppercase; color:#fff; margin:0 0 6px; }
+.cbl-edit h2 .it { font-family:${ITALIC}; font-style:italic; font-weight:600; text-transform:none; color:#C99742; }
+.cbl-edit .sub { font-size:14px; color:#B8B8B8; line-height:1.5; margin:0 0 18px; }
+.cbl-edit .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:16px; }
+.cbl-edit .thumb { position:relative; aspect-ratio:1; border-radius:12px; overflow:hidden; background:#1A1A1A; border:1px solid rgba(255,255,255,.1); }
+.cbl-edit .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.cbl-edit .thumb .cover { position:absolute; top:6px; left:6px; background:#C99742; color:#000; font-family:${MONO}; font-size:9px; letter-spacing:.06em; text-transform:uppercase; padding:2px 6px; border-radius:999px; }
+.cbl-edit .thumb .rm { position:absolute; top:5px; right:5px; width:22px; height:22px; border-radius:50%; border:0; background:rgba(0,0,0,.72); color:#fff; font-size:12px; cursor:pointer; display:grid; place-items:center; }
+.cbl-edit .add { aspect-ratio:1; border:1.5px dashed rgba(201,151,66,.5); border-radius:12px; background:rgba(201,151,66,.05); color:#C99742; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; cursor:pointer; font-size:12px; font-weight:700; text-align:center; }
+.cbl-edit .add:hover { background:rgba(201,151,66,.1); }
+.cbl-edit .add input { display:none; }
+.cbl-edit .submit { width:100%; border:0; cursor:pointer; border-radius:999px; padding:14px 30px; background:#C99742; color:#000; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s; }
+.cbl-edit .submit:hover:not(:disabled) { background:#DDB15F; }
+.cbl-edit .submit:disabled { background:#555; cursor:not-allowed; }
+.cbl-edit .note { font-size:12px; color:#8A8A8A; margin:10px 0 0; text-align:center; }
+.cbl-edit .alert { border-radius:12px; padding:11px 14px; font-size:13px; margin:0 0 14px; background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.4); color:#f0b3b3; }
+`;
+
+// Photo editor for a member's own paid listing. Opens after a boost payment (to
+// add the photos they paid for) and is reachable again from the owner's own
+// listing detail panel. Uploads to the directory-photos bucket, saves photos[].
+function EditListingModal({
+  listingId, onClose, onSaved,
+}: { listingId: string | null; onClose: () => void; onSaved: () => void }) {
+  const [loading, setLoading] = useState(true);
+  const [listing, setListing] = useState<OwnListing | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [err, setErr] = useState("");
+
+  useEffect(() => {
+    if (!listingId) return;
+    setLoading(true);
+    setErr("");
+    getOwnListing(listingId).then((l) => {
+      setListing(l);
+      setPhotos(l?.photos ?? []);
+      setLoading(false);
+    });
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [listingId]);
+
+  if (!listingId) return null;
+
+  const max = maxPhotosForTier(listing?.tier);
+  const onFiles = async (files: FileList | null) => {
+    if (!files || !files.length) return;
+    setErr("");
+    setUploading(true);
+    const room = Math.max(0, max - photos.length);
+    const added: string[] = [];
+    for (const f of Array.from(files).slice(0, room)) {
+      const { url, error } = await uploadListingPhoto(f, listingId);
+      if (error) { setErr(error); break; }
+      if (url) added.push(url);
+    }
+    if (added.length) setPhotos((p) => [...p, ...added]);
+    setUploading(false);
+  };
+  const save = async () => {
+    setSaving(true);
+    setErr("");
+    const { error } = await saveListingPhotos(listingId, photos);
+    setSaving(false);
+    if (error) { setErr(error); return; }
+    onSaved();
+    onClose();
+  };
+
+  return (
+    <div className="cbl-edit" role="dialog" aria-modal="true" aria-label="Add photos to your listing">
+      <style>{EDIT_CSS}</style>
+      <div className="backdrop" onClick={onClose} />
+      <div className="panel">
+        <button className="close" aria-label="Close" onClick={onClose}>✕</button>
+        {loading ? (
+          <p className="sub" style={{ margin: "8px 0" }}>Loading your ad…</p>
+        ) : !listing ? (
+          <>
+            <div className="eyebrow">your ad</div>
+            <h2>Couldn&rsquo;t <span className="it">load it.</span></h2>
+            <p className="sub">We couldn&rsquo;t open this listing to edit. Make sure you&rsquo;re signed in
+              with the account that posted it — then try again from your listing.</p>
+            <button type="button" className="submit" onClick={onClose}>Close</button>
+          </>
+        ) : (
+          <>
+            <div className="eyebrow">finish your ad{listing.tier ? ` · ${listing.tier}` : ""}</div>
+            <h2>Add your <span className="it">photos.</span></h2>
+            <p className="sub">
+              &ldquo;{listing.title}&rdquo; — add up to {max} photo{max === 1 ? "" : "s"}. The first is
+              your cover image, and they show on your ad the moment you save.
+            </p>
+            {err && <div className="alert" role="alert">{err}</div>}
+            <div className="grid">
+              {photos.map((url, i) => (
+                <div className="thumb" key={url + i}>
+                  <img src={url} alt={`Listing photo ${i + 1}`} />
+                  {i === 0 && <span className="cover">Cover</span>}
+                  <button type="button" className="rm" aria-label="Remove photo" onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))}>✕</button>
+                </div>
+              ))}
+              {photos.length < max && (
+                <label className="add">
+                  {uploading ? "Uploading…" : <><span style={{ fontSize: 20 }}>＋</span><span>Add photo</span></>}
+                  <input type="file" accept="image/*" multiple disabled={uploading} onChange={(e) => onFiles(e.target.files)} />
+                </label>
+              )}
+            </div>
+            <button type="button" className="submit" disabled={saving || uploading} onClick={save}>
+              {saving ? "Saving…" : photos.length ? "Save & publish photos" : "Save — done"}
+            </button>
+            <p className="note">You can add or change photos any time from your listing.</p>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function Directory() {
   const [searchParams, setSearchParams] = useSearchParams();
   const paramSection = searchParams.get("section");
@@ -1501,6 +1657,14 @@ export function Directory() {
   // /directory?boost=success&session_id=… — verify + apply the boost, banner it,
   // refresh listings, then strip the query so a refresh doesn't re-run it.
   const [boostBanner, setBoostBanner] = useState<{ ok: boolean; msg: string } | null>(null);
+  // Photo editor: which listing (if any) is open for adding photos.
+  const [editId, setEditId] = useState<string | null>(null);
+  // Current member's auth id — lets an owner reopen the photo editor on their listing.
+  const [sessionUid, setSessionUid] = useState<string | null>(null);
+  useEffect(() => {
+    authClient.auth.getSession().then(({ data }) => setSessionUid(data.session?.user?.id ?? null));
+  }, []);
+
   useEffect(() => {
     const boost = searchParams.get("boost");
     if (!boost) return;
@@ -1509,10 +1673,13 @@ export function Directory() {
       if (sid) {
         applyListingBoost(sid).then((r) => {
           if (r?.applied) {
-            setBoostBanner({ ok: true, msg: "Payment received — your listing is boosted and now stands out. 🎉" });
+            setBoostBanner({ ok: true, msg: "Payment received 🎉 Add your photos to finish your ad." });
             getDirectoryListings().then(setListings);
+            // Open the photo editor on the just-boosted listing.
+            const lid = r.listing?.id != null ? String(r.listing.id) : null;
+            if (lid) setEditId(lid);
           } else {
-            setBoostBanner({ ok: true, msg: "Payment received — your boost is being applied and will show shortly." });
+            setBoostBanner({ ok: true, msg: "Payment received — your boost is being applied. You can add photos from your listing in a moment." });
           }
         });
       }
@@ -1750,7 +1917,23 @@ export function Directory() {
         defaultCity={city}
         onPosted={refetchListings}
       />
-      <DirListingModal l={modalL} onClose={() => setModalL(null)} />
+      <DirListingModal
+        l={modalL}
+        onClose={() => setModalL(null)}
+        canEditPhotos={
+          !!modalL && !!sessionUid && modalL.ownerId === sessionUid && maxPhotosForTier(modalL.tier) > 0
+        }
+        onEditPhotos={() => {
+          const id = modalL?.id;
+          setModalL(null);
+          if (id != null) setEditId(String(id));
+        }}
+      />
+      <EditListingModal
+        listingId={editId}
+        onClose={() => setEditId(null)}
+        onSaved={refetchListings}
+      />
     </main>
     </DirModalCtx.Provider>
   );

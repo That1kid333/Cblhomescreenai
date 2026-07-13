@@ -42,7 +42,7 @@ export async function startListingBoost(
 // Verifies the paid session and flips the listing. Idempotent.
 export async function applyListingBoost(
   sessionId: string,
-): Promise<{ applied?: boolean; listing?: { tier: string; featured: boolean }; error?: string; reason?: string }> {
+): Promise<{ applied?: boolean; listing?: { id: string | number; tier: string; featured: boolean }; error?: string; reason?: string }> {
   try {
     const res = await fetch(`${FN_BASE}/apply-listing-boost`, {
       method: 'POST',

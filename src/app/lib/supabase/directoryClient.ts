@@ -49,6 +49,8 @@ export type DirectoryListing = {
   photos: string[] | null;
   featured: boolean | null;
   urgent: boolean | null;
+  tier?: string | null;
+  user_id?: string | null; // owner (CBL-Rides listings only) — enables "edit my listing"
 };
 
 export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {
