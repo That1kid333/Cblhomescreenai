@@ -375,9 +375,9 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
 
         <a className="go" href={APP_URL}>Open your dashboard →</a>
 
-        {isAdmin && (
-          <a className="studio-link" href="/studio">CBL Studio — write a story →</a>
-        )}
+        <a className="studio-link" href="/studio">
+          CBL Studio — {isAdmin ? 'my listings, card & blog →' : 'manage my listings & card →'}
+        </a>
 
         <button
           className="signout"
