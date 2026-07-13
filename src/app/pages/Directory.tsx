@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
+import QRCode from "qrcode";
+import { APP_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import {
   getActiveBusinesses,
@@ -50,6 +52,7 @@ type Listing = {
   photos?: number; badges?: { t: string; k?: string }[];
   img?: string; featured?: boolean; placeholder?: boolean;
   ownerId?: string | null; tier?: string | null; // for the owner's "edit photos" affordance
+  driverCode?: string | null; // active-driver posts → "Verified CBL Driver" QR
 };
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
@@ -502,6 +505,7 @@ function listingToCard(l: DirectoryListing): Listing {
     placeholder: !l.photos?.length,
     ownerId: l.user_id ?? null,
     tier: l.tier ?? null,
+    driverCode: l.driver_referral_code ?? null,
   };
 }
 
@@ -773,6 +777,28 @@ const LMODAL_CSS = `
 .cbl-lmodal .note { margin:14px 0 0; font-size:12.5px; line-height:1.5; color:#888; }
 `;
 
+// "Verified CBL Driver" QR business card that rides along on an active driver's
+// driver-availability posts — riders scan to connect with them in the CBL app.
+function DriverQRCard({ code }: { code: string }) {
+  const link = `${APP_URL}/r/${code}`;
+  const [qr, setQr] = useState("");
+  useEffect(() => {
+    QRCode.toDataURL(link, { margin: 0, width: 360, color: { dark: "#000000", light: "#FFFFFF" } })
+      .then(setQr).catch(() => setQr(""));
+  }, [link]);
+  return (
+    <div style={{ marginTop: 18, display: "flex", gap: 14, alignItems: "center", background: "rgba(77,191,102,.06)", border: "1px solid rgba(77,191,102,.32)", borderRadius: "14px 0 14px 0", padding: 14 }}>
+      <div style={{ width: 84, height: 84, background: "#fff", borderRadius: 10, padding: 6, flexShrink: 0 }}>
+        {qr && <img src={qr} alt="Driver referral QR code" style={{ width: "100%", height: "100%", display: "block" }} />}
+      </div>
+      <div>
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "#8FE0A2", marginBottom: 5 }}>★ Verified CBL Driver</div>
+        <div style={{ fontSize: 13, color: "#C8C8C8", lineHeight: 1.45 }}>Scan to connect with this driver in the CBL app.</div>
+      </div>
+    </div>
+  );
+}
+
 function DirListingModal({
   l, onClose, canEditPhotos, onEditPhotos,
 }: {
@@ -826,6 +852,7 @@ function DirListingModal({
           <div className="loc">{l.loc}</div>
           <div className="price">{l.price}</div>
           {l.desc && <p className="desc">{l.desc}</p>}
+          {l.driverCode && <DriverQRCard code={l.driverCode} />}
           {canEditPhotos && onEditPhotos && (
             <button
               type="button"
