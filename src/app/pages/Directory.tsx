@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
-import { RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import {
   getActiveBusinesses,
@@ -813,14 +812,6 @@ function DirListingModal({ l, onClose }: { l: Listing | null; onClose: () => voi
           <div className="loc">{l.loc}</div>
           <div className="price">{l.price}</div>
           {l.desc && <p className="desc">{l.desc}</p>}
-          <div className="acts">
-            <a href={RIDER_BOOK_URL} target="_blank" rel="noreferrer">
-              Book a Pickup Ride →
-            </a>
-          </div>
-          <p className="note">
-            Meeting a seller? CBL Private Drivers handle safe, tracked pickups — scheduled 12+ hours ahead.
-          </p>
         </div>
       </div>
     </div>
@@ -1416,7 +1407,6 @@ export function Directory() {
                   {classifiedsLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
                 </div>
               )}
-              <PickupBanner />
             </div>
           </section>
           <CompareBand onPost={openPost} />
