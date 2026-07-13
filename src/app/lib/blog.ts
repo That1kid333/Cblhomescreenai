@@ -286,10 +286,10 @@ export async function deleteStudioPost(id: string): Promise<{ error: string | nu
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /** Add an email to the weekly-dispatch list. Duplicate = already subscribed. */
-export async function subscribeEmail(email: string): Promise<{ error: string | null; already?: boolean }> {
+export async function subscribeEmail(email: string, source = 'blog'): Promise<{ error: string | null; already?: boolean }> {
   const clean = email.trim().toLowerCase();
   if (!EMAIL_RE.test(clean)) return { error: 'Please enter a valid email address.' };
-  const { error } = await ridesClient.from('newsletter_subscribers').insert({ email: clean, source: 'blog' });
+  const { error } = await ridesClient.from('newsletter_subscribers').insert({ email: clean, source });
   if (error) {
     if (error.code === '23505') return { error: null, already: true }; // unique(lower(email)) → already on the list
     console.error('subscribeEmail', error.message);

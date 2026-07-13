@@ -11,6 +11,7 @@ import { authClient, postDirectoryListing } from "../lib/supabase/authClient";
 import { useVisitorLocation } from "../lib/location";
 import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
+import { subscribeEmail } from "../lib/blog";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
@@ -927,24 +928,59 @@ function Pricing({ onPost }: { onPost: () => void }) {
 }
 
 function Newsletter() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [msg, setMsg] = useState("");
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === "loading") return;
+    setStatus("loading");
+    const { error, already } = await subscribeEmail(email, "directory");
+    if (error) {
+      setStatus("error");
+      setMsg(error);
+    } else {
+      setStatus("done");
+      setMsg(
+        already
+          ? "You're already on the list — we'll keep you posted."
+          : "You're in — we'll email you when local listings & deals go live.",
+      );
+    }
+  };
   return (
     <section className="band tight news-band">
       <div className="band-inner">
         <div className="news-grid">
           <div>
-            <div className="section-eyebrow">weekly · directory dispatch</div>
+            <div className="section-eyebrow">directory dispatch</div>
             <h2 className="section-h2">
               New listings &amp; deals <span className="it">in your inbox</span>
             </h2>
             <p style={{ color: "#B0B0B0", fontSize: 15, lineHeight: 1.55, maxWidth: "52ch", marginBottom: 20 }}>
-              Top new classifieds, featured driver schedules, member-only coupons —
-              sent Friday mornings.
+              Be first to know when local classifieds, driver schedules, and member-only coupons go
+              live near you.
             </p>
           </div>
-          <form className="news-form" onSubmit={(e) => e.preventDefault()}>
-            <input type="email" placeholder="you@yourcity.com" />
-            <button type="submit">Subscribe →</button>
-          </form>
+          {status === "done" ? (
+            <p style={{ color: "#8CC084", fontSize: 15, fontWeight: 600, alignSelf: "center" }}>{msg}</p>
+          ) : (
+            <form className="news-form" onSubmit={submit}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@yourcity.com"
+                required
+              />
+              <button type="submit" disabled={status === "loading"}>
+                {status === "loading" ? "…" : "Subscribe →"}
+              </button>
+            </form>
+          )}
+          {status === "error" && (
+            <p style={{ color: "#E5877A", fontSize: 13, marginTop: 8 }}>{msg}</p>
+          )}
         </div>
       </div>
     </section>
