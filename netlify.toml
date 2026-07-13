@@ -16,6 +16,10 @@
   path = "/blog/:slug"
   function = "prerender"
 
+[[edge_functions]]
+  path = "/attractions"
+  function = "prerender"
+
 # Dynamic sitemap listing static pages + all published blog posts.
 [[edge_functions]]
   path = "/sitemap.xml"
