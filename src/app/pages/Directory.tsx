@@ -103,6 +103,7 @@ const DIR_CSS = `
 .cbl-dir .signup-hint::before { content:''; width:6px; height:6px; border-radius:50%; background:#C99742; }
 .cbl-dir button.signup-hint { background:transparent; border:0; padding:0; text-align:left; }
 .cbl-dir .signup-hint:hover { color:#DDB15F; }
+.cbl-dir .manage-link { display:flex; margin-top:7px; }
 
 /* ── Filter rail ── */
 .cbl-dir .filters {
@@ -552,7 +553,7 @@ const Cross = () => (
   <svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="#666" strokeWidth="2" strokeLinecap="round" /></svg>
 );
 
-function Hero({ onPost }: { onPost: () => void }) {
+function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) {
   return (
     <section className="hero">
       <div className="hero-inner">
@@ -585,6 +586,11 @@ function Hero({ onPost }: { onPost: () => void }) {
         <button type="button" className="signup-hint" onClick={onPost}>
           Sign in required to post · Free to join
         </button>
+        {signedIn && (
+          <a className="signup-hint manage-link" href="/studio">
+            Manage my posts in CBL Studio
+          </a>
+        )}
       </div>
     </section>
   );
@@ -1871,19 +1877,7 @@ export function Directory() {
         </div>
       )}
 
-      <Hero onPost={openPost} />
-      {sessionUid && (
-        <div className="band tight" style={{ paddingBottom: 0 }}>
-          <div className="band-inner">
-            <a
-              href="/studio"
-              style={{ color: "#C99742", fontFamily: MONO, fontSize: 12, letterSpacing: ".07em", textTransform: "uppercase", fontWeight: 700 }}
-            >
-              ▸ Manage my posts in CBL Studio
-            </a>
-          </div>
-        </div>
-      )}
+      <Hero onPost={openPost} signedIn={!!sessionUid} />
       <LocationBar
         city={city}
         onChangeCity={setManualCity}
