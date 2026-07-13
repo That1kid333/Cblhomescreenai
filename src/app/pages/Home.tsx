@@ -437,24 +437,23 @@ const HOME_CSS = `
   /* Buckee joins the opening screen: a [Buckee · big Speak mic · languages 2×2] row,
      the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
      IN-FLOW right below (no box). */
-  .cbl-home section.band.talk-band { padding:0 20px 22px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:6px; }
-  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:flex-start; gap:10px; width:100%; }
+  /* Breathing room above the mic bar (bumps it down from the CTAs). */
+  .cbl-home section.band.talk-band { padding:14px 20px 22px; } /* beat the generic section.band 48px */
+  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:10px; }
+  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; gap:10px; width:100%; }
   .cbl-home .talk-buckee { width:98px; height:98px; }
-  .cbl-home .talk-buckee-wrap { align-self:flex-start; margin-top:-6px; } /* lift Buckee so his feet sit at the mic line */
+  .cbl-home .talk-buckee-wrap { align-self:center; } /* feet sit at the mic line */
   .cbl-home .talk-card {
     flex:1; min-width:0; padding:0; background:none; border:0; box-shadow:none;
-    display:grid; grid-template-columns:1fr auto;
-    grid-template-areas:"mic lang" "text ."; align-items:center; gap:8px;
+    display:grid; grid-template-columns:1fr auto; grid-template-areas:"mic lang"; align-items:center; gap:8px;
   }
   .cbl-home .talk-card .mic-btn { grid-area:mic; width:88px; height:88px; justify-self:center; }
   .cbl-home .talk-card .mic-btn svg { width:34px; height:34px; }
-  .cbl-home .talk-card .talk-text { grid-area:text; text-align:center; } /* centered under the mic (col 1) */
-  .cbl-home .talk-card .talk-lede { display:none; } /* redundant with the chat greeting */
-  .cbl-home .talk-card .talk-eyebrow { margin-bottom:0; }
-  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:start; }
+  .cbl-home .talk-card .talk-text { display:none; } /* the label now lives in the chat bubble header */
+  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:center; }
   .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; }
-  /* Chat auto-shows in the flow, just under the "Speak to Buckee" label. */
+  /* Chat auto-shows in the flow, bumped up right under the mic bar; its header is
+     "Speak to Buckee (Multilingual)". */
   .cbl-home .buckee-chat { order:2; position:static; width:100%; max-width:none; margin:0; border-radius:16px; }
 }
 
@@ -598,12 +597,12 @@ const HOME_CSS = `
 
 /* ── Responsive ── */
 @media (max-width:1000px){
-  .cbl-home .hero { padding:14px 20px 8px; }
+  .cbl-home .hero { padding:6px 20px 8px; }
   .cbl-home section.band { padding:48px 22px; }
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:8px; }
   .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:10px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(94px,17vh,136px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(84px,15vh,118px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
@@ -895,7 +894,7 @@ export function Home() {
           {chatOpen && (
             <div className="buckee-chat" role="log" aria-live="polite">
               <div className="buckee-chat-head">
-                <span className="bubble-eyebrow">Buckee</span>
+                <span className="bubble-eyebrow">Speak to Buckee <span className="tb-note">(Multilingual)</span></span>
                 <button className="buckee-chat-close" aria-label="Close chat" onClick={() => setChatOpen(false)}>✕</button>
               </div>
               <div className="buckee-chat-scroll" ref={chatScrollRef}>
