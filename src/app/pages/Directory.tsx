@@ -1246,11 +1246,12 @@ const POST_CSS = `
 `;
 
 function PostListingModal({
-  open, onClose, defaultCity, onPosted,
+  open, onClose, defaultCity, defaultState, onPosted,
 }: {
   open: boolean;
   onClose: () => void;
   defaultCity?: string | null;
+  defaultState?: string | null;
   onPosted: () => void;
 }) {
   const [checking, setChecking] = useState(true);
@@ -1327,6 +1328,10 @@ function PostListingModal({
     }
     setStatus("pending");
     setErrorMsg("");
+    // Send the visitor's detected state so a Pittsburgh post isn't left on the
+    // table's legacy 'GA' default. If they typed a DIFFERENT city than detected we
+    // don't know its state, so send null (never GA) rather than guess.
+    const cityUnchanged = cityField.trim().toLowerCase() === (defaultCity ?? "").trim().toLowerCase();
     const { error, id } = await postDirectoryListing({
       title: title.trim(),
       category,
@@ -1334,6 +1339,7 @@ function PostListingModal({
       priceType: free ? "free" : "fixed",
       price: free ? null : price.trim() ? Number(price) : null,
       city: cityField.trim() || undefined,
+      state: cityUnchanged ? (defaultState?.trim() || null) : null,
     });
     if (error) {
       setStatus("error");
@@ -1921,6 +1927,7 @@ export function Directory() {
         open={postOpen}
         onClose={() => setPostOpen(false)}
         defaultCity={city}
+        defaultState={state}
         onPosted={refetchListings}
       />
       <DirListingModal
