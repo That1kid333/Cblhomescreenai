@@ -983,13 +983,33 @@ const CLASSIFIEDS_CHIP_TO_SLUG: Record<string, string> = {
   JOBS: "jobs", HOUSE: "housing", TIX: "tickets", FREE: "free",
 };
 
-function cityMatches(itemCity: string | null | undefined, visitorCity: string | null) {
-  return !!itemCity && !!visitorCity && itemCity.toLowerCase() === visitorCity.toLowerCase();
+// Pittsburgh metro center + radius (same as Eats) — used only to LABEL the
+// "whole area" scope toggle as "Pittsburgh area" when the visitor is in the
+// metro. Listings themselves are filtered by city/state (they carry no coords).
+const PGH_CENTER: [number, number] = [40.4406, -79.9959];
+const METRO_RADIUS_MI = 45;
+function milesFromPgh(coords: { lat: number; lng: number } | null): number | null {
+  if (!coords) return null;
+  const R = 3958.8;
+  const toRad = (d: number) => (d * Math.PI) / 180;
+  const dLat = toRad(PGH_CENTER[0] - coords.lat);
+  const dLng = toRad(PGH_CENTER[1] - coords.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(coords.lat)) * Math.cos(toRad(PGH_CENTER[0])) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
 }
 
 function LocationBar({
-  city, onChangeCity,
-}: { city: string | null; onChangeCity: (c: string) => void }) {
+  city, onChangeCity, scope, onScope, metroLabel, showScope,
+}: {
+  city: string | null;
+  onChangeCity: (c: string) => void;
+  scope: "metro" | "local";
+  onScope: (s: "metro" | "local") => void;
+  metroLabel: string;
+  showScope: boolean;
+}) {
   // Auto-detected city prefills; type ANY city or town to look there (works
   // everywhere — listings are city-tagged, so they show for that city as they post).
   const [q, setQ] = useState(city ?? "");
@@ -1000,20 +1020,42 @@ function LocationBar({
     const v = q.trim();
     if (v && v.toLowerCase() !== (city ?? "").toLowerCase()) onChangeCity(v);
   };
+  const pill = (active: boolean) => ({
+    background: active ? "#C99742" : "transparent",
+    color: active ? "#0A0A0A" : "#DDD",
+    border: active ? "1px solid #C99742" : "1px solid rgba(255,255,255,.18)",
+    borderRadius: 999,
+    padding: "5px 14px",
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: "pointer",
+  });
+  // What we're showing right now: the metro name when scoped wide, else the town.
+  const shownPlace = showScope && scope === "metro" ? metroLabel : city;
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <span style={{ color: "#999", fontSize: 13 }}>
-          {city ? <>Showing local partners &amp; listings near <b style={{ color: "#C99742" }}>{city}</b></> : "Search a city to see local partners & listings"}
+          {city ? <>Showing partners &amp; listings in <b style={{ color: "#C99742" }}>{shownPlace}</b></> : "Search a city to see local partners & listings"}
         </span>
+        {showScope && (
+          <div role="group" aria-label="Choose area" style={{ display: "inline-flex", gap: 6, flexWrap: "wrap" }}>
+            <button type="button" onClick={() => onScope("metro")} aria-pressed={scope === "metro"} style={pill(scope === "metro")}>
+              {metroLabel}
+            </button>
+            <button type="button" onClick={() => onScope("local")} aria-pressed={scope === "local"} style={pill(scope === "local")}>
+              Just {city}
+            </button>
+          </div>
+        )}
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
           onBlur={commit}
-          placeholder="Search a city or town…"
+          placeholder="Search another city…"
           aria-label="Search a city"
-          style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 16px", fontSize: 12, minWidth: 190 }}
+          style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 16px", fontSize: 12, minWidth: 170 }}
         />
       </div>
     </div>
@@ -1355,7 +1397,17 @@ export function Directory() {
     };
   }, []);
   const [cat, setCat] = useState("ALL");
-  const { city, state, setManualCity } = useVisitorLocation();
+  const { city, state, coords, setManualCity } = useVisitorLocation();
+  // Scope choice (Keith): "metro" = the whole area (e.g. all of Pittsburgh), the
+  // default so the view isn't empty; "local" = just the visitor's own town/suburb
+  // (e.g. the North Hills). Only meaningful for the auto-detected home location —
+  // a typed city search has no state, so both scopes behave the same (strict city).
+  const [scope, setScope] = useState<"metro" | "local">("metro");
+  const inPghMetro = (() => {
+    const mi = milesFromPgh(coords);
+    return mi != null && mi <= METRO_RADIUS_MI;
+  })();
+  const metroLabel = inPghMetro ? "Pittsburgh area" : state ? `${state} area` : "Wider area";
 
   const [partners, setPartners] = useState<Partner[]>([]);
   const [businesses, setBusinesses] = useState<DirectoryBusiness[]>([]);
@@ -1375,13 +1427,13 @@ export function Directory() {
 
   // FILTER to the selected/detected location (not just sort) so a search actually
   // narrows results — "Florida" shows Florida listings only (empty here), not a
-  // Pittsburgh shop floated down the list. Two ways a listing counts:
-  //   1. City name matches (forgiving contains-match, so "Pittsburgh" catches
-  //      "Pittsburgh, PA") — this is the only test for a TYPED search.
-  //   2. Same state — but ONLY when we auto-detected the visitor's state (IP/GPS).
-  //      Typing a city clears state (""), so a typed search stays strict; an
-  //      auto-detected SUBURB (e.g. West View, PA) still sees its metro's
-  //      listings (Pittsburgh, PA). Mirrors the "suburbs count" market logic.
+  // Pittsburgh shop floated down the list. A listing counts if:
+  //   1. Its city name matches (forgiving contains-match, so "Pittsburgh" catches
+  //      "Pittsburgh, PA") — the only test for a TYPED search or "local" scope.
+  //   2. In "metro" scope only: same state as the auto-detected visitor — so a
+  //      suburb visitor (West View, PA) still sees the whole metro's listings
+  //      (Pittsburgh, PA). Typing a city clears state, so a typed search stays
+  //      strict regardless of scope.
   // No city set yet → show everything.
   const filterByLocation = <T extends { city?: string | null; state?: string | null }>(items: T[]) => {
     if (!city) return items;
@@ -1390,6 +1442,7 @@ export function Directory() {
     return items.filter((i) => {
       const ic = (i.city ?? "").trim().toLowerCase();
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
+      if (scope !== "metro") return false;
       const is = (i.state ?? "").trim().toLowerCase();
       return !!s && !!is && is === s;
     });
@@ -1400,25 +1453,25 @@ export function Directory() {
     const base = listings.filter((l) => l.category !== "ride_request" && l.category !== "driver_post");
     const slug = CLASSIFIEDS_CHIP_TO_SLUG[cat];
     const filtered = slug ? base.filter((l) => l.category === slug) : base;
-    return sortByCityMatch(filtered).map(listingToCard);
-  }, [listings, cat, city]);
+    return filterByLocation(filtered).map(listingToCard);
+  }, [listings, cat, city, state, scope]);
 
   // Driver Posts + Rider Requests are just public classified-style posts, filtered
   // by category — the same simple post flow, no special form.
   const driversLive = useMemo(
-    () => sortByCityMatch(listings.filter((l) => l.category === "driver_post")).map(listingToCard),
-    [listings, city],
+    () => filterByLocation(listings.filter((l) => l.category === "driver_post")).map(listingToCard),
+    [listings, city, state, scope],
   );
   const ridersLive = useMemo(
-    () => sortByCityMatch(listings.filter((l) => l.category === "ride_request")).map(listingToCard),
-    [listings, city],
+    () => filterByLocation(listings.filter((l) => l.category === "ride_request")).map(listingToCard),
+    [listings, city, state, scope],
   );
 
   const shopLive = useMemo(() => {
-    const pinnedPartners = sortByCityMatch(partners).map(partnerToCard);
-    const sortedBusinesses = sortByCityMatch(businesses).map(businessToCard);
+    const pinnedPartners = filterByLocation(partners).map(partnerToCard);
+    const sortedBusinesses = filterByLocation(businesses).map(businessToCard);
     return [...pinnedPartners, ...sortedBusinesses];
-  }, [partners, businesses, city]);
+  }, [partners, businesses, city, state, scope]);
 
   return (
     <DirModalCtx.Provider value={setModalL}>
@@ -1426,7 +1479,14 @@ export function Directory() {
       <style>{DIR_CSS}</style>
 
       <Hero onPost={openPost} />
-      <LocationBar city={city} onChangeCity={setManualCity} />
+      <LocationBar
+        city={city}
+        onChangeCity={setManualCity}
+        scope={scope}
+        onScope={setScope}
+        metroLabel={metroLabel}
+        showScope={!!state}
+      />
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
