@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
+import { RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import {
   getActiveBusinesses,
@@ -734,9 +735,113 @@ function CompareBand({ onPost }: { onPost: () => void }) {
   );
 }
 
-function ClassifiedCard({ l }: { l: Listing }) {
+// On-site listing detail — click a card to view the full listing here instead of
+// leaving the site (same retention pattern as the Eats / Attractions panels).
+const DirModalCtx = createContext<(l: Listing) => void>(() => {});
+
+const LMODAL_CSS = `
+.cbl-lmodal { position:fixed; inset:0; z-index:1000; display:grid; place-items:center; padding:16px; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; }
+.cbl-lmodal * { box-sizing:border-box; }
+.cbl-lmodal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,.72); backdrop-filter:blur(2px); }
+@keyframes cbl-lmodal-in { from { opacity:0; transform:translateY(10px) scale(.98); } to { opacity:1; transform:none; } }
+.cbl-lmodal .panel { position:relative; width:min(540px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#141414; border:1px solid rgba(201,151,66,.4); border-radius:18px 0 18px 0; box-shadow:0 20px 50px rgba(0,0,0,.6); animation:cbl-lmodal-in .24s cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .cbl-lmodal .panel { animation:none; } }
+.cbl-lmodal .shot { position:relative; height:240px; background-size:cover; background-position:center; background-color:#0f0f0f; }
+.cbl-lmodal .shot.ph { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#1a1a1a,#0f0f0f); }
+.cbl-lmodal .shot.ph .ph-ic { font-size:44px; opacity:.45; }
+.cbl-lmodal .pcount { position:absolute; bottom:12px; right:12px; font-family:${MONO}; font-size:11px; color:#fff; background:rgba(0,0,0,.7); padding:4px 8px; border-radius:4px; }
+.cbl-lmodal .close { position:absolute; top:12px; right:12px; z-index:3; width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,.82); border:1.5px solid #C99742; color:#C99742; cursor:pointer; font-size:17px; line-height:1; display:flex; align-items:center; justify-content:center; transition:background .15s,color .15s; }
+.cbl-lmodal .close:hover { background:#C99742; color:#000; }
+.cbl-lmodal .mbody { padding:20px 24px 24px; color:#EDEDED; }
+.cbl-lmodal .badges { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.cbl-lmodal .badge { font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#B8B8B8; background:#0f0f0f; border:1px solid rgba(255,255,255,.12); padding:4px 9px; border-radius:4px; }
+.cbl-lmodal .badge.feat { color:#C99742; border-color:rgba(201,151,66,.5); }
+.cbl-lmodal h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.08; text-transform:uppercase; color:#fff; margin:0 0 6px; }
+.cbl-lmodal .loc { font-family:${MONO}; font-size:12px; letter-spacing:.05em; color:#C99742; margin-bottom:14px; }
+.cbl-lmodal .price { font-family:${DISPLAY}; font-weight:900; font-size:30px; color:#C99742; margin-bottom:14px; }
+.cbl-lmodal .desc { font-size:15px; line-height:1.65; color:#C7C7C7; margin:0 0 18px; white-space:pre-wrap; }
+.cbl-lmodal .acts { display:flex; gap:10px; flex-wrap:wrap; }
+.cbl-lmodal .acts a { flex:1 1 auto; text-align:center; text-decoration:none; padding:13px 18px; border-radius:999px; font-family:${DISPLAY}; font-weight:800; font-size:12.5px; letter-spacing:.06em; text-transform:uppercase; background:#C99742; color:#000; }
+.cbl-lmodal .acts a:hover { background:#DDB15F; }
+.cbl-lmodal .note { margin:14px 0 0; font-size:12.5px; line-height:1.5; color:#888; }
+`;
+
+function DirListingModal({ l, onClose }: { l: Listing | null; onClose: () => void }) {
+  useEffect(() => {
+    if (!l) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [l, onClose]);
+  if (!l) return null;
   return (
-    <article className={"listing" + (l.featured ? " featured" : "") + (l.placeholder ? " no-photo" : "")}>
+    <div className="cbl-lmodal" role="dialog" aria-modal="true" aria-label={l.name}>
+      <style>{LMODAL_CSS}</style>
+      <div className="backdrop" onClick={onClose} />
+      <div className="panel">
+        {l.placeholder || !l.img ? (
+          <div className="shot ph">
+            <span className="ph-ic">🏷️</span>
+          </div>
+        ) : (
+          <div className="shot" style={{ backgroundImage: `url(${l.img})` }}>
+            {l.photos ? <span className="pcount">📷 {l.photos}</span> : null}
+          </div>
+        )}
+        <button className="close" aria-label="Close" onClick={onClose}>
+          ✕
+        </button>
+        <div className="mbody">
+          {l.badges && l.badges.length > 0 && (
+            <div className="badges">
+              {l.badges.map((b) => (
+                <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>
+                  {b.t}
+                </span>
+              ))}
+            </div>
+          )}
+          <h2>{l.name}</h2>
+          <div className="loc">{l.loc}</div>
+          <div className="price">{l.price}</div>
+          {l.desc && <p className="desc">{l.desc}</p>}
+          <div className="acts">
+            <a href={RIDER_BOOK_URL} target="_blank" rel="noreferrer">
+              Book a Pickup Ride →
+            </a>
+          </div>
+          <p className="note">
+            Meeting a seller? CBL Private Drivers handle safe, tracked pickups — scheduled 12+ hours ahead.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ClassifiedCard({ l }: { l: Listing }) {
+  const openModal = useContext(DirModalCtx);
+  return (
+    <article
+      className={"listing" + (l.featured ? " featured" : "") + (l.placeholder ? " no-photo" : "")}
+      onClick={() => openModal(l)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openModal(l);
+        }
+      }}
+      style={{ cursor: "pointer" }}
+    >
       {l.placeholder ? null : (
         <div className="img" style={{ backgroundImage: `url(${l.img})` }}>
           <div className="badge-row">
@@ -856,24 +961,33 @@ function cityMatches(itemCity: string | null | undefined, visitorCity: string | 
 }
 
 function LocationBar({
-  city, availableCities, onChangeCity,
-}: { city: string | null; availableCities: string[]; onChangeCity: (c: string) => void }) {
+  city, onChangeCity,
+}: { city: string | null; onChangeCity: (c: string) => void }) {
+  // Auto-detected city prefills; type ANY city or town to look there (works
+  // everywhere — listings are city-tagged, so they show for that city as they post).
+  const [q, setQ] = useState(city ?? "");
+  useEffect(() => {
+    setQ(city ?? "");
+  }, [city]);
+  const commit = () => {
+    const v = q.trim();
+    if (v && v.toLowerCase() !== (city ?? "").toLowerCase()) onChangeCity(v);
+  };
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <span style={{ color: "#999", fontSize: 13 }}>
-          {city ? <>Showing CBL Partners &amp; listings near <b style={{ color: "#C99742" }}>{city}</b></> : "Choose a city to see local partners & listings"}
+          {city ? <>Showing local partners &amp; listings near <b style={{ color: "#C99742" }}>{city}</b></> : "Search a city to see local partners & listings"}
         </span>
-        {availableCities.length > 0 && (
-          <select
-            value={city || ""}
-            onChange={(e) => onChangeCity(e.target.value)}
-            style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 14px", fontSize: 12 }}
-          >
-            <option value="" disabled>Choose a city…</option>
-            {availableCities.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        )}
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
+          onBlur={commit}
+          placeholder="Search a city or town…"
+          aria-label="Search a city"
+          style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 16px", fontSize: 12, minWidth: 190 }}
+        />
       </div>
     </div>
   );
@@ -1219,6 +1333,7 @@ export function Directory() {
   const [listings, setListings] = useState<DirectoryListing[]>([]);
   const [postOpen, setPostOpen] = useState(false);
   const openPost = () => setPostOpen(true);
+  const [modalL, setModalL] = useState<Listing | null>(null);
   // Re-pull member classifieds after a successful post so the new one appears.
   const refetchListings = () => getDirectoryListings().then(setListings);
 
@@ -1228,11 +1343,6 @@ export function Directory() {
     getDirectoryListings().then(setListings);
   }, []);
 
-  const availableCities = useMemo(() => {
-    const cities = [...partners.map((p) => p.city), ...businesses.map((b) => b.city), ...listings.map((l) => l.city)]
-      .filter((c): c is string => !!c);
-    return [...new Set(cities)].sort();
-  }, [partners, businesses, listings]);
 
   const sortByCityMatch = <T extends { city?: string | null }>(items: T[]) =>
     [...items].sort((a, b) => Number(cityMatches(b.city, city)) - Number(cityMatches(a.city, city)));
@@ -1250,11 +1360,12 @@ export function Directory() {
   }, [partners, businesses, city]);
 
   return (
+    <DirModalCtx.Provider value={setModalL}>
     <main className="cbl-dir">
       <style>{DIR_CSS}</style>
 
       <Hero onPost={openPost} />
-      <LocationBar city={city} availableCities={availableCities} onChangeCity={setManualCity} />
+      <LocationBar city={city} onChangeCity={setManualCity} />
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
@@ -1337,6 +1448,8 @@ export function Directory() {
         defaultCity={city}
         onPosted={refetchListings}
       />
+      <DirListingModal l={modalL} onClose={() => setModalL(null)} />
     </main>
+    </DirModalCtx.Provider>
   );
 }
