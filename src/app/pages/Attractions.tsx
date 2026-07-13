@@ -1528,6 +1528,28 @@ export function Attractions() {
     loc.requestPrecise(); // GPS: pinpoint the visitor for true closest-first
   };
 
+  // Per-page SEO title + meta description (Google renders JS; also covers SPA nav).
+  useEffect(() => {
+    const prevTitle = document.title;
+    document.title = 'Attractions Near You — Top-Rated Things To Do | City Bucket List';
+    const desc =
+      'Discover the top-rated attractions near you — museums, parks, live music, sports, and family fun, pulled live with real ratings. Then book a private CBL ride to get there.';
+    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    const created = !meta;
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    const prevDesc = meta.getAttribute('content');
+    meta.setAttribute('content', desc);
+    return () => {
+      document.title = prevTitle;
+      if (created) meta?.remove();
+      else if (prevDesc !== null) meta?.setAttribute('content', prevDesc);
+    };
+  }, []);
+
   // Auto-locate on load so results open to the attractions closest to you.
   // Prompts once for GPS; if declined we keep the instant IP city + "Near me".
   useEffect(() => {

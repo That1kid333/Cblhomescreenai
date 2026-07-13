@@ -186,6 +186,50 @@ export default async function handler(req: Request, context: Context): Promise<R
       return finish();
     }
 
+    if (path === '/attractions') {
+      const title = 'Attractions Near You — Top-Rated Things To Do | City Bucket List';
+      const description =
+        'Discover the top-rated attractions near you — museums, parks, live music, sports, and family fun, pulled live from Google with real ratings. Then book a private CBL ride to get there.';
+      // Representative, stable attractions so crawlers/AI engines get real entity
+      // content (live visitors get results near their own location via the SPA).
+      const spots = [
+        'Phipps Conservatory and Botanical Gardens',
+        'The Andy Warhol Museum',
+        'Point State Park',
+        'Carnegie Museum of Natural History',
+        'Duquesne Incline',
+        'National Aviary',
+        'Pittsburgh Zoo & Aquarium',
+        'Kennywood',
+      ];
+      const jsonld = {
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        name: title,
+        description,
+        url: `${origin}/attractions`,
+        mainEntity: {
+          '@type': 'ItemList',
+          name: 'Top-rated attractions near you',
+          itemListElement: spots.map((s, i) => ({ '@type': 'ListItem', position: i + 1, name: s })),
+        },
+      };
+      html = injectHead(html, {
+        title,
+        description,
+        url: `${origin}/attractions`,
+        image: absUrl(origin, null),
+        type: 'website',
+        jsonld,
+      });
+      const list = spots.map((s) => `<li>${esc(s)}</li>`).join('');
+      html = injectRoot(
+        html,
+        `<main><p>real attractions · near you</p><h1>Attractions Near You</h1><p>${esc(description)}</p><h2>Top-rated things to do</h2><ul>${list}</ul><p>Book a private CBL ride to any attraction. City Bucket List is a software-as-a-service platform — schedule a ride with an independent driver you already know.</p></main>`,
+      );
+      return finish();
+    }
+
     const m = path.match(/^\/blog\/([^/]+)$/);
     if (m) {
       const slug = decodeURIComponent(m[1]);
