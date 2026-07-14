@@ -383,7 +383,7 @@ function AudienceRow({ a }: { a: Audience }) {
           {a.primaryTo ? (
             <Link className="btn" to={a.primaryTo}>{a.primary}</Link>
           ) : a.primaryHref ? (
-            <a className="btn" href={a.primaryHref}>{a.primary}</a>
+            <a className="btn" href={a.primaryHref} target="_blank" rel="noopener noreferrer">{a.primary}</a>
           ) : (
             <button className="btn">{a.primary}</button>
           )}

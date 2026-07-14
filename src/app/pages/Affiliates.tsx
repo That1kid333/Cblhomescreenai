@@ -432,7 +432,7 @@ export function Affiliates() {
             Ready to partner <span className="it">with CBL?</span>
           </h2>
           <p>Apply in minutes. Tell us about your business and we'll get you set up across the platform.</p>
-          <a className="apply" href={`${APP_URL}/partner/signup`}>
+          <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer">
             Apply Now →
           </a>
         </div>

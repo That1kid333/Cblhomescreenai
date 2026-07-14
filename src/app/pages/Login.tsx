@@ -411,7 +411,7 @@ export function Login() {
                 <div className="mark" aria-hidden="true">✓</div>
                 <h3>You're <span className="g">in.</span></h3>
                 <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-                <a className="btn btn-primary" href={APP_URL}>Create your free account →</a>
+                <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
                 <p className="note">
                   Quick join keeps you in the loop. For full blog &amp; directory access — and
                   rides in the app — you'll need a free password-protected account.
@@ -425,7 +425,7 @@ export function Login() {
                   <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
                   <li><b>Buckee, your AI concierge</b> — plus savings in every partner city</li>
                 </ul>
-                <a className="btn btn-primary" href={APP_URL}>
+                <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
                   Create Full Account <span className="arr">→</span>
                 </a>
                 <p className="note" style={{ textAlign: 'center' }}>
@@ -566,7 +566,7 @@ export function Login() {
                     >
                       {siStatus === 'loading' ? 'Signing in…' : <>Sign In <span className="arr">→</span></>}
                     </button>
-                    <a className="forgot" href={APP_URL}>Forgot password? Reset it in the app →</a>
+                    <a className="forgot" href={APP_URL} target="_blank" rel="noopener noreferrer">Forgot password? Reset it in the app →</a>
                   </div>
                 ) : (
                   <div className="signin-line">

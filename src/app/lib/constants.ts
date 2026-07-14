@@ -1,4 +1,8 @@
 // The rider/driver app — booking, sign-up, and account flows all live here.
+// CONVENTION: any <a> pointing at one of the external targets in this file
+// (APP_URL, RIDER_BOOK_URL, DRIVER_SIGNUP_URL, DIRECTORY_APP_URL) must set
+// target="_blank" rel="noopener noreferrer" — it keeps the marketing site open
+// behind the app (retention) and prevents reverse-tabnabbing.
 export const APP_URL = 'https://app.citybucketlist.com';
 
 // Direct driver-signup form in the app (Justin's `/driver/signup` route). Use this
