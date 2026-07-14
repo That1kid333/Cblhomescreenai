@@ -693,7 +693,7 @@ function FeaturedListingMock() {
       </div>
       <div className="body">
         <div style={{ height: 14, background: "rgba(201,151,66,.2)", borderRadius: 4, marginBottom: 8, width: "70%" }} />
-        <div className="meta">Your category · <span className="gold">Top of search · 60 days</span></div>
+        <div className="meta">Your category · <span className="gold">Top of search · 30 days</span></div>
         <div style={{ height: 10, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 6, width: "90%" }} />
         <div style={{ height: 10, background: "rgba(255,255,255,.08)", borderRadius: 4, marginBottom: 14, width: "75%" }} />
         <div className="price">Your price</div>
@@ -738,7 +738,7 @@ function CompareBand({ onPost }: { onPost: () => void }) {
           <div className="compare-col featured">
             <div className="hdr">
               <div className="lbl">Featured Listing</div>
-              <div className="price-tag"><b>$4.99</b> · per week</div>
+              <div className="price-tag"><b>$4.99</b> · for 30 days</div>
             </div>
             <FeaturedListingMock />
             <ul>
@@ -746,7 +746,7 @@ function CompareBand({ onPost }: { onPost: () => void }) {
               <li><Check /> Gold border + featured badge</li>
               <li><Check /> Top of search results</li>
               <li><Check /> Live view counter + contact-verified</li>
-              <li><Check /> 60 days active</li>
+              <li><Check /> 30 days active</li>
             </ul>
             <button type="button" className="cta" onClick={onPost}>Go Featured</button>
           </div>

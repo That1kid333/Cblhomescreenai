@@ -61,7 +61,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Safe rides on demand —{' '}
+        Private, scheduled rides —{' '}
         <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="cap-link">
           book a ride
         </a>
