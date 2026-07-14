@@ -168,6 +168,10 @@ const STORY_CSS = `
   .cbl-story .split-body { padding:28px 24px; }
   .cbl-story .feature-grid { grid-template-columns:1fr; }
 }
+@media (max-width:720px){
+  .cbl-story .eyebrow { white-space:nowrap; font-size:11px; letter-spacing:.06em; }
+  .cbl-story .eb-sm { display:none; }
+}
 `;
 
 export function OurStory() {
@@ -177,7 +181,7 @@ export function OurStory() {
 
       <section className="hero">
         <div className="hero-inner">
-          <div className="eyebrow">since day one · locals helping travelers feel at home</div>
+          <div className="eyebrow">since day one<span className="eb-sm"> · locals helping travelers feel at home</span></div>
           <h1 className="hero-title">
             <span className="title-stack">
               <span className="h1-main">Our Story</span>

@@ -236,7 +236,8 @@ const HOW_CSS = `
   .cbl-how h1.hero-title { font-size:clamp(30px,8vw,44px); gap:0; }
   .cbl-how h1.hero-title .h1-main { white-space:normal; }
   .cbl-how .hero-subtitle { font-size:clamp(20px,5.4vw,27px); }
-  .cbl-how .eyebrow { font-size:11px; letter-spacing:.08em; }
+  .cbl-how .eyebrow { white-space:nowrap; font-size:11px; letter-spacing:.06em; }
+  .cbl-how .eb-sm { display:none; }
 }
 `;
 
@@ -406,7 +407,7 @@ export function HowItWorks() {
 
       <section className="hero">
         <div className="hero-inner">
-          <div className="eyebrow">private membership association · scheduled rides</div>
+          <div className="eyebrow">private membership <span className="eb-sm">association </span>· scheduled rides</div>
           <h1 className="hero-title">
             <span className="title-stack">
               <span className="h1-main">How It Works</span>
