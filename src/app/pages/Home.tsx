@@ -438,16 +438,16 @@ const HOME_CSS = `
      the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
      IN-FLOW right below (no box). */
   /* Breathing room above the mic bar (bumps it down from the CTAs). */
-  .cbl-home section.band.talk-band { padding:14px 20px 22px; } /* beat the generic section.band 48px */
+  .cbl-home section.band.talk-band { padding:8px 20px 18px; } /* beat the generic section.band 48px */
   .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:10px; }
   .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; gap:10px; width:100%; }
-  .cbl-home .talk-buckee { width:98px; height:98px; }
+  .cbl-home .talk-buckee { width:86px; height:86px; }
   .cbl-home .talk-buckee-wrap { align-self:center; } /* feet sit at the mic line */
   .cbl-home .talk-card {
     flex:1; min-width:0; padding:0; background:none; border:0; box-shadow:none;
     display:grid; grid-template-columns:1fr auto; grid-template-areas:"mic lang"; align-items:center; gap:8px;
   }
-  .cbl-home .talk-card .mic-btn { grid-area:mic; width:88px; height:88px; justify-self:center; }
+  .cbl-home .talk-card .mic-btn { grid-area:mic; width:80px; height:80px; justify-self:center; }
   .cbl-home .talk-card .mic-btn svg { width:34px; height:34px; }
   .cbl-home .talk-card .talk-text { display:none; } /* the label now lives in the chat bubble header */
   .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:center; }
@@ -597,24 +597,24 @@ const HOME_CSS = `
 
 /* ── Responsive ── */
 @media (max-width:1000px){
-  .cbl-home .hero { padding:6px 20px 8px; }
+  .cbl-home .hero { padding:2px 20px 6px; }
   .cbl-home section.band { padding:48px 22px; }
-  .cbl-home .hero-grid { grid-template-columns:1fr; gap:8px; }
-  .cbl-home .hero-lede { white-space:normal; font-size:14px; margin-bottom:10px; }
+  .cbl-home .hero-grid { grid-template-columns:1fr; gap:6px; }
+  .cbl-home .hero-lede { white-space:normal; font-size:13.5px; margin-bottom:6px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(84px,15vh,118px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(72px,12vh,100px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
-  .cbl-home h1.hero-title { font-size:clamp(31px,7.1vw,44px); margin-bottom:8px; text-align:center; line-height:1.02; }
+  .cbl-home h1.hero-title { font-size:clamp(29px,6.7vw,42px); margin-bottom:4px; text-align:center; line-height:1.02; }
   /* Two-line headline on mobile: drop the 3rd phrase, make the 2nd line orange. */
   .cbl-home h1.hero-title .ln.gold { display:none; }
   .cbl-home h1.hero-title .ln:nth-of-type(2) { color:${GOLD}; }
   .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
-  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:0 0 4px; }
+  .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:0 0 2px; }
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
   .cbl-home .micon .chip-ic { width:40px; height:40px; }
@@ -633,7 +633,7 @@ const HOME_CSS = `
   .cbl-home .more-grid { grid-template-columns:1fr; }
 }
 @media (max-width:640px){
-  .cbl-home .eyebrow { margin-bottom:6px; font-size:11px; }
+  .cbl-home .eyebrow { margin-bottom:3px; font-size:11px; }
   .cbl-home .hero-media { height:clamp(110px,20vh,160px); }
   .cbl-home h1.hero-title { font-size:clamp(34px,10vw,46px); }
   .cbl-home .hero-lede { margin-bottom:10px; }
