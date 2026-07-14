@@ -5,12 +5,34 @@ import { Markdown } from '../components/Markdown';
 import { LikeButton } from '../components/LikeButton';
 import { ShareBar } from '../components/ShareBar';
 import { ReadingProgress } from '../components/ReadingProgress';
+import { EmailCapture } from '../components/EmailCapture';
 
 /** Rough read time from the markdown body (~200 wpm, floor of 1 min). */
 function readMinutes(md?: string | null): number {
   if (!md) return 0;
   const words = md.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
+}
+
+/**
+ * Split the markdown body into two halves at a paragraph boundary near the 50%
+ * mark, so an inline email band can sit mid-article. Splitting on blank lines
+ * keeps lists/blockquotes (single blocks) intact. Returns ['', full] worth of
+ * no-split when the article is too short to bother.
+ */
+function splitBody(md?: string | null): [string, string] {
+  if (!md) return ['', ''];
+  const paras = md.split(/\n\n+/);
+  if (paras.length < 6) return [md, '']; // too short — no mid-article band
+  const total = md.length;
+  let acc = 0;
+  let idx = paras.length;
+  for (let i = 0; i < paras.length; i++) {
+    acc += paras[i].length + 2;
+    if (acc >= total * 0.5) { idx = i + 1; break; }
+  }
+  idx = Math.max(2, Math.min(paras.length - 2, idx)); // keep real content on both sides
+  return [paras.slice(0, idx).join('\n\n'), paras.slice(idx).join('\n\n')];
 }
 
 /** Pick up to 3 related posts: prefer same vertical, then same city, then recent. */
@@ -168,6 +190,7 @@ export function BlogPost() {
   const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || post.title;
   const gallery = post.media.filter((m) => m.url !== hero); // everything except the hero already shown
   const mins = readMinutes(post.body_md);
+  const bodyParts = splitBody(post.body_md);
   // author_photo / author_bio aren't in the schema yet — use them if Justin adds them,
   // otherwise fall back to a gold-ring initial avatar + a standard network blurb.
   const authorPhoto = (post as unknown as { author_photo?: string }).author_photo;
@@ -209,7 +232,14 @@ export function BlogPost() {
 
       <div className="col">
         <div className="col-inner">
-        <div className="body">{post.body_md && <Markdown source={post.body_md} />}</div>
+        <div className="body">{bodyParts[0] && <Markdown source={bodyParts[0]} />}</div>
+
+        {bodyParts[1] && (
+          <>
+            <EmailCapture source="blog-post" />
+            <div className="body"><Markdown source={bodyParts[1]} /></div>
+          </>
+        )}
 
         {post.drivers_take && (
           <div className="dtake">
