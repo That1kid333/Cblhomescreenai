@@ -437,21 +437,21 @@ const HOME_CSS = `
   /* Buckee joins the opening screen: a [Buckee · big Speak mic · languages 2×2] row,
      the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
      IN-FLOW right below (no box). */
-  /* Breathing room above the mic bar (bumps it down from the CTAs). */
-  .cbl-home section.band.talk-band { padding:8px 20px 18px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:10px; }
-  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; gap:10px; width:100%; }
-  .cbl-home .talk-buckee { width:86px; height:86px; }
-  .cbl-home .talk-buckee-wrap { align-self:center; } /* feet sit at the mic line */
+  /* A tight, centered [Buckee · mic · languages] cluster. */
+  .cbl-home section.band.talk-band { padding:4px 20px 16px; } /* beat the generic section.band 48px */
+  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:8px; }
+  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:12px; width:100%; }
+  .cbl-home .talk-buckee { width:80px; height:80px; }
+  .cbl-home .talk-buckee-wrap { align-self:center; margin-right:-4px; } /* Buckee snug to the mic */
   .cbl-home .talk-card {
-    flex:1; min-width:0; padding:0; background:none; border:0; box-shadow:none;
-    display:grid; grid-template-columns:1fr auto; grid-template-areas:"mic lang"; align-items:center; gap:8px;
+    flex:none; min-width:0; padding:0; background:none; border:0; box-shadow:none;
+    display:flex; align-items:center; gap:10px;
   }
-  .cbl-home .talk-card .mic-btn { grid-area:mic; width:80px; height:80px; justify-self:center; }
-  .cbl-home .talk-card .mic-btn svg { width:34px; height:34px; }
+  .cbl-home .talk-card .mic-btn { width:74px; height:74px; }
+  .cbl-home .talk-card .mic-btn svg { width:32px; height:32px; }
   .cbl-home .talk-card .talk-text { display:none; } /* the label now lives in the chat bubble header */
-  .cbl-home .talk-card .lang-chips { grid-area:lang; display:grid; grid-template-columns:1fr 1fr; gap:8px; width:auto; align-self:center; }
-  .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; }
+  .cbl-home .talk-card .lang-chips { display:grid; grid-template-columns:1fr 1fr; gap:4px; width:auto; } /* half-size, snug to the mic */
+  .cbl-home .talk-card .lang-chip { flex:none; min-width:0; padding:4px 7px; font-size:11px; letter-spacing:.04em; border-radius:7px; }
   /* Chat auto-shows in the flow, bumped up right under the mic bar; its header is
      "Speak to Buckee (Multilingual)". */
   .cbl-home .buckee-chat { order:2; position:static; width:100%; max-width:none; margin:0; border-radius:16px; }
@@ -602,7 +602,7 @@ const HOME_CSS = `
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:6px; }
   .cbl-home .hero-lede { white-space:normal; font-size:13.5px; margin-bottom:6px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(72px,12vh,100px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(64px,11vh,88px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
@@ -611,13 +611,13 @@ const HOME_CSS = `
   /* Two-line headline on mobile: drop the 3rd phrase, make the 2nd line orange. */
   .cbl-home h1.hero-title .ln.gold { display:none; }
   .cbl-home h1.hero-title .ln:nth-of-type(2) { color:${GOLD}; }
-  .cbl-home .btn-primary { padding:12px 24px; font-size:13px; }
-  .cbl-home .btn-ghost { padding:12px 22px; font-size:13px; margin-left:10px; }
+  .cbl-home .btn-primary { padding:10px 24px; font-size:13px; }
+  .cbl-home .btn-ghost { padding:10px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
   .cbl-home .mobile-icon-row { display:flex; flex-wrap:nowrap; justify-content:space-between; align-items:center; gap:8px; margin:0 0 2px; }
   .cbl-home .micon { flex:0 0 auto; display:inline-flex; color:#fff; font-size:0; transition:color .25s; }
   .cbl-home .micon.active { color:${GOLD}; }
-  .cbl-home .micon .chip-ic { width:40px; height:40px; }
+  .cbl-home .micon .chip-ic { width:34px; height:34px; }
   /* The 6-button category grid is redundant on mobile — the icon row above covers
      categories. Each rotating slide instead carries one contextual category pill. */
   .cbl-home .chip-row { display:none; }
@@ -641,7 +641,7 @@ const HOME_CSS = `
   .cbl-home .btn-primary { padding:11px 18px; font-size:12px; }
   .cbl-home .btn-ghost { padding:11px 16px; font-size:12px; margin-left:8px; }
   .cbl-home .mobile-icon-row { margin:2px 0 6px; }
-  .cbl-home .micon .chip-ic { width:40px; height:40px; }
+  .cbl-home .micon .chip-ic { width:34px; height:34px; }
   .cbl-home .chip-row { margin-top:18px; gap:8px; }
   .cbl-home .chip { padding:10px 10px; font-size:11px; gap:0; letter-spacing:.03em; }
 }
