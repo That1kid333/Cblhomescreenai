@@ -275,7 +275,7 @@ export function Concierge() {
       <section className="hero">
         <div className="wrap">
           <div className="hero-copy">
-            <div className="eyebrow">hotels &amp; hospitality · partner program</div>
+            <div className="eyebrow">hotels &amp; hospitality<span className="eb-sm"> · partner program</span></div>
             <h1 className="hero-title">Hotel &amp;</h1>
             <div className="hero-subtitle">
               <span>Concierge Program.</span>
