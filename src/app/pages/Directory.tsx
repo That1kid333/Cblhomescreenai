@@ -310,10 +310,13 @@ const DIR_CSS = `
   .cbl-dir h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-dir h1.hero-title .dir-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:44px; }
   .cbl-dir .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
-  .cbl-dir .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cbl-dir .eyebrow { display:block; white-space:normal; overflow-wrap:break-word; max-width:100%; font-size:11px; letter-spacing:.08em; line-height:1.4; }
   .cbl-dir .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
   .cbl-dir .hero p.lede { font-size:16px; }
   .cbl-dir .signup-hint { font-size:12px; }
+  /* Section switcher is a swipe strip on mobile — shrink tabs so more read at once */
+  .cbl-dir .sec-btn { font-size:13px; padding:6px 13px 9px; letter-spacing:.07em; gap:4px; }
+  .cbl-dir .sec-btn .ic { width:28px; height:28px; }
   .cbl-dir .listings-grid { grid-template-columns:1fr; }
   .cbl-dir .coupons-grid { grid-template-columns:1fr; }
   .cbl-dir .tiers { grid-template-columns:1fr; }

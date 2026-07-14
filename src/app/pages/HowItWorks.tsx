@@ -232,6 +232,12 @@ const HOW_CSS = `
   .cbl-how .row-media { min-height:260px; }
   .cbl-how .row-body { padding:28px 24px; }
 }
+@media (max-width:720px){
+  .cbl-how h1.hero-title { font-size:clamp(30px,8vw,44px); gap:0; }
+  .cbl-how h1.hero-title .h1-main { white-space:normal; }
+  .cbl-how .hero-subtitle { font-size:clamp(20px,5.4vw,27px); }
+  .cbl-how .eyebrow { font-size:11px; letter-spacing:.08em; }
+}
 `;
 
 type Audience = {

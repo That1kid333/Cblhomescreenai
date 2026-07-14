@@ -438,8 +438,8 @@ const HOME_CSS = `
      the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
      IN-FLOW right below (no box). */
   /* A tight, centered [Buckee · mic · languages] cluster. */
-  .cbl-home section.band.talk-band { padding:4px 20px 16px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:8px; }
+  .cbl-home section.band.talk-band { padding:2px 20px 12px; } /* beat the generic section.band 48px */
+  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:6px; }
   .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:12px; width:100%; }
   .cbl-home .talk-buckee { width:80px; height:80px; }
   .cbl-home .talk-buckee-wrap { align-self:center; margin-right:-4px; } /* Buckee snug to the mic */
@@ -602,7 +602,7 @@ const HOME_CSS = `
   .cbl-home .hero-grid { grid-template-columns:1fr; gap:6px; }
   .cbl-home .hero-lede { white-space:normal; font-size:13.5px; margin-bottom:6px; }
   /* Stack order: image → big icon row → copy (title/lede/CTAs/labeled pills) */
-  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(64px,11vh,88px); }
+  .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(56px,10vh,78px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
