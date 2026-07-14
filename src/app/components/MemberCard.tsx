@@ -373,7 +373,7 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
           {payoutNote && <div className="payout-note">{payoutNote}</div>}
         </div>
 
-        <a className="go" href={APP_URL}>Open your dashboard →</a>
+        <a className="go" href={APP_URL} target="_blank" rel="noopener noreferrer">Open your dashboard →</a>
 
         <a className="studio-link" href="/studio">
           CBL Studio — {isAdmin ? 'my listings, card & blog →' : 'manage my listings & card →'}

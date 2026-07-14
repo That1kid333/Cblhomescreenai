@@ -198,7 +198,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const accessNote = (
     <p className="note">
       Quick join keeps you in the loop. Full site &amp; app access requires a free
-      password-protected account — <a href={APP_URL}>create yours here →</a>
+      password-protected account — <a href={APP_URL} target="_blank" rel="noopener noreferrer">create yours here →</a>
     </p>
   );
 
@@ -214,7 +214,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
             <div className="mark" aria-hidden="true">✓</div>
             <h3>You're <span className="g">in.</span></h3>
             <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-            <a className="alt" href={APP_URL}>Create your free account →</a>
+            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
             {accessNote}
           </div>
         ) : (
@@ -303,7 +303,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
             </form>
 
             <div className="switch">Prefer the full app?</div>
-            <a className="alt" href={APP_URL}>Create your free account →</a>
+            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
             <p className="alt-cap">app.citybucketlist.com</p>
           </>
         )}

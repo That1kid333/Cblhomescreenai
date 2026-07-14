@@ -62,7 +62,7 @@ const SLIDES: Slide[] = [
     caption: (
       <>
         Safe rides on demand —{' '}
-        <a href={APP_URL} className="cap-link">
+        <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="cap-link">
           book a ride
         </a>
       </>
@@ -1005,10 +1005,10 @@ export function Home() {
               ))}
             </ul>
             <div className="app-actions">
-              <a className="btn-primary" href={APP_URL}>
+              <a className="btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
                 Launch the App
               </a>
-              <a className="app-url" href={APP_URL}>
+              <a className="app-url" href={APP_URL} target="_blank" rel="noopener noreferrer">
                 <b>app.citybucketlist.com</b>
               </a>
             </div>

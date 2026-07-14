@@ -327,7 +327,7 @@ export function PartnerRestaurants() {
         <div className="band-inner">
           <h2>Ready to get <span className="it">listed?</span></h2>
           <p>Apply in minutes. Pick your tier and we'll get your restaurant live across the CBL platform.</p>
-          <a className="apply" href={`${APP_URL}/partner/signup`}>Apply Now →</a>
+          <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer">Apply Now →</a>
         </div>
       </section>
     </main>

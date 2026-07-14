@@ -147,7 +147,7 @@ export function PartnerAttractions() {
             hotel guests planning their week — reaching travelers and locals exactly when they’re
             deciding what to do.
           </p>
-          <a className="apply" href={`${APP_URL}/partner/signup`} style={{ marginTop: 22 }}>Apply Now →</a>
+          <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: 22 }}>Apply Now →</a>
         </div>
       </section>
 
@@ -213,7 +213,7 @@ export function PartnerAttractions() {
         <div className="band-inner">
           <h2>Ready to get <span className="it">featured?</span></h2>
           <p>Apply in minutes. Tell us about your attraction and we'll get you live across the CBL platform.</p>
-          <a className="apply" href={`${APP_URL}/partner/signup`}>Apply Now →</a>
+          <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer">Apply Now →</a>
         </div>
       </section>
     </main>

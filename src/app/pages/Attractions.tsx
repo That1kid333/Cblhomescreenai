@@ -1404,7 +1404,7 @@ function AttractionModal({ a, onClose }: { a: Attraction | null; onClose: () => 
             </div>
           )}
           <div className="macts">
-            <a className="primary" href={RIDER_BOOK_URL} target="_blank" rel="noreferrer">
+            <a className="primary" href={RIDER_BOOK_URL} target="_blank" rel="noopener noreferrer">
               Book a Ride There →
             </a>
             <a className="ghost" href={gMaps(a)} target="_blank" rel="noreferrer">

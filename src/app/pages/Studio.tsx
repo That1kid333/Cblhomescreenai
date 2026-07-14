@@ -257,7 +257,7 @@ function SignIn() {
       </form>
       <p className="note">
         This is separate from the preview “demo member” — Studio always needs a real login. Forgot your password?
-        Reset it in the <a href={APP_URL}>app</a>.
+        Reset it in the <a href={APP_URL} target="_blank" rel="noopener noreferrer">app</a>.
       </p>
     </div>
   );

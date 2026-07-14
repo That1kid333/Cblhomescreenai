@@ -566,7 +566,7 @@ export function Concierge() {
                 step: create your CBL account now so we can activate your dashboard, referral
                 code, and payouts the moment you're approved.
               </p>
-              <a className="btn gold" href={`${APP_URL}/partner/signup`} style={{ marginTop: '18px', display: 'inline-flex' }}>
+              <a className="btn gold" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
                 Create your account in the app →
               </a>
             </div>
