@@ -560,7 +560,7 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
   return (
     <section className="hero">
       <div className="hero-inner">
-        <div className="eyebrow">classifieds · drivers · riders · shopping · coupons</div>
+        <div className="eyebrow">classifieds · drivers · riders<span className="eb-sm"> · shopping · coupons</span></div>
         <h1 className="hero-title">
           <span className="title-stack">
             <span className="h1-main">Directory</span>

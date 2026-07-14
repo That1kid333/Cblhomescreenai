@@ -256,7 +256,8 @@ const TRANSPORT_CSS = `
   .cbl-transport h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-transport h1.hero-title .car-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
   .cbl-transport .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
-  .cbl-transport .eyebrow { display:block; white-space:normal; overflow-wrap:break-word; max-width:100%; font-size:11px; letter-spacing:.08em; line-height:1.4; }
+  .cbl-transport .eyebrow { display:block; white-space:nowrap; max-width:100%; font-size:11px; letter-spacing:.06em; }
+  .cbl-transport .eb-sm { display:none; }
   .cbl-transport .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
 }
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
@@ -655,7 +656,7 @@ function Hero() {
     <section className="hero">
       <div className="hero-inner">
         <div>
-          <div className="eyebrow">cbl private · scheduled rides · partners soon</div>
+          <div className="eyebrow">cbl private · scheduled rides<span className="eb-sm"> · partners soon</span></div>
           <div className="hero-title-row">
             <h1 className="hero-title">
               <span className="title-stack">
