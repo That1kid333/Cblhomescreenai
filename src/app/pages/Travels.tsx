@@ -271,7 +271,7 @@ const TRAVELS_CSS = `
   display:grid; grid-template-columns:2fr 1.4fr 1.4fr 1fr auto;
   gap:12px; align-items:end;
 }
-.cbl-travels .search-field { display:flex; flex-direction:column; gap:4px; }
+.cbl-travels .search-field { display:flex; flex-direction:column; gap:4px; min-width:0; }
 .cbl-travels .search-field .lbl {
   font-family:${MONO}; font-size:10px; color:#888;
   letter-spacing:.14em; text-transform:uppercase;
@@ -635,7 +635,7 @@ const TRAVELS_CSS = `
   .cbl-travels .providers { padding:0 24px; }
   .cbl-travels .cat-tabs { padding:14px 24px 0; }
   .cbl-travels section.band { padding:36px 24px 48px; }
-  .cbl-travels .search-inner { grid-template-columns:1fr 1fr; }
+  .cbl-travels .search-inner { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
   .cbl-travels .search-btn { grid-column:span 2; width:100%; }
   .cbl-travels .stays-grid { grid-template-columns:repeat(2,1fr); }
   .cbl-travels .trips-grid { grid-template-columns:1fr; }

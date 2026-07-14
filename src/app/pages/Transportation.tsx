@@ -215,7 +215,7 @@ const TRANSPORT_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 12px;
 }
-.cbl-transport .hero-inner { display:grid; grid-template-columns:1fr; gap:0; align-items:start; max-width:1280px; margin:0 auto; }
+.cbl-transport .hero-inner { display:grid; grid-template-columns:minmax(0,1fr); gap:0; align-items:start; max-width:1280px; margin:0 auto; }
 .cbl-transport .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -256,7 +256,7 @@ const TRANSPORT_CSS = `
   .cbl-transport h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-transport h1.hero-title .car-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
   .cbl-transport .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
-  .cbl-transport .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+  .cbl-transport .eyebrow { display:block; white-space:normal; overflow-wrap:break-word; max-width:100%; font-size:11px; letter-spacing:.08em; line-height:1.4; }
   .cbl-transport .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
 }
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
