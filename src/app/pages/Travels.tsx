@@ -216,8 +216,8 @@ const TRAVELS_CSS = `
 .cbl-travels .hero-inner { max-width:1280px; margin:0 auto; }
 .cbl-travels .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
-  font-family:${MONO}; font-size:12px; letter-spacing:.14em;
-  color:#8a8a8a; text-transform:lowercase; margin-bottom:10px;
+  font-family:${MONO}; font-size:12px; letter-spacing:.14em; font-weight:700;
+  color:#fff; text-transform:lowercase; margin-bottom:10px;
 }
 .cbl-travels .eyebrow::before {
   content:''; width:8px; height:8px; border-radius:50%;
