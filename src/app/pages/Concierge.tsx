@@ -198,6 +198,10 @@ const CSS = `
 }
 
 /* responsive */
+@media(max-width:720px){
+  .cbl-concierge .eyebrow{white-space:nowrap;font-size:11px;letter-spacing:.06em;}
+  .cbl-concierge .eb-sm{display:none;}
+}
 @media(max-width:1000px){
   .cbl-concierge section.band{padding:44px 24px 48px;}
   .cbl-concierge .hero{padding:22px 24px 16px;}
