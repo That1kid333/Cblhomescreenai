@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { getPostBySlug, type BlogPost as Post } from '../lib/blog';
+import { getPostBySlug, getPublishedPosts, type BlogPost as Post, type BlogCard } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
 import { LikeButton } from '../components/LikeButton';
 import { ShareBar } from '../components/ShareBar';
@@ -11,6 +11,15 @@ function readMinutes(md?: string | null): number {
   if (!md) return 0;
   const words = md.trim().split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
+}
+
+/** Pick up to 3 related posts: prefer same vertical, then same city, then recent. */
+function pickRelated(all: BlogCard[], current: Post): BlogCard[] {
+  const others = all.filter((p) => p.slug !== current.slug);
+  const score = (p: BlogCard) =>
+    (p.vertical && current.vertical && p.vertical === current.vertical ? 2 : 0) +
+    (p.city && current.city && p.city === current.city ? 1 : 0);
+  return [...others].sort((a, b) => score(b) - score(a)).slice(0, 3);
 }
 
 /**
@@ -80,6 +89,37 @@ const CSS = `
 .cbl-post .gallery .cap b { color:${GOLD}; }
 
 .cbl-post .likebar { margin-top:38px; display:flex; justify-content:center; }
+
+/* author bio */
+.cbl-post .author { max-width:720px; margin:40px 0 6px; padding:24px 26px; display:flex; gap:18px; align-items:center;
+  background:linear-gradient(135deg, rgba(201,151,66,.08), rgba(255,255,255,.02)); border:1px solid rgba(201,151,66,.22); border-radius:18px 0 18px 0; }
+.cbl-post .author-av { flex-shrink:0; width:60px; height:60px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  background:#141414; border:2px solid ${GOLD}; box-shadow:0 0 0 3px rgba(201,151,66,.15); }
+.cbl-post .author-av img { width:100%; height:100%; object-fit:cover; }
+.cbl-post .author-av span { font-family:${DISPLAY}; font-weight:900; font-size:22px; color:${GOLD}; letter-spacing:.02em; }
+.cbl-post .author-txt { min-width:0; }
+.cbl-post .author-eyebrow { font-family:${MONO}; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; font-weight:700; margin-bottom:4px; }
+.cbl-post .author-name { font-family:${DISPLAY}; font-weight:900; font-size:19px; color:#fff; margin-bottom:6px; }
+.cbl-post .author-bio { font-size:14.5px; line-height:1.55; color:#B8B8B8; margin:0; }
+
+/* related posts — 3 image-led cards */
+.cbl-post .related { max-width:1080px; margin:46px 0 8px; }
+.cbl-post .related-head { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin-bottom:16px; }
+.cbl-post .related-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+.cbl-post .rel-card { display:block; text-decoration:none; color:inherit; border-radius:14px 0 14px 0; overflow:hidden; background:#111; border:1px solid rgba(255,255,255,.08); transition:border-color .18s, transform .18s; }
+.cbl-post .rel-card:hover { border-color:${GOLD}; transform:translateY(-3px); }
+.cbl-post .rel-img { aspect-ratio:16/10; background:#0c0c0c; }
+.cbl-post .rel-img img { width:100%; height:100%; object-fit:cover; display:block; }
+.cbl-post .rel-ph { width:100%; height:100%; background:linear-gradient(135deg,#1a1a1a,#0c0c0c); }
+.cbl-post .rel-body { padding:14px 16px 18px; }
+.cbl-post .rel-kick { font-family:${MONO}; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:${GOLD}; margin-bottom:7px; }
+.cbl-post .rel-title { font-family:${DISPLAY}; font-weight:800; font-size:17px; line-height:1.22; color:#fff; }
+@media (max-width:860px){
+  .cbl-post .related-grid { grid-template-columns:1fr; gap:14px; }
+  .cbl-post .rel-card { display:grid; grid-template-columns:120px 1fr; }
+  .cbl-post .rel-img { aspect-ratio:auto; }
+  .cbl-post .author { margin-left:0; margin-right:0; }
+}
 .cbl-post .foot { border-top:1px solid rgba(255,255,255,.08); margin-top:34px; padding:26px 0 70px; }
 .cbl-post .foot-share { margin-bottom:22px; }
 .cbl-post .foot-share-label { font-family:${DISPLAY}; font-weight:800; font-size:15px; color:#fff; margin-bottom:12px; }
@@ -90,12 +130,16 @@ const CSS = `
 export function BlogPost() {
   const { slug } = useParams();
   const [post, setPost] = useState<Post | null | undefined>(undefined); // undefined=loading, null=not found
+  const [related, setRelated] = useState<BlogCard[]>([]);
 
   useEffect(() => {
     let live = true;
     if (!slug) return;
+    setRelated([]);
     getPostBySlug(slug).then((p) => {
-      if (live) setPost(p);
+      if (!live) return;
+      setPost(p);
+      if (p) getPublishedPosts().then((all) => { if (live) setRelated(pickRelated(all, p)); });
     });
     return () => {
       live = false;
@@ -124,6 +168,16 @@ export function BlogPost() {
   const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || post.title;
   const gallery = post.media.filter((m) => m.url !== hero); // everything except the hero already shown
   const mins = readMinutes(post.body_md);
+  // author_photo / author_bio aren't in the schema yet — use them if Justin adds them,
+  // otherwise fall back to a gold-ring initial avatar + a standard network blurb.
+  const authorPhoto = (post as unknown as { author_photo?: string }).author_photo;
+  const authorBio = (post as unknown as { author_bio?: string }).author_bio;
+  const initials = (post.author_name || 'CBL')
+    .split(/\s+/)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   return (
     <main className="cbl-post">
@@ -200,6 +254,43 @@ export function BlogPost() {
         <div className="likebar">
           <LikeButton slug={post.slug} />
         </div>
+
+        {post.author_name && (
+          <div className="author">
+            <div className="author-av">
+              {authorPhoto ? <img src={authorPhoto} alt={post.author_name} /> : <span>{initials}</span>}
+            </div>
+            <div className="author-txt">
+              <div className="author-eyebrow">Written by</div>
+              <div className="author-name">{post.author_name}</div>
+              <p className="author-bio">
+                {authorBio ||
+                  `${post.author_name.split(' ')[0]} is part of the City Bucket List network${post.city ? ` in ${post.city}` : ''} — sharing the local spots worth your bucket list.`}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {related.length > 0 && (
+          <div className="related">
+            <div className="related-head">Keep exploring</div>
+            <div className="related-grid">
+              {related.map((r) => (
+                <Link key={r.slug} to={`/blog/${r.slug}`} className="rel-card">
+                  <div className="rel-img">
+                    {r.hero_image ? <img src={r.hero_image} alt={r.title} loading="lazy" /> : <div className="rel-ph" />}
+                  </div>
+                  <div className="rel-body">
+                    {(r.vertical || r.city) && (
+                      <div className="rel-kick">{[r.vertical, r.city].filter(Boolean).join(' · ')}</div>
+                    )}
+                    <div className="rel-title">{r.title}</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="foot">
           <div className="foot-share">
