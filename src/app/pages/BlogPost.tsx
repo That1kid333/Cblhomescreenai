@@ -3,6 +3,15 @@ import { Link, useParams } from 'react-router';
 import { getPostBySlug, type BlogPost as Post } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
 import { LikeButton } from '../components/LikeButton';
+import { ShareBar } from '../components/ShareBar';
+import { ReadingProgress } from '../components/ReadingProgress';
+
+/** Rough read time from the markdown body (~200 wpm, floor of 1 min). */
+function readMinutes(md?: string | null): number {
+  if (!md) return 0;
+  const words = md.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
 
 /**
  * CBL Blog — post detail (/blog/:slug). Renders the "Where the Locals Go"
@@ -72,6 +81,8 @@ const CSS = `
 
 .cbl-post .likebar { margin-top:38px; display:flex; justify-content:center; }
 .cbl-post .foot { border-top:1px solid rgba(255,255,255,.08); margin-top:34px; padding:26px 0 70px; }
+.cbl-post .foot-share { margin-bottom:22px; }
+.cbl-post .foot-share-label { font-family:${DISPLAY}; font-weight:800; font-size:15px; color:#fff; margin-bottom:12px; }
 .cbl-post .foot a.more { font-family:${MONO}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; }
 .cbl-post .state { text-align:center; padding:120px 24px; color:#888; }
 `;
@@ -112,10 +123,12 @@ export function BlogPost() {
   const hero = post.hero_image;
   const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || post.title;
   const gallery = post.media.filter((m) => m.url !== hero); // everything except the hero already shown
+  const mins = readMinutes(post.body_md);
 
   return (
     <main className="cbl-post">
       <style>{CSS}</style>
+      <ReadingProgress />
       <div className="head">
         <div className={`head-inner${hero ? '' : ' no-media'}`}>
           <div className="head-text">
@@ -123,12 +136,14 @@ export function BlogPost() {
             {post.kicker && <div className="kick">{post.kicker}</div>}
             <h1 className="title">{post.title}</h1>
             {post.subtitle && <p className="dek">{post.subtitle}</p>}
-            {post.author_name && (
+            {(post.author_name || mins > 0) && (
               <div className="by">
-                By <b>{post.author_name}</b>
-                {post.city ? ` · ${post.city}` : ''}
+                {post.author_name && <>By <b>{post.author_name}</b></>}
+                {post.author_name && post.city ? ` · ${post.city}` : (!post.author_name && post.city ? post.city : '')}
+                {mins > 0 && <>{post.author_name || post.city ? ' · ' : ''}{mins} min read</>}
               </div>
             )}
+            <ShareBar title={post.title} />
           </div>
           {hero && (
             <div className="head-media">
@@ -187,6 +202,10 @@ export function BlogPost() {
         </div>
 
         <div className="foot">
+          <div className="foot-share">
+            <div className="foot-share-label">Know someone who’d love this?</div>
+            <ShareBar title={post.title} />
+          </div>
           <Link to="/blog" className="more">← More from the CBL Blog</Link>
         </div>
         </div>
