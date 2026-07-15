@@ -369,6 +369,10 @@ export default async function handler(req: Request, context: Context): Promise<R
               url: `${origin}/`,
               logo: `${origin}/eats/imagery/cbl-map-backdrop.jpg`,
               description: staticPage.description,
+              sameAs: [
+                'https://www.youtube.com/@CitybucketlistCBL',
+                'https://www.instagram.com/citybucketlist_pittsburgh/',
+              ],
             }
           : {
               '@context': 'https://schema.org',
