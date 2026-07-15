@@ -1144,8 +1144,8 @@ const DESKTOP_CSS = `
 }
 .cbl-eats .card .cta-row { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
 .cbl-eats .card .cta {
-  flex:1 1 130px; background:#C99742; border:0; color:#fff; padding:12px 0; border-radius:999px;
-  font-family:${DISPLAY}; font-weight:800; font-size:13px; letter-spacing:.12em;
+  flex:1 1 130px; background:#C99742; border:0; color:#fff; padding:12px 6px; border-radius:999px;
+  font-family:${DISPLAY}; font-weight:800; font-size:12px; letter-spacing:.06em; white-space:nowrap;
   text-transform:uppercase; transition:background .2s; cursor:pointer;
 }
 .cbl-eats .card a.cta { display:flex; align-items:center; justify-content:center; text-decoration:none; }
