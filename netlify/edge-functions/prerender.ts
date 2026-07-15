@@ -15,6 +15,27 @@ const SUPABASE_URL = 'https://jgbaqzgkdqqvxmqytgsx.supabase.co';
 const PUBLISHABLE = 'sb_publishable_ftx_EkI4-nj0vfUqbP0FzQ_XRGsXZJ9';
 const OG_FALLBACK = '/eats/imagery/cbl-map-backdrop.jpg';
 
+// Security headers — set here because netlify.toml [[headers]] do NOT apply to
+// edge-function responses (this function returns its own Response). Mirrors the
+// [[headers]] block in netlify.toml, which covers static assets + non-edge routes.
+const CSP =
+  "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; " +
+  "script-src 'self' 'unsafe-inline'; " +
+  "style-src 'self' 'unsafe-inline' https://use.typekit.net https://p.typekit.net https://fonts.googleapis.com; " +
+  "font-src 'self' data: https://use.typekit.net https://p.typekit.net https://fonts.gstatic.com; " +
+  "img-src 'self' data: https:; " +
+  "media-src 'self' data: https:; " +
+  "connect-src 'self' https://*.supabase.co https://use.typekit.net https://p.typekit.net https://ipwho.is https://ipapi.co https://api.bigdatacloud.net https://api.open-meteo.com https://*.googleapis.com; " +
+  "frame-src 'self' https://www.google.com https://maps.google.com; upgrade-insecure-requests";
+const SECURITY_HEADERS: Record<string, string> = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'SAMEORIGIN',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
+  'Permissions-Policy': 'geolocation=(self), microphone=(self), camera=(), payment=()',
+  'Content-Security-Policy': CSP,
+};
+
 type Media = { slot?: string; type?: string; url?: string; alt?: string; credit?: string | null };
 type Post = {
   slug: string;
@@ -97,9 +118,175 @@ function injectHead(html: string, meta: { title: string; description: string; ur
     `<meta name="twitter:image" content="${esc(meta.image)}" />`,
   ];
   if (meta.jsonld) tags.push(`<script type="application/ld+json">${JSON.stringify(meta.jsonld)}</script>`);
-  let out = html.replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(meta.title)}</title>`);
+  // Strip the default SEO tags baked into index.html so we don't duplicate them.
+  let out = html
+    .replace(/\s*<meta name="description"[^>]*>/gi, '')
+    .replace(/\s*<meta property="og:[^"]*"[^>]*>/gi, '')
+    .replace(/\s*<meta name="twitter:[^"]*"[^>]*>/gi, '')
+    .replace(/\s*<link rel="canonical"[^>]*>/gi, '');
+  out = out.replace(/<title>[\s\S]*?<\/title>/i, `<title>${esc(meta.title)}</title>`);
   out = out.replace('</head>', `${tags.join('\n    ')}\n  </head>`);
   return out;
+}
+
+// ── Static marketing pages: real crawlable title/meta/OG + hero content ──
+// These are client-rendered in the SPA; without prerender a crawler sees an
+// empty shell. Content mirrors each page's hero so bots/AI engines get real,
+// non-cloaked HTML (React replaces #root for JS visitors).
+type StaticPage = { title: string; description: string; eyebrow: string; h1: string; sub?: string; body: string };
+const SAAS_NOTE =
+  'City Bucket List is a software-as-a-service private-membership platform — not a rideshare, transportation provider, or passenger carrier.';
+const STATIC_PAGES: Record<string, StaticPage> = {
+  '/': {
+    title: 'City Bucket List — Private Rides, Local Eats & Attractions in Your City',
+    description:
+      'City Bucket List is a private-membership platform for living like a local in every city — schedule private rides with a driver you know, discover top restaurants and attractions, plan trips, and get AI concierge help from Buckee.',
+    eyebrow: "what's on your bucket list?",
+    h1: 'City Bucket List — your city, your way',
+    sub: 'Private, scheduled rides · local eats & drinks · attractions · travel · your AI concierge Buckee',
+    body: `<p>${SAAS_NOTE} Members schedule private rides with independent local drivers they already know, discover top-rated restaurants and attractions near them, plan travel, and get personalized recommendations from Buckee, the CBL AI city concierge.</p><h2>What you can do on City Bucket List</h2><ul><li>Book a private, scheduled ride with a driver you already know</li><li>Find top local restaurants and reserve a table</li><li>Discover top-rated attractions and things to do near you</li><li>Plan hotels, weekend trips, and full itineraries</li><li>Browse the local directory, classifieds, and member deals</li><li>Read the CBL Blog — where the locals go</li></ul>`,
+  },
+  '/transportation': {
+    title: 'Private, Scheduled Rides — Your Own Driver | City Bucket List',
+    description:
+      'Schedule a private ride with a local independent driver you already know — booked ahead, never on-demand, never a stranger. Uber, Lyft and autonomous partner options coming soon for the trips CBL does not cover.',
+    eyebrow: 'cbl private · scheduled rides',
+    h1: 'Transportation — your city, your way',
+    sub: 'Private, scheduled, your-own-driver rides',
+    body: `<p>CBL rides are scheduled, by-invitation, and your-own-driver — every ride is booked at least 12 hours ahead, so you always know who is picking you up. ${SAAS_NOTE} Third-party partner options (Uber, Lyft, autonomous) are coming soon for trips an independent driver cannot cover.</p><h2>Three ways to join</h2><ul><li>Riders — ride with a trusted local driver, free to join</li><li>Drivers — build your own private rider base, keep 100% of your fare</li><li>Concierge partners — hotels and businesses that connect guests to drivers</li></ul>`,
+  },
+  '/eats-and-drinks': {
+    title: 'Eats & Drinks — Top Local Restaurants Near You | City Bucket List',
+    description:
+      'Discover top-rated local restaurants near you — real ratings, real photos, and reservations. Picked by the drivers, bartenders and regulars who actually live here. Reserve a table on OpenTable and book a ride to get there.',
+    eyebrow: "what's on your list tonight?",
+    h1: 'Eats & Drinks — top local restaurants near you',
+    sub: 'Breakfast · lunch · dinner · dessert, picked by locals',
+    body: `<p>The best local restaurants near you — breakfast, lunch, dinner and dessert — with real ratings and reviews pulled live, plus reserve-a-table links. Real picks from the people who live here, not recycled top-tens. ${SAAS_NOTE}</p><h2>Find your spot</h2><ul><li>Top-rated restaurants near you by cuisine</li><li>Reserve a table on OpenTable</li><li>Book a private ride to dinner</li></ul>`,
+  },
+  '/travels': {
+    title: 'Travels — Hotels, Weekend Trips & Itineraries | City Bucket List',
+    description:
+      'Plan your trip with City Bucket List — hotels, B&Bs, short-term rentals, weekend day trips, and full multi-day itineraries curated by CBL, with Buckee planning the rest.',
+    eyebrow: 'cbl curated · booking launching soon',
+    h1: 'Travels — plan it, book it, live it',
+    sub: 'Hotels · resorts · trips · itineraries',
+    body: `<p>Hotels, B&Bs, short-term rentals, weekend day trips, and full multi-day itineraries — curated by CBL, with full hotel and flight booking launching soon. Buckee, your AI concierge, plans the rest. ${SAAS_NOTE}</p>`,
+  },
+  '/meet-buckee': {
+    title: 'Meet Buckee — Your AI City Concierge | City Bucket List',
+    description:
+      'Meet Buckee, the City Bucket List AI concierge — ask him anything about the city in your language and get personalized rides, restaurants, attractions, and itineraries.',
+    eyebrow: 'meet your concierge',
+    h1: 'Meet Buckee — your AI city concierge',
+    sub: 'Ask him anything about the city',
+    body: `<p>Buckee is the City Bucket List AI concierge. Ask him anything about the city — in English, Spanish, French or Portuguese — and he plans rides, restaurant reservations, attractions, and full itineraries for you. ${SAAS_NOTE}</p>`,
+  },
+  '/our-story': {
+    title: 'Our Story — Locals Helping Travelers Feel at Home | City Bucket List',
+    description:
+      'What began as a community-driven transportation platform has grown into a full lifestyle and local-discovery membership — built to help you live like a local in every city you visit.',
+    eyebrow: 'since day one',
+    h1: 'Our story — locals everywhere',
+    sub: 'Friends from anywhere',
+    body: `<p>What began as a community-driven transportation platform has grown into a full lifestyle and local-discovery membership. ${SAAS_NOTE} Our mission is to help you live like a local — with a driver you know, the best local spots, and an AI concierge in your pocket.</p>`,
+  },
+  '/how-it-works': {
+    title: 'How It Works — Scheduled Rides, Drivers You Know | City Bucket List',
+    description:
+      "City Bucket List isn't on-demand. It's a private membership for scheduled rides — where drivers build their own network of riders, and riders ride with someone they've already met. Here's how it works for riders, drivers, and concierge partners.",
+    eyebrow: 'private membership association',
+    h1: 'How it works — scheduled rides, drivers you know',
+    sub: 'For riders, drivers, and concierge partners',
+    body: `<p>City Bucket List isn't on-demand. It's a private membership for scheduled rides — drivers build their own network of riders, and riders ride with someone they've already met. Need a quick one-off? Use whatever rideshare you like. ${SAAS_NOTE}</p><h2>Three ways to join</h2><ul><li>Riders — ride with a driver you already met, free to join</li><li>Drivers — build a private rider base and keep your full fare</li><li>Concierge partners — connect your guests to trusted drivers</li></ul>`,
+  },
+  '/concierge': {
+    title: 'Hotel & Concierge Partner Program | City Bucket List',
+    description:
+      'A free partnership for hotels, residences, and hospitality teams. Connect your guests with trusted local drivers, plan complete itineraries, and earn commission on every ride and booking.',
+    eyebrow: 'hotels & hospitality · partner program',
+    h1: 'Hotel & Concierge Program',
+    sub: 'Earn on every ride',
+    body: `<p>A free partner program for hotels, residences, senior communities, venues, and hospitality teams. Connect guests with trusted independent drivers, plan complete itineraries, and earn commission on every ride and booking. ${SAAS_NOTE}</p>`,
+  },
+  '/partner-restaurants': {
+    title: 'Restaurant Partners — Reach Local Diners | City Bucket List',
+    description:
+      'Partner with City Bucket List to reach local members and drivers deciding where to eat and drink. Get featured placement, full website and app access, and build your own delivery driver network.',
+    eyebrow: 'eats & drinks · partner program',
+    h1: 'Restaurant Partners',
+    sub: 'Reach the locals deciding where to eat',
+    body: `<p>CBL members and local drivers use City Bucket List to decide where to eat and drink. Restaurant partners get top placement, full website and app access, and can even build their own delivery driver network. ${SAAS_NOTE}</p>`,
+  },
+  '/partner-attractions': {
+    title: 'Attraction & Venue Partners | City Bucket List',
+    description:
+      'Partner with City Bucket List to get your attraction, venue, or experience in front of members planning their next outing — with sponsored top placement and ticketed booking.',
+    eyebrow: 'attractions · partner program',
+    h1: 'Attraction & Venue Partners',
+    sub: 'Get in front of local explorers',
+    body: `<p>Get your attraction, venue, or experience in front of City Bucket List members planning their next outing — sponsored spots appear first, plus ticketed bookings and a partner badge. ${SAAS_NOTE}</p>`,
+  },
+  '/affiliates': {
+    title: 'Affiliate & Commission Program | City Bucket List',
+    description:
+      'Join the City Bucket List partner network and earn commission across the platform — transportation, restaurants, attractions, travel, and more.',
+    eyebrow: 'partners · commission program',
+    h1: 'Affiliate & Commission Program',
+    sub: 'Earn across the platform',
+    body: `<p>Join the City Bucket List partner network and earn commission across the platform — transportation, restaurants, attractions, and travel. ${SAAS_NOTE}</p>`,
+  },
+  '/faq': {
+    title: 'FAQ — How City Bucket List Works | City Bucket List',
+    description:
+      'Frequently asked questions about City Bucket List — is it a rideshare company, how membership works, how payments work, and how drivers and riders connect.',
+    eyebrow: 'questions · how the platform works',
+    h1: 'Frequently Asked Questions',
+    body: `<p>Answers to common questions about City Bucket List. ${SAAS_NOTE} It connects members who schedule rides directly with independent contractors they already know.</p>`,
+  },
+  '/contact': {
+    title: 'Contact — We’re Here to Help | City Bucket List',
+    description: 'Get in touch with the City Bucket List team — support, partnerships, and general questions.',
+    eyebrow: 'support · we’re here to help',
+    h1: 'Contact City Bucket List',
+    body: `<p>Get in touch with the City Bucket List team for support, partnerships, or general questions. ${SAAS_NOTE}</p>`,
+  },
+  '/login': {
+    title: 'Join Free or Sign In | City Bucket List',
+    description:
+      'Join City Bucket List free or sign in — a private membership for scheduled rides, local eats, attractions, and travel, with your AI concierge Buckee.',
+    eyebrow: 'private membership · free to join',
+    h1: 'Join City Bucket List',
+    sub: 'Free to join',
+    body: `<p>Join City Bucket List free or sign in to your account. ${SAAS_NOTE}</p>`,
+  },
+  '/delivery': {
+    title: 'CBL Delivery — Coming Soon | City Bucket List',
+    description:
+      'Same-day local delivery powered by independent local drivers — coming soon from City Bucket List. Leave your email and we’ll let you know the moment it’s live.',
+    eyebrow: 'coming soon',
+    h1: 'CBL Delivery',
+    sub: 'Same-day local delivery, coming soon',
+    body: `<p>Same-day local delivery, powered by independent local drivers — coming soon. ${SAAS_NOTE}</p>`,
+  },
+  '/feedback': {
+    title: 'Feedback — Tell Us What You Think | City Bucket List',
+    description: 'Share your feedback with the City Bucket List team. We read every one.',
+    eyebrow: 'your voice · we read every one',
+    h1: 'Share Your Feedback',
+    body: `<p>Tell us what you think — we read every message. ${SAAS_NOTE}</p>`,
+  },
+  '/terms': {
+    title: 'Terms & Conditions | City Bucket List',
+    description: 'The terms and conditions for using City Bucket List, operated by Citybucketlist.com, LLC.',
+    eyebrow: 'legal',
+    h1: 'Terms & Conditions',
+    body: `<p>The terms and conditions for using City Bucket List, operated by Citybucketlist.com, LLC. ${SAAS_NOTE}</p>`,
+  },
+};
+
+function renderStatic(p: StaticPage): string {
+  return `<main><p>${esc(p.eyebrow)}</p><h1>${esc(p.h1)}</h1>${p.sub ? `<p>${esc(p.sub)}</p>` : ''}${p.body}</main>`;
 }
 
 function injectRoot(html: string, content: string): string {
@@ -161,10 +348,46 @@ export default async function handler(req: Request, context: Context): Promise<R
 
   let html = await res.text();
   const finish = () =>
-    new Response(html, { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'x-cbl-prerender': '1' } });
+    new Response(html, {
+      status: 200,
+      headers: { 'content-type': 'text/html; charset=utf-8', 'x-cbl-prerender': '1', ...SECURITY_HEADERS },
+    });
 
   try {
-    const path = url.pathname.replace(/\/$/, '') || '/blog';
+    const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '') || '/';
+
+    // Static marketing pages (home + section/landing pages).
+    const staticPage = STATIC_PAGES[path];
+    if (staticPage) {
+      const canonical = `${origin}${path === '/' ? '/' : path}`;
+      const jsonld =
+        path === '/'
+          ? {
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'City Bucket List',
+              url: `${origin}/`,
+              logo: `${origin}/eats/imagery/cbl-map-backdrop.jpg`,
+              description: staticPage.description,
+            }
+          : {
+              '@context': 'https://schema.org',
+              '@type': 'WebPage',
+              name: staticPage.title,
+              description: staticPage.description,
+              url: canonical,
+            };
+      html = injectHead(html, {
+        title: staticPage.title,
+        description: staticPage.description,
+        url: canonical,
+        image: absUrl(origin, null),
+        type: 'website',
+        jsonld,
+      });
+      html = injectRoot(html, renderStatic(staticPage));
+      return finish();
+    }
 
     if (path === '/blog') {
       const r = await fetch(
