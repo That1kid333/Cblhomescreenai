@@ -375,11 +375,22 @@ export function Layout() {
               City Bucket List is a software-as-a-service (SaaS) platform and is not a rideshare company, transportation provider, or passenger carrier.
             </p>
           </div>
-          <div className="flex items-center gap-6 text-[10px] uppercase">
-            <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
-            <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
-            <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
-            <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
+          <div className="flex flex-col items-center md:items-end gap-4">
+            <div className="flex items-center gap-4">
+              <a href="https://www.youtube.com/@CitybucketlistCBL" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on YouTube" className="text-gray-500 hover:text-[#C99742] transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.5 15.6V8.4l6.3 3.6-6.3 3.6Z" /></svg>
+              </a>
+              <a href="https://www.instagram.com/citybucketlist_pittsburgh/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="text-gray-500 hover:text-[#C99742] transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" /></svg>
+              </a>
+              {/* Facebook group icon slots in here once the group link is confirmed */}
+            </div>
+            <div className="flex items-center gap-6 text-[10px] uppercase">
+              <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>
+              <Link to="/faq" className="hover:text-[#FDB913] transition-colors">FAQ</Link>
+              <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
+              <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
+            </div>
           </div>
         </div>
       </footer>
