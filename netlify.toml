@@ -24,6 +24,60 @@
   path = "/directory"
   function = "prerender"
 
+# Static marketing pages — prerender real title/meta/OG + hero content so the
+# home page and section pages are crawlable (bots / AI engines / social scrapers).
+[[edge_functions]]
+  path = "/"
+  function = "prerender"
+[[edge_functions]]
+  path = "/transportation"
+  function = "prerender"
+[[edge_functions]]
+  path = "/eats-and-drinks"
+  function = "prerender"
+[[edge_functions]]
+  path = "/travels"
+  function = "prerender"
+[[edge_functions]]
+  path = "/meet-buckee"
+  function = "prerender"
+[[edge_functions]]
+  path = "/our-story"
+  function = "prerender"
+[[edge_functions]]
+  path = "/how-it-works"
+  function = "prerender"
+[[edge_functions]]
+  path = "/concierge"
+  function = "prerender"
+[[edge_functions]]
+  path = "/partner-restaurants"
+  function = "prerender"
+[[edge_functions]]
+  path = "/partner-attractions"
+  function = "prerender"
+[[edge_functions]]
+  path = "/affiliates"
+  function = "prerender"
+[[edge_functions]]
+  path = "/faq"
+  function = "prerender"
+[[edge_functions]]
+  path = "/contact"
+  function = "prerender"
+[[edge_functions]]
+  path = "/login"
+  function = "prerender"
+[[edge_functions]]
+  path = "/delivery"
+  function = "prerender"
+[[edge_functions]]
+  path = "/feedback"
+  function = "prerender"
+[[edge_functions]]
+  path = "/terms"
+  function = "prerender"
+
 # Dynamic sitemap listing static pages + all published blog posts.
 [[edge_functions]]
   path = "/sitemap.xml"
@@ -38,3 +92,14 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# ── Security headers (apply to every response) ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Permissions-Policy = "geolocation=(self), microphone=(self), camera=(), payment=()"
+    Content-Security-Policy = "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://use.typekit.net https://p.typekit.net https://fonts.googleapis.com; font-src 'self' data: https://use.typekit.net https://p.typekit.net https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://use.typekit.net https://p.typekit.net https://ipwho.is https://ipapi.co https://api.bigdatacloud.net https://api.open-meteo.com https://*.googleapis.com; frame-src 'self' https://www.google.com https://maps.google.com; upgrade-insecure-requests"
