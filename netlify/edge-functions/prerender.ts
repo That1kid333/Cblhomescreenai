@@ -373,6 +373,7 @@ export default async function handler(req: Request, context: Context): Promise<R
                 'https://www.youtube.com/@CitybucketlistCBL',
                 'https://www.instagram.com/citybucketlist_pittsburgh/',
                 'https://www.tiktok.com/@citybucketlist.com',
+                'https://x.com/citybucketlists',
               ],
             }
           : {
