@@ -383,6 +383,9 @@ export function Layout() {
               <a href="https://www.instagram.com/citybucketlist_pittsburgh/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="text-gray-500 hover:text-[#C99742] transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" /></svg>
               </a>
+              <a href="https://www.tiktok.com/@citybucketlist.com" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on TikTok" className="text-gray-500 hover:text-[#C99742] transition-colors">
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.3v13.4a2.42 2.42 0 1 1-1.9-2.36v-3.38a5.72 5.72 0 1 0 5.2 5.7V9.4a7.6 7.6 0 0 0 4.46 1.43V7.5a4.28 4.28 0 0 1-3.41-1.68Z" /></svg>
+              </a>
               {/* Facebook group icon slots in here once the group link is confirmed */}
             </div>
             <div className="flex items-center gap-6 text-[10px] uppercase">
