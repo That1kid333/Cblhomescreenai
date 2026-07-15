@@ -164,7 +164,7 @@ type Restaurant = {
   /** Optional real links for a sponsored/curated partner's action buttons. */
   website?: string;
   phone?: string;
-  reservable?: boolean; // true → show "Reserve a Table"; false/undefined (e.g. walk-in) → "Get Directions"
+  reservable?: boolean; // false → walk-in only (hide Reserve). undefined → reservable unless cuisine is only coffee/bakery/dessert
   reserveUrl?: string; // direct OpenTable/Resy page; else we search OpenTable by name+location
 };
 
@@ -188,6 +188,7 @@ const RESTAURANTS: Restaurant[] = [
     image: IMG + 'sq-plate.jpg',
     coord: [40.46008, -79.92513],
     website: 'https://square-cafe.com/', // Square Cafe is walk-in only (no online reservations)
+    reservable: false,
     phone: '+14122448002',
   },
   {
@@ -1141,12 +1142,13 @@ const DESKTOP_CSS = `
   font-family:${MONO}; font-size:10px; color:#8CC084;
   border:1px solid rgba(140,192,132,.35); padding:3px 8px; letter-spacing:.1em; text-transform:uppercase;
 }
-.cbl-eats .card .cta-row { display:flex; gap:10px; margin-top:14px; }
+.cbl-eats .card .cta-row { display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; }
 .cbl-eats .card .cta {
-  flex:1; background:#C99742; border:0; color:#fff; padding:12px 0; border-radius:999px;
+  flex:1 1 130px; background:#C99742; border:0; color:#fff; padding:12px 0; border-radius:999px;
   font-family:${DISPLAY}; font-weight:800; font-size:13px; letter-spacing:.12em;
-  text-transform:uppercase; transition:background .2s;
+  text-transform:uppercase; transition:background .2s; cursor:pointer;
 }
+.cbl-eats .card a.cta { display:flex; align-items:center; justify-content:center; text-decoration:none; }
 .cbl-eats .card .cta:hover { background:#B0831A; }
 .cbl-eats .card .cta.ghost { background:transparent; color:#fff; border:1px solid rgba(255,255,255,.18); }
 .cbl-eats .card .cta.ghost:hover { border-color:#C99742; color:#C99742; background:transparent; }
@@ -1233,6 +1235,13 @@ const placeIdOf = (r: Restaurant) => {
 };
 const reserveUrlFor = (r: Restaurant) =>
   r.reserveUrl || `https://www.opentable.com/s?term=${encodeURIComponent(r.name)}&latitude=${r.coord[0]}&longitude=${r.coord[1]}`;
+
+// Show "Reserve a Table" (→ OpenTable) on sit-down spots. Hidden for explicit
+// walk-ins (reservable:false) and counter-service-only cuisines (coffee/bakery/
+// dessert). A direct reserveUrl always wins. Live Google listings default in.
+const NON_RESERVABLE = new Set(['COFFEE', 'BAKERY', 'DESSERT']);
+const canReserve = (r: Restaurant) =>
+  !!r.reserveUrl || (r.reservable !== false && !r.cuisine.every((c) => NON_RESERVABLE.has(c)));
 // Keyless interactive Google map embed (no API key needed / exposed).
 const mapEmbed = (r: Restaurant) => `https://maps.google.com/maps?q=${encodeURIComponent(`${r.name}, ${r.address}`)}&z=15&output=embed`;
 // Lets any card open the on-site detail panel instead of leaving for Google.
@@ -1268,7 +1277,14 @@ function RestaurantCard({ r }: { r: Restaurant }) {
           <span className="open">Open Now</span>
         </div>
         <div className="cta-row">
-          <button className="cta" onClick={() => openModal(r)}>More Info</button>
+          {canReserve(r) && (
+            <a className="cta" href={reserveUrlFor(r)} target="_blank" rel="noopener noreferrer">
+              Reserve a Table
+            </a>
+          )}
+          <button className={'cta' + (canReserve(r) ? ' ghost' : '')} onClick={() => openModal(r)}>
+            More Info
+          </button>
         </div>
       </div>
     </article>
@@ -1296,7 +1312,22 @@ function Spotlight({ r }: { r: Restaurant }) {
             <span className="addr">{r.address}</span>
           </div>
           <div className="actions">
-            <button className="cta" style={{ padding: '14px 28px', flex: '0 0 auto' }} onClick={() => openModal(r)}>
+            {canReserve(r) && (
+              <a
+                className="cta"
+                style={{ padding: '14px 28px', flex: '0 0 auto' }}
+                href={reserveUrlFor(r)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Reserve a Table
+              </a>
+            )}
+            <button
+              className={'cta' + (canReserve(r) ? ' ghost' : '')}
+              style={{ padding: '14px 28px', flex: '0 0 auto' }}
+              onClick={() => openModal(r)}
+            >
               More Info
             </button>
           </div>
@@ -2432,7 +2463,7 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
   const phone = details?.phone || r.phone || null;
   const desc = r.description || details?.summary || null;
   const openNow = details?.openNow ?? r.open;
-  const reservable = r.reservable || r.reserveUrl;
+  const reservable = canReserve(r);
   const todayIdx = (new Date().getDay() + 6) % 7; // Google weekday_text is Monday-first
   return (
     <div className="cbl-rmodal" role="dialog" aria-modal="true" aria-label={r.name}>
