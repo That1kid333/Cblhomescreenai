@@ -1279,7 +1279,7 @@ function RestaurantCard({ r }: { r: Restaurant }) {
         <div className="cta-row">
           {canReserve(r) && (
             <a className="cta" href={reserveUrlFor(r)} target="_blank" rel="noopener noreferrer">
-              Reserve a Table
+              Book on OpenTable
             </a>
           )}
           <button className={'cta' + (canReserve(r) ? ' ghost' : '')} onClick={() => openModal(r)}>
@@ -1320,7 +1320,7 @@ function Spotlight({ r }: { r: Restaurant }) {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Reserve a Table
+                Book on OpenTable
               </a>
             )}
             <button
@@ -2532,8 +2532,8 @@ function RestaurantModal({ r, onClose }: { r: Restaurant | null; onClose: () => 
                 </a>
               )}
               {reservable && (
-                <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noreferrer">
-                  Reserve
+                <a className="ghost" href={reserveUrlFor(r)} target="_blank" rel="noopener noreferrer">
+                  Book on OpenTable
                 </a>
               )}
               {phone && (
