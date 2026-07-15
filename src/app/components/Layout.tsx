@@ -376,15 +376,15 @@ export function Layout() {
             </p>
           </div>
           <div className="flex flex-col items-center md:items-end gap-4">
-            <div className="flex items-center gap-4">
-              <a href="https://www.youtube.com/@CitybucketlistCBL" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on YouTube" className="text-gray-500 hover:text-[#C99742] transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8ZM9.5 15.6V8.4l6.3 3.6-6.3 3.6Z" /></svg>
+            <div className="flex items-center gap-3.5">
+              <a href="https://www.youtube.com/@CitybucketlistCBL" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on YouTube" className="transition-transform hover:scale-110">
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" /><path fill="#fff" d="M9.5 15.6V8.4l6.3 3.6-6.3 3.6Z" /></svg>
               </a>
-              <a href="https://www.instagram.com/citybucketlist_pittsburgh/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="text-gray-500 hover:text-[#C99742] transition-colors">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5.5" /><circle cx="12" cy="12" r="4.2" /><circle cx="17.6" cy="6.4" r="1.1" fill="currentColor" stroke="none" /></svg>
+              <a href="https://www.instagram.com/citybucketlist_pittsburgh/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="transition-transform hover:scale-110">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="cbl-ig" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#FEDA75" /><stop offset=".35" stopColor="#FA7E1E" /><stop offset=".6" stopColor="#D62976" /><stop offset=".8" stopColor="#962FBF" /><stop offset="1" stopColor="#4F5BD5" /></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5.5" fill="url(#cbl-ig)" /><circle cx="12" cy="12" r="4.2" fill="none" stroke="#fff" strokeWidth="1.9" /><circle cx="17.6" cy="6.4" r="1.2" fill="#fff" /></svg>
               </a>
-              <a href="https://www.tiktok.com/@citybucketlist.com" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on TikTok" className="text-gray-500 hover:text-[#C99742] transition-colors">
-                <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.3v13.4a2.42 2.42 0 1 1-1.9-2.36v-3.38a5.72 5.72 0 1 0 5.2 5.7V9.4a7.6 7.6 0 0 0 4.46 1.43V7.5a4.28 4.28 0 0 1-3.41-1.68Z" /></svg>
+              <a href="https://www.tiktok.com/@citybucketlist.com" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on TikTok" className="transition-transform hover:scale-110">
+                <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true"><path fill="#25F4EE" transform="translate(-0.9 -0.7)" d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.3v13.4a2.42 2.42 0 1 1-1.9-2.36v-3.38a5.72 5.72 0 1 0 5.2 5.7V9.4a7.6 7.6 0 0 0 4.46 1.43V7.5a4.28 4.28 0 0 1-3.41-1.68Z" /><path fill="#FE2C55" transform="translate(0.9 0.7)" d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.3v13.4a2.42 2.42 0 1 1-1.9-2.36v-3.38a5.72 5.72 0 1 0 5.2 5.7V9.4a7.6 7.6 0 0 0 4.46 1.43V7.5a4.28 4.28 0 0 1-3.41-1.68Z" /><path fill="#fff" d="M16.6 5.82a4.28 4.28 0 0 1-1.05-2.82h-3.3v13.4a2.42 2.42 0 1 1-1.9-2.36v-3.38a5.72 5.72 0 1 0 5.2 5.7V9.4a7.6 7.6 0 0 0 4.46 1.43V7.5a4.28 4.28 0 0 1-3.41-1.68Z" /></svg>
               </a>
               {/* Facebook group icon slots in here once the group link is confirmed */}
             </div>
