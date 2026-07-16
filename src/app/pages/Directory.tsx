@@ -935,22 +935,23 @@ function DirListingModal({
         </button>
         {l.driverCode ? (
           <>
-            {/* Driver posts render the premium "Need a Ride?" business card.
-                (Demo values below become customizable form fields.) */}
+            {/* Driver posts render the premium "Need a Ride?" business card from
+                the member's saved driver_ad (falls back to the post's own fields
+                for older posts with no saved ad yet). */}
             <DriverAdCard
               d={{
-                name: "Keith Schmiedlin",
-                photo: null,
-                carPhoto: null,
-                car: "2014 Hyundai Santa Fe",
-                color: "Black",
-                plate: "KBL-2408",
-                plateState: "PA",
+                name: l.driverAd?.name || l.name,
+                photo: l.driverAd?.photo ?? null,
+                carPhoto: l.driverAd?.carPhoto ?? null,
+                car: l.driverAd?.car ?? null,
+                color: l.driverAd?.color ?? null,
+                plate: l.driverAd?.plate ?? null,
+                plateState: l.driverAd?.plateState ?? null,
                 code: l.driverCode,
-                phone: "(412) 555-0148",
-                email: "keith@citybucketlist.com",
-                since: "2025",
-                availability: "Scheduled rides only · Book 12+ hrs ahead",
+                phone: l.driverAd?.phone ?? null,
+                email: l.driverAd?.email ?? null,
+                since: l.driverAd?.since ?? null,
+                availability: l.driverAd?.availability ?? null,
               }}
             />
             {canEditPhotos && onEditPhotos && (
