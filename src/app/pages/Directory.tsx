@@ -809,6 +809,85 @@ function DriverQRCard({ code }: { code: string }) {
   );
 }
 
+// Premium driver-ad "business card" — the full self-promo card a driver posts.
+// Header + profile photo + car photo + license plate + big QR + contact, on
+// brand and on-message (SaaS / independent contractor). Fields are customizable.
+const DRIVERAD_CSS = `
+.cbl-drivercard { position:relative; background:#0b0b0b; }
+.cbl-drivercard .dc-top { position:relative; padding:32px 24px 24px; text-align:center;
+  background:linear-gradient(180deg, rgba(10,10,10,.30) 0%, rgba(10,10,10,.82) 82%, #0b0b0b 100%), url('${MAP_BG}') center top / cover no-repeat; }
+.cbl-drivercard .dc-avatar { width:118px; height:118px; border-radius:50%; object-fit:cover; border:3px solid #C99742; box-shadow:0 0 0 4px rgba(201,151,66,.16); margin:0 auto 16px; display:block; }
+.cbl-drivercard .dc-avatar.ph { display:flex; align-items:center; justify-content:center; background:#161616; font-family:${DISPLAY}; font-weight:900; font-size:44px; color:#C99742; }
+.cbl-drivercard .dc-eyebrow { font-family:${MONO}; font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:#8f8f8f; margin-bottom:8px; }
+.cbl-drivercard .dc-h { font-family:${DISPLAY}; font-weight:900; font-size:clamp(34px,9vw,44px); line-height:.98; text-transform:uppercase; letter-spacing:-.01em; color:#fff; margin:0 0 8px; }
+.cbl-drivercard .dc-ride { font-size:19px; color:#cfcfcf; margin-bottom:16px; }
+.cbl-drivercard .dc-ride b { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; }
+.cbl-drivercard .dc-badge { display:inline-flex; align-items:center; gap:8px; font-family:${MONO}; font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:#C99742; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:8px 16px; }
+.cbl-drivercard .dc-car { position:relative; margin:20px 20px 0; border-radius:14px; overflow:hidden; min-height:172px; border:1px solid rgba(255,255,255,.06);
+  background:linear-gradient(180deg, rgba(20,20,20,.5), rgba(10,10,10,.72)), url('${MAP_BG}') center / cover; display:flex; align-items:center; justify-content:center; }
+.cbl-drivercard .dc-car img { width:82%; max-height:150px; object-fit:contain; filter:drop-shadow(0 12px 22px rgba(0,0,0,.6)); }
+.cbl-drivercard .dc-carph { color:#6a6a6a; font-family:${MONO}; font-size:12px; letter-spacing:.08em; text-transform:uppercase; text-align:center; padding:26px; }
+.cbl-drivercard .dc-plate { position:absolute; bottom:14px; right:14px; background:#fff; color:#111; border-radius:8px; padding:7px 14px; font-family:${DISPLAY}; font-weight:900; font-size:23px; letter-spacing:.02em; display:flex; align-items:baseline; gap:8px; box-shadow:0 6px 16px rgba(0,0,0,.55); }
+.cbl-drivercard .dc-plate .st { font-size:11px; font-weight:700; color:#777; letter-spacing:.1em; }
+.cbl-drivercard .dc-contact { display:flex; gap:18px; align-items:center; padding:22px 24px 6px; }
+.cbl-drivercard .dc-qr { width:118px; height:118px; background:#fff; border-radius:12px; padding:8px; flex-shrink:0; }
+.cbl-drivercard .dc-qr img { width:100%; height:100%; display:block; }
+.cbl-drivercard .dc-scan { font-family:${MONO}; font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:#C99742; margin-bottom:9px; }
+.cbl-drivercard .dc-phone { font-family:${DISPLAY}; font-weight:800; font-size:20px; color:#fff; margin-bottom:5px; }
+.cbl-drivercard .dc-email { font-size:14px; color:#bcbcbc; margin-bottom:3px; word-break:break-all; }
+.cbl-drivercard .dc-url { font-family:${MONO}; font-size:12px; color:#777; word-break:break-all; }
+.cbl-drivercard .dc-foot { border-top:1px solid rgba(255,255,255,.08); margin:16px 24px 0; padding:18px 0 8px; text-align:center; }
+.cbl-drivercard .dc-powered { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#8a8a8a; margin-bottom:10px; }
+.cbl-drivercard .dc-powered .w { color:#fff; font-weight:700; } .cbl-drivercard .dc-powered .g { color:#C99742; font-weight:700; }
+.cbl-drivercard .dc-disc { font-size:12px; line-height:1.5; color:#7a7a7a; max-width:46ch; margin:0 auto; }
+`;
+
+type DriverAd = {
+  name: string; photo?: string | null; carPhoto?: string | null;
+  plate?: string | null; plateState?: string | null; code: string;
+  phone?: string | null; email?: string | null; since?: string | null;
+};
+
+function DriverAdCard({ d }: { d: DriverAd }) {
+  const link = `${APP_URL}/r/${d.code}`;
+  const [qr, setQr] = useState("");
+  useEffect(() => {
+    QRCode.toDataURL(link, { margin: 0, width: 420, color: { dark: "#000000", light: "#FFFFFF" } })
+      .then(setQr).catch(() => setQr(""));
+  }, [link]);
+  const first = d.name.trim().split(/\s+/)[0] || d.name;
+  const initials = d.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <div className="cbl-drivercard">
+      <style>{DRIVERAD_CSS}</style>
+      <div className="dc-top">
+        {d.photo ? <img className="dc-avatar" src={d.photo} alt={d.name} /> : <div className="dc-avatar ph">{initials}</div>}
+        <div className="dc-eyebrow">CBL Drivers Directory</div>
+        <div className="dc-h">Need a Ride?</div>
+        <div className="dc-ride">Ride with <b>{first}.</b></div>
+        <div className="dc-badge">★ Private Membership Association{d.since ? ` · Since ${d.since}` : ""}</div>
+      </div>
+      <div className="dc-car">
+        {d.carPhoto ? <img src={d.carPhoto} alt={`${first}'s vehicle`} /> : <div className="dc-carph">Your vehicle photo</div>}
+        {d.plate && <div className="dc-plate">{d.plateState && <span className="st">{d.plateState}</span>}{d.plate}</div>}
+      </div>
+      <div className="dc-contact">
+        <div className="dc-qr">{qr && <img src={qr} alt={`Scan to book with ${first}`} />}</div>
+        <div>
+          <div className="dc-scan">Scan to book with {first}</div>
+          {d.phone && <div className="dc-phone">{d.phone}</div>}
+          {d.email && <div className="dc-email">{d.email}</div>}
+          <div className="dc-url">app.citybucketlist.com/r/{d.code}</div>
+        </div>
+      </div>
+      <div className="dc-foot">
+        <div className="dc-powered">Powered by&nbsp; <span className="w">CITY</span><span className="g">BUCKET</span><span className="w">LIST</span></div>
+        <div className="dc-disc">CityBucketList is a SaaS platform. All drivers are independent contractors. CBL is not a rideshare company.</div>
+      </div>
+    </div>
+  );
+}
+
 function DirListingModal({
   l, onClose, canEditPhotos, onEditPhotos,
 }: {
