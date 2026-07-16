@@ -369,7 +369,7 @@ export function Layout() {
         <div className="max-w-7xl mx-auto px-4 lg:px-6 flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-gray-500 font-mono tracking-wider">
           <div className="flex flex-col gap-2 text-center md:text-left">
             <div>
-              &copy; {new Date().getFullYear()} CITY BUCKET LIST, INC. ALL RIGHTS RESERVED.
+              &copy; {new Date().getFullYear()} CITYBUCKETLIST.COM, LLC. ALL RIGHTS RESERVED.
             </div>
             <p className="text-[10px] text-gray-600 max-w-2xl font-sans normal-case tracking-normal">
               City Bucket List is a software-as-a-service (SaaS) platform and is not a rideshare company, transportation provider, or passenger carrier.
