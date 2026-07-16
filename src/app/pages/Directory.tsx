@@ -641,7 +641,7 @@ function Filters({
 function SectionHead({ section, onPost }: { section: string; onPost: () => void }) {
   const h: Record<string, { eb: string; h: string; sub: string; cta: string }> = {
     CLASSIFIEDS: { eb: "classifieds · buy · sell · trade", h: "Local Classifieds", sub: "powered by CBL", cta: "+ Post Listing" },
-    DRIVERS: { eb: "driver schedules · qr codes · self-promo", h: "Driver Posts", sub: "meet your driver", cta: "+ Post Your Schedule" },
+    DRIVERS: { eb: "driver ads · qr codes · self-promo", h: "Driver Posts", sub: "meet your driver", cta: "+ Post an Ad" },
     RIDERS: { eb: "rider requests · events · airport · recurring", h: "Rider Requests", sub: "need a ride?", cta: "+ Post a Request" },
     SHOPPING: { eb: "shopping · local + online", h: "Shopping", sub: "shops we love", cta: "+ List Your Shop" },
     COUPONS: { eb: "coupons · member-only offers", h: "Coupons", sub: "member savings", cta: "+ Submit Coupon" },
@@ -827,6 +827,9 @@ const DRIVERAD_CSS = `
   background:linear-gradient(180deg, rgba(20,20,20,.5), rgba(10,10,10,.72)), url('${MAP_BG}') center / cover; display:flex; align-items:center; justify-content:center; }
 .cbl-drivercard .dc-car img { width:82%; max-height:150px; object-fit:contain; filter:drop-shadow(0 12px 22px rgba(0,0,0,.6)); }
 .cbl-drivercard .dc-carph { color:#6a6a6a; font-family:${MONO}; font-size:12px; letter-spacing:.08em; text-transform:uppercase; text-align:center; padding:26px; }
+.cbl-drivercard .dc-carinfo { text-align:center; padding:30px 24px; }
+.cbl-drivercard .dc-carinfo .cv { font-family:${DISPLAY}; font-weight:900; font-size:24px; line-height:1.05; text-transform:uppercase; letter-spacing:-.01em; color:#fff; }
+.cbl-drivercard .dc-carinfo .cc { font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; margin-top:8px; }
 .cbl-drivercard .dc-plate { position:absolute; bottom:14px; right:14px; background:#fff; color:#111; border-radius:8px; padding:7px 14px; font-family:${DISPLAY}; font-weight:900; font-size:23px; letter-spacing:.02em; display:flex; align-items:baseline; gap:8px; box-shadow:0 6px 16px rgba(0,0,0,.55); }
 .cbl-drivercard .dc-plate .st { font-size:11px; font-weight:700; color:#777; letter-spacing:.1em; }
 .cbl-drivercard .dc-contact { display:flex; gap:18px; align-items:center; padding:22px 24px 6px; }
@@ -844,6 +847,7 @@ const DRIVERAD_CSS = `
 
 type DriverAd = {
   name: string; photo?: string | null; carPhoto?: string | null;
+  car?: string | null; color?: string | null; // text fallback: "2024 Hyundai Santa Fe" + "Black"
   plate?: string | null; plateState?: string | null; code: string;
   phone?: string | null; email?: string | null; since?: string | null;
 };
@@ -868,7 +872,13 @@ function DriverAdCard({ d }: { d: DriverAd }) {
         <div className="dc-badge">★ Private Membership Association{d.since ? ` · Since ${d.since}` : ""}</div>
       </div>
       <div className="dc-car">
-        {d.carPhoto ? <img src={d.carPhoto} alt={`${first}'s vehicle`} /> : <div className="dc-carph">Your vehicle photo</div>}
+        {d.carPhoto ? (
+          <img src={d.carPhoto} alt={`${first}'s vehicle`} />
+        ) : d.car ? (
+          <div className="dc-carinfo"><div className="cv">{d.car}</div>{d.color && <div className="cc">{d.color}</div>}</div>
+        ) : (
+          <div className="dc-carph">Your vehicle photo</div>
+        )}
         {d.plate && <div className="dc-plate">{d.plateState && <span className="st">{d.plateState}</span>}{d.plate}</div>}
       </div>
       <div className="dc-contact">
@@ -915,48 +925,87 @@ function DirListingModal({
       <style>{LMODAL_CSS}</style>
       <div className="backdrop" onClick={onClose} />
       <div className="panel">
-        {l.placeholder || !l.img ? (
-          <div className="shot ph">
-            <span className="ph-ic">🏷️</span>
-          </div>
-        ) : (
-          <div className="shot" style={{ backgroundImage: `url(${l.img})` }}>
-            {l.photos ? <span className="pcount">📷 {l.photos}</span> : null}
-          </div>
-        )}
         <button className="close" aria-label="Close" onClick={onClose}>
           ✕
         </button>
-        <div className="mbody">
-          {l.badges && l.badges.length > 0 && (
-            <div className="badges">
-              {l.badges.map((b) => (
-                <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>
-                  {b.t}
-                </span>
-              ))}
-            </div>
-          )}
-          <h2>{l.name}</h2>
-          <div className="loc">{l.loc}</div>
-          <div className="price">{l.price}</div>
-          {l.desc && <p className="desc">{l.desc}</p>}
-          {l.driverCode && <DriverQRCard code={l.driverCode} />}
-          {canEditPhotos && onEditPhotos && (
-            <button
-              type="button"
-              onClick={onEditPhotos}
-              style={{
-                marginTop: 18, width: "100%", cursor: "pointer", borderRadius: 999,
-                padding: "12px 18px", background: "transparent", color: "#C99742",
-                border: "1px solid #C99742", fontFamily: DISPLAY, fontWeight: 800,
-                fontSize: 13, letterSpacing: ".1em", textTransform: "uppercase",
+        {l.driverCode ? (
+          <>
+            {/* Driver posts render the premium "Need a Ride?" business card.
+                (Demo values below become customizable form fields.) */}
+            <DriverAdCard
+              d={{
+                name: "Keith Schmiedlin",
+                photo: null,
+                carPhoto: null,
+                car: "2014 Hyundai Santa Fe",
+                color: "Black",
+                plate: "KBL-2408",
+                plateState: "PA",
+                code: l.driverCode,
+                phone: "(412) 555-0148",
+                email: "keith@citybucketlist.com",
+                since: "2025",
               }}
-            >
-              ＋ Add / edit photos
-            </button>
-          )}
-        </div>
+            />
+            {canEditPhotos && onEditPhotos && (
+              <div style={{ padding: "4px 24px 22px" }}>
+                <button
+                  type="button"
+                  onClick={onEditPhotos}
+                  style={{
+                    width: "100%", cursor: "pointer", borderRadius: 999,
+                    padding: "12px 18px", background: "transparent", color: "#C99742",
+                    border: "1px solid #C99742", fontFamily: DISPLAY, fontWeight: 800,
+                    fontSize: 13, letterSpacing: ".1em", textTransform: "uppercase",
+                  }}
+                >
+                  ＋ Customize my ad
+                </button>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            {l.placeholder || !l.img ? (
+              <div className="shot ph">
+                <span className="ph-ic">🏷️</span>
+              </div>
+            ) : (
+              <div className="shot" style={{ backgroundImage: `url(${l.img})` }}>
+                {l.photos ? <span className="pcount">📷 {l.photos}</span> : null}
+              </div>
+            )}
+            <div className="mbody">
+              {l.badges && l.badges.length > 0 && (
+                <div className="badges">
+                  {l.badges.map((b) => (
+                    <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>
+                      {b.t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <h2>{l.name}</h2>
+              <div className="loc">{l.loc}</div>
+              <div className="price">{l.price}</div>
+              {l.desc && <p className="desc">{l.desc}</p>}
+              {canEditPhotos && onEditPhotos && (
+                <button
+                  type="button"
+                  onClick={onEditPhotos}
+                  style={{
+                    marginTop: 18, width: "100%", cursor: "pointer", borderRadius: 999,
+                    padding: "12px 18px", background: "transparent", color: "#C99742",
+                    border: "1px solid #C99742", fontFamily: DISPLAY, fontWeight: 800,
+                    fontSize: 13, letterSpacing: ".1em", textTransform: "uppercase",
+                  }}
+                >
+                  ＋ Add / edit photos
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -1271,13 +1320,13 @@ function LocationBar({
   );
 }
 
-function EmptyState({ city, onPost }: { city: string | null; onPost: () => void }) {
+function EmptyState({ city, onPost, ctaLabel = "Post the First Listing" }: { city: string | null; onPost: () => void; ctaLabel?: string }) {
   return (
     <div className="cbl-dir-empty" style={{ textAlign: "center", padding: "48px 24px", color: "#999" }}>
       <p style={{ marginBottom: 16 }}>
         {city ? `No listings near ${city} yet — be the first.` : "No listings yet — be the first."}
       </p>
-      <button type="button" className="post-btn" onClick={onPost}>Post the First Listing →</button>
+      <button type="button" className="post-btn" onClick={onPost}>{ctaLabel} →</button>
     </div>
   );
 }
@@ -1977,7 +2026,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="CLASSIFIEDS" onPost={openPost} />
               {classifiedsLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} />
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Listing" />
               ) : (
                 <div className="listings-grid">
                   {classifiedsLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -1995,7 +2044,7 @@ export function Directory() {
           <div className="band-inner">
             <SectionHead section="DRIVERS" onPost={openPost} />
             {driversLive.length === 0 ? (
-              <EmptyState city={city} onPost={openPost} />
+              <EmptyState city={city} onPost={openPost} ctaLabel="Post an Ad" />
             ) : (
               <div className="listings-grid">
                 {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -2010,7 +2059,7 @@ export function Directory() {
           <div className="band-inner">
             <SectionHead section="RIDERS" onPost={openPost} />
             {ridersLive.length === 0 ? (
-              <EmptyState city={city} onPost={openPost} />
+              <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" />
             ) : (
               <div className="listings-grid">
                 {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -2025,7 +2074,7 @@ export function Directory() {
           <div className="band-inner">
             <SectionHead section="SHOPPING" onPost={openPost} />
             {shopLive.length === 0 ? (
-              <EmptyState city={city} onPost={openPost} />
+              <EmptyState city={city} onPost={openPost} ctaLabel="List Your Shop" />
             ) : (
               <div className="listings-grid">
                 {shopLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
