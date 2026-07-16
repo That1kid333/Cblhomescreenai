@@ -823,8 +823,9 @@ const DRIVERAD_CSS = `
 .cbl-drivercard .dc-ride { font-size:19px; color:#cfcfcf; margin-bottom:16px; }
 .cbl-drivercard .dc-ride b { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; }
 .cbl-drivercard .dc-badge { display:inline-flex; align-items:center; gap:8px; font-family:${MONO}; font-size:11px; letter-spacing:.11em; text-transform:uppercase; color:#C99742; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:8px 16px; }
-.cbl-drivercard .dc-car { position:relative; margin:20px 20px 0; border-radius:14px; overflow:hidden; min-height:172px; border:1px solid rgba(255,255,255,.06);
-  background:linear-gradient(180deg, rgba(20,20,20,.5), rgba(10,10,10,.72)), url('${MAP_BG}') center / cover; display:flex; align-items:center; justify-content:center; }
+.cbl-drivercard .dc-avail { margin-top:14px; font-family:${MONO}; font-size:11.5px; letter-spacing:.07em; text-transform:uppercase; color:#cbb27f; display:inline-flex; align-items:center; gap:7px; }
+.cbl-drivercard .dc-car { position:relative; margin:20px 20px 0; border-radius:14px; overflow:hidden; min-height:150px; border:1px solid rgba(255,255,255,.07);
+  background:linear-gradient(180deg,#161616,#0c0c0c); display:flex; align-items:center; justify-content:center; }
 .cbl-drivercard .dc-car img { width:82%; max-height:150px; object-fit:contain; filter:drop-shadow(0 12px 22px rgba(0,0,0,.6)); }
 .cbl-drivercard .dc-carph { color:#6a6a6a; font-family:${MONO}; font-size:12px; letter-spacing:.08em; text-transform:uppercase; text-align:center; padding:26px; }
 .cbl-drivercard .dc-carinfo { text-align:center; padding:30px 24px; }
@@ -850,6 +851,7 @@ type DriverAd = {
   car?: string | null; color?: string | null; // text fallback: "2024 Hyundai Santa Fe" + "Black"
   plate?: string | null; plateState?: string | null; code: string;
   phone?: string | null; email?: string | null; since?: string | null;
+  availability?: string | null; // e.g. "Scheduled rides only · Book 12+ hrs ahead"
 };
 
 function DriverAdCard({ d }: { d: DriverAd }) {
@@ -870,6 +872,7 @@ function DriverAdCard({ d }: { d: DriverAd }) {
         <div className="dc-h">Need a Ride?</div>
         <div className="dc-ride">Ride with <b>{first}.</b></div>
         <div className="dc-badge">★ Private Membership Association{d.since ? ` · Since ${d.since}` : ""}</div>
+        {d.availability && <div className="dc-avail">🕐 {d.availability}</div>}
       </div>
       <div className="dc-car">
         {d.carPhoto ? (
@@ -945,6 +948,7 @@ function DirListingModal({
                 phone: "(412) 555-0148",
                 email: "keith@citybucketlist.com",
                 since: "2025",
+                availability: "Scheduled rides only · Book 12+ hrs ahead",
               }}
             />
             {canEditPhotos && onEditPhotos && (
