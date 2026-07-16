@@ -53,6 +53,7 @@ type Listing = {
   img?: string; featured?: boolean; placeholder?: boolean;
   ownerId?: string | null; tier?: string | null; // for the owner's "edit photos" affordance
   driverCode?: string | null; // active-driver posts → "Verified CBL Driver" QR
+  driverAd?: DriverAd | null; // driver business-card fields (driver_post only)
 };
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
@@ -511,6 +512,7 @@ function listingToCard(l: DirectoryListing): Listing {
     ownerId: l.user_id ?? null,
     tier: l.tier ?? null,
     driverCode: l.driver_referral_code ?? null,
+    driverAd: (l.driver_ad as DriverAd | null) ?? null,
   };
 }
 

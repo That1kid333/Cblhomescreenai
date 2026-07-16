@@ -52,6 +52,9 @@ export type DirectoryListing = {
   tier?: string | null;
   user_id?: string | null; // owner (CBL-Rides listings only) — enables "edit my listing"
   driver_referral_code?: string | null; // active-driver posts → "Verified CBL Driver" QR
+  driver_ad?: Record<string, unknown> | null; // driver business-card fields (driver_post only)
+  latitude?: number | null;
+  longitude?: number | null;
 };
 
 export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {
