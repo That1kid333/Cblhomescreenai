@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
+import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import {
@@ -852,8 +853,9 @@ const DRIVERAD_CSS = `
 .cbl-drivercard .dc-email { font-size:14px; color:#bcbcbc; margin-bottom:3px; word-break:break-all; }
 .cbl-drivercard .dc-url { font-family:${MONO}; font-size:12px; color:#777; word-break:break-all; }
 .cbl-drivercard .dc-foot { border-top:1px solid rgba(255,255,255,.08); margin:16px 24px 0; padding:18px 0 8px; text-align:center; }
-.cbl-drivercard .dc-powered { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#8a8a8a; margin-bottom:10px; }
-.cbl-drivercard .dc-powered .w { color:#fff; font-weight:700; } .cbl-drivercard .dc-powered .g { color:#C99742; font-weight:700; }
+.cbl-drivercard .dc-powered { display:flex; align-items:center; justify-content:center; gap:9px; margin-bottom:12px; }
+.cbl-drivercard .dc-powered .pb { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#7a7a7a; }
+.cbl-drivercard .dc-powered img { height:17px; width:auto; display:block; }
 .cbl-drivercard .dc-disc { font-size:12px; line-height:1.5; color:#7a7a7a; max-width:46ch; margin:0 auto; }
 `;
 
