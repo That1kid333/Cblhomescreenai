@@ -84,7 +84,9 @@ export async function getDirectoryListings(
     user_id: (r.user_id as string | null) ?? null,
     driver_referral_code: (r.driver_referral_code as string | null) ?? null,
     driver_ad: (r.driver_ad as Record<string, unknown> | null) ?? null,
-    latitude: (r.latitude as number | null) ?? null,
-    longitude: (r.longitude as number | null) ?? null,
+    // numeric columns can arrive as strings via PostgREST — coerce so proximity
+    // math sees real numbers (NaN guarded to null).
+    latitude: r.latitude != null && !Number.isNaN(Number(r.latitude)) ? Number(r.latitude) : null,
+    longitude: r.longitude != null && !Number.isNaN(Number(r.longitude)) ? Number(r.longitude) : null,
   }));
 }

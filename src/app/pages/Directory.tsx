@@ -1990,17 +1990,70 @@ export function Directory() {
   }, [searchParams, listings, setSearchParams]);
 
 
+  // Resolve the SEARCHED place to coordinates for proximity matching — so a
+  // suburb search ("North Hills PA") surfaces the metro's listings (Pittsburgh)
+  // without the visitor having to type the exact city. Gazetteer resolves the
+  // home market instantly/offline; unknown places fall back to keyless geocoding.
+  const [searchCoords, setSearchCoords] = useState<Coords | null>(null);
+  // Network-resolved coords for listing cities the gazetteer doesn't know,
+  // keyed by lowercased city name (fills in async, re-renders when it lands).
+  const [cityGeo, setCityGeo] = useState<Record<string, Coords>>({});
+  useEffect(() => {
+    if (!city) { setSearchCoords(null); return; }
+    const q = state ? `${city}, ${state}` : city;
+    const seed = seedCoords(q) ?? seedCoords(city);
+    if (seed) { setSearchCoords(seed); return; }
+    let cancelled = false;
+    forwardGeocode(q).then((c) => { if (!cancelled) setSearchCoords(c); });
+    return () => { cancelled = true; };
+  }, [city, state]);
+
+  // Coordinates for a listing: prefer its stored lat/lng, else the gazetteer,
+  // else a previously network-resolved city (see the effect below).
+  const listingCoords = (i: { city?: string | null; latitude?: number | null; longitude?: number | null }): Coords | null => {
+    if (typeof i.latitude === "number" && typeof i.longitude === "number") return { lat: i.latitude, lng: i.longitude };
+    const seed = seedCoords(i.city);
+    if (seed) return seed;
+    const key = (i.city ?? "").trim().toLowerCase();
+    return key ? cityGeo[key] ?? null : null;
+  };
+
+  // Best-effort backfill: resolve any listing city the gazetteer doesn't know,
+  // once, so proximity works for markets we haven't seeded by hand.
+  useEffect(() => {
+    const unknown = new Set<string>();
+    for (const l of listings) {
+      const key = (l.city ?? "").trim().toLowerCase();
+      if (!key || seedCoords(l.city) || cityGeo[key]) continue;
+      unknown.add(l.city!.trim());
+    }
+    if (!unknown.size) return;
+    let cancelled = false;
+    Promise.all([...unknown].slice(0, 8).map(async (name) => {
+      const c = await forwardGeocode(name);
+      return [name.toLowerCase(), c] as const;
+    })).then((pairs) => {
+      if (cancelled) return;
+      const add: Record<string, Coords> = {};
+      for (const [k, c] of pairs) if (c) add[k] = c;
+      if (Object.keys(add).length) setCityGeo((prev) => ({ ...prev, ...add }));
+    });
+    return () => { cancelled = true; };
+  }, [listings]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // FILTER to the selected/detected location (not just sort) so a search actually
-  // narrows results — "Florida" shows Florida listings only (empty here), not a
+  // narrows results — "Ohio" shows Ohio listings only (empty here), not a
   // Pittsburgh shop floated down the list. A listing counts if:
   //   1. Its city name matches (forgiving contains-match, so "Pittsburgh" catches
-  //      "Pittsburgh, PA") — the only test for a TYPED search or "local" scope.
-  //   2. In "metro" scope only: same state as the auto-detected visitor — so a
-  //      suburb visitor (West View, PA) still sees the whole metro's listings
-  //      (Pittsburgh, PA). Typing a city clears state, so a typed search stays
-  //      strict regardless of scope.
+  //      "Pittsburgh, PA").
+  //   2. In "metro" scope (the default): it's within METRO_RADIUS_MI of the
+  //      searched place — so a suburb search (North Hills) surfaces the whole
+  //      metro (Pittsburgh) but a far city (Ohio) doesn't. "Just {city}" (local
+  //      scope) drops proximity for an exact-town view.
+  //   3. In "metro" scope: same state as the auto-detected visitor (coarse
+  //      fallback when neither side has resolvable coordinates).
   // No city set yet → show everything.
-  const filterByLocation = <T extends { city?: string | null; state?: string | null }>(items: T[]) => {
+  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null }>(items: T[]) => {
     if (!city) return items;
     const c = city.trim().toLowerCase();
     const s = (state ?? "").trim().toLowerCase();
@@ -2008,6 +2061,8 @@ export function Directory() {
       const ic = (i.city ?? "").trim().toLowerCase();
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
       if (scope !== "metro") return false;
+      const lc = listingCoords(i);
+      if (searchCoords && lc && milesBetween(searchCoords, lc) <= METRO_RADIUS_MI) return true;
       const is = (i.state ?? "").trim().toLowerCase();
       return !!s && !!is && is === s;
     });
@@ -2019,24 +2074,24 @@ export function Directory() {
     const slug = CLASSIFIEDS_CHIP_TO_SLUG[cat];
     const filtered = slug ? base.filter((l) => l.category === slug) : base;
     return filterByLocation(filtered).map(listingToCard);
-  }, [listings, cat, city, state, scope]);
+  }, [listings, cat, city, state, scope, searchCoords, cityGeo]);
 
   // Driver Posts + Rider Requests are just public classified-style posts, filtered
   // by category — the same simple post flow, no special form.
   const driversLive = useMemo(
     () => filterByLocation(listings.filter((l) => l.category === "driver_post")).map(listingToCard),
-    [listings, city, state, scope],
+    [listings, city, state, scope, searchCoords, cityGeo],
   );
   const ridersLive = useMemo(
     () => filterByLocation(listings.filter((l) => l.category === "ride_request")).map(listingToCard),
-    [listings, city, state, scope],
+    [listings, city, state, scope, searchCoords, cityGeo],
   );
 
   const shopLive = useMemo(() => {
     const pinnedPartners = filterByLocation(partners).map(partnerToCard);
     const sortedBusinesses = filterByLocation(businesses).map(businessToCard);
     return [...pinnedPartners, ...sortedBusinesses];
-  }, [partners, businesses, city, state, scope]);
+  }, [partners, businesses, city, state, scope, searchCoords, cityGeo]);
 
   return (
     <DirModalCtx.Provider value={setModalL}>
