@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { screenListing } from '../moderation';
+import { forwardGeocode } from '../location';
 
 // Member sign-in against the main app's Supabase (CBL-Rides) — the SAME
 // accounts as app.citybucketlist.com. Unlike ridesClient/directoryClient
@@ -106,6 +107,16 @@ export async function postDirectoryListing(
     }
   }
 
+  // Geocode the post's city so it can be matched by proximity (a "North Hills"
+  // search should surface a "Pittsburgh" listing ~11mi away). Best-effort and
+  // keyless — falls back to null coords, which just means name-only matching.
+  let lat: number | null = null;
+  let lng: number | null = null;
+  if (input.city) {
+    const geo = await forwardGeocode(input.state ? `${input.city}, ${input.state}` : input.city);
+    if (geo) { lat = geo.lat; lng = geo.lng; }
+  }
+
   // Return the new row's id so the caller can immediately offer to BOOST it.
   const { data, error } = await authClient
     .from('directory_listings')
@@ -123,6 +134,7 @@ export async function postDirectoryListing(
       // so an unset field falls back to its default instead of a null override.
       ...(input.city !== undefined ? { city: input.city } : {}),
       ...(input.state !== undefined ? { state: input.state } : {}),
+      ...(lat != null ? { latitude: lat, longitude: lng } : {}),
       posted_by_email: session.user.email ?? null,
       posted_by_name: (session.user.user_metadata?.name as string) ?? null,
       source: 'citybucketlist',
