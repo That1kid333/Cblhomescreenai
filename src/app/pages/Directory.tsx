@@ -8,10 +8,10 @@ import {
   type DirectoryBusiness,
   type DirectoryListing,
 } from "../lib/supabase/directoryClient";
-import { authClient, postDirectoryListing } from "../lib/supabase/authClient";
+import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import {
-  getOwnListing, uploadListingPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
+  getOwnListing, uploadListingPhoto, uploadDriverAdPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
 } from "../lib/listingPhotos";
 import { useVisitorLocation, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
 import { ComingSoonSection } from "../components/ComingSoon";
@@ -44,6 +44,15 @@ const ITALIC = "'Playfair Display',serif";
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const MAP_BG = "/eats/imagery/cbl-map-backdrop.jpg";
 const DIR_URL = "https://directory.citybucketlist.com/";
+
+// Pretty-print a stored 10-digit phone ("4129772408" → "(412) 977-2408").
+// Leaves anything that isn't a clean 10/11-digit US number untouched.
+function formatPhone(raw: string | null | undefined): string {
+  if (!raw) return "";
+  const d = raw.replace(/\D/g, "");
+  const ten = d.length === 11 && d.startsWith("1") ? d.slice(1) : d;
+  return ten.length === 10 ? `(${ten.slice(0, 3)}) ${ten.slice(3, 6)}-${ten.slice(6)}` : raw;
+}
 
 type SecDef = { key: string; label: string; Icon: (p: { s?: number }) => JSX.Element };
 type Chip = { k: string; l: string; d: string };
@@ -1169,6 +1178,382 @@ function DriverDisclaimer() {
   );
 }
 
+/* ── Driver Ad builder ───────────────────────────────────────────────────────
+ * The premium "Need a Ride?" business card is a Driver Member perk ($19.99/mo
+ * Private Membership). Flow:
+ *   • Not signed in → sign-in gate.
+ *   • Signed in, not an active driver member → upgrade gate (explain the perk +
+ *     "Become a Driver Member"; secondary "post a basic text ad" for a plain
+ *     driver-availability post with no card).
+ *   • Active driver member → the builder: prefilled from their membership
+ *     (photo, name, vehicle, contact, referral code), Edit/Preview tabs, and a
+ *     live DriverAdCard preview. Saves the fields into directory_listings.driver_ad.
+ */
+const DRIVERMODAL_CSS = `
+.cbl-drivermodal { position:fixed; inset:0; z-index:995; display:grid; place-items:center; padding:16px; font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; }
+.cbl-drivermodal *,.cbl-drivermodal *::before,.cbl-drivermodal *::after { box-sizing:border-box; margin:0; padding:0; }
+.cbl-drivermodal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,.74); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.cbl-drivermodal .panel { position:relative; width:min(520px,100%); max-height:calc(100dvh - 32px); overflow-y:auto; background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:18px 0 18px 0; box-shadow:0 18px 44px rgba(0,0,0,.55); padding:26px; animation:cbl-post-pop .26s cubic-bezier(.2,.9,.3,1.25) both; }
+.cbl-drivermodal .close { position:absolute; top:12px; right:12px; background:transparent; border:0; color:#888; cursor:pointer; font-size:15px; line-height:1; padding:6px 8px; z-index:2; }
+.cbl-drivermodal .close:hover { color:#fff; }
+.cbl-drivermodal .eyebrow { font-family:${MONO}; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#C99742; margin-bottom:8px; }
+.cbl-drivermodal h2 { font-family:${DISPLAY}; font-weight:900; font-size:28px; line-height:.98; letter-spacing:-.01em; text-transform:uppercase; color:#fff; margin:0 0 8px; }
+.cbl-drivermodal h2 .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; text-transform:none; }
+.cbl-drivermodal .sub { font-size:13.5px; line-height:1.5; color:#B8B8B8; margin:0 0 18px; }
+.cbl-drivermodal .tabs { display:flex; gap:6px; background:#0A0A0A; border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:4px; margin:0 0 18px; }
+.cbl-drivermodal .tabs button { flex:1; border:0; cursor:pointer; border-radius:999px; padding:9px 12px; background:transparent; color:#9a9a9a; font-family:${MONO}; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; transition:background .2s,color .2s; }
+.cbl-drivermodal .tabs button[aria-selected="true"] { background:#C99742; color:#0A0A0A; }
+.cbl-drivermodal label { display:block; font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#8f8f8f; margin:0 0 7px 2px; }
+.cbl-drivermodal label .req { color:#C99742; }
+.cbl-drivermodal .field { margin-bottom:13px; }
+.cbl-drivermodal .row { display:flex; gap:10px; }
+.cbl-drivermodal .row .field { flex:1; }
+.cbl-drivermodal .field input, .cbl-drivermodal .field select, .cbl-drivermodal .field textarea { width:100%; background:#0A0A0A; color:#fff; font-size:15px; font-family:inherit; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:11px 13px; transition:border-color .2s, box-shadow .2s, background .2s; }
+.cbl-drivermodal .field textarea { resize:vertical; min-height:70px; line-height:1.45; }
+.cbl-drivermodal .field input::placeholder, .cbl-drivermodal .field textarea::placeholder { color:#6a6a6a; }
+.cbl-drivermodal .field input:focus, .cbl-drivermodal .field select:focus, .cbl-drivermodal .field textarea:focus { outline:none; border-color:#C99742; background:rgba(201,151,66,.05); box-shadow:0 0 0 4px rgba(201,151,66,.16); }
+.cbl-drivermodal .photorow { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+.cbl-drivermodal .avatar { width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; border:2px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; }
+.cbl-drivermodal .avatar img { width:100%; height:100%; object-fit:cover; }
+.cbl-drivermodal .photorow .acts { display:flex; flex-direction:column; gap:6px; }
+.cbl-drivermodal .minibtn { display:inline-flex; align-items:center; gap:6px; cursor:pointer; border:1px solid rgba(201,151,66,.5); background:rgba(201,151,66,.06); color:#DDB15F; border-radius:999px; padding:6px 13px; font-size:12px; font-weight:700; font-family:inherit; transition:background .18s; }
+.cbl-drivermodal .minibtn:hover { background:rgba(201,151,66,.14); }
+.cbl-drivermodal .minibtn input { display:none; }
+.cbl-drivermodal .minibtn.ghost { border-color:rgba(255,255,255,.18); background:transparent; color:#9a9a9a; }
+.cbl-drivermodal .carthumb { position:relative; width:100%; height:120px; border-radius:12px; overflow:hidden; background:#0A0A0A; border:1px dashed rgba(201,151,66,.4); display:grid; place-items:center; margin-bottom:6px; }
+.cbl-drivermodal .carthumb img { width:100%; height:100%; object-fit:cover; }
+.cbl-drivermodal .carthumb .rm { position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; border:0; background:rgba(0,0,0,.72); color:#fff; font-size:12px; cursor:pointer; }
+.cbl-drivermodal .hint { font-size:11.5px; color:#7a7a7a; margin:-4px 2px 14px; line-height:1.5; }
+.cbl-drivermodal .submit { width:100%; border:0; cursor:pointer; border-radius:999px; padding:14px 30px; background:#C99742; color:#000; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s; }
+.cbl-drivermodal .submit:hover:not(:disabled) { background:#DDB15F; }
+.cbl-drivermodal .submit:disabled { background:#555; cursor:not-allowed; }
+.cbl-drivermodal .submit.ghost { background:transparent; color:#9A9A9A; border:1px solid rgba(255,255,255,.16); margin-top:10px; }
+.cbl-drivermodal .submit.ghost:hover:not(:disabled) { background:rgba(255,255,255,.05); color:#C8C8C8; }
+.cbl-drivermodal .alert { border-radius:12px; padding:11px 14px; font-size:13px; line-height:1.45; margin-bottom:14px; background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.4); color:#f0b3b3; }
+.cbl-drivermodal .gate, .cbl-drivermodal .success { text-align:center; padding:6px 0 2px; }
+.cbl-drivermodal .gate .mark, .cbl-drivermodal .success .mark { width:52px; height:52px; margin:0 auto 14px; border-radius:50%; border:2px solid #C99742; display:grid; place-items:center; color:#C99742; font-size:24px; }
+.cbl-drivermodal .perks { list-style:none; text-align:left; margin:0 auto 18px; max-width:320px; display:flex; flex-direction:column; gap:9px; }
+.cbl-drivermodal .perks li { display:flex; gap:9px; align-items:flex-start; font-size:13.5px; line-height:1.45; color:#C8C8C8; }
+.cbl-drivermodal .perks li svg { flex-shrink:0; margin-top:2px; color:#C99742; }
+.cbl-drivermodal .price { font-family:${MONO}; font-size:12px; letter-spacing:.06em; color:#9a9a9a; margin:0 0 16px; }
+.cbl-drivermodal .price b { color:#DDB15F; }
+.cbl-drivermodal .previewwrap { margin:0 0 16px; }
+@media (max-width:480px) { .cbl-drivermodal .panel { padding:22px 18px; } .cbl-drivermodal h2 { font-size:24px; } }
+`;
+
+// Driver-subscription join target (app owns the real subscription flow).
+const DRIVER_JOIN_URL = `${APP_URL}/driver/signup`;
+
+function DriverAdModal({
+  open, onClose, defaultCity, defaultState, onPosted, onBasicPost,
+}: {
+  open: boolean;
+  onClose: () => void;
+  defaultCity?: string | null;
+  defaultState?: string | null;
+  onPosted: () => void;
+  onBasicPost: () => void;
+}) {
+  const [checking, setChecking] = useState(true);
+  const [profile, setProfile] = useState<MyDriverProfile | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [tab, setTab] = useState<"edit" | "preview">("edit");
+
+  // Builder fields.
+  const [headline, setHeadline] = useState("");
+  const [cityField, setCityField] = useState("");
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [memberPhoto, setMemberPhoto] = useState<string | null>(null); // membership photo (for "reset")
+  const [carPhoto, setCarPhoto] = useState<string | null>(null);
+  const [car, setCar] = useState("");
+  const [color, setColor] = useState("");
+  const [plate, setPlate] = useState("");
+  const [plateState, setPlateState] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [since, setSince] = useState("");
+  const [availability, setAvailability] = useState("Scheduled rides only · Book 12+ hrs ahead");
+  const [description, setDescription] = useState("");
+  const [uploading, setUploading] = useState<"" | "profile" | "car">("");
+  const [status, setStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; });
+
+  useEffect(() => {
+    if (!open) return;
+    setChecking(true);
+    setTab("edit");
+    setStatus("idle");
+    setErrorMsg("");
+    setJoinOpen(false);
+    setHeadline("");
+    setCityField(defaultCity ?? "");
+    setCarPhoto(null);
+    setColor("");
+    setPlate("");
+    setPlateState("");
+    setDescription("");
+    setAvailability("Scheduled rides only · Book 12+ hrs ahead");
+
+    let cancelled = false;
+    getMyDriverProfile().then((p) => {
+      if (cancelled) return;
+      setSignedIn(p !== null);
+      setProfile(p);
+      if (p?.isActiveDriver) {
+        setMemberPhoto(p.photo ?? null);
+        setPhoto(p.photo ?? null);
+        setCar([p.vehicleYear, p.vehicleInfo].filter(Boolean).join(" "));
+        setPhone(formatPhone(p.phone));
+        setEmail(p.email ?? "");
+        setSince(String(new Date().getFullYear()));
+      }
+      setChecking(false);
+    });
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onCloseRef.current(); };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      cancelled = true;
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, defaultCity]);
+
+  if (!open) return null;
+
+  const onPhotoFile = async (files: FileList | null, kind: "profile" | "car") => {
+    const f = files?.[0];
+    if (!f) return;
+    setUploading(kind);
+    setErrorMsg("");
+    const { url, error } = await uploadDriverAdPhoto(f, kind);
+    setUploading("");
+    if (error) { setErrorMsg(error); return; }
+    if (url) { kind === "profile" ? setPhoto(url) : setCarPhoto(url); }
+  };
+
+  const draft: DriverAd = {
+    name: profile?.name || "Your Name",
+    photo,
+    carPhoto,
+    car: car.trim() || null,
+    color: color.trim() || null,
+    plate: plate.trim() || null,
+    plateState: plateState.trim() || null,
+    code: profile?.referralCode || "yourcode",
+    phone: phone.trim() || null,
+    email: email.trim() || null,
+    since: since.trim() || null,
+    availability: availability.trim() || null,
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (status === "pending") return;
+    if (!headline.trim()) { setStatus("error"); setErrorMsg("Add a headline for your ad (e.g. “Need a Ride? Airport runs in Pittsburgh”)."); setTab("edit"); return; }
+    setStatus("pending");
+    setErrorMsg("");
+    const cityUnchanged = cityField.trim().toLowerCase() === (defaultCity ?? "").trim().toLowerCase();
+    const { error } = await postDirectoryListing({
+      title: headline.trim(),
+      category: "driver_post",
+      description: description.trim() || undefined,
+      city: cityField.trim() || undefined,
+      state: cityUnchanged ? (defaultState?.trim() || null) : null,
+      driverAd: {
+        name: profile?.name ?? null,
+        photo: photo ?? null,
+        carPhoto: carPhoto ?? null,
+        car: car.trim() || null,
+        color: color.trim() || null,
+        plate: plate.trim() || null,
+        plateState: plateState.trim() || null,
+        phone: phone.trim() || null,
+        email: email.trim() || null,
+        since: since.trim() || null,
+        availability: availability.trim() || null,
+      },
+    });
+    if (error) { setStatus("error"); setErrorMsg(error); }
+    else { setStatus("success"); onPosted(); }
+  };
+
+  const initials = (profile?.name || "You").split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  return (
+    <>
+      <div className="cbl-drivermodal" role="dialog" aria-modal="true" aria-labelledby="cbl-driverad-title">
+        <style>{DRIVERMODAL_CSS}</style>
+        <div className="backdrop" onClick={onClose} />
+        <div className="panel">
+          <button className="close" aria-label="Close" onClick={onClose}>✕</button>
+
+          {checking ? (
+            <p className="sub" style={{ margin: "8px 0" }}>Checking your membership…</p>
+          ) : !signedIn ? (
+            <div className="gate">
+              <div className="mark" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4" y="10" width="16" height="10" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+              </div>
+              <div className="eyebrow">driver ad</div>
+              <h2 id="cbl-driverad-title">Sign in <span className="it">to post.</span></h2>
+              <p className="sub">The driver business card is part of your City Bucket List membership. Sign in with the same account you use across the site and app.</p>
+              <button type="button" className="submit" onClick={() => setJoinOpen(true)}>Sign in / Join Free →</button>
+            </div>
+          ) : profile && !profile.isActiveDriver ? (
+            <div className="gate">
+              <div className="eyebrow">driver membership</div>
+              <h2 id="cbl-driverad-title">Your own <span className="it">ride card.</span></h2>
+              <p className="sub">The premium &ldquo;Need a Ride?&rdquo; business card — your photo, your car, your plate, and a big personal QR riders scan to book you — is a <b style={{ color: "#DDB15F" }}>Driver Member</b> perk.</p>
+              <ul className="perks">
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg><span>Full business card with your photo &amp; car — images included, no extra fees.</span></li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg><span>Your personal QR code — riders scan, join, and request rides from you directly.</span></li>
+                <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg><span>You stay an independent contractor — you decide which rides to accept.</span></li>
+              </ul>
+              <p className="price"><b>$19.99/mo</b> Private Membership · cancel anytime</p>
+              <a className="submit" href={DRIVER_JOIN_URL} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", textDecoration: "none" }}>Become a Driver Member →</a>
+              <button type="button" className="submit ghost" onClick={() => { onClose(); onBasicPost(); }}>Post a basic text ad instead</button>
+            </div>
+          ) : status === "success" ? (
+            <div className="success">
+              <div className="mark" aria-hidden="true">✓</div>
+              <h2 id="cbl-driverad-title">Your card is <span className="it">live.</span></h2>
+              <p className="sub">Your driver business card is posted to the directory. Riders can scan your QR to join and book you. You can edit or repost it any time.</p>
+              <button type="button" className="submit" onClick={onClose}>Done</button>
+            </div>
+          ) : (
+            <>
+              <div className="eyebrow">driver ad · member perk</div>
+              <h2 id="cbl-driverad-title">Build your <span className="it">ride card.</span></h2>
+              <p className="sub">This is what riders see. Everything&rsquo;s prefilled from your membership — tweak anything, then post.</p>
+
+              <div className="tabs" role="tablist" aria-label="Edit or preview">
+                <button role="tab" aria-selected={tab === "edit"} onClick={() => setTab("edit")}>Edit</button>
+                <button role="tab" aria-selected={tab === "preview"} onClick={() => setTab("preview")}>Preview</button>
+              </div>
+
+              {errorMsg && <div className="alert" role="alert">{errorMsg}</div>}
+
+              {tab === "preview" ? (
+                <div className="previewwrap">
+                  <DriverAdCard d={draft} />
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit}>
+                  <div className="photorow">
+                    <div className="avatar">{photo ? <img src={photo} alt="Your profile" /> : initials}</div>
+                    <div className="acts">
+                      <label className="minibtn" style={{ margin: 0 }}>
+                        {uploading === "profile" ? "Uploading…" : "Change photo"}
+                        <input type="file" accept="image/*" disabled={!!uploading} onChange={(e) => onPhotoFile(e.target.files, "profile")} />
+                      </label>
+                      {memberPhoto && photo !== memberPhoto && (
+                        <button type="button" className="minibtn ghost" onClick={() => setPhoto(memberPhoto)}>Use my member photo</button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="da-headline">Headline <span className="req">*</span></label>
+                    <input id="da-headline" type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Need a Ride? Airport runs in Pittsburgh" maxLength={90} required />
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="da-city">City you serve</label>
+                    <input id="da-city" type="text" value={cityField} onChange={(e) => setCityField(e.target.value)} placeholder="Pittsburgh" />
+                  </div>
+
+                  <div className="row">
+                    <div className="field">
+                      <label htmlFor="da-car">Your car</label>
+                      <input id="da-car" type="text" value={car} onChange={(e) => setCar(e.target.value)} placeholder="2017 Hyundai Santa Fe" />
+                    </div>
+                    <div className="field" style={{ maxWidth: 130 }}>
+                      <label htmlFor="da-color">Color</label>
+                      <input id="da-color" type="text" value={color} onChange={(e) => setColor(e.target.value)} placeholder="Black" />
+                    </div>
+                  </div>
+
+                  <div className="row">
+                    <div className="field">
+                      <label htmlFor="da-plate">License plate</label>
+                      <input id="da-plate" type="text" value={plate} onChange={(e) => setPlate(e.target.value.toUpperCase())} placeholder="KBL-2408" maxLength={10} />
+                    </div>
+                    <div className="field" style={{ maxWidth: 90 }}>
+                      <label htmlFor="da-pstate">State</label>
+                      <input id="da-pstate" type="text" value={plateState} onChange={(e) => setPlateState(e.target.value.toUpperCase().slice(0, 2))} placeholder="PA" maxLength={2} />
+                    </div>
+                  </div>
+
+                  <div className="carthumb">
+                    {carPhoto ? (
+                      <>
+                        <img src={carPhoto} alt="Your car" />
+                        <button type="button" className="rm" aria-label="Remove car photo" onClick={() => setCarPhoto(null)}>✕</button>
+                      </>
+                    ) : (
+                      <label className="minibtn" style={{ margin: 0 }}>
+                        {uploading === "car" ? "Uploading…" : "＋ Add a car photo (optional)"}
+                        <input type="file" accept="image/*" disabled={!!uploading} onChange={(e) => onPhotoFile(e.target.files, "car")} />
+                      </label>
+                    )}
+                  </div>
+                  <p className="hint">No photo? No problem — your card shows your car&rsquo;s year, make, model &amp; color instead.</p>
+
+                  <div className="row">
+                    <div className="field">
+                      <label htmlFor="da-phone">Phone</label>
+                      <input id="da-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(412) 555-0148" />
+                    </div>
+                    <div className="field">
+                      <label htmlFor="da-since">Driving since</label>
+                      <input id="da-since" type="text" value={since} onChange={(e) => setSince(e.target.value)} placeholder="2025" maxLength={4} />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="da-email">Email</label>
+                    <input id="da-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="da-avail">Availability line</label>
+                    <input id="da-avail" type="text" value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Scheduled rides only · Book 12+ hrs ahead" maxLength={70} />
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="da-desc">Anything else (optional)</label>
+                    <textarea id="da-desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Areas you cover, airport specialties, notice you need…" maxLength={400} />
+                  </div>
+
+                  <button type="submit" className="submit" disabled={status === "pending" || !!uploading}>
+                    {status === "pending" ? "Posting…" : "Post my ad →"}
+                  </button>
+                </form>
+              )}
+
+              {tab === "preview" && (
+                <button type="button" className="submit" disabled={status === "pending"} onClick={handleSubmit}>
+                  {status === "pending" ? "Posting…" : "Post my ad →"}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+      {joinOpen && <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} source="directory-driver-ad" />}
+    </>
+  );
+}
+
 // Firm conduct / legal disclaimer shown at the foot of every Directory section.
 // Plain-language policy — Keith should have counsel review before relying on it
 // as binding terms in your jurisdiction.
@@ -1966,6 +2351,10 @@ export function Directory() {
   const [listings, setListings] = useState<DirectoryListing[]>([]);
   const [postOpen, setPostOpen] = useState(false);
   const openPost = () => setPostOpen(true);
+  // Driver posts get the dedicated card builder (member-gated) instead of the
+  // generic classifieds form.
+  const [driverAdOpen, setDriverAdOpen] = useState(false);
+  const openDriverAd = () => setDriverAdOpen(true);
   const [modalL, setModalL] = useState<Listing | null>(null);
   // Re-pull member classifieds after a successful post so the new one appears.
   const refetchListings = () => getDirectoryListings().then(setListings);
@@ -2155,9 +2544,9 @@ export function Directory() {
         <>
           <section className="band">
             <div className="band-inner">
-              <SectionHead section="DRIVERS" onPost={openPost} />
+              <SectionHead section="DRIVERS" onPost={openDriverAd} />
               {driversLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} ctaLabel="Post an Ad" />
+                <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" />
               ) : (
                 <div className="listings-grid">
                   {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -2222,6 +2611,14 @@ export function Directory() {
         defaultCity={city}
         defaultState={state}
         onPosted={refetchListings}
+      />
+      <DriverAdModal
+        open={driverAdOpen}
+        onClose={() => setDriverAdOpen(false)}
+        defaultCity={city}
+        defaultState={state}
+        onPosted={refetchListings}
+        onBasicPost={() => setPostOpen(true)}
       />
       <DirListingModal
         l={modalL}

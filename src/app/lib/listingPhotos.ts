@@ -66,6 +66,29 @@ export async function uploadListingPhoto(
   return { url: data.publicUrl, error: null };
 }
 
+// Upload a driver-ad image (profile or car photo) BEFORE the listing exists.
+// Goes to the member's own folder (<uid>/driver-ad/…) so the same bucket RLS
+// (first path segment = auth.uid()) allows it; returns the public URL to store
+// in driver_ad.photo / driver_ad.carPhoto.
+export async function uploadDriverAdPhoto(
+  file: File,
+  kind: 'profile' | 'car',
+): Promise<{ url: string | null; error: string | null }> {
+  const { data: { session } } = await authClient.auth.getSession();
+  if (!session?.user) return { url: null, error: 'Please sign in first.' };
+  if (!file.type.startsWith('image/')) return { url: null, error: 'Please choose an image file.' };
+  if (file.size > 8 * 1024 * 1024) return { url: null, error: 'Image is too large (max 8 MB).' };
+
+  const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '') || 'jpg';
+  const path = `${session.user.id}/driver-ad/${kind}-${Date.now()}-${Math.floor(Math.random() * 1e6)}.${ext}`;
+  const { error: upErr } = await authClient.storage
+    .from(BUCKET)
+    .upload(path, file, { upsert: false, contentType: file.type || undefined });
+  if (upErr) return { url: null, error: upErr.message };
+  const { data } = authClient.storage.from(BUCKET).getPublicUrl(path);
+  return { url: data.publicUrl, error: null };
+}
+
 // Persist the ordered photo URL list onto the listing (RLS: owner only).
 export async function saveListingPhotos(
   listingId: string,

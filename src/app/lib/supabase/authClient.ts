@@ -42,7 +42,7 @@ export type PostListingInput = {
 
 // Active-driver profile for prefilling / gating the driver-ad builder. Returns
 // isActiveDriver=false for non-drivers or lapsed subscriptions.
-export async function getMyDriverProfile(): Promise<{
+export type MyDriverProfile = {
   isActiveDriver: boolean;
   referralCode: string | null;
   name: string | null;
@@ -50,20 +50,25 @@ export async function getMyDriverProfile(): Promise<{
   email: string | null;
   photo: string | null;
   vehicleYear: string | null;
-} | null> {
+  vehicleInfo: string | null; // make/model, e.g. "Santa Fe"
+};
+
+export async function getMyDriverProfile(): Promise<MyDriverProfile | null> {
   const {
     data: { session },
   } = await authClient.auth.getSession();
   if (!session?.user) return null;
   const { data: drv } = await authClient
     .from('drivers')
-    .select('referral_code, name, phone, email, photo, vehicle_year, subscription_status, subscription_end, manual_subscription_override')
+    .select('referral_code, name, phone, email, photo, vehicle, vehicle_year, subscription_status, subscription_end, manual_subscription_override')
     .eq('auth_user_id', session.user.id)
     .maybeSingle();
-  if (!drv) return { isActiveDriver: false, referralCode: null, name: null, phone: null, email: null, photo: null, vehicleYear: null };
+  if (!drv) return { isActiveDriver: false, referralCode: null, name: null, phone: null, email: null, photo: null, vehicleYear: null, vehicleInfo: null };
   const status = String(drv.subscription_status ?? '');
   const notExpired = !drv.subscription_end || new Date(drv.subscription_end as string) > new Date();
   const isActiveDriver = !!drv.manual_subscription_override || (['active', 'trial', 'canceled_grace_period'].includes(status) && notExpired);
+  // vehicle is a jsonb like { info: "Santa Fe" }.
+  const veh = drv.vehicle as { info?: string } | null;
   return {
     isActiveDriver,
     referralCode: (drv.referral_code as string) ?? null,
@@ -72,6 +77,7 @@ export async function getMyDriverProfile(): Promise<{
     email: (drv.email as string) ?? null,
     photo: (drv.photo as string) ?? null,
     vehicleYear: (drv.vehicle_year as string) ?? null,
+    vehicleInfo: (veh?.info as string) ?? null,
   };
 }
 
