@@ -221,6 +221,24 @@ const DIR_CSS = `
 .cbl-dir .listing .foot { display:flex; justify-content:space-between; align-items:center; padding-top:10px; margin-top:4px; border-top:1px solid rgba(255,255,255,.06); font-family:${MONO}; font-size:10px; letter-spacing:.1em; color:#888; }
 .cbl-dir .listing .arrow { color:#C99742; font-family:${DISPLAY}; font-weight:900; font-size:18px; }
 
+/* Driver grid PREVIEW card — a compact echo of the full "Need a Ride?" card so
+   the grid teaser matches the detail modal riders open. */
+.cbl-dir .listing.dpc { overflow:hidden; }
+.cbl-dir .dpc-hero { position:relative; padding:20px 16px 16px; text-align:center; background:linear-gradient(180deg, rgba(10,10,10,.35), rgba(10,10,10,.82)), url(${MAP_BG}); background-size:cover; background-position:center; }
+.cbl-dir .dpc-av { width:66px; height:66px; margin:0 auto 10px; border-radius:50%; overflow:hidden; border:2.5px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.5); }
+.cbl-dir .dpc-av img { width:100%; height:100%; object-fit:cover; }
+.cbl-dir .dpc-eb { font-family:${MONO}; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#C99742; margin-bottom:5px; }
+.cbl-dir .dpc-h { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:.95; text-transform:uppercase; color:#fff; }
+.cbl-dir .dpc-ride { font-size:13px; color:#CFCFCF; margin-top:4px; }
+.cbl-dir .dpc-ride b { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; }
+.cbl-dir .dpc-body { padding:13px 16px 15px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.cbl-dir .dpc-avail { font-family:${MONO}; font-size:10.5px; letter-spacing:.04em; color:#DDB15F; }
+.cbl-dir .dpc-carrow { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.cbl-dir .dpc-car { font-size:12.5px; color:#C0C0C0; font-weight:600; }
+.cbl-dir .dpc-plate { font-family:${MONO}; font-size:11px; font-weight:700; color:#111; background:#fff; border-radius:4px; padding:2px 7px; white-space:nowrap; }
+.cbl-dir .dpc-plate .st { font-size:8px; color:#888; margin-right:3px; vertical-align:middle; }
+.cbl-dir .dpc-cta { display:flex; justify-content:space-between; align-items:center; margin-top:auto; padding-top:10px; border-top:1px solid rgba(255,255,255,.06); font-family:${MONO}; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#C99742; }
+
 /* Driver-specific card */
 .cbl-dir .driver-card { display:grid; grid-template-columns:80px 1fr; background:#141414; border:1px solid rgba(255,255,255,.08); border-radius:16px 0 16px 0; padding:16px; gap:14px; align-items:center; transition:border-color .25s; }
 .cbl-dir .driver-card.featured { background:linear-gradient(135deg, rgba(201,151,66,.14), rgba(201,151,66,.02)); border:1.5px solid #C99742; }
@@ -865,7 +883,13 @@ type DriverAd = {
   plate?: string | null; plateState?: string | null; code: string;
   phone?: string | null; email?: string | null; since?: string | null;
   availability?: string | null; // e.g. "Scheduled rides only · Book 12+ hrs ahead"
+  radius?: number | null; // miles the driver serves — controls how far a search surfaces this ad (default 100)
 };
+
+// Default driver service radius (miles). Justin's call: drivers serve a wide
+// area by default, and can narrow/widen it in the builder.
+const DEFAULT_DRIVER_RADIUS_MI = 100;
+const RADIUS_OPTIONS = [15, 25, 50, 100, 150, 250];
 
 function DriverAdCard({ d }: { d: DriverAd }) {
   const link = `${APP_URL}/r/${d.code}`;
@@ -907,7 +931,7 @@ function DriverAdCard({ d }: { d: DriverAd }) {
         </div>
       </div>
       <div className="dc-foot">
-        <div className="dc-powered">Powered by&nbsp; <span className="w">CITY</span><span className="g">BUCKET</span><span className="w">LIST</span></div>
+        <div className="dc-powered"><span className="pb">Powered by</span><img src={wordmark} alt="CityBucketList.com" /></div>
         <div className="dc-disc">CityBucketList is a SaaS platform. All drivers are independent contractors. CBL is not a rideshare company.</div>
       </div>
     </div>
@@ -1064,6 +1088,46 @@ function ClassifiedCard({ l }: { l: Listing }) {
           <span>{l.featured ? <span style={{ color: "#C99742" }}>★ Featured · 247 views</span> : "Basic listing"}</span>
           <span className="arrow">›</span>
         </div>
+      </div>
+    </article>
+  );
+}
+
+// Grid preview for a driver post — a compact echo of the full DriverAdCard so
+// the teaser resembles the card riders open for details. Falls back to the
+// generic ClassifiedCard if the post has no driver_ad yet.
+function DriverPreviewCard({ l }: { l: Listing }) {
+  const openModal = useContext(DirModalCtx);
+  const d = l.driverAd;
+  if (!d) return <ClassifiedCard l={l} />;
+  const nm = d.name || l.name;
+  const first = String(nm).trim().split(/\s+/)[0] || String(nm);
+  const initials = String(nm).split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const open = () => openModal(l);
+  return (
+    <article
+      className={"listing dpc" + (l.featured ? " featured" : "")}
+      onClick={open}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }}
+      style={{ cursor: "pointer" }}
+    >
+      <div className="dpc-hero">
+        <div className="dpc-av">{d.photo ? <img src={d.photo} alt={String(nm)} /> : initials}</div>
+        <div className="dpc-eb">Need a Ride?</div>
+        <div className="dpc-h">Ride with {first}</div>
+        <div className="dpc-ride"><b>{l.loc.split(" · ")[0]}</b></div>
+      </div>
+      <div className="dpc-body">
+        {d.availability && <div className="dpc-avail">🕐 {d.availability}</div>}
+        {(d.car || d.plate) && (
+          <div className="dpc-carrow">
+            {d.car ? <span className="dpc-car">{d.car}{d.color ? ` · ${d.color}` : ""}</span> : <span />}
+            {d.plate && <span className="dpc-plate">{d.plateState && <span className="st">{d.plateState}</span>}{d.plate}</span>}
+          </div>
+        )}
+        <div className="dpc-cta"><span>📱 Scan &amp; book</span><span>View card ›</span></div>
       </div>
     </article>
   );
@@ -1276,6 +1340,7 @@ function DriverAdModal({
   const [email, setEmail] = useState("");
   const [since, setSince] = useState("");
   const [availability, setAvailability] = useState("Scheduled rides only · Book 12+ hrs ahead");
+  const [radius, setRadius] = useState(DEFAULT_DRIVER_RADIUS_MI);
   const [description, setDescription] = useState("");
   const [uploading, setUploading] = useState<"" | "profile" | "car">("");
   const [status, setStatus] = useState<"idle" | "pending" | "success" | "error">("idle");
@@ -1299,6 +1364,7 @@ function DriverAdModal({
     setPlateState("");
     setDescription("");
     setAvailability("Scheduled rides only · Book 12+ hrs ahead");
+    setRadius(DEFAULT_DRIVER_RADIUS_MI);
 
     let cancelled = false;
     getMyDriverProfile().then((p) => {
@@ -1353,6 +1419,7 @@ function DriverAdModal({
     email: email.trim() || null,
     since: since.trim() || null,
     availability: availability.trim() || null,
+    radius,
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1468,10 +1535,19 @@ function DriverAdModal({
                     <input id="da-headline" type="text" value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Need a Ride? Airport runs in Pittsburgh" maxLength={90} required />
                   </div>
 
-                  <div className="field">
-                    <label htmlFor="da-city">City you serve</label>
-                    <input id="da-city" type="text" value={cityField} onChange={(e) => setCityField(e.target.value)} placeholder="Pittsburgh" />
+                  <div className="row">
+                    <div className="field">
+                      <label htmlFor="da-city">City you serve</label>
+                      <input id="da-city" type="text" value={cityField} onChange={(e) => setCityField(e.target.value)} placeholder="Pittsburgh" />
+                    </div>
+                    <div className="field" style={{ maxWidth: 150 }}>
+                      <label htmlFor="da-radius">How far you&rsquo;ll go</label>
+                      <select id="da-radius" value={radius} onChange={(e) => setRadius(Number(e.target.value))}>
+                        {RADIUS_OPTIONS.map((r) => <option key={r} value={r}>{r} mi</option>)}
+                      </select>
+                    </div>
                   </div>
+                  <p className="hint">Your ad shows to riders searching anywhere within this range of your city.</p>
 
                   <div className="row">
                     <div className="field">
@@ -1718,10 +1794,50 @@ function LocationBar({
   useEffect(() => {
     setQ(city ?? "");
   }, [city]);
+  // Google-backed location autocomplete (via our server-side proxy). Suggestions
+  // are best-effort — free-typing + Enter still works if the API is unset/down.
+  const [sug, setSug] = useState<{ mainText: string; secondaryText: string }[]>([]);
+  const [openSug, setOpenSug] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const debTimer = useRef<number | undefined>(undefined);
+  const reqSeq = useRef(0);
+
+  const fetchSug = (v: string) => {
+    window.clearTimeout(debTimer.current);
+    if (v.trim().length < 2) { setSug([]); setOpenSug(false); return; }
+    debTimer.current = window.setTimeout(async () => {
+      const seq = ++reqSeq.current;
+      try {
+        const res = await fetch(`/api/place-autocomplete?q=${encodeURIComponent(v.trim())}`);
+        const data = await res.json();
+        if (seq !== reqSeq.current) return; // a newer keystroke won
+        const preds = (data.predictions || []).map((p: { mainText: string; secondaryText: string }) => ({ mainText: p.mainText, secondaryText: p.secondaryText }));
+        setSug(preds);
+        setOpenSug(preds.length > 0);
+        setActiveIdx(-1);
+      } catch {
+        setSug([]); setOpenSug(false);
+      }
+    }, 240);
+  };
   const commit = () => {
     const v = q.trim();
     if (v && v.toLowerCase() !== (city ?? "").toLowerCase()) onChangeCity(v);
   };
+  const pick = (text: string) => {
+    setQ(text);
+    setSug([]); setOpenSug(false); setActiveIdx(-1);
+    if (text && text.toLowerCase() !== (city ?? "").toLowerCase()) onChangeCity(text);
+  };
+  // Close the dropdown on an outside click.
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpenSug(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
   const pill = (active: boolean) => ({
     background: active ? "#C99742" : "transparent",
     color: active ? "#0A0A0A" : "#DDD",
@@ -1750,15 +1866,54 @@ function LocationBar({
             </button>
           </div>
         )}
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commit(); } }}
-          onBlur={commit}
-          placeholder="Search another city…"
-          aria-label="Search a city"
-          style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 16px", fontSize: 12, minWidth: 170 }}
-        />
+        <div ref={wrapRef} style={{ position: "relative" }}>
+          <input
+            value={q}
+            onChange={(e) => { setQ(e.target.value); fetchSug(e.target.value); }}
+            onFocus={() => { if (sug.length) setOpenSug(true); }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown") { e.preventDefault(); setOpenSug(true); setActiveIdx((i) => Math.min(i + 1, sug.length - 1)); }
+              else if (e.key === "ArrowUp") { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, 0)); }
+              else if (e.key === "Enter") { e.preventDefault(); if (openSug && activeIdx >= 0 && sug[activeIdx]) pick(sug[activeIdx].mainText); else commit(); }
+              else if (e.key === "Escape") { setOpenSug(false); }
+            }}
+            onBlur={commit}
+            placeholder="Search a city or town…"
+            aria-label="Search a city"
+            role="combobox"
+            aria-expanded={openSug}
+            aria-autocomplete="list"
+            autoComplete="off"
+            style={{ background: "#141414", color: "#fff", border: "1px solid rgba(255,255,255,.14)", borderRadius: 999, padding: "6px 16px", fontSize: 12, minWidth: 190 }}
+          />
+          {openSug && sug.length > 0 && (
+            <ul
+              role="listbox"
+              style={{
+                position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, minWidth: 240, zIndex: 40,
+                listStyle: "none", margin: 0, padding: 6, background: "#141414",
+                border: "1px solid rgba(201,151,66,.4)", borderRadius: 14, boxShadow: "0 14px 34px rgba(0,0,0,.5)",
+              }}
+            >
+              {sug.map((s, i) => (
+                <li
+                  key={s.mainText + i}
+                  role="option"
+                  aria-selected={i === activeIdx}
+                  onMouseDown={(e) => { e.preventDefault(); pick(s.mainText); }}
+                  onMouseEnter={() => setActiveIdx(i)}
+                  style={{
+                    display: "flex", flexDirection: "column", gap: 1, padding: "8px 12px", borderRadius: 9, cursor: "pointer",
+                    background: i === activeIdx ? "rgba(201,151,66,.14)" : "transparent",
+                  }}
+                >
+                  <span style={{ color: "#fff", fontSize: 13, fontWeight: 600 }}>{s.mainText}</span>
+                  {s.secondaryText && <span style={{ color: "#8f8f8f", fontSize: 11 }}>{s.secondaryText}</span>}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -2444,7 +2599,7 @@ export function Directory() {
   //   3. In "metro" scope: same state as the auto-detected visitor (coarse
   //      fallback when neither side has resolvable coordinates).
   // No city set yet → show everything.
-  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null }>(items: T[]) => {
+  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null; driver_ad?: { radius?: number | null } | null }>(items: T[]) => {
     if (!city) return items;
     const c = city.trim().toLowerCase();
     const s = (state ?? "").trim().toLowerCase();
@@ -2453,7 +2608,10 @@ export function Directory() {
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
       if (scope !== "metro") return false;
       const lc = listingCoords(i);
-      if (searchCoords && lc && milesBetween(searchCoords, lc) <= METRO_RADIUS_MI) return true;
+      // Driver ads reach as far as the driver set (default 100mi); other
+      // listings use the metro radius (45mi).
+      const radius = i.driver_ad ? (Number(i.driver_ad.radius) || DEFAULT_DRIVER_RADIUS_MI) : METRO_RADIUS_MI;
+      if (searchCoords && lc && milesBetween(searchCoords, lc) <= radius) return true;
       const is = (i.state ?? "").trim().toLowerCase();
       return !!s && !!is && is === s;
     });
@@ -2551,7 +2709,7 @@ export function Directory() {
                 <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" />
               ) : (
                 <div className="listings-grid">
-                  {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+                  {driversLive.map((l) => <DriverPreviewCard key={l.id} l={l} />)}
                 </div>
               )}
             </div>
