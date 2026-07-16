@@ -1139,22 +1139,26 @@ function DriverDisclaimer() {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" />
             </svg>
-            Independent Driver Notice
+            Software Platform Notice
           </div>
           <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>
-            Drivers listed here are <b style={{ color: "#C0C0C0" }}>independent contractors</b>, not
-            employees or agents of City Bucket List. To connect, a rider scans a driver&rsquo;s QR code,
-            signs up as a City Bucket List Private Membership member, and arranges{" "}
-            <b style={{ color: "#C0C0C0" }}>private, scheduled rides directly with that driver</b>. Each
-            driver decides, <b style={{ color: "#C0C0C0" }}>at their sole discretion</b>, whether to accept
-            any ride request. City Bucket List is a{" "}
-            <b style={{ color: "#C0C0C0" }}>software-as-a-service platform</b> that facilitates
-            member-to-driver connections — it is <b style={{ color: "#C0C0C0" }}>not a rideshare company,
-            transportation provider, or passenger carrier</b>, does not employ or dispatch drivers, and is{" "}
-            <b style={{ color: "#C0C0C0" }}>not a party to any ride</b> arranged between members and drivers.
-            Riders and drivers are responsible for their own licensing, insurance, safety, and compliance
-            with applicable law, and interact <b style={{ color: "#C0C0C0" }}>at their own risk</b>.
-            Operated by <b style={{ color: "#C0C0C0" }}>Citybucketlist.com, LLC</b>.
+            <b style={{ color: "#DDB15F" }}>City Bucket List is a software-as-a-service (SaaS) platform —
+            not a rideshare company, transportation provider, or passenger carrier.</b> We provide software
+            that connects members with independent drivers; we <b style={{ color: "#C0C0C0" }}>do not own
+            vehicles, employ or dispatch drivers, set fares, or provide transportation</b>. Drivers listed
+            here are <b style={{ color: "#C0C0C0" }}>independent contractors</b>, not employees or agents of
+            City Bucket List. To connect, a rider scans a driver&rsquo;s QR code, signs up as a City Bucket
+            List Private Membership member, and arranges{" "}
+            <b style={{ color: "#C0C0C0" }}>private, scheduled rides directly with that driver</b> — who
+            decides, <b style={{ color: "#C0C0C0" }}>at their sole discretion</b>, whether to accept any
+            request. City Bucket List is <b style={{ color: "#C0C0C0" }}>not a party to any ride</b> and
+            accepts no liability for it; riders and drivers are responsible for their own licensing,
+            insurance, safety, and compliance with applicable law, and interact{" "}
+            <b style={{ color: "#C0C0C0" }}>at their own risk</b>.
+          </p>
+          <p style={{ fontFamily: MONO, fontSize: 11, lineHeight: 1.6, color: "#6f6f6f", margin: "12px 0 0", letterSpacing: ".02em" }}>
+            &copy; {new Date().getFullYear()} Citybucketlist.com, LLC. All rights reserved. City Bucket
+            List&trade; is a service of Citybucketlist.com, LLC.
           </p>
         </div>
       </div>
