@@ -1116,6 +1116,52 @@ function Pricing({ onPost }: { onPost: () => void }) {
   );
 }
 
+// Driver-specific notice shown at the foot of the Driver Ads section. Clarifies
+// the member-to-driver connection flow + independent-contractor status.
+// Plain-language — have counsel review before relying on it as binding terms.
+function DriverDisclaimer() {
+  return (
+    <section className="band" style={{ paddingTop: 0 }}>
+      <div className="band-inner" style={{ maxWidth: 900 }}>
+        <div
+          role="note"
+          style={{
+            background: "#0F0F0F", border: "1px solid rgba(201,151,66,.28)",
+            borderRadius: "18px 0 18px 0", padding: "20px 22px",
+          }}
+        >
+          <div
+            style={{
+              fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase",
+              color: "#C99742", marginBottom: 10, display: "flex", alignItems: "center", gap: 8,
+            }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" />
+            </svg>
+            Independent Driver Notice
+          </div>
+          <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>
+            Drivers listed here are <b style={{ color: "#C0C0C0" }}>independent contractors</b>, not
+            employees or agents of City Bucket List. To connect, a rider scans a driver&rsquo;s QR code,
+            signs up as a City Bucket List Private Membership member, and arranges{" "}
+            <b style={{ color: "#C0C0C0" }}>private, scheduled rides directly with that driver</b>. Each
+            driver decides, <b style={{ color: "#C0C0C0" }}>at their sole discretion</b>, whether to accept
+            any ride request. City Bucket List is a{" "}
+            <b style={{ color: "#C0C0C0" }}>software-as-a-service platform</b> that facilitates
+            member-to-driver connections — it is <b style={{ color: "#C0C0C0" }}>not a rideshare company,
+            transportation provider, or passenger carrier</b>, does not employ or dispatch drivers, and is{" "}
+            <b style={{ color: "#C0C0C0" }}>not a party to any ride</b> arranged between members and drivers.
+            Riders and drivers are responsible for their own licensing, insurance, safety, and compliance
+            with applicable law, and interact <b style={{ color: "#C0C0C0" }}>at their own risk</b>.
+            Operated by <b style={{ color: "#C0C0C0" }}>Citybucketlist.com, LLC</b>.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // Firm conduct / legal disclaimer shown at the foot of every Directory section.
 // Plain-language policy — Keith should have counsel review before relying on it
 // as binding terms in your jurisdiction.
@@ -2044,18 +2090,21 @@ export function Directory() {
       )}
 
       {section === "DRIVERS" && (
-        <section className="band">
-          <div className="band-inner">
-            <SectionHead section="DRIVERS" onPost={openPost} />
-            {driversLive.length === 0 ? (
-              <EmptyState city={city} onPost={openPost} ctaLabel="Post an Ad" />
-            ) : (
-              <div className="listings-grid">
-                {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
-              </div>
-            )}
-          </div>
-        </section>
+        <>
+          <section className="band">
+            <div className="band-inner">
+              <SectionHead section="DRIVERS" onPost={openPost} />
+              {driversLive.length === 0 ? (
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post an Ad" />
+              ) : (
+                <div className="listings-grid">
+                  {driversLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+                </div>
+              )}
+            </div>
+          </section>
+          <DriverDisclaimer />
+        </>
       )}
 
       {section === "RIDERS" && (
