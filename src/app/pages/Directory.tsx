@@ -17,6 +17,7 @@ import {
 import { useVisitorLocation, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
 import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
+import { PlatformNotice } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
 
 /**
@@ -2719,18 +2720,21 @@ export function Directory() {
       )}
 
       {section === "RIDERS" && (
-        <section className="band">
-          <div className="band-inner">
-            <SectionHead section="RIDERS" onPost={openPost} />
-            {ridersLive.length === 0 ? (
-              <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" />
-            ) : (
-              <div className="listings-grid">
-                {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
-              </div>
-            )}
-          </div>
-        </section>
+        <>
+          <section className="band">
+            <div className="band-inner">
+              <SectionHead section="RIDERS" onPost={openPost} />
+              {ridersLive.length === 0 ? (
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" />
+              ) : (
+                <div className="listings-grid">
+                  {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
+                </div>
+              )}
+            </div>
+          </section>
+          <PlatformNotice variant="rides" />
+        </>
       )}
 
       {section === "SHOP" && (
