@@ -20,10 +20,12 @@ export type MyListing = {
   status: string;
   created_at: string | null;
   expires_at: string | null;
+  driver_referral_code: string | null; // set → this is an active-driver "Need a Ride?" card
+  driver_ad: Record<string, unknown> | null; // the driver business-card fields
 };
 
 const COLS =
-  'id, title, description, category, price, price_type, city, state, photos, featured, tier, status, created_at, expires_at';
+  'id, title, description, category, price, price_type, city, state, photos, featured, tier, status, created_at, expires_at, driver_referral_code, driver_ad';
 
 function toMyListing(r: Record<string, unknown>): MyListing {
   return {
@@ -41,6 +43,8 @@ function toMyListing(r: Record<string, unknown>): MyListing {
     status: (r.status as string) ?? 'active',
     created_at: (r.created_at as string | null) ?? null,
     expires_at: (r.expires_at as string | null) ?? null,
+    driver_referral_code: (r.driver_referral_code as string | null) ?? null,
+    driver_ad: (r.driver_ad as Record<string, unknown> | null) ?? null,
   };
 }
 
@@ -85,6 +89,24 @@ export async function setListingStatus(id: string, status: 'active' | 'paused'):
 
 export async function deleteListing(id: string): Promise<{ error: string | null }> {
   const { error } = await authClient.from('directory_listings').delete().eq('id', Number(id));
+  return { error: error?.message ?? null };
+}
+
+// Update a driver post's headline/city + business-card fields (RLS: owner only).
+// Re-geocodes the city so proximity search stays correct after an edit.
+export async function updateDriverAd(
+  id: string,
+  patch: { title: string; city?: string | null; state?: string | null; driverAd: Record<string, unknown> },
+): Promise<{ error: string | null }> {
+  const { forwardGeocode } = await import('./location');
+  const update: Record<string, unknown> = { title: patch.title, driver_ad: patch.driverAd };
+  if (patch.city !== undefined) update.city = patch.city;
+  if (patch.state !== undefined) update.state = patch.state;
+  if (patch.city) {
+    const geo = await forwardGeocode(patch.state ? `${patch.city}, ${patch.state}` : patch.city);
+    if (geo) { update.latitude = geo.lat; update.longitude = geo.lng; }
+  }
+  const { error } = await authClient.from('directory_listings').update(update).eq('id', Number(id));
   return { error: error?.message ?? null };
 }
 
