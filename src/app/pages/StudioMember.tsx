@@ -36,6 +36,7 @@ const MEMBER_CSS = `
 .cbl-studio .mbadge.active { background:rgba(77,191,102,.15); color:#8FE0A2; }
 .cbl-studio .mbadge.paused { background:rgba(255,255,255,.08); color:#aaa; }
 .cbl-studio .mbadge.tier { background:rgba(201,151,66,.16); color:#E6C588; }
+.cbl-studio .mbadge.driver { background:rgba(201,151,66,.2); color:#DDB15F; border:1px solid rgba(201,151,66,.4); }
 .cbl-studio .macts { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
 .cbl-studio .card { background:linear-gradient(180deg,#141414,#0d0d0d); border:1px solid rgba(201,151,66,.3); border-radius:20px 0 20px 0; padding:22px; display:flex; gap:20px; align-items:center; margin-bottom:26px; flex-wrap:wrap; }
 .cbl-studio .card .qr { width:118px; height:118px; border-radius:12px; background:#fff; padding:8px; flex-shrink:0; }
@@ -293,17 +294,25 @@ export function MemberStudio({ email, blog, onSignOut }: { email: string; blog?:
             </div>
           ) : (
             <div className="mine">
-              {listings.map((l) => (
+              {listings.map((l) => {
+                // Driver posts carry a "Need a Ride?" business card (driver_ad) —
+                // reflect it here: use the card photo as the thumb, badge it, and
+                // send "Edit" to the card builder instead of the text editor.
+                const dAd = l.driver_ad as { photo?: string } | null;
+                const isDriverAd = !!l.driver_ad;
+                const thumb = dAd?.photo || l.photos[0];
+                return (
                 <div key={l.id} className={'mrow' + (l.featured ? ' feat' : '')}>
-                  <div className="mthumb" style={l.photos[0] ? { backgroundImage: `url(${l.photos[0]})` } : undefined}>
-                    {l.photos[0] ? '' : '🏷️'}
+                  <div className="mthumb" style={thumb ? { backgroundImage: `url(${thumb})`, borderRadius: isDriverAd ? '50%' : undefined } : undefined}>
+                    {thumb ? '' : '🏷️'}
                   </div>
                   <div className="minfo">
                     <div className="mtitle">{l.title}</div>
                     <div className="mmeta">
                       <span className={'mbadge ' + (l.status === 'active' ? 'active' : 'paused')}>{l.status === 'active' ? 'Live' : l.status}</span>
+                      {isDriverAd && <span className="mbadge driver">★ Driver Card</span>}
                       {l.tier && l.tier !== 'basic' && <span className="mbadge tier">{l.tier}</span>}
-                      <span>{money(l)}</span>
+                      {!isDriverAd && <span>{money(l)}</span>}
                       {l.city && <span>· {l.city}{l.state ? `, ${l.state}` : ''}</span>}
                       {l.photos.length > 0 && <span>· 📷 {l.photos.length}</span>}
                     </div>
@@ -320,17 +329,22 @@ export function MemberStudio({ email, blog, onSignOut }: { email: string; blog?:
                         View
                       </a>
                     )}
-                    <button type="button" className="btn btn-ghost mini" disabled={busyId === l.id} onClick={() => setEditing(l)}>Edit</button>
-                    {l.tier === 'basic' || !l.tier ? (
+                    {isDriverAd ? (
+                      <a className="btn btn-gold mini" href={`/directory?editDriverAd=${l.id}`} title="Edit your driver card">Edit card</a>
+                    ) : (
+                      <button type="button" className="btn btn-ghost mini" disabled={busyId === l.id} onClick={() => setEditing(l)}>Edit</button>
+                    )}
+                    {!isDriverAd && (l.tier === 'basic' || !l.tier ? (
                       <button type="button" className="btn btn-gold mini" disabled={busyId === l.id} onClick={() => boost(l, 'featured')}>{busyId === l.id ? '…' : 'Boost'}</button>
                     ) : (
                       <button type="button" className="btn btn-ghost mini" disabled={busyId === l.id} onClick={() => boost(l, 'featured')}>Re-boost</button>
-                    )}
+                    ))}
                     <button type="button" className="btn btn-ghost mini" disabled={busyId === l.id} onClick={() => togglePause(l)}>{l.status === 'active' ? 'Pause' : 'Activate'}</button>
                     <button type="button" className="btn btn-danger mini" disabled={busyId === l.id} onClick={() => remove(l)}>Delete</button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>

@@ -10,6 +10,7 @@ import {
   type DirectoryListing,
 } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
+import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import {
   getOwnListing, uploadListingPhoto, uploadDriverAdPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
@@ -1311,8 +1312,10 @@ const DRIVERMODAL_CSS = `
 // Driver-subscription join target (app owns the real subscription flow).
 const DRIVER_JOIN_URL = `${APP_URL}/driver/signup`;
 
+type EditDriverListing = { id: string; title: string; city: string | null; state: string | null; driverAd: DriverAd | null };
+
 function DriverAdModal({
-  open, onClose, defaultCity, defaultState, onPosted, onBasicPost,
+  open, onClose, defaultCity, defaultState, onPosted, onBasicPost, editListing,
 }: {
   open: boolean;
   onClose: () => void;
@@ -1320,6 +1323,7 @@ function DriverAdModal({
   defaultState?: string | null;
   onPosted: () => void;
   onBasicPost: () => void;
+  editListing?: EditDriverListing | null;
 }) {
   const [checking, setChecking] = useState(true);
   const [profile, setProfile] = useState<MyDriverProfile | null>(null);
@@ -1352,20 +1356,22 @@ function DriverAdModal({
 
   useEffect(() => {
     if (!open) return;
+    const ed = editListing?.driverAd ?? null;
     setChecking(true);
     setTab("edit");
     setStatus("idle");
     setErrorMsg("");
     setJoinOpen(false);
-    setHeadline("");
-    setCityField(defaultCity ?? "");
-    setCarPhoto(null);
-    setColor("");
-    setPlate("");
-    setPlateState("");
+    // Editing → seed from the saved card; new post → blank/defaults.
+    setHeadline(editListing?.title ?? "");
+    setCityField(editListing?.city ?? defaultCity ?? "");
+    setCarPhoto(ed?.carPhoto ?? null);
+    setColor(ed?.color ?? "");
+    setPlate(ed?.plate ?? "");
+    setPlateState(ed?.plateState ?? "");
     setDescription("");
-    setAvailability("Scheduled rides only · Book 12+ hrs ahead");
-    setRadius(DEFAULT_DRIVER_RADIUS_MI);
+    setAvailability(ed?.availability ?? "Scheduled rides only · Book 12+ hrs ahead");
+    setRadius(Number(ed?.radius) || DEFAULT_DRIVER_RADIUS_MI);
 
     let cancelled = false;
     getMyDriverProfile().then((p) => {
@@ -1374,11 +1380,13 @@ function DriverAdModal({
       setProfile(p);
       if (p?.isActiveDriver) {
         setMemberPhoto(p.photo ?? null);
-        setPhoto(p.photo ?? null);
-        setCar([p.vehicleYear, p.vehicleInfo].filter(Boolean).join(" "));
-        setPhone(formatPhone(p.phone));
-        setEmail(p.email ?? "");
-        setSince(String(new Date().getFullYear()));
+        // Editing keeps the card's saved values; only fall back to membership
+        // for anything the saved card didn't have.
+        setPhoto(ed?.photo ?? p.photo ?? null);
+        setCar(ed?.car ?? [p.vehicleYear, p.vehicleInfo].filter(Boolean).join(" "));
+        setPhone(ed?.phone ?? formatPhone(p.phone));
+        setEmail(ed?.email ?? p.email ?? "");
+        setSince(ed?.since ?? String(new Date().getFullYear()));
       }
       setChecking(false);
     });
@@ -1392,7 +1400,7 @@ function DriverAdModal({
       document.body.style.overflow = prevOverflow;
       document.removeEventListener("keydown", onKey);
     };
-  }, [open, defaultCity]);
+  }, [open, defaultCity, editListing]);
 
   if (!open) return null;
 
@@ -1429,27 +1437,41 @@ function DriverAdModal({
     if (!headline.trim()) { setStatus("error"); setErrorMsg("Add a headline for your ad (e.g. “Need a Ride? Airport runs in Pittsburgh”)."); setTab("edit"); return; }
     setStatus("pending");
     setErrorMsg("");
-    const cityUnchanged = cityField.trim().toLowerCase() === (defaultCity ?? "").trim().toLowerCase();
-    const { error } = await postDirectoryListing({
-      title: headline.trim(),
-      category: "driver_post",
-      description: description.trim() || undefined,
-      city: cityField.trim() || undefined,
-      state: cityUnchanged ? (defaultState?.trim() || null) : null,
-      driverAd: {
-        name: profile?.name ?? null,
-        photo: photo ?? null,
-        carPhoto: carPhoto ?? null,
-        car: car.trim() || null,
-        color: color.trim() || null,
-        plate: plate.trim() || null,
-        plateState: plateState.trim() || null,
-        phone: phone.trim() || null,
-        email: email.trim() || null,
-        since: since.trim() || null,
-        availability: availability.trim() || null,
-      },
-    });
+    const adFields = {
+      name: profile?.name ?? null,
+      photo: photo ?? null,
+      carPhoto: carPhoto ?? null,
+      car: car.trim() || null,
+      color: color.trim() || null,
+      plate: plate.trim() || null,
+      plateState: plateState.trim() || null,
+      phone: phone.trim() || null,
+      email: email.trim() || null,
+      since: since.trim() || null,
+      availability: availability.trim() || null,
+      radius,
+    };
+    let error: string | null;
+    if (editListing) {
+      // Editing keeps the same city/state unless the field was changed.
+      const cityUnchanged = cityField.trim().toLowerCase() === (editListing.city ?? "").trim().toLowerCase();
+      ({ error } = await updateDriverAd(editListing.id, {
+        title: headline.trim(),
+        city: cityField.trim() || undefined,
+        state: cityUnchanged ? editListing.state : null,
+        driverAd: adFields,
+      }));
+    } else {
+      const cityUnchanged = cityField.trim().toLowerCase() === (defaultCity ?? "").trim().toLowerCase();
+      ({ error } = await postDirectoryListing({
+        title: headline.trim(),
+        category: "driver_post",
+        description: description.trim() || undefined,
+        city: cityField.trim() || undefined,
+        state: cityUnchanged ? (defaultState?.trim() || null) : null,
+        driverAd: adFields,
+      }));
+    }
     if (error) { setStatus("error"); setErrorMsg(error); }
     else { setStatus("success"); onPosted(); }
   };
@@ -1495,15 +1517,15 @@ function DriverAdModal({
           ) : status === "success" ? (
             <div className="success">
               <div className="mark" aria-hidden="true">✓</div>
-              <h2 id="cbl-driverad-title">Your card is <span className="it">live.</span></h2>
-              <p className="sub">Your driver business card is posted to the directory. Riders can scan your QR to join and book you. You can edit or repost it any time.</p>
+              <h2 id="cbl-driverad-title">Your card is <span className="it">{editListing ? "updated." : "live."}</span></h2>
+              <p className="sub">{editListing ? "Your changes are saved — your card is updated across the directory." : "Your driver business card is posted to the directory. Riders can scan your QR to join and book you. You can edit or repost it any time."}</p>
               <button type="button" className="submit" onClick={onClose}>Done</button>
             </div>
           ) : (
             <>
               <div className="eyebrow">driver ad · member perk</div>
-              <h2 id="cbl-driverad-title">Build your <span className="it">ride card.</span></h2>
-              <p className="sub">This is what riders see. Everything&rsquo;s prefilled from your membership — tweak anything, then post.</p>
+              <h2 id="cbl-driverad-title">{editListing ? <>Edit your <span className="it">ride card.</span></> : <>Build your <span className="it">ride card.</span></>}</h2>
+              <p className="sub">{editListing ? "Update anything below — your live card refreshes the moment you save." : "This is what riders see. Everything’s prefilled from your membership — tweak anything, then post."}</p>
 
               <div className="tabs" role="tablist" aria-label="Edit or preview">
                 <button role="tab" aria-selected={tab === "edit"} onClick={() => setTab("edit")}>Edit</button>
@@ -1614,14 +1636,14 @@ function DriverAdModal({
                   </div>
 
                   <button type="submit" className="submit" disabled={status === "pending" || !!uploading}>
-                    {status === "pending" ? "Posting…" : "Post my ad →"}
+                    {status === "pending" ? (editListing ? "Saving…" : "Posting…") : (editListing ? "Save changes →" : "Post my ad →")}
                   </button>
                 </form>
               )}
 
               {tab === "preview" && (
                 <button type="button" className="submit" disabled={status === "pending"} onClick={handleSubmit}>
-                  {status === "pending" ? "Posting…" : "Post my ad →"}
+                  {status === "pending" ? (editListing ? "Saving…" : "Posting…") : (editListing ? "Save changes →" : "Post my ad →")}
                 </button>
               )}
             </>
@@ -2513,6 +2535,9 @@ export function Directory() {
   // generic classifieds form.
   const [driverAdOpen, setDriverAdOpen] = useState(false);
   const openDriverAd = () => setDriverAdOpen(true);
+  // Editing an existing driver card (opened via /directory?editDriverAd=<id>,
+  // e.g. from the CBL Studio "Edit" on a driver post).
+  const [editDriverAd, setEditDriverAd] = useState<EditDriverListing | null>(null);
   const [modalL, setModalL] = useState<Listing | null>(null);
   // Re-pull member classifieds after a successful post so the new one appears.
   const refetchListings = () => getDirectoryListings().then(setListings);
@@ -2534,6 +2559,27 @@ export function Directory() {
     const found = listings.find((l) => String(l.id) === lid);
     if (found) setModalL(listingToCard(found));
     setSearchParams((prev) => { prev.delete("listing"); return prev; }, { replace: true });
+  }, [searchParams, listings, setSearchParams]);
+
+  // Open the driver-ad builder in EDIT mode from /directory?editDriverAd=<id>
+  // (the CBL Studio "Edit card" link on a driver post).
+  const openedEditRef = useRef(false);
+  useEffect(() => {
+    const eid = searchParams.get("editDriverAd");
+    if (!eid || openedEditRef.current || !listings.length) return;
+    openedEditRef.current = true;
+    const found = listings.find((l) => String(l.id) === eid);
+    if (found) {
+      setSection("DRIVERS");
+      setEditDriverAd({
+        id: String(found.id),
+        title: found.title,
+        city: found.city ?? null,
+        state: found.state ?? null,
+        driverAd: (found.driver_ad as DriverAd | null) ?? null,
+      });
+    }
+    setSearchParams((prev) => { prev.delete("editDriverAd"); return prev; }, { replace: true });
   }, [searchParams, listings, setSearchParams]);
 
 
@@ -2777,12 +2823,13 @@ export function Directory() {
         onPosted={refetchListings}
       />
       <DriverAdModal
-        open={driverAdOpen}
-        onClose={() => setDriverAdOpen(false)}
+        open={driverAdOpen || !!editDriverAd}
+        onClose={() => { setDriverAdOpen(false); setEditDriverAd(null); }}
         defaultCity={city}
         defaultState={state}
         onPosted={refetchListings}
         onBasicPost={() => setPostOpen(true)}
+        editListing={editDriverAd}
       />
       <DirListingModal
         l={modalL}
