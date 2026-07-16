@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
+import { PlatformNotice } from '../components/PlatformNotice';
 
 // Travel booking (search + Book Now) is gated OFF until a booking-partner contract
 // is live (KAYAK still in case-by-case review; Travelpayouts' Booking.com/Expedia
@@ -1117,6 +1118,7 @@ export function Travels() {
           <DealsBand />
         </>
       )}
+      <PlatformNotice variant="marketplace" />
     </main>
   );
 }

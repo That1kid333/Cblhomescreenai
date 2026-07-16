@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { JoinModal } from '../components/JoinModal';
+import { PlatformNotice } from '../components/PlatformNotice';
 import { RIDER_BOOK_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 
 /**
@@ -1213,6 +1214,7 @@ export function Transportation() {
       <RideAggregator />
       <AffiliateBand />
       <FAQs />
+      <PlatformNotice variant="rides" />
     </main>
   );
 }

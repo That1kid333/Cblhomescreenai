@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
+import { PlatformNotice } from '../components/PlatformNotice';
 
 // Great-circle distance in miles — used to order results closest-first.
 function milesBetween(a: Coords, b: [number, number]): number {
@@ -2628,6 +2629,7 @@ export function EatsAndDrinks() {
         coords={searchCoords}
       />
       <PartnerBand />
+      <PlatformNotice variant="marketplace" />
       <RestaurantModal r={modalR} onClose={() => setModalR(null)} />
     </main>
     </EatsModalCtx.Provider>
