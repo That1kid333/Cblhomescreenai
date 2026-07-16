@@ -873,10 +873,19 @@ const DRIVERAD_CSS = `
 .cbl-drivercard .dc-email { font-size:14px; color:#bcbcbc; margin-bottom:3px; word-break:break-all; }
 .cbl-drivercard .dc-url { font-family:${MONO}; font-size:12px; color:#777; word-break:break-all; }
 .cbl-drivercard .dc-foot { border-top:1px solid rgba(255,255,255,.08); margin:16px 24px 0; padding:18px 0 8px; text-align:center; }
-.cbl-drivercard .dc-powered { display:flex; align-items:center; justify-content:center; gap:9px; margin-bottom:12px; }
-.cbl-drivercard .dc-powered .pb { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#7a7a7a; }
-.cbl-drivercard .dc-powered img { height:17px; width:auto; display:block; }
+.cbl-drivercard .dc-powered { display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:12px; }
+.cbl-drivercard .dc-powered .pb { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#7a7a7a; }
+.cbl-drivercard .dc-powered img { height:24px; width:auto; display:block; }
 .cbl-drivercard .dc-disc { font-size:12px; line-height:1.5; color:#7a7a7a; max-width:46ch; margin:0 auto; }
+@media (max-width:480px) {
+  /* On a phone the car block is too narrow for the plate to float over the
+     centered car text — stack it below instead so nothing overlaps. */
+  .cbl-drivercard .dc-car { flex-direction:column; }
+  .cbl-drivercard .dc-carinfo { padding:22px 18px 6px; }
+  .cbl-drivercard .dc-plate { position:static; margin:0 0 16px; font-size:20px; padding:6px 12px; }
+  .cbl-drivercard .dc-car img { margin-bottom:12px; }
+  .cbl-drivercard .dc-carinfo .cv { font-size:21px; }
+}
 `;
 
 type DriverAd = {
@@ -941,12 +950,13 @@ function DriverAdCard({ d }: { d: DriverAd }) {
 }
 
 function DirListingModal({
-  l, onClose, canEditPhotos, onEditPhotos,
+  l, onClose, canEditPhotos, onEditPhotos, onCustomizeDriverAd,
 }: {
   l: Listing | null;
   onClose: () => void;
   canEditPhotos?: boolean;
   onEditPhotos?: () => void;
+  onCustomizeDriverAd?: () => void; // owner viewing their own driver card → open the builder
 }) {
   useEffect(() => {
     if (!l) return;
@@ -991,11 +1001,11 @@ function DirListingModal({
                 availability: l.driverAd?.availability ?? null,
               }}
             />
-            {canEditPhotos && onEditPhotos && (
+            {onCustomizeDriverAd && (
               <div style={{ padding: "4px 24px 22px" }}>
                 <button
                   type="button"
-                  onClick={onEditPhotos}
+                  onClick={onCustomizeDriverAd}
                   style={{
                     width: "100%", cursor: "pointer", borderRadius: 999,
                     padding: "12px 18px", background: "transparent", color: "#C99742",
@@ -2842,6 +2852,23 @@ export function Directory() {
           setModalL(null);
           if (id != null) setEditId(String(id));
         }}
+        onCustomizeDriverAd={
+          !!modalL && !!modalL.driverCode && !!sessionUid && modalL.ownerId === sessionUid
+            ? () => {
+                const id = String(modalL.id);
+                const raw = listings.find((x) => String(x.id) === id);
+                setModalL(null);
+                setSection("DRIVERS");
+                setEditDriverAd({
+                  id,
+                  title: raw?.title ?? modalL.name,
+                  city: raw?.city ?? null,
+                  state: raw?.state ?? null,
+                  driverAd: (raw?.driver_ad as DriverAd | null) ?? modalL.driverAd ?? null,
+                });
+              }
+            : undefined
+        }
       />
       <EditListingModal
         listingId={editId}
