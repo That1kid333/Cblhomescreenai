@@ -2,6 +2,7 @@ import { useState, useEffect, createContext, useContext } from 'react';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
+import { PlatformNotice } from '../components/PlatformNotice';
 
 /**
  * Attractions — location-aware live listings.
@@ -1627,6 +1628,7 @@ export function Attractions() {
         </div>
       </section>
       <SuggestBand />
+      <PlatformNotice variant="marketplace" />
       <AttractionModal a={modalA} onClose={() => setModalA(null)} />
     </main>
     </AttractionModalCtx.Provider>
