@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 /**
  * Reusable "Software Platform Notice" — the SaaS / not-a-rideshare / independent-
@@ -15,9 +15,68 @@ const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 
 const b = (t: ReactNode, c = "#C0C0C0") => <b style={{ color: c }}>{t}</b>;
 
+// Shared collapsible shell for the site's legal notices. Box width matches the
+// pages' content (.band-inner, 1280) so it lines up edge-to-edge. Expanded on
+// desktop; collapsed on phones (tap the chevron for the detail) so the legal
+// text doesn't eat vertical space on mobile.
+export function CollapsibleLegal({
+  title,
+  maxWidth = 1280,
+  children,
+}: {
+  title: string;
+  maxWidth?: number;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(true);
+  useEffect(() => {
+    // Collapse by default on small screens only.
+    setOpen(!window.matchMedia("(max-width: 640px)").matches);
+  }, []);
+  return (
+    <section className="cbl-platform-notice" style={{ padding: "0 clamp(20px, 5vw, 48px) 8px" }}>
+      <style>{`.cbl-legal>summary{list-style:none}.cbl-legal>summary::-webkit-details-marker{display:none}.cbl-legal>summary:focus-visible{outline:2px solid #C99742;outline-offset:2px}`}</style>
+      <details
+        className="cbl-legal"
+        open={open}
+        onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
+        style={{
+          maxWidth,
+          margin: "0 auto",
+          background: "#0F0F0F",
+          border: "1px solid rgba(201,151,66,.28)",
+          borderRadius: "18px 0 18px 0",
+        }}
+      >
+        <summary
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            padding: "16px 22px",
+          }}
+        >
+          <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", color: "#C99742", display: "flex", alignItems: "center", gap: 8 }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" />
+            </svg>
+            {title}
+          </span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0, transition: "transform .22s ease", transform: open ? "rotate(180deg)" : "none" }}>
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </summary>
+        <div style={{ padding: "0 22px 20px" }}>{children}</div>
+      </details>
+    </section>
+  );
+}
+
 export function PlatformNotice({
   variant = "rides",
-  maxWidth = 900,
+  maxWidth = 1280,
 }: {
   variant?: "rides" | "marketplace";
   maxWidth?: number;
@@ -57,40 +116,12 @@ export function PlatformNotice({
     );
 
   return (
-    <section className="cbl-platform-notice" style={{ padding: "0 24px 8px", margin: "0 auto", maxWidth }}>
-      <div
-        role="note"
-        style={{
-          background: "#0F0F0F",
-          border: "1px solid rgba(201,151,66,.28)",
-          borderRadius: "18px 0 18px 0",
-          padding: "20px 22px",
-        }}
-      >
-        <div
-          style={{
-            fontFamily: MONO,
-            fontSize: 11,
-            letterSpacing: ".16em",
-            textTransform: "uppercase",
-            color: "#C99742",
-            marginBottom: 10,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 2 4 5v6c0 5 3.4 8.5 8 11 4.6-2.5 8-6 8-11V5l-8-3Z" />
-          </svg>
-          Software Platform Notice
-        </div>
-        <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>{body}</p>
-        <p style={{ fontFamily: MONO, fontSize: 11, lineHeight: 1.6, color: "#6f6f6f", margin: "12px 0 0", letterSpacing: ".02em" }}>
-          &copy; {new Date().getFullYear()} Citybucketlist.com, LLC. All rights reserved. City Bucket
-          List&trade; is a service of Citybucketlist.com, LLC.
-        </p>
-      </div>
-    </section>
+    <CollapsibleLegal title="Software Platform Notice" maxWidth={maxWidth}>
+      <p style={{ fontSize: 12.5, lineHeight: 1.65, color: "#9A9A9A", margin: 0 }}>{body}</p>
+      <p style={{ fontFamily: MONO, fontSize: 11, lineHeight: 1.6, color: "#6f6f6f", margin: "12px 0 0", letterSpacing: ".02em" }}>
+        &copy; {new Date().getFullYear()} Citybucketlist.com, LLC. All rights reserved. City Bucket
+        List&trade; is a service of Citybucketlist.com, LLC.
+      </p>
+    </CollapsibleLegal>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
@@ -89,6 +89,37 @@ function LocationBar({
   searching: boolean;
 }) {
   const [q, setQ] = useState('');
+  // Google-backed location autocomplete (via our server-side proxy), same as the
+  // Directory. Best-effort — free-typing + submit still works if the API is off.
+  const [sug, setSug] = useState<{ mainText: string; secondaryText: string }[]>([]);
+  const [openSug, setOpenSug] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(-1);
+  const wrapRef = useRef<HTMLFormElement>(null);
+  const debTimer = useRef<number | undefined>(undefined);
+  const reqSeq = useRef(0);
+  const fetchSug = (v: string) => {
+    window.clearTimeout(debTimer.current);
+    if (v.trim().length < 2) { setSug([]); setOpenSug(false); return; }
+    debTimer.current = window.setTimeout(async () => {
+      const seq = ++reqSeq.current;
+      try {
+        const res = await fetch(`/api/place-autocomplete?q=${encodeURIComponent(v.trim())}`);
+        const data = await res.json();
+        if (seq !== reqSeq.current) return;
+        const preds = (data.predictions || []).map((pr: { mainText: string; secondaryText: string }) => ({ mainText: pr.mainText, secondaryText: pr.secondaryText }));
+        setSug(preds); setOpenSug(preds.length > 0); setActiveIdx(-1);
+      } catch { setSug([]); setOpenSug(false); }
+    }, 240);
+  };
+  const pick = (text: string) => {
+    setQ(text); setSug([]); setOpenSug(false); setActiveIdx(-1);
+    if (text.trim()) onSearchCity(text.trim());
+  };
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => { if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpenSug(false); };
+    document.addEventListener('mousedown', onDoc);
+    return () => document.removeEventListener('mousedown', onDoc);
+  }, []);
   return (
     <div className="locbar">
       <span className="pin" aria-hidden="true">
@@ -101,17 +132,30 @@ function LocationBar({
         Local spots near <b>{status === 'locating' ? 'you…' : activeCity}</b>
       </span>
       <form
+        ref={wrapRef}
         className="search"
+        style={{ position: 'relative' }}
         onSubmit={(e) => {
           e.preventDefault();
-          if (q.trim()) onSearchCity(q.trim());
+          if (openSug && activeIdx >= 0 && sug[activeIdx]) pick(sug[activeIdx].mainText);
+          else if (q.trim()) onSearchCity(q.trim());
         }}
       >
         <input
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => { setQ(e.target.value); fetchSug(e.target.value); }}
+          onFocus={() => { if (sug.length) setOpenSug(true); }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setOpenSug(true); setActiveIdx((i) => Math.min(i + 1, sug.length - 1)); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveIdx((i) => Math.max(i - 1, 0)); }
+            else if (e.key === 'Escape') { setOpenSug(false); }
+          }}
           placeholder="Search a city or town…"
           aria-label="Search a city or town"
+          role="combobox"
+          aria-expanded={openSug}
+          aria-autocomplete="list"
+          autoComplete="off"
         />
         <button type="submit" className="go" aria-label="Search">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
@@ -119,6 +163,30 @@ function LocationBar({
             <path d="m21 21-4.3-4.3" />
           </svg>
         </button>
+        {openSug && sug.length > 0 && (
+          <ul
+            role="listbox"
+            style={{
+              position: 'absolute', top: 'calc(100% + 8px)', left: 0, minWidth: 240, zIndex: 50,
+              listStyle: 'none', margin: 0, padding: 6, background: '#141414',
+              border: '1px solid rgba(201,151,66,.4)', borderRadius: 14, boxShadow: '0 14px 34px rgba(0,0,0,.5)',
+            }}
+          >
+            {sug.map((s, i) => (
+              <li
+                key={s.mainText + i}
+                role="option"
+                aria-selected={i === activeIdx}
+                onMouseDown={(e) => { e.preventDefault(); pick(s.mainText); }}
+                onMouseEnter={() => setActiveIdx(i)}
+                style={{ display: 'flex', flexDirection: 'column', gap: 1, padding: '8px 12px', borderRadius: 9, cursor: 'pointer', background: i === activeIdx ? 'rgba(201,151,66,.14)' : 'transparent' }}
+              >
+                <span style={{ color: '#fff', fontSize: 13, fontWeight: 600, fontFamily: DISPLAY }}>{s.mainText}</span>
+                {s.secondaryText && <span style={{ color: '#8f8f8f', fontSize: 11, fontFamily: DISPLAY }}>{s.secondaryText}</span>}
+              </li>
+            ))}
+          </ul>
+        )}
       </form>
       <button className="nearme" onClick={onNearMe} disabled={searching}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
