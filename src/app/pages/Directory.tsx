@@ -354,6 +354,11 @@ const DIR_CSS = `
   .cbl-dir .news-form input, .cbl-dir .news-form button { width:100%; }
   /* Tighten the section eyebrows so they don't orphan a word onto line 2. */
   .cbl-dir .section-eyebrow { letter-spacing:.06em; }
+  /* Section headings: size the main word to fit one line and drop the italic
+     tagline ("powered by CBL", "see the difference"…) cleanly to its own line
+     instead of orphaning a single word mid-phrase. Kept below the hero size. */
+  .cbl-dir .section-h2 { font-size:clamp(28px,7.4vw,40px); }
+  .cbl-dir .section-h2 .it { display:block; margin-left:0; margin-top:3px; white-space:nowrap; font-size:.62em; }
   /* Section switcher is a swipe strip on mobile — shrink tabs so more read at once */
   .cbl-dir .sec-btn { font-size:13px; padding:6px 13px 9px; letter-spacing:.07em; gap:4px; }
   .cbl-dir .sec-btn .ic { width:28px; height:28px; }
