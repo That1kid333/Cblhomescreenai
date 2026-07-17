@@ -138,6 +138,18 @@ const DIR_CSS = `
 .cbl-dir .sec-btn.active { color:#B8B8B8; border-bottom-color:#C99742; }
 .cbl-dir .sec-btn.active .ic { opacity:1; }
 
+/* Horizontal scrollers show an edge fade + a tappable chevron so it's clear
+   there's more to swipe — only when actually scrollable in that direction. */
+.cbl-dir .scroller { position:relative; }
+.cbl-dir .scroller::before, .cbl-dir .scroller::after { content:""; position:absolute; top:0; bottom:8px; width:38px; pointer-events:none; z-index:2; opacity:0; transition:opacity .2s; }
+.cbl-dir .scroller::before { left:0; background:linear-gradient(90deg,#0A0A0A 18%, transparent); }
+.cbl-dir .scroller::after { right:0; background:linear-gradient(270deg,#0A0A0A 18%, transparent); }
+.cbl-dir .scroller.sl::before { opacity:1; }
+.cbl-dir .scroller.sr::after { opacity:1; }
+.cbl-dir .sc-arrow { position:absolute; top:calc(50% - 4px); transform:translateY(-50%); z-index:3; width:26px; height:26px; border-radius:50%; border:1px solid rgba(201,151,66,.55); background:rgba(10,10,10,.94); color:#C99742; display:none; align-items:center; justify-content:center; cursor:pointer; font-size:17px; line-height:1; padding:0; }
+.cbl-dir .sc-arrow:hover { background:#C99742; color:#000; }
+.cbl-dir .scroller.sl .sc-arrow.left { display:flex; left:-6px; }
+.cbl-dir .scroller.sr .sc-arrow.right { display:flex; right:-6px; }
 .cbl-dir .chip-row { display:flex; gap:8px; padding:12px 0; overflow-x:auto; scrollbar-width:thin; scrollbar-color:rgba(201,151,66,.4) transparent; }
 .cbl-dir .chip-row::-webkit-scrollbar { height:6px; }
 .cbl-dir .chip-row::-webkit-scrollbar-thumb { background:rgba(201,151,66,.35); border-radius:3px; }
@@ -326,6 +338,9 @@ const DIR_CSS = `
 @media (max-width:1100px) {
   .cbl-dir .hero { padding:22px 24px 16px; }
   .cbl-dir section.band { padding:36px 24px 48px; }
+  /* Align the location bar + filter rows to the SAME 24px left margin as the
+     hero so the left edge is consistent (was 0px and 48px respectively). */
+  .cbl-dir .band.tight, .cbl-dir .filters { padding-left:24px; padding-right:24px; }
   .cbl-dir h1.hero-title .dir-icon { width:160px; height:130px; }
   .cbl-dir .listings-grid { grid-template-columns:repeat(2,1fr); }
   .cbl-dir .coupons-grid { grid-template-columns:1fr 1fr; }
@@ -645,6 +660,36 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
   );
 }
 
+// A horizontal scroller with edge fades + tappable ‹ › chevrons that appear
+// only when there's more to scroll in that direction (so people know the
+// section tabs / category chips swipe for more).
+function ScrollRow({ className, children }: { className: string; children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [edge, setEdge] = useState({ l: false, r: false });
+  const update = () => {
+    const el = ref.current;
+    if (!el) return;
+    const l = el.scrollLeft > 4;
+    const r = el.scrollLeft + el.clientWidth < el.scrollWidth - 4;
+    setEdge((prev) => (prev.l === l && prev.r === r ? prev : { l, r })); // guard re-render loop
+  };
+  // Re-measure after every render (content/section change) and on resize.
+  useEffect(() => { update(); });
+  useEffect(() => {
+    const t = window.setTimeout(update, 250); // after fonts/layout settle
+    window.addEventListener("resize", update);
+    return () => { window.clearTimeout(t); window.removeEventListener("resize", update); };
+  }, []);
+  const nudge = (dir: number) => ref.current?.scrollBy({ left: dir * 150, behavior: "smooth" });
+  return (
+    <div className={"scroller" + (edge.l ? " sl" : "") + (edge.r ? " sr" : "")}>
+      <button type="button" className="sc-arrow left" aria-label="Scroll left" tabIndex={-1} onClick={() => nudge(-1)}>‹</button>
+      <div ref={ref} className={className} onScroll={update}>{children}</div>
+      <button type="button" className="sc-arrow right" aria-label="Scroll right" tabIndex={-1} onClick={() => nudge(1)}>›</button>
+    </div>
+  );
+}
+
 function Filters({
   section, setSection, cat, setCat,
 }: {
@@ -654,7 +699,7 @@ function Filters({
   return (
     <div className="filters">
       <div className="filters-inner">
-        <div className="sec-row">
+        <ScrollRow className="sec-row">
           {SECTIONS.map((s) => (
             <button
               key={s.key}
@@ -665,8 +710,8 @@ function Filters({
               {s.label}
             </button>
           ))}
-        </div>
-        <div className="chip-row">
+        </ScrollRow>
+        <ScrollRow className="chip-row">
           {chips.map((c) => (
             <button
               key={c.k}
@@ -677,7 +722,7 @@ function Filters({
               {c.l}
             </button>
           ))}
-        </div>
+        </ScrollRow>
       </div>
     </div>
   );
