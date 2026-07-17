@@ -596,7 +596,7 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
         <div className="eyebrow">classifieds · drivers · riders<span className="eb-sm"> · shopping · coupons</span></div>
         <h1 className="hero-title">
           <span className="title-stack">
-            <span className="h1-main">Directory</span>
+            <span className="h1-main">CBL Directory</span>
             <span className="hero-subtitle">
               <span>Post it.</span>
               <span className="it">Find it. Book it.</span>
@@ -620,7 +620,7 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
           and curated shopping — all in one place. Browse freely. Sign in to post.
         </p>
         <button type="button" className="signup-hint" onClick={onPost}>
-          Sign in required to post · Free to join
+          Sign in to post · Free to join
         </button>
         {signedIn && (
           <a className="signup-hint manage-link" href="/studio">
@@ -1715,7 +1715,7 @@ function Newsletter() {
             <h2 className="section-h2">
               New listings &amp; deals <span className="it">in your inbox</span>
             </h2>
-            <p style={{ color: "#B0B0B0", fontSize: 15, lineHeight: 1.55, maxWidth: "52ch", marginBottom: 20 }}>
+            <p style={{ color: "#B0B0B0", fontSize: 15, lineHeight: 1.55, maxWidth: "52ch", marginBottom: 20, textWrap: "pretty" }}>
               Be first to know when local classifieds, driver schedules, and member-only coupons go
               live near you.
             </p>
