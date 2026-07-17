@@ -199,3 +199,11 @@
     }
   }
 }
+
+/* ── Site-wide typography: no orphan/widow single-word lines ──────────────────
+   Applies to every page, mobile + desktop. `balance` evens out heading lines so
+   a heading never drops one word alone; `pretty` pulls a trailing word up so
+   body copy never ends on a lone word. Element selectors = low specificity, so
+   any per-component override still wins (e.g. white-space:nowrap headings). */
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+p, li, blockquote, figcaption, dd, summary { text-wrap: pretty; }
