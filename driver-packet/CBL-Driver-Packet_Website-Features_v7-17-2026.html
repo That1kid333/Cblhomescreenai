@@ -1,0 +1,268 @@
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --black:#000; --panel:#0d0d0d; --panel2:#141414;
+    --gold:#C99742; --gold2:#DDB15F; --yellow:#FDB913;
+    --white:#fff; --gray:#d0d0d0; --dim:#8f8f8f; --line:#2a2a2a;
+    --sans:"Helvetica Neue",Arial,sans-serif;
+    --black-face:"Arial Black","Helvetica Neue",Arial,sans-serif;
+  }
+  html{ overflow-x:hidden; }
+  body{ background:#050505; font-family:var(--sans); color:var(--white); -webkit-font-smoothing:antialiased;
+        min-height:100%; overflow-x:hidden; padding:26px 14px 60px; }
+  .kicker{ font-family:var(--sans); font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--dim);
+        display:block; max-width:1120px; margin:0 auto 22px; text-align:center; }
+
+  /* ---- one printed page: landscape letter, scales with width ---- */
+  .page{
+    width:min(1120px,100%); aspect-ratio:11/8.5; background:var(--black);
+    container-type:inline-size; position:relative; overflow:hidden;
+    border:1px solid #1c1c1c; box-shadow:0 10px 40px rgba(0,0,0,.6);
+    padding:6cqw 6.4cqw; margin:0 auto 22px;
+  }
+  /* type scale in container units so it prints + previews identically */
+  .hbox{ display:inline-block; border:0.42cqw solid var(--white); padding:1.3cqw 2.4cqw; }
+  .hbox h1{ font-family:var(--black-face); font-weight:900; font-size:6.6cqw; line-height:.94; letter-spacing:-.01em; color:var(--white); text-transform:uppercase; }
+  .subhead{ font-family:var(--black-face); font-weight:900; text-transform:uppercase; color:var(--gold); font-size:2.5cqw; letter-spacing:.01em; margin-top:2.6cqw; }
+  .lead{ font-size:1.75cqw; line-height:1.5; color:var(--gray); max-width:52ch; }
+  .mini{ font-family:var(--black-face); font-weight:900; text-transform:uppercase; letter-spacing:.06em; color:var(--white); font-size:1.55cqw; margin-bottom:.7cqw; }
+  ul.b{ list-style:none; display:flex; flex-direction:column; gap:1.15cqw; }
+  ul.b li{ position:relative; padding-left:2.5cqw; font-size:1.72cqw; line-height:1.32; color:var(--gray); }
+  ul.b li::before{ content:""; position:absolute; left:0; top:.5cqw; border-style:solid; border-width:.65cqw 0 .65cqw 1cqw; border-color:transparent transparent transparent var(--gold); }
+  ul.b li b{ color:var(--white); font-weight:800; }
+  ul.b li .g{ color:var(--gold); font-weight:800; }
+  .steps{ font-size:1.55cqw; line-height:1.5; color:var(--gray); }
+  .steps b{ color:var(--white); }
+  .lbl{ display:inline-block; background:var(--panel2); border:1px solid var(--line); color:var(--white); border-radius:2cqw; padding:.3cqw 1cqw; font-weight:700; font-size:1.4cqw; }
+
+  .disc{ font-style:italic; color:var(--dim); font-size:1.22cqw; line-height:1.5; }
+  .disc .w{ color:#c0c0c0; }
+  .foot-abs{ position:absolute; left:6.4cqw; right:6.4cqw; bottom:4.3cqw; }
+  .vtag{ position:absolute; top:2.6cqw; right:3cqw; font-size:1.15cqw; letter-spacing:.14em; color:#5a5a5a; text-transform:uppercase; }
+
+  /* wordmark recreation */
+  .wm{ font-family:var(--black-face); font-weight:900; letter-spacing:.01em; font-size:2.4cqw; }
+  .wm .g{ color:var(--gold); } .wm .w{ color:var(--white); }
+
+  .two{ display:grid; grid-template-columns:1.05fr .95fr; gap:4cqw; align-items:center; margin-top:3cqw; }
+  .three{ display:grid; grid-template-columns:1fr 1fr; gap:3.4cqw 4cqw; margin-top:3cqw; }
+
+  /* ===== recreated "Need a Ride?" driver-ad card ===== */
+  .card{ width:100%; max-width:34cqw; margin:0 auto; background:var(--panel); border:1px solid rgba(201,151,66,.4); border-radius:2.2cqw 0 2.2cqw 0; overflow:hidden; box-shadow:0 2cqw 5cqw rgba(0,0,0,.6); }
+  .card .hero{ position:relative; text-align:center; padding:2.6cqw 2cqw 2cqw;
+    background:
+      radial-gradient(120% 90% at 50% -10%, rgba(201,151,66,.14), transparent 60%),
+      repeating-linear-gradient(58deg, rgba(201,151,66,.05) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(-32deg, rgba(255,255,255,.03) 0 1px, transparent 1px 30px),
+      linear-gradient(180deg,#151515,#0b0b0b); }
+  .card .av{ width:8.6cqw; height:8.6cqw; margin:0 auto .9cqw; border-radius:50%; border:.34cqw solid var(--gold); background:#1a1a1a; display:grid; place-items:center; overflow:hidden; }
+  .card .av svg{ width:60%; height:60%; opacity:.85; }
+  .card .eyebrow{ font-size:1cqw; letter-spacing:.22em; color:var(--gold); text-transform:uppercase; }
+  .card .h{ font-family:var(--black-face); font-weight:900; font-size:4.2cqw; line-height:.95; color:var(--white); text-transform:uppercase; margin-top:.4cqw; }
+  .card .ride{ font-size:1.5cqw; color:#d6d6d6; margin-top:.4cqw; }
+  .card .ride b{ color:var(--gold); font-style:italic; }
+  .card .badge{ display:inline-block; margin-top:1cqw; border:1px solid rgba(201,151,66,.5); border-radius:2cqw; padding:.5cqw 1.4cqw; font-size:1cqw; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); }
+  .card .avail{ margin-top:.9cqw; font-size:1.02cqw; letter-spacing:.05em; text-transform:uppercase; color:#cbb27f; }
+  .card .carblk{ margin:1.6cqw 1.8cqw 0; border:1px solid rgba(255,255,255,.07); border-radius:1.4cqw; background:linear-gradient(180deg,#161616,#0c0c0c); padding:2cqw 1.6cqw 1.4cqw; text-align:center; }
+  .card .carblk .cv{ font-family:var(--black-face); font-weight:900; font-size:2.1cqw; color:var(--white); text-transform:uppercase; }
+  .card .carblk .cc{ font-size:1cqw; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-top:.4cqw; }
+  .card .plate{ display:inline-flex; align-items:baseline; gap:.7cqw; margin-top:1cqw; background:#fff; color:#111; border-radius:.7cqw; padding:.55cqw 1.2cqw; font-family:var(--black-face); font-weight:900; font-size:2cqw; }
+  .card .plate .st{ font-size:.95cqw; color:#777; letter-spacing:.08em; }
+  .card .contact{ display:flex; gap:1.6cqw; align-items:center; padding:1.8cqw; }
+  .card .qr{ width:9cqw; height:9cqw; flex-shrink:0; background:#fff; border-radius:1cqw; padding:.8cqw; }
+  .card .qr svg{ width:100%; height:100%; display:block; }
+  .card .cinfo .scan{ font-size:1cqw; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); }
+  .card .cinfo .ph{ font-family:var(--black-face); font-weight:900; font-size:1.9cqw; color:var(--white); margin-top:.2cqw; }
+  .card .cinfo .em{ font-size:1.2cqw; color:#c7c7c7; }
+  .card .cinfo .url{ font-size:1.1cqw; color:#7a7a7a; }
+  .card .cfoot{ border-top:1px solid rgba(255,255,255,.08); margin:0 1.8cqw; padding:1.4cqw 0 1.6cqw; text-align:center; }
+  .card .cfoot .pw{ display:flex; align-items:center; justify-content:center; gap:.7cqw; }
+  .card .cfoot .pw span{ font-size:.85cqw; letter-spacing:.16em; text-transform:uppercase; color:#7a7a7a; }
+  .card .cfoot .pw .wm{ font-size:1.5cqw; }
+  .card .cfoot .cd{ font-size:.95cqw; line-height:1.5; color:#7a7a7a; margin-top:.7cqw; }
+
+  /* mini business card */
+  .bcard{ width:100%; max-width:24cqw; background:var(--panel); border:1px solid rgba(201,151,66,.4); border-radius:1.6cqw 0 1.6cqw 0; padding:2cqw; text-align:center; }
+  .bcard .badge{ display:inline-block; border:1px solid rgba(77,191,102,.5); color:#8FE0A2; border-radius:2cqw; padding:.4cqw 1.1cqw; font-size:.95cqw; letter-spacing:.08em; text-transform:uppercase; }
+  .bcard .qr{ width:9cqw; height:9cqw; margin:1.2cqw auto .6cqw; background:#fff; border-radius:1cqw; padding:.8cqw; }
+  .bcard .qr svg{ width:100%; height:100%; }
+  .bcard .eyebrow{ font-size:.95cqw; letter-spacing:.16em; text-transform:uppercase; color:var(--gold); }
+  .bcard h4{ font-family:var(--black-face); font-weight:900; font-size:2cqw; text-transform:uppercase; margin:.2cqw 0; }
+  .bcard h4 .i{ color:var(--gold); font-style:italic; }
+  .bcard .url{ font-size:1cqw; color:#8a8a8a; }
+
+  .price{ display:flex; align-items:baseline; gap:1.4cqw; margin-top:2.4cqw; }
+  .price .num{ font-family:var(--black-face); font-weight:900; font-size:8cqw; line-height:.9; color:var(--gold); }
+  .price .per{ font-size:2cqw; color:var(--white); font-weight:700; }
+  .seal{ width:20cqw; height:20cqw; border-radius:50%; border:.4cqw solid var(--gold); display:grid; place-items:center; text-align:center; background:radial-gradient(circle,#111,#000); }
+  .seal .in{ font-family:var(--black-face); font-weight:900; text-transform:uppercase; color:var(--gold); font-size:1.5cqw; letter-spacing:.06em; line-height:1.15; }
+  .seal .in small{ display:block; color:#c0c0c0; font-size:.9cqw; letter-spacing:.14em; margin-top:.5cqw; }
+
+  @media print{
+    @page{ size:11in 8.5in; margin:0; }
+    body{ background:#000; padding:0; gap:0; }
+    .kicker{ display:none; }
+    .page{ width:100%; height:100vh; border:0; box-shadow:none; break-after:page; }
+  }
+</style>
+
+<div class="kicker">CBL Driver Packet · Website Add-On · v. 7/17/2026 — scroll to preview all pages · print to landscape letter</div>
+
+<!-- ============ PAGE 1 — DIVIDER ============ -->
+<section class="page">
+  <span class="vtag">v. 7/17/2026</span>
+  <div style="height:100%; display:flex; flex-direction:column; justify-content:center; gap:3cqw;">
+    <div class="wm" style="font-size:3.2cqw;"><span class="g">CITY</span><span class="w">BUCKET</span><span class="g">LIST</span><span class="g">.COM</span></div>
+    <div class="hbox"><h1>On&nbsp;The&nbsp;Web</h1></div>
+    <div class="subhead" style="margin-top:1cqw;">Your driver tools — now on the website</div>
+    <p class="lead" style="font-size:2cqw;">Everything in this packet works online too. Post your own <b style="color:#fff">ride card</b>, share your <b style="color:#fff">personal QR</b>, and let riders find you — right from CityBucketList.com.</p>
+  </div>
+  <div class="foot-abs">
+    <p class="disc"><span class="w">City Bucket List (CBL) Is Not A Rideshare — Software As A Service.</span> *Not A Transportation Business/Company. “Connecting People With Communities.”</p>
+  </div>
+</section>
+
+<!-- ============ PAGE 2 — YOUR DRIVER AD ============ -->
+<section class="page">
+  <div class="hbox"><h1>Your&nbsp;Driver&nbsp;Ad</h1></div>
+  <div class="subhead">The “Need a Ride?” card on CityBucketList.com</div>
+  <div class="two">
+    <div>
+      <div class="mini">What’s on your card</div>
+      <ul class="b">
+        <li>Your <b>photo</b>, name &amp; “Ride with {you}”</li>
+        <li>Your <b>car, color &amp; plate</b></li>
+        <li><b>Big personal QR</b> — riders scan, join &amp; book you</li>
+        <li>Phone, email &amp; your <span class="g">referral link</span></li>
+        <li>“Scheduled rides only · Book 12+ hrs ahead”</li>
+      </ul>
+      <div class="mini" style="margin-top:2.4cqw;">Post it yourself — free with membership</div>
+      <p class="steps">Directory → <span class="lbl">Driver Posts</span> → <span class="lbl">+ Post an Ad</span><br>
+      Live preview as you build. Edit anytime in <b>CBL Studio → “Edit card.”</b></p>
+    </div>
+    <div>
+      <!-- recreated Need a Ride card -->
+      <div class="card">
+        <div class="hero">
+          <div class="av"><svg viewBox="0 0 24 24" fill="none" stroke="#C99742" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></div>
+          <div class="eyebrow">CBL Drivers Directory</div>
+          <div class="h">Need&nbsp;a&nbsp;Ride?</div>
+          <div class="ride">Ride with <b>{You}.</b></div>
+          <div class="badge">★ Private Membership Association</div>
+          <div class="avail">🕐 Scheduled rides only · Book 12+ hrs ahead</div>
+        </div>
+        <div class="carblk">
+          <div class="cv">Your Vehicle</div>
+          <div class="cc">Year · Make · Model · Color</div>
+          <div class="plate"><span class="st">ST</span>PLATE#</div>
+        </div>
+        <div class="contact">
+          <div class="qr">
+            <svg viewBox="0 0 29 29" shape-rendering="crispEdges">
+              <rect width="29" height="29" fill="#fff"/>
+              <g fill="#000">
+                <path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2z"/>
+                <path d="M22 0h7v7h-7zM23 1v5h5V1zM24 2h3v3h-3z"/>
+                <path d="M0 22h7v7H0zM1 23v5h5v-5zM2 24h3v3H2z"/>
+                <rect x="9" y="1" width="1" height="1"/><rect x="11" y="0" width="1" height="2"/><rect x="13" y="1" width="1" height="1"/><rect x="15" y="2" width="1" height="1"/><rect x="18" y="0" width="1" height="1"/><rect x="20" y="1" width="1" height="1"/>
+                <rect x="9" y="4" width="2" height="1"/><rect x="12" y="3" width="1" height="2"/><rect x="14" y="4" width="1" height="1"/><rect x="16" y="3" width="2" height="1"/><rect x="19" y="4" width="1" height="1"/>
+                <rect x="1" y="9" width="1" height="2"/><rect x="3" y="10" width="2" height="1"/><rect x="0" y="12" width="1" height="1"/><rect x="2" y="13" width="1" height="2"/><rect x="4" y="12" width="1" height="1"/><rect x="1" y="16" width="1" height="1"/><rect x="3" y="17" width="1" height="1"/>
+                <rect x="9" y="9" width="2" height="2"/><rect x="12" y="10" width="2" height="1"/><rect x="15" y="9" width="1" height="2"/><rect x="17" y="11" width="2" height="1"/><rect x="20" y="9" width="1" height="2"/><rect x="22" y="10" width="1" height="1"/><rect x="24" y="9" width="2" height="1"/><rect x="27" y="10" width="1" height="2"/>
+                <rect x="10" y="13" width="1" height="2"/><rect x="13" y="14" width="2" height="1"/><rect x="16" y="13" width="1" height="2"/><rect x="18" y="15" width="1" height="1"/><rect x="21" y="13" width="2" height="1"/><rect x="24" y="14" width="1" height="2"/><rect x="26" y="13" width="1" height="1"/>
+                <rect x="9" y="18" width="2" height="1"/><rect x="12" y="17" width="1" height="2"/><rect x="14" y="18" width="2" height="1"/><rect x="17" y="17" width="1" height="2"/><rect x="20" y="18" width="1" height="1"/><rect x="22" y="17" width="2" height="1"/><rect x="25" y="18" width="1" height="1"/><rect x="27" y="17" width="1" height="2"/>
+                <rect x="9" y="21" width="1" height="2"/><rect x="11" y="22" width="2" height="1"/><rect x="14" y="21" width="1" height="2"/><rect x="16" y="23" width="1" height="1"/><rect x="18" y="21" width="2" height="1"/><rect x="21" y="22" width="1" height="2"/><rect x="23" y="21" width="2" height="1"/><rect x="26" y="22" width="1" height="1"/><rect x="28" y="21" width="1" height="2"/>
+                <rect x="10" y="25" width="2" height="1"/><rect x="13" y="26" width="1" height="2"/><rect x="15" y="25" width="2" height="1"/><rect x="18" y="26" width="1" height="1"/><rect x="20" y="25" width="1" height="2"/><rect x="23" y="26" width="2" height="1"/><rect x="26" y="25" width="1" height="2"/><rect x="28" y="26" width="1" height="1"/>
+              </g>
+            </svg>
+          </div>
+          <div class="cinfo">
+            <div class="scan">Scan to book with {You}</div>
+            <div class="ph">(000) 000-0000</div>
+            <div class="em">you@citybucketlist.com</div>
+            <div class="url">app.citybucketlist.com/r/{code}</div>
+          </div>
+        </div>
+        <div class="cfoot">
+          <div class="pw"><span>Powered by</span><span class="wm"><span class="g">CITY</span><span class="w">BUCKET</span><span class="g">LIST.COM</span></span></div>
+          <div class="cd">CityBucketList is a SaaS platform. All drivers are independent contractors. CBL is not a rideshare company.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 3 — CARD + STUDIO + FIND YOU ============ -->
+<section class="page">
+  <div class="hbox"><h1>Your&nbsp;Card&nbsp;&amp;&nbsp;Tools</h1></div>
+  <div class="subhead">Share, manage, and get found — all online</div>
+  <div class="three">
+    <div>
+      <div class="mini">Digital Business Card</div>
+      <p class="steps" style="margin-bottom:1cqw;">Tap your photo, top-right — on every page.</p>
+      <ul class="b">
+        <li>Your <b>QR</b> + referral link, ready to share</li>
+        <li><span class="g">“Share”</span> / <span class="g">“Copy link”</span> in one tap</li>
+        <li>See how many joined under your code</li>
+        <li>Refer a restaurant → <b>earn 20%</b></li>
+        <li>Cash payouts via Stripe</li>
+      </ul>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:2.6cqw;">
+      <div>
+        <div class="mini">Manage — CBL Studio</div>
+        <ul class="b">
+          <li>My Listings: <b>edit · pause · delete</b></li>
+          <li><span class="g">“Edit card”</span> reopens your ride-card builder</li>
+          <li><b>★ Verified CBL Driver</b> badge</li>
+        </ul>
+      </div>
+      <div>
+        <div class="mini">How riders find you</div>
+        <ul class="b">
+          <li>Riders search their city or neighborhood</li>
+          <li>Your ad shows within <b>the radius you set</b> (up to 250 mi)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot-abs" style="display:flex; justify-content:center;">
+    <div class="bcard">
+      <span class="badge">★ Verified CBL Driver</span>
+      <div class="qr">
+        <svg viewBox="0 0 29 29" shape-rendering="crispEdges"><rect width="29" height="29" fill="#fff"/><g fill="#000"><path d="M0 0h7v7H0zM1 1v5h5V1zM2 2h3v3H2z"/><path d="M22 0h7v7h-7zM23 1v5h5V1zM24 2h3v3h-3z"/><path d="M0 22h7v7H0zM1 23v5h5v-5zM2 24h3v3H2z"/><rect x="9" y="2" width="2" height="1"/><rect x="12" y="1" width="1" height="2"/><rect x="15" y="3" width="2" height="1"/><rect x="18" y="1" width="1" height="1"/><rect x="20" y="2" width="1" height="2"/><rect x="10" y="10" width="2" height="2"/><rect x="14" y="9" width="1" height="2"/><rect x="17" y="11" width="2" height="1"/><rect x="20" y="10" width="1" height="2"/><rect x="24" y="10" width="2" height="1"/><rect x="9" y="15" width="1" height="2"/><rect x="12" y="16" width="2" height="1"/><rect x="16" y="15" width="1" height="2"/><rect x="19" y="16" width="2" height="1"/><rect x="23" y="15" width="1" height="2"/><rect x="26" y="16" width="1" height="1"/><rect x="10" y="20" width="2" height="1"/><rect x="14" y="21" width="1" height="2"/><rect x="17" y="20" width="2" height="1"/><rect x="21" y="21" width="1" height="2"/><rect x="24" y="20" width="2" height="1"/><rect x="11" y="25" width="1" height="2"/><rect x="15" y="26" width="2" height="1"/><rect x="19" y="25" width="1" height="2"/><rect x="23" y="26" width="2" height="1"/><rect x="27" y="25" width="1" height="2"/></g></svg>
+      </div>
+      <div class="eyebrow">your digital business card</div>
+      <h4>Share it. <span class="i">Earn it.</span></h4>
+      <div class="url">app.citybucketlist.com/r/{code}</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PAGE 4 — MEMBERSHIP + DISCLAIMER ============ -->
+<section class="page">
+  <div class="hbox"><h1>Membership</h1></div>
+  <div class="two" style="margin-top:3cqw; align-items:flex-start;">
+    <div>
+      <div class="price"><span class="num">$19.99</span><span class="per">/mo · Private Membership</span></div>
+      <div class="mini" style="margin-top:2.6cqw;">Your subscription includes</div>
+      <ul class="b">
+        <li>Your <b>“Need a Ride?” ride card</b> + personal QR</li>
+        <li>Keep <b>100% of fares</b> · <span class="g">0% commission</span></li>
+        <li>Stripe instant payouts</li>
+        <li>Scheduled rides only — no on-demand pressure</li>
+        <li>Full access to the CBL App + booking tools</li>
+      </ul>
+    </div>
+    <div style="display:flex; justify-content:center; padding-top:1cqw;">
+      <div class="seal"><div class="in">Private<br>Membership<br>Association<small>★ P M A ★</small></div></div>
+    </div>
+  </div>
+  <div class="foot-abs">
+    <p class="disc" style="margin-bottom:1cqw;"><span class="w">By Invitation Only</span> *By Another Member In Good Standing. Tools To Be Used Only By Legitimate Subscribers.</p>
+    <p class="disc"><span class="w">City Bucket List (CBL) Is Not A Rideshare — Software As A Service.</span> *Not A Transportation Business/Company. “Connecting People With Communities.”</p>
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:1.6cqw;">
+      <div class="wm" style="font-size:1.7cqw;"><span class="g">CITY</span><span class="w">BUCKET</span><span class="g">LIST.COM</span></div>
+      <div style="font-size:1.2cqw; color:#8f8f8f; letter-spacing:.06em;">E: INFO@CITYBUCKETLIST.COM &nbsp;·&nbsp; © 2026 Citybucketlist.com, LLC.</div>
+    </div>
+  </div>
+</section>
