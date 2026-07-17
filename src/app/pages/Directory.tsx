@@ -156,11 +156,11 @@ const DIR_CSS = `
 .cbl-dir .band-inner { max-width:1280px; margin:0 auto; }
 .cbl-dir .section-eyebrow { font-family:${MONO}; font-size:12px; color:#C99742; letter-spacing:.18em; text-transform:uppercase; display:inline-flex; align-items:center; gap:10px; margin-bottom:12px; }
 .cbl-dir .section-eyebrow::before { content:''; width:28px; height:1px; background:#C99742; }
-.cbl-dir .section-h2 { font-family:${DISPLAY}; font-weight:900; font-size:clamp(40px,4.6vw,64px); line-height:.95; letter-spacing:-.01em; text-transform:uppercase; margin-bottom:8px; }
+.cbl-dir .section-h2 { font-family:${DISPLAY}; font-weight:900; font-size:clamp(40px,4.6vw,64px); line-height:.95; letter-spacing:-.01em; text-transform:uppercase; margin-bottom:8px; text-wrap:balance; }
 .cbl-dir .section-h2 .it { font-family:${ITALIC}; font-style:italic; color:#C99742; font-weight:600; text-transform:none; font-size:.6em; margin-left:8px; }
 .cbl-dir .section-head { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:24px; gap:24px; flex-wrap:wrap; }
 .cbl-dir .section-head .count { font-family:${MONO}; font-size:11px; letter-spacing:.14em; color:#8a8a8a; text-transform:uppercase; }
-.cbl-dir .post-btn { background:#C99742; color:#000; border:0; padding:12px 22px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:13px; letter-spacing:.12em; text-transform:uppercase; }
+.cbl-dir .post-btn { background:#C99742; color:#000; border:0; padding:12px 22px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:13px; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap; }
 .cbl-dir .post-btn:hover { background:#DDB15F; }
 
 /* ── FREE vs FEATURED comparison band ── */
@@ -319,7 +319,7 @@ const DIR_CSS = `
 .cbl-dir .news-form input { flex:1; background:#141414; border:1px solid rgba(255,255,255,.10); border-radius:999px; padding:14px 20px; font-family:Inter,sans-serif; font-size:15px; color:#fff; outline:0; }
 .cbl-dir .news-form input::placeholder { color:#555; }
 .cbl-dir .news-form input:focus { border-color:#C99742; }
-.cbl-dir .news-form button { background:#C99742; color:#000; border:0; padding:14px 28px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.14em; text-transform:uppercase; }
+.cbl-dir .news-form button { background:#C99742; color:#000; border:0; padding:14px 28px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:14px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
 .cbl-dir .news-form button:hover { background:#DDB15F; }
 
 /* Responsive */
@@ -335,17 +335,25 @@ const DIR_CSS = `
   .cbl-dir .compare-grid { grid-template-columns:1fr; }
 }
 @media (max-width:720px) {
-  /* Mobile legibility: size hero to fit, hide decorative icon, raise small fonts */
-  .cbl-dir h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  /* Mobile legibility: hero is the biggest thing on the page — drop the
+     decorative icon so "CBL DIRECTORY" gets the full width at a size that
+     reads bigger than the section headers below it. */
+  .cbl-dir h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(36px,9.6vw,50px); }
   .cbl-dir h1.hero-title .title-stack { min-width:0; flex:1; }
-  .cbl-dir h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
-  .cbl-dir h1.hero-title .dir-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:44px; }
+  .cbl-dir h1.hero-title .title-stack > span:first-child { display:block; padding-right:0; }
+  .cbl-dir h1.hero-title .dir-icon { display:none; }
   .cbl-dir .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
   .cbl-dir .eyebrow { display:block; white-space:nowrap; max-width:100%; font-size:11px; letter-spacing:.06em; }
   .cbl-dir .eb-sm { display:none; }
   .cbl-dir .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
   .cbl-dir .hero p.lede { font-size:16px; }
-  .cbl-dir .signup-hint { font-size:12px; }
+  /* Keep the whole line (incl. the · separator) together; no orphan words. */
+  .cbl-dir .signup-hint { font-size:12px; letter-spacing:.08em; white-space:nowrap; }
+  /* Newsletter: stack input above a full-width button so nothing bleeds off. */
+  .cbl-dir .news-form { flex-direction:column; max-width:none; }
+  .cbl-dir .news-form input, .cbl-dir .news-form button { width:100%; }
+  /* Tighten the section eyebrows so they don't orphan a word onto line 2. */
+  .cbl-dir .section-eyebrow { letter-spacing:.06em; }
   /* Section switcher is a swipe strip on mobile — shrink tabs so more read at once */
   .cbl-dir .sec-btn { font-size:13px; padding:6px 13px 9px; letter-spacing:.07em; gap:4px; }
   .cbl-dir .sec-btn .ic { width:28px; height:28px; }
@@ -714,14 +722,14 @@ function FreeListingMock() {
 function FeaturedListingMock() {
   return (
     <div className="mock featured">
-      <div className="img" style={{ background: "linear-gradient(135deg,rgba(201,151,66,.18),rgba(201,151,66,.06))", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        className="img"
+        role="img"
+        aria-label="Example featured listing photo — a local boutique storefront"
+        style={{ backgroundImage: "linear-gradient(180deg,rgba(0,0,0,0) 55%,rgba(0,0,0,.35) 100%),url(/directory/featured-example.jpg)" }}
+      >
         <span className="feat-badge">★ Featured</span>
         <span className="img-count">📷 Up to 10 photos</span>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="rgba(201,151,66,.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute" }}>
-          <rect x="3" y="3" width="18" height="18" rx="2" />
-          <circle cx="8.5" cy="8.5" r="1.5" />
-          <path d="M21 15l-5-5L5 21" />
-        </svg>
       </div>
       <div className="body">
         <div style={{ height: 14, background: "rgba(201,151,66,.2)", borderRadius: 4, marginBottom: 8, width: "70%" }} />
