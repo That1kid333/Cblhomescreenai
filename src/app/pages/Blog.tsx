@@ -249,6 +249,14 @@ const BLOG_CSS = `
   .cbl-blog .search { order:2; width:100%; padding:8px 0 10px; }
   .cbl-blog .search input, .cbl-blog .search input:focus { width:100%; }
   .cbl-blog .share-form .sf-row { grid-template-columns:1fr; }
+  /* The .band mobile padding rule targets .band only; .band.tight (news + share
+     bands) kept 48px side padding, and the subscribe form didn't stack — together
+     they forced the newsletter grid wider than the viewport (heading, copy and the
+     Subscribe button were clipped off the right edge). */
+  .cbl-blog section.band.tight { padding-left:24px; padding-right:24px; }
+  .cbl-blog .news-grid, .cbl-blog .news-grid > * { min-width:0; }
+  .cbl-blog .news-form { flex-direction:column; max-width:none; }
+  .cbl-blog .news-form button { width:100%; }
   /* Section/CTA header italic accent drops to its own line (no orphan first word). */
   .cbl-blog .section-h2 .it,
   .cbl-blog .cta-band h2 .it { display:block; margin-left:0; }
