@@ -1095,6 +1095,16 @@ const DESKTOP_CSS = `
   line-height:.9; letter-spacing:-.02em; text-transform:uppercase;
   display:flex; align-items:center; gap:28px; flex-wrap:nowrap; margin:0;
 }
+/* Desktop/tablet: float the icon so it doesn't inflate the title row — the
+   eyebrow/title/subtitle/lede line up with the Affiliates & About heroes.
+   Anchored to the full-width .hero-title-row (the h1 itself shrinks to its
+   text width here), so the icon sits at the hero's right edge, not over the
+   text. Below 721px the mobile rule positions the icon instead. */
+@media (min-width:721px){
+  .cbl-eats .hero-title-row .fork-knife {
+    position:absolute; right:0; top:50%; transform:translateY(-50%); margin:0;
+  }
+}
 .cbl-eats h1.hero-title .title-stack { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .cbl-eats h1.hero-title .eats { color:#fff; white-space:nowrap; }
 .cbl-eats .hero-subtitle {

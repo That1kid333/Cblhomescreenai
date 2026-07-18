@@ -85,7 +85,7 @@ const BLOG_CSS = `
 .cbl-blog .hero-subtitle .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; text-transform:none; letter-spacing:0; font-size:.82em; }
 .cbl-blog h1.hero-title .blog-icon { flex-shrink:0; width:220px; height:180px; display:flex; align-items:center; justify-content:center; opacity:.92; }
 .cbl-blog h1.hero-title .blog-icon svg { width:100%; height:100%; }
-.cbl-blog .hero p.lede { margin-top:-6px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
+.cbl-blog .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
 /* Filter rail */
 .cbl-blog .filters {
