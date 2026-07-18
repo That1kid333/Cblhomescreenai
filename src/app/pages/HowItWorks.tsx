@@ -234,9 +234,12 @@ const HOW_CSS = `
   .cbl-how .row-body { padding:28px 24px; }
 }
 @media (max-width:720px){
-  .cbl-how h1.hero-title { font-size:clamp(30px,8vw,44px); gap:0; }
+  /* Match the About page's hero title size (~56px); "HOW IT WORKS" wraps
+     instead of shrinking. Accent drops to its own line (no orphan word). */
+  .cbl-how h1.hero-title { font-size:clamp(44px,14.4vw,56px); gap:0; }
   .cbl-how h1.hero-title .h1-main { white-space:normal; }
   .cbl-how .hero-subtitle { font-size:clamp(20px,5.4vw,27px); }
+  .cbl-how .hero-subtitle .it { flex-basis:100%; margin-left:0; }
   .cbl-how .eyebrow { white-space:nowrap; font-size:11px; letter-spacing:.06em; }
   .cbl-how .eb-sm { display:none; }
 }

@@ -213,6 +213,9 @@ const CSS = `
 @media(max-width:720px){
   .cbl-concierge .eyebrow{white-space:nowrap;font-size:11px;letter-spacing:.06em;}
   .cbl-concierge .eb-sm{display:none;}
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-concierge .section-h2 .it,
+  .cbl-concierge .cta-band h2 .it { display:block; margin-left:0; }
 }
 @media(max-width:1000px){
   .cbl-concierge section.band{padding:44px 24px 48px;}

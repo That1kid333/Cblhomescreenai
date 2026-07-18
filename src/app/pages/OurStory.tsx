@@ -172,6 +172,9 @@ const STORY_CSS = `
 @media (max-width:720px){
   .cbl-story .eyebrow { white-space:nowrap; font-size:11px; letter-spacing:.06em; }
   .cbl-story .eb-sm { display:none; }
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-story .section-h2 .it,
+  .cbl-story .cta-band h2 .it { display:block; margin-left:0; }
 }
 `;
 

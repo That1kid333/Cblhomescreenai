@@ -554,11 +554,15 @@ const ATTRACTIONS_CSS = `
   .cbl-attractions h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-attractions h1.hero-title .attractions-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
   .cbl-attractions .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
+  /* Section-header italic accent drops to its own line so its first word
+     never orphans on the heading line (e.g. "The list" / "worth your bucket list"). */
+  .cbl-attractions .section-h2 .it { display:block; margin-left:0; }
   .cbl-attractions .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .cbl-attractions .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
-  /* Bottom tab bar (TripIt-style) — pin the category tabs to the bottom on phones */
+  /* Bottom tab bar (TripIt-style) — pin the category tabs to the bottom on phones.
+     NOTE: the .filters position/backdrop-filter overrides live in the LATE 720px
+     block (after the base .filters definition) so they win on source order. */
   .cbl-attractions { padding-bottom:76px; }
-  .cbl-attractions .filters { position:static; padding:12px 16px 0; }
   .cbl-attractions .cat-row {
     position:fixed; left:0; right:0; bottom:0; z-index:60;
     background:rgba(10,10,10,.98); -webkit-backdrop-filter:blur(16px); backdrop-filter:blur(16px);
@@ -913,6 +917,18 @@ const ATTRACTIONS_CSS = `
   .cbl-attractions .events-grid { grid-template-columns:1fr; }
   .cbl-attractions .spotlight { grid-column:span 1; }
   .cbl-attractions .empty { grid-column:span 1; }
+  /* Long single-word attraction names (e.g. CONSERVATORY) must scale down and
+     wrap instead of clipping off the right edge on phones. */
+  .cbl-attractions .spotlight h3 {
+    font-size:clamp(30px,8.5vw,42px);
+    overflow-wrap:break-word; word-break:break-word; hyphens:auto;
+  }
+  /* Re-applied AFTER the base .filters definition so it wins on source order:
+     drop the sticky positioning + backdrop-filter. The backdrop-filter creates
+     a containing block that traps the position:fixed .cat-row (bottom tab bar),
+     making it pin to .filters' bottom and overlap the weather row instead of the
+     screen bottom. The .cat-row keeps its own backdrop-filter, so no visual loss. */
+  .cbl-attractions .filters { position:static; padding:12px 16px 0; backdrop-filter:none; -webkit-backdrop-filter:none; }
 }
 `;
 

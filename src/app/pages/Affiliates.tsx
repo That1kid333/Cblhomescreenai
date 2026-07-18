@@ -325,6 +325,11 @@ const AFFILIATES_CSS = `
   .cbl-affiliates .tier-grid { grid-template-columns:1fr; }
   .cbl-affiliates .pricing-grid { grid-template-columns:1fr; }
 }
+@media (max-width:720px){
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-affiliates .section-h2 .it,
+  .cbl-affiliates .cta-band h2 .it { display:block; margin-left:0; }
+}
 `;
 
 function PartnerCard({ p }: { p: Partner }) {

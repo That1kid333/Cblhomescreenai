@@ -249,6 +249,9 @@ const BLOG_CSS = `
   .cbl-blog .search { order:2; width:100%; padding:8px 0 10px; }
   .cbl-blog .search input, .cbl-blog .search input:focus { width:100%; }
   .cbl-blog .share-form .sf-row { grid-template-columns:1fr; }
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-blog .section-h2 .it,
+  .cbl-blog .cta-band h2 .it { display:block; margin-left:0; }
 }
 `;
 

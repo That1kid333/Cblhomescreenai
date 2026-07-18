@@ -267,6 +267,9 @@ const TRAVELS_CSS = `
   .cbl-travels .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
   .cbl-travels .eyebrow { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
   .cbl-travels .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
+  /* Section-header italic accents drop to their own line (no orphan first word). */
+  .cbl-travels .section-h2 .it,
+  .cbl-travels .buckee-text h2 .it { display:block; margin-left:0; }
 }
 .cbl-travels .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 
@@ -657,6 +660,12 @@ const TRAVELS_CSS = `
   .cbl-travels .buckee-hero { min-height:360px; }
   .cbl-travels .buckee-hero .mascot { width:280px; }
   .cbl-travels .buckee-hero .glow { width:360px; height:360px; }
+}
+@media (max-width:720px){
+  /* Single-column stay cards on phones — the 2-col grid (from the 1100px block
+     above) crams hotel names to 5 lines and clips review counts/badges.
+     Must come AFTER the 1100px block so it wins on source order at phone widths. */
+  .cbl-travels .stays-grid { grid-template-columns:1fr; }
 }
 `;
 
