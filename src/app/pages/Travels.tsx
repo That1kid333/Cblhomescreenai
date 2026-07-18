@@ -214,7 +214,8 @@ const TRAVELS_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 16px;
 }
-.cbl-travels .hero-inner { max-width:1280px; margin:0 auto; }
+.cbl-travels .hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+.cbl-travels .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-travels .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; font-weight:700;
@@ -677,7 +678,9 @@ function RideGlyph({ size = 12, color = '#C99742', strokeWidth = 14 }: { size?: 
 
 function Hero() {
   return (
-    <section className="hero">
+    <section className="hero cbl-light-streams">
+      {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+      <div className="hero-streams" aria-hidden="true" />
       <div className="hero-inner">
         <div className="eyebrow">cbl curated · booking launching soon</div>
         <h1 className="hero-title">

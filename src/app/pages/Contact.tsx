@@ -30,7 +30,8 @@ const CONTACT_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 16px;
 }
-.cbl-contact .hero-inner { max-width:1280px; margin:0 auto; }
+.cbl-contact .hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+.cbl-contact .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-contact .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -185,7 +186,9 @@ export function Contact() {
     <main className="cbl-contact">
       <style>{CONTACT_CSS}</style>
 
-      <section className="hero">
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="hero-inner">
           <div className="eyebrow">support · we're here to help</div>
           <h1 className="hero-title">

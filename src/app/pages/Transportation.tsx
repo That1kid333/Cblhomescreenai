@@ -216,7 +216,8 @@ const TRANSPORT_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 12px;
 }
-.cbl-transport .hero-inner { display:grid; grid-template-columns:minmax(0,1fr); gap:0; align-items:start; max-width:1280px; margin:0 auto; }
+.cbl-transport .hero-inner { display:grid; grid-template-columns:minmax(0,1fr); gap:0; align-items:start; max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+.cbl-transport .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-transport .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -654,7 +655,9 @@ function HeroCarSvg() {
 
 function Hero() {
   return (
-    <section className="hero">
+    <section className="hero cbl-light-streams">
+      {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+      <div className="hero-streams" aria-hidden="true" />
       <div className="hero-inner">
         <div>
           <div className="eyebrow">cbl private · scheduled rides<span className="eb-sm"> · partners soon</span></div>

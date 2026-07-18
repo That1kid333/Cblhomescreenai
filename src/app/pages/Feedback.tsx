@@ -56,7 +56,8 @@ const FEEDBACK_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 16px;
 }
-.cbl-feedback .hero-inner { max-width:1280px; margin:0 auto; }
+.cbl-feedback .hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+.cbl-feedback .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-feedback .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -216,7 +217,9 @@ export function Feedback() {
     <main className="cbl-feedback">
       <style>{FEEDBACK_CSS}</style>
 
-      <section className="hero">
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="hero-inner">
           <div className="eyebrow">your voice · we read every one</div>
           <h1 className="hero-title">

@@ -188,7 +188,9 @@ export function MeetBuckee() {
       <style>{CSS}</style>
 
       {/* ── HERO ── */}
-      <section className="hero">
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="hero-copy">
           <span className="eyebrow">meet your concierge</span>
           <h1 className="hero-title">
@@ -387,7 +389,8 @@ const CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:26px 48px 16px;
 }
-.cbl-buckee .hero-copy { position:relative; z-index:1; max-width:1376px; margin:0 auto; }
+.cbl-buckee .hero-copy { position:relative; z-index:2; max-width:1376px; margin:0 auto; }
+.cbl-buckee .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-buckee .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:lowercase;
