@@ -101,7 +101,10 @@ const AFFILIATES_CSS = `
     url('${MAP_BG}') center top / cover no-repeat;
   padding:22px 48px 16px;
 }
-.cbl-affiliates .hero-inner { max-width:1280px; margin:0 auto; }
+/* content sits above the light streams (see src/styles/light-streams.css) */
+.cbl-affiliates .hero-inner { max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+/* empty first-child layer that hosts 2 of the 4 streaks, kept under the copy */
+.cbl-affiliates .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-affiliates .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em;
@@ -347,7 +350,9 @@ export function Affiliates() {
     <main className="cbl-affiliates">
       <style>{AFFILIATES_CSS}</style>
 
-      <section className="hero">
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 streaks), under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="hero-inner">
           <div className="eyebrow">partners · commission program</div>
           <h1 className="hero-title">
