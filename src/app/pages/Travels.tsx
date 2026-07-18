@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
@@ -367,15 +367,39 @@ const TRAVELS_CSS = `
 
 /* ── Category tabs ── */
 .cbl-travels .cat-tabs {
-  display:flex; gap:6px; padding:14px 48px 0;
+  padding:14px 48px 0;
   background:rgba(10,10,10,.94); backdrop-filter:blur(14px);
   -webkit-backdrop-filter:blur(14px);
   border-bottom:1px solid rgba(255,255,255,.06);
-  position:sticky; top:0; z-index:20;
-  overflow-x:auto; scrollbar-width:none; max-width:100%;
+  position:sticky; top:0; z-index:20; max-width:100%;
 }
-.cbl-travels .cat-tabs::-webkit-scrollbar { display:none; }
+.cbl-travels .cat-tabs-track { display:flex; overflow-x:auto; scrollbar-width:none; }
+.cbl-travels .cat-tabs-track::-webkit-scrollbar { display:none; }
 .cbl-travels .cat-tabs-inner { display:flex; gap:6px; max-width:1280px; margin:0 auto; width:100%; }
+/* ── Horizontal-scroll affordance (chevrons + edge fades) ──
+   Chevrons tap-to-scroll and fade out at each end; both auto-hide when the tab
+   row already fits (desktop), so they only appear where it truly scrolls. */
+.cbl-travels .tabs-chev {
+  position:absolute; top:calc(50% + 6px); transform:translateY(-50%);
+  width:32px; height:32px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(18,18,18,.94); color:#C99742;
+  border:1px solid rgba(201,151,66,.5);
+  font-size:22px; line-height:0; padding-bottom:2px; cursor:pointer; z-index:6;
+  transition:opacity .2s; -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px);
+}
+.cbl-travels .tabs-chev.left { left:10px; }
+.cbl-travels .tabs-chev.right { right:10px; }
+.cbl-travels .cat-tabs[data-at-start="true"] .tabs-chev.left { opacity:0; pointer-events:none; }
+.cbl-travels .cat-tabs[data-at-end="true"] .tabs-chev.right { opacity:0; pointer-events:none; }
+.cbl-travels .cat-tabs::before, .cbl-travels .cat-tabs::after {
+  content:''; position:absolute; top:0; bottom:1px; width:48px; z-index:5;
+  pointer-events:none; transition:opacity .2s;
+}
+.cbl-travels .cat-tabs::before { left:0; background:linear-gradient(90deg, rgba(10,10,10,.97), rgba(10,10,10,0)); }
+.cbl-travels .cat-tabs::after { right:0; background:linear-gradient(270deg, rgba(10,10,10,.97), rgba(10,10,10,0)); }
+.cbl-travels .cat-tabs[data-at-start="true"]::before { opacity:0; }
+.cbl-travels .cat-tabs[data-at-end="true"]::after { opacity:0; }
 .cbl-travels .cat-tab {
   flex-shrink:0; background:transparent; border:0; color:#888;
   padding:8px 22px 12px;
@@ -815,20 +839,56 @@ function SearchBar() {
 }
 
 function CatTabs({ tab, setTab }: { tab: TabKey; setTab: (t: TabKey) => void }) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [atStart, setAtStart] = useState(true);
+  const [atEnd, setAtEnd] = useState(false);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    const update = () => {
+      // Sub-pixel tolerance + an explicit scrollable check so the chevrons/fades
+      // never appear when the tabs already fit (e.g. desktop).
+      const scrollable = el.scrollWidth > el.clientWidth + 4;
+      setAtStart(!scrollable || el.scrollLeft <= 4);
+      setAtEnd(!scrollable || el.scrollLeft + el.clientWidth >= el.scrollWidth - 4);
+    };
+    update();
+    el.addEventListener('scroll', update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      el.removeEventListener('scroll', update);
+      ro.disconnect();
+    };
+  }, []);
+
+  const nudge = (dir: number) => {
+    const el = trackRef.current;
+    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.7, behavior: 'smooth' });
+  };
+
   return (
-    <div className="cat-tabs">
-      <div className="cat-tabs-inner">
-        {TABS.map((t) => (
-          <button
-            key={t.key}
-            className={'cat-tab' + (tab === t.key ? ' active' : '')}
-            onClick={() => setTab(t.key)}
-          >
-            <span className="ic"><t.Icon s={32} /></span>
-            {t.label}
-          </button>
-        ))}
+    <div className="cat-tabs" data-at-start={atStart} data-at-end={atEnd}>
+      <div className="cat-tabs-track" ref={trackRef}>
+        <div className="cat-tabs-inner">
+          {TABS.map((t) => (
+            <button
+              key={t.key}
+              className={'cat-tab' + (tab === t.key ? ' active' : '')}
+              onClick={() => setTab(t.key)}
+            >
+              <span className="ic"><t.Icon s={32} /></span>
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
+      {/* Scroll affordance: tap-to-scroll chevrons that fade out at each end.
+          Auto-hidden when the tabs already fit (desktop), so they only appear
+          when the row genuinely scrolls side-to-side. */}
+      <button type="button" className="tabs-chev left" aria-label="Scroll categories left" tabIndex={-1} onClick={() => nudge(-1)}>‹</button>
+      <button type="button" className="tabs-chev right" aria-label="Scroll categories right" tabIndex={-1} onClick={() => nudge(1)}>›</button>
     </div>
   );
 }
