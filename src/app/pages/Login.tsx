@@ -286,7 +286,7 @@ const CSS = `
 export function Login() {
   const navigate = useNavigate();
   const { session, profile, signIn } = useAuth();
-  const [signinOpen, setSigninOpen] = useState(false);
+  const [signinOpen, setSigninOpen] = useState(true);
   const [siEmail, setSiEmail] = useState('');
   const [siPassword, setSiPassword] = useState('');
   const [siStatus, setSiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
@@ -304,12 +304,6 @@ export function Login() {
     } else {
       navigate('/');
     }
-  };
-
-  // The sign-in fields live inside the quick-join <form>; Enter must trigger
-  // sign-in, not the outer form's submit.
-  const signInOnEnter = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSignIn(e);
   };
 
   const [firstName, setFirstName] = useState('');
@@ -407,181 +401,190 @@ export function Login() {
           {/* Right: form */}
           <div className="col form-pane">
             <div className="form-eyebrow">Welcome</div>
-            <h2 className="form-head">Private Membership <span className="g">Invitation</span></h2>
 
-            {status === 'success' ? (
+            {session ? (
               <div className="success">
                 <div className="mark" aria-hidden="true">✓</div>
-                <h3>You're <span className="g">in.</span></h3>
-                <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-                <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
-                <p className="note">
-                  Quick join keeps you in the loop. For full blog &amp; directory access — and
-                  rides in the app — you'll need a free password-protected account.
-                </p>
+                <h3>You're <span className="g">signed in.</span></h3>
+                <p>Welcome back, {firstNameOf(profile, session)} — your member card is in the top-right corner.</p>
+                <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Open App Dashboard →</a>
               </div>
+            ) : signinOpen ? (
+              <>
+                <h2 className="form-head">Sign In <span className="g">to CBL</span></h2>
+                <form onSubmit={handleSignIn}>
+                  {siStatus === 'error' && <div className="alert err" role="alert">{siError}</div>}
+                  <div className="field">
+                    <label className="label" htmlFor="si-email">Email <span className="req">*</span></label>
+                    <input
+                      type="email"
+                      id="si-email"
+                      placeholder="your.email@example.com"
+                      autoComplete="email"
+                      value={siEmail}
+                      onChange={(e) => setSiEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="field">
+                    <label className="label" htmlFor="si-password">Password <span className="req">*</span></label>
+                    <input
+                      type="password"
+                      id="si-password"
+                      placeholder="Enter your password"
+                      autoComplete="current-password"
+                      value={siPassword}
+                      onChange={(e) => setSiPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={siStatus === 'loading'}
+                  >
+                    {siStatus === 'loading' ? 'Signing in…' : <>Sign In <span className="arr">→</span></>}
+                  </button>
+                  <a className="forgot" href={APP_URL} target="_blank" rel="noopener noreferrer">Forgot password? Reset it in the app →</a>
+                </form>
+
+                <div className="switch">New to City Bucket List?</div>
+                <button type="button" className="btn btn-ghost" onClick={() => setSigninOpen(false)}>
+                  Join / Sign Up →
+                </button>
+              </>
             ) : (
               <>
-                {/* Option 1 — full membership (featured) */}
-                <ul className="perks">
-                  <li><b>Full blog &amp; directory access</b> — post, save spots, member pricing</li>
-                  <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
-                  <li><b>Buckee, your AI concierge</b> — plus savings in every partner city</li>
-                </ul>
-                <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
-                  Create Full Account <span className="arr">→</span>
-                </a>
-                <p className="note" style={{ textAlign: 'center' }}>
-                  100% free · password-protected · everything unlocked
-                </p>
-
-                <div className="switch">In a hurry? Quick join</div>
-
-                {/* Option 2 — easy two-step, no password */}
-                <form onSubmit={handleSubmit}>
-                {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
-
-                <div className="grid-2">
-                  <div className="field">
-                    <label className="label" htmlFor="first">First name <span className="req">*</span></label>
-                    <input
-                      type="text"
-                      id="first"
-                      name="first"
-                      placeholder="Enter your first name"
-                      autoComplete="given-name"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      maxLength={100}
-                      required
-                    />
-                  </div>
-                  <div className="field">
-                    <label className="label" htmlFor="cell">Cell <span className="req">*</span></label>
-                    <input
-                      type="tel"
-                      id="cell"
-                      name="cell"
-                      placeholder="(555) 123-4567"
-                      autoComplete="tel"
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value);
-                        if (!e.target.value.trim()) setSmsConsent(false);
-                      }}
-                      maxLength={30}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label className="label" htmlFor="email">Email <span className="req">*</span></label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    placeholder="your.email@example.com"
-                    autoComplete="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    maxLength={200}
-                    required
-                  />
-                </div>
-
-                {/* Honeypot — hidden from real users, bots fill it in */}
-                <div className="hp" aria-hidden="true">
-                  <input
-                    type="text"
-                    name="company"
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    tabIndex={-1}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div className="divider" />
-
-                <div className="consent">
-                  <input
-                    type="checkbox"
-                    id="sms"
-                    checked={smsConsent}
-                    disabled={!phone.trim()}
-                    onChange={(e) => setSmsConsent(e.target.checked)}
-                  />
-                  <label htmlFor="sms">
-                    I agree to receive SMS notifications from CityBucketList.com. Message &amp; data
-                    rates may apply. <a href="/terms#privacy-policy">See our Privacy policy.</a>
-                  </label>
-                </div>
-
-                <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
-                  {status === 'loading' ? 'Sending…' : <>Quick Join — No Password <span className="arr">→</span></>}
-                </button>
-
-                <p className="note">
-                  Quick join keeps you in the loop — updates &amp; local tips only. Full access
-                  lives in your free account above.
-                </p>
-
-                {session ? (
-                  <div className="signin-line">
-                    You're signed in, {firstNameOf(profile, session)} — your member card is in the
-                    top-right corner.
-                  </div>
-                ) : signinOpen ? (
-                  <div className="si-form">
-                    {siStatus === 'error' && <div className="alert err" role="alert">{siError}</div>}
-                    <div className="field">
-                      <label className="label" htmlFor="si-email">Email <span className="req">*</span></label>
-                      <input
-                        type="email"
-                        id="si-email"
-                        placeholder="your.email@example.com"
-                        autoComplete="email"
-                        value={siEmail}
-                        onChange={(e) => setSiEmail(e.target.value)}
-                        onKeyDown={signInOnEnter}
-                        required
-                      />
-                    </div>
-                    <div className="field">
-                      <label className="label" htmlFor="si-password">Password <span className="req">*</span></label>
-                      <input
-                        type="password"
-                        id="si-password"
-                        placeholder="Enter your password"
-                        autoComplete="current-password"
-                        value={siPassword}
-                        onChange={(e) => setSiPassword(e.target.value)}
-                        onKeyDown={signInOnEnter}
-                        required
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      className="btn btn-primary"
-                      disabled={siStatus === 'loading'}
-                      onClick={handleSignIn}
-                    >
-                      {siStatus === 'loading' ? 'Signing in…' : <>Sign In <span className="arr">→</span></>}
-                    </button>
-                    <a className="forgot" href={APP_URL} target="_blank" rel="noopener noreferrer">Forgot password? Reset it in the app →</a>
+                <h2 className="form-head">Private Membership <span className="g">Invitation</span></h2>
+                {status === 'success' ? (
+                  <div className="success">
+                    <div className="mark" aria-hidden="true">✓</div>
+                    <h3>You're <span className="g">in.</span></h3>
+                    <p>Check your inbox — we'll keep you posted on the best of the city.</p>
+                    <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
+                    <p className="note">
+                      Quick join keeps you in the loop. For full blog &amp; directory access — and
+                      rides in the app — you'll need a free password-protected account.
+                    </p>
                   </div>
                 ) : (
-                  <div className="signin-line">
-                    Already a member?{' '}
-                    <button type="button" className="linklike" onClick={() => setSigninOpen(true)}>
-                      Sign in here →
-                    </button>
-                  </div>
-                )}
+                  <>
+                    {/* Option 1 — full membership (featured) */}
+                    <ul className="perks">
+                      <li><b>Full blog &amp; directory access</b> — post, save spots, member pricing</li>
+                      <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
+                      <li><b>Buckee, your AI concierge</b> — plus savings in every partner city</li>
+                    </ul>
+                    <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
+                      Create Full Account <span className="arr">→</span>
+                    </a>
+                    <p className="note" style={{ textAlign: 'center' }}>
+                      100% free · password-protected · everything unlocked
+                    </p>
 
-                <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
-                </form>
+                    <div className="switch">In a hurry? Quick join</div>
+
+                    {/* Option 2 — easy two-step, no password */}
+                    <form onSubmit={handleSubmit}>
+                      {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
+
+                      <div className="grid-2">
+                        <div className="field">
+                          <label className="label" htmlFor="first">First name <span className="req">*</span></label>
+                          <input
+                            type="text"
+                            id="first"
+                            name="first"
+                            placeholder="Enter your first name"
+                            autoComplete="given-name"
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            maxLength={100}
+                            required
+                          />
+                        </div>
+                        <div className="field">
+                          <label className="label" htmlFor="cell">Cell <span className="req">*</span></label>
+                          <input
+                            type="tel"
+                            id="cell"
+                            name="cell"
+                            placeholder="(555) 123-4567"
+                            autoComplete="tel"
+                            value={phone}
+                            onChange={(e) => {
+                              setPhone(e.target.value);
+                              if (!e.target.value.trim()) setSmsConsent(false);
+                            }}
+                            maxLength={30}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="field">
+                        <label className="label" htmlFor="email">Email <span className="req">*</span></label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          placeholder="your.email@example.com"
+                          autoComplete="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          maxLength={200}
+                          required
+                        />
+                      </div>
+
+                      {/* Honeypot — hidden from real users, bots fill it in */}
+                      <div className="hp" aria-hidden="true">
+                        <input
+                          type="text"
+                          name="company"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          tabIndex={-1}
+                          autoComplete="off"
+                        />
+                      </div>
+
+                      <div className="divider" />
+
+                      <div className="consent">
+                        <input
+                          type="checkbox"
+                          id="sms"
+                          checked={smsConsent}
+                          disabled={!phone.trim()}
+                          onChange={(e) => setSmsConsent(e.target.checked)}
+                        />
+                        <label htmlFor="sms">
+                          I agree to receive SMS notifications from CityBucketList.com. Message &amp; data
+                          rates may apply. <a href="/terms#privacy-policy">See our Privacy policy.</a>
+                        </label>
+                      </div>
+
+                      <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
+                        {status === 'loading' ? 'Sending…' : <>Quick Join — No Password <span className="arr">→</span></>}
+                      </button>
+
+                      <p className="note">
+                        Quick join keeps you in the loop — updates &amp; local tips only. Full access
+                        lives in your free account above.
+                      </p>
+
+                      <div className="signin-line">
+                        Already a member?{' '}
+                        <button type="button" className="linklike" onClick={() => setSigninOpen(true)}>
+                          Sign in here →
+                        </button>
+                      </div>
+
+                      <div className="respond">Free to join · Directory access · Earn on every local spot you bring</div>
+                    </form>
+                  </>
+                )}
               </>
             )}
           </div>
