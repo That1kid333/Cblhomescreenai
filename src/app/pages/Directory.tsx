@@ -4,11 +4,7 @@ import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
-import {
-  getActiveBusinesses,
-  type DirectoryBusiness,
-  type DirectoryListing,
-} from "../lib/supabase/directoryClient";
+import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
@@ -2562,7 +2558,6 @@ export function Directory() {
   const metroLabel = inPghMetro ? "Pittsburgh area" : state ? `${state} area` : "Wider area";
 
   const [partners, setPartners] = useState<Partner[]>([]);
-  const [businesses, setBusinesses] = useState<DirectoryBusiness[]>([]);
   const [listings, setListings] = useState<DirectoryListing[]>([]);
   const [postOpen, setPostOpen] = useState(false);
   const openPost = () => setPostOpen(true);
@@ -2579,7 +2574,6 @@ export function Directory() {
 
   useEffect(() => {
     getActivePartners().then(setPartners);
-    getActiveBusinesses().then(setBusinesses);
     getDirectoryListings().then(setListings);
   }, []);
 
@@ -2719,10 +2713,8 @@ export function Directory() {
   );
 
   const shopLive = useMemo(() => {
-    const pinnedPartners = filterByLocation(partners).map(partnerToCard);
-    const sortedBusinesses = filterByLocation(businesses).map(businessToCard);
-    return [...pinnedPartners, ...sortedBusinesses];
-  }, [partners, businesses, city, state, scope, searchCoords, cityGeo]);
+    return filterByLocation(partners).map(partnerToCard);
+  }, [partners, city, state, scope, searchCoords, cityGeo]);
 
   return (
     <DirModalCtx.Provider value={setModalL}>

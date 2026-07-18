@@ -45,7 +45,7 @@ function demoRequested(): boolean {
     if (sessionStorage.getItem(DEMO_KEY) === '1') return true;
     // Always-on for previews so the member experience (avatar + card) is
     // there for demos without adding ?demo-member; never on production.
-    return isPreviewHost();
+    return false;
   } catch {
     return false;
   }
