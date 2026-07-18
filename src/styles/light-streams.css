@@ -1,0 +1,174 @@
+/* ============================================================
+   CBL "LIGHT STREAMS" — animated gold traffic over the map hero
+   Extracted verbatim from the CBL app (src/index.css, by Justin),
+   packaged for the new citybucketlist.com website.
+
+   WHAT IT IS
+   Four thin gold light streaks that zigzag across the dark map
+   texture like car headlights moving through city streets.
+   Pure CSS — no JavaScript, no extra markup. The four streaks
+   ride on pseudo-elements (::before/::after of the hero container
+   and of its FIRST CHILD), so the hero just needs the class.
+
+   HOW TO USE
+   1. Put class "cbl-light-streams" on the hero section that shows
+      the map background (the element must be position:relative-able
+      and should clip overflow — the class handles both).
+   2. Make sure the hero has at least one child element (it will —
+      your headline wrapper). That child must not rely on its own
+      ::before/::after, and needs position:relative (or static) —
+      the streaks position against the hero.
+   3. That's it. Streams loop forever, staggered so they never sync.
+
+   COLOR
+   One knob: --cbl-stream-rgb (R, G, B channels of the streak gold).
+   Default is the website brand gold #C99742 → 201, 151, 66.
+   Justin's original app value was #E4A853 → 228, 168, 83; flip the
+   variable if you want the app-identical warmth.
+
+   TASTE GUARDRAILS (what makes it feel expensive)
+   - Peak opacity never exceeds ~0.4 — it should be felt, not seen.
+   - Streaks are 2–3px tall, blurred ~1px, with a soft gold glow.
+   - Four different durations + delays (5s, 6s+1s, 7s+2s, 5.5s+3s)
+     so the pattern never visibly repeats.
+   - Don't animate the map image itself — the map holds still,
+     only the "traffic" moves.
+   ============================================================ */
+
+.cbl-light-streams {
+  --cbl-stream-rgb: 201, 151, 66; /* website gold #C99742 (app original: 228, 168, 83) */
+  position: relative;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+/* --- streak paths (verbatim from the app) --- */
+
+@keyframes cbl-zigzag-light-1 {
+  0%   { transform: translate(-20%, 0%) rotate(0deg); opacity: 0; }
+  5%   { opacity: 0.2; }
+  15%  { transform: translate(10%, 30%) rotate(15deg); opacity: 0.3; }
+  30%  { transform: translate(30%, 20%) rotate(-10deg); opacity: 0.15; }
+  45%  { transform: translate(50%, 50%) rotate(20deg); opacity: 0.35; }
+  60%  { transform: translate(70%, 30%) rotate(-15deg); opacity: 0.2; }
+  75%  { transform: translate(90%, 60%) rotate(10deg); opacity: 0.3; }
+  95%  { opacity: 0.15; }
+  100% { transform: translate(120%, 80%) rotate(0deg); opacity: 0; }
+}
+
+@keyframes cbl-zigzag-light-2 {
+  0%   { transform: translate(120%, -10%) rotate(0deg); opacity: 0; }
+  5%   { opacity: 0.25; }
+  20%  { transform: translate(90%, 20%) rotate(-20deg); opacity: 0.35; }
+  40%  { transform: translate(70%, 10%) rotate(15deg); opacity: 0.2; }
+  55%  { transform: translate(50%, 40%) rotate(-25deg); opacity: 0.3; }
+  70%  { transform: translate(30%, 30%) rotate(10deg); opacity: 0.25; }
+  85%  { transform: translate(10%, 60%) rotate(-15deg); opacity: 0.15; }
+  100% { transform: translate(-20%, 80%) rotate(0deg); opacity: 0; }
+}
+
+@keyframes cbl-zigzag-light-3 {
+  0%   { transform: translate(50%, -20%) rotate(0deg); opacity: 0; }
+  8%   { opacity: 0.3; }
+  25%  { transform: translate(60%, 15%) rotate(-15deg); opacity: 0.4; }
+  42%  { transform: translate(40%, 35%) rotate(20deg); opacity: 0.2; }
+  58%  { transform: translate(55%, 55%) rotate(-10deg); opacity: 0.35; }
+  75%  { transform: translate(35%, 75%) rotate(15deg); opacity: 0.25; }
+  92%  { opacity: 0.15; }
+  100% { transform: translate(50%, 120%) rotate(0deg); opacity: 0; }
+}
+
+@keyframes cbl-zigzag-light-4 {
+  0%   { transform: translate(-10%, 50%) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.2; }
+  25%  { transform: translate(15%, 60%) rotate(25deg); opacity: 0.3; }
+  45%  { transform: translate(35%, 40%) rotate(-20deg); opacity: 0.25; }
+  65%  { transform: translate(55%, 65%) rotate(15deg); opacity: 0.35; }
+  85%  { transform: translate(75%, 45%) rotate(-10deg); opacity: 0.2; }
+  100% { transform: translate(110%, 70%) rotate(0deg); opacity: 0; }
+}
+
+/* --- the two primary streaks (hero's own pseudo-elements) --- */
+
+.cbl-light-streams::before,
+.cbl-light-streams::after {
+  content: '';
+  position: absolute;
+  width: 200px;
+  height: 3px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(var(--cbl-stream-rgb), 0.1) 10%,
+    rgba(var(--cbl-stream-rgb), 0.4) 30%,
+    rgba(var(--cbl-stream-rgb), 0.6) 50%,
+    rgba(var(--cbl-stream-rgb), 0.4) 70%,
+    rgba(var(--cbl-stream-rgb), 0.1) 90%,
+    transparent 100%
+  );
+  filter: blur(1px);
+  box-shadow: 0 0 10px rgba(var(--cbl-stream-rgb), 0.3);
+}
+
+.cbl-light-streams::before {
+  top: 0;
+  left: 0;
+  animation: cbl-zigzag-light-1 5s ease-in-out infinite;
+}
+
+.cbl-light-streams::after {
+  top: 0;
+  right: 0;
+  animation: cbl-zigzag-light-2 6s ease-in-out infinite 1s;
+}
+
+/* --- two secondary, finer streaks (first child's pseudo-elements) --- */
+
+.cbl-light-streams > *:first-child::before,
+.cbl-light-streams > *:first-child::after {
+  content: '';
+  position: absolute;
+  width: 150px;
+  height: 2px;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(var(--cbl-stream-rgb), 0.08) 15%,
+    rgba(var(--cbl-stream-rgb), 0.35) 40%,
+    rgba(var(--cbl-stream-rgb), 0.5) 50%,
+    rgba(var(--cbl-stream-rgb), 0.35) 60%,
+    rgba(var(--cbl-stream-rgb), 0.08) 85%,
+    transparent 100%
+  );
+  filter: blur(1.5px);
+  box-shadow: 0 0 8px rgba(var(--cbl-stream-rgb), 0.25);
+}
+
+.cbl-light-streams > *:first-child::before {
+  top: 50%;
+  left: 50%;
+  animation: cbl-zigzag-light-3 7s ease-in-out infinite 2s;
+}
+
+.cbl-light-streams > *:first-child::after {
+  top: 0;
+  left: 0;
+  animation: cbl-zigzag-light-4 5.5s ease-in-out infinite 3s;
+}
+
+/* --- accessibility: honor OS "reduce motion" (addition for the
+       website; the app doesn't have this yet) --- */
+
+@media (prefers-reduced-motion: reduce) {
+  .cbl-light-streams::before,
+  .cbl-light-streams::after,
+  .cbl-light-streams > *:first-child::before,
+  .cbl-light-streams > *:first-child::after {
+    animation: none;
+    opacity: 0;
+  }
+}
