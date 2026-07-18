@@ -3,6 +3,7 @@ import driverImg from '../../assets/driver_at_wheel.jpg';
 import riderImg from '../../assets/rider_meeting_driver_neutral.png';
 import { Link } from 'react-router';
 import { Globe, QrCode, Share2, TrendingUp } from 'lucide-react';
+import { useAuth } from '../lib/auth';
 
 /**
  * Our Story — re-skinned to match the Explore pages (Travels / Transportation /
@@ -158,6 +159,8 @@ const STORY_CSS = `
   font-size:14px; letter-spacing:.14em; text-transform:uppercase; cursor:pointer;
 }
 .cbl-story .cta-band .cta:hover { background:#DDB15F; }
+.cbl-story .cta-band .cta.ghost { background:transparent; color:#C99742; border:1px solid rgba(201,151,66,.5); }
+.cbl-story .cta-band .cta.ghost:hover { background:rgba(201,151,66,.12); }
 
 /* ── Responsive ── */
 @media (max-width:1100px){
@@ -179,6 +182,7 @@ const STORY_CSS = `
 `;
 
 export function OurStory() {
+  const { session } = useAuth();
   return (
     <main className="cbl-story">
       <style>{STORY_CSS}</style>
@@ -367,13 +371,32 @@ export function OurStory() {
       {/* Call to Action */}
       <section className="band cta-band">
         <div className="band-inner">
-          <h2>
-            Ready to start <span className="it">your journey?</span>
-          </h2>
-          <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
-          <Link className="cta" to="/login">
-            Join City Bucket List →
-          </Link>
+          {session ? (
+            <>
+              <h2>
+                Ready to <span className="it">explore?</span>
+              </h2>
+              <p>Check out our member directory or read real local stories on the CBL Blog.</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <Link className="cta" to="/directory">
+                  Browse Directory
+                </Link>
+                <Link className="cta ghost" to="/blog">
+                  Read CBL Blog
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2>
+                Ready to start <span className="it">your journey?</span>
+              </h2>
+              <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
+              <Link className="cta" to="/login">
+                Join City Bucket List →
+              </Link>
+            </>
+          )}
         </div>
       </section>
     </main>

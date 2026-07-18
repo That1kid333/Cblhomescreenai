@@ -6,6 +6,7 @@ import conciergeImage from '../../assets/concierge_professional.jpg';
 import driverFace from '../../assets/mock-driver-headshot.jpg'; // Unsplash (free/commercial license) — example driver headshot
 import { APP_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 import { Link } from 'react-router';
+import { useAuth } from '../lib/auth';
 
 // Little example of the member digital business card — a driver's shareable card.
 function BizCardMock() {
@@ -405,6 +406,7 @@ function AudienceRow({ a }: { a: Audience }) {
 }
 
 export function HowItWorks() {
+  const { session } = useAuth();
   return (
     <main className="cbl-how">
       <style>{HOW_CSS}</style>
@@ -429,7 +431,11 @@ export function HowItWorks() {
             met. Need a quick one-off? Use whatever rideshare you like. We're not here to replace
             on-demand apps. We're here to give drivers a network of their own.
           </p>
-          <Link className="hero-cta" to="/login">Join CBL — Free for Riders →</Link>
+          {session ? (
+            <Link className="hero-cta" to="/directory">Explore Member Directory →</Link>
+          ) : (
+            <Link className="hero-cta" to="/login">Join CBL — Free for Riders →</Link>
+          )}
         </div>
       </section>
 
