@@ -1,0 +1,76 @@
+/* ============================================================================
+   CBL Motion utilities — reusable, opt-in micro-interactions.
+   These classes do NOTHING until added to an element, so importing this file
+   changes no existing page. Trial started on /concierge; ready to roll out
+   site-wide by simply adding the classes elsewhere.
+
+   Rules honored: animate only transform / box-shadow / border-color / opacity
+   (no layout properties → no reflow, no jank); 180–260ms ease-out; nothing
+   loops; identical to the current design at rest; prefers-reduced-motion safe.
+   Brand: gold #C99742, accent #FDB913.
+   ========================================================================== */
+
+/* Buttons & CTAs — lift 2px + soft gold glow on hover, press to 0.97 ---------- */
+.cbl-hover-lift {
+  transition: transform .2s ease-out, box-shadow .2s ease-out,
+              background-color .2s ease-out, border-color .2s ease-out, color .2s ease-out;
+}
+.cbl-hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(201, 151, 66, .30);
+}
+.cbl-hover-lift:active {
+  transform: scale(.97);
+}
+
+/* Cards — lift 4px + deepened shadow + faint gold border fade-in --------------
+   (Meant for elements that already carry a 1px border at rest, so only the
+   border COLOR changes on hover — never its width — keeping zero layout shift.) */
+.cbl-hover-card {
+  transition: transform .25s ease-out, box-shadow .25s ease-out, border-color .25s ease-out;
+}
+.cbl-hover-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, .50);
+  border-color: rgba(201, 151, 66, .55);
+}
+
+/* Links — gold underline that wipes in left → right on hover ------------------ */
+.cbl-underline {
+  position: relative;
+}
+.cbl-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1.5px;
+  background: #C99742;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .2s ease-out;
+}
+.cbl-underline:hover::after,
+.cbl-underline:focus-visible::after {
+  transform: scaleX(1);
+}
+
+/* Reduced motion — drop the movement, keep tasteful color/shadow state -------- */
+@media (prefers-reduced-motion: reduce) {
+  .cbl-hover-lift {
+    transition: box-shadow .2s ease-out, background-color .2s ease-out,
+                border-color .2s ease-out, color .2s ease-out;
+  }
+  .cbl-hover-lift:hover,
+  .cbl-hover-lift:active,
+  .cbl-hover-card:hover {
+    transform: none;
+  }
+  .cbl-hover-card {
+    transition: box-shadow .2s ease-out, border-color .2s ease-out;
+  }
+  .cbl-underline::after {
+    transition: none;
+  }
+}
