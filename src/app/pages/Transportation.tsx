@@ -270,6 +270,9 @@ const TRANSPORT_CSS = `
   .cbl-transport .eyebrow { display:block; white-space:nowrap; max-width:100%; font-size:11px; letter-spacing:.06em; }
   .cbl-transport .eb-sm { display:none; }
   .cbl-transport .eyebrow::before { display:inline-block; vertical-align:middle; margin-right:10px; }
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-transport .section-h2 .it,
+  .cbl-transport .cta-band h2 .it { display:block; margin-left:0; }
 }
 .cbl-transport .hero p.lede { margin-top:14px; max-width:620px; font-size:16px; line-height:1.45; color:#B8B8B8; }
 

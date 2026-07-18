@@ -143,6 +143,11 @@ const CSS = `
   .cbl-partner-rest .steps { grid-template-columns:repeat(2,1fr); }
   .cbl-partner-rest .pricing-grid { grid-template-columns:1fr; }
 }
+@media (max-width:720px){
+  /* Section/CTA header italic accent drops to its own line (no orphan first word). */
+  .cbl-partner-rest .section-h2 .it,
+  .cbl-partner-rest .cta-band h2 .it { display:block; margin-left:0; }
+}
 `;
 
 export function PartnerRestaurants() {
