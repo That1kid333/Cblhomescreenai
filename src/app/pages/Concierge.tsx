@@ -34,33 +34,21 @@ const CSS = `
 .cbl-concierge a{color:inherit;text-decoration:none;}
 
 @keyframes cbl-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.45;transform:scale(.85);}}
-/* ambient "living map" — very slow, subtle drift on the hero backdrop
-   (carries over the touch from Justin's app hero). Transform-only so it
-   never reflows; overscan (inset) hides the edges; paused for reduced-motion. */
-@keyframes cbl-map-drift{
-  from{transform:scale(1.02) translate3d(0,0,0);}
-  to{transform:scale(1.08) translate3d(-1.4%,-1.1%,0);}
-}
 
-/* hero */
+/* hero — the map holds STILL. Justin's four "light streams" travel over it
+   (see src/styles/light-streams.css, applied via the .cbl-light-streams class).
+   Map + darkening gradient are the hero's own background so the streak
+   pseudo-elements (::before/::after) stay free for the effect. */
 .cbl-concierge .hero{
   position:relative;overflow:hidden;
-  background:#0A0A0A;
+  background:
+    linear-gradient(180deg,rgba(10,10,10,.25) 0%,rgba(10,10,10,.55) 45%,rgba(10,10,10,.92) 90%,#0A0A0A 100%),
+    url('/eats/imagery/cbl-map-backdrop.jpg') center top / cover no-repeat;
   padding:22px 48px 16px;
 }
-.cbl-concierge .hero::before{
-  content:'';position:absolute;inset:-6%;z-index:0;
-  background:url('/eats/imagery/cbl-map-backdrop.jpg') center top / cover no-repeat;
-  transform-origin:center;will-change:transform;
-  animation:cbl-map-drift 34s ease-in-out infinite alternate;
-}
-.cbl-concierge .hero::after{
-  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:linear-gradient(180deg,rgba(10,10,10,.25) 0%,rgba(10,10,10,.55) 45%,rgba(10,10,10,.92) 90%,#0A0A0A 100%);
-}
-@media(prefers-reduced-motion:reduce){
-  .cbl-concierge .hero::before{animation:none;transform:scale(1.02);}
-}
+/* empty first-child layer that hosts two of the four streaks — sits UNDER the
+   copy (z-index:1 < the .wrap content at z-index:2) so text stays crisp. */
+.cbl-concierge .hero-streams{position:absolute;inset:0;z-index:1;pointer-events:none;}
 .cbl-concierge .wrap{max-width:1280px;margin:0 auto;}
 .cbl-concierge .hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.12fr .88fr;gap:44px;align-items:center;}
 .cbl-concierge .hero-copy{min-width:0;}
@@ -294,8 +282,10 @@ export function Concierge() {
     <main className="cbl-concierge">
       <style>{CSS}</style>
 
-      {/* HERO */}
-      <section className="hero">
+      {/* HERO — Justin's "light streams" travel over the still map (see light-streams.css) */}
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 streaks), kept under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="wrap">
           <Stagger className="hero-copy" on="load" gap={0.08}>
             <StaggerItem className="eyebrow" y={16}>hotels &amp; hospitality<span className="eb-sm"> · partner program</span></StaggerItem>
