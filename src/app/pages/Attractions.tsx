@@ -549,7 +549,7 @@ const ATTRACTIONS_CSS = `
 .cbl-attractions h1.hero-title .attractions-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-attractions h1.hero-title .attractions-icon { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-attractions h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,38px); }
+  .cbl-attractions h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(34px,11vw,44px); }
   .cbl-attractions h1.hero-title .title-stack { min-width:0; flex:1; }
   .cbl-attractions h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-attractions h1.hero-title .attractions-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
