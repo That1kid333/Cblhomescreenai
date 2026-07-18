@@ -302,14 +302,17 @@ const HOME_CSS = `
   padding:22px 48px 44px;
 }
 /* Map backdrop pinned to a fixed-height header strip so it reads exactly like
-   the About / Explore heroes regardless of the (taller) two-column hero body. */
-.cbl-home .hero::before {
-  content:''; position:absolute; left:0; right:0; top:0; z-index:0; pointer-events:none;
-  height:clamp(260px,30vw,360px);
+   the About / Explore heroes regardless of the (taller) two-column hero body.
+   Rendered as its own layer (not .hero::before) so it can carry the light
+   streams (src/styles/light-streams.css) while the map itself stays still. */
+.cbl-home .hero-map {
+  position:absolute; left:0; right:0; top:0; z-index:0; pointer-events:none;
+  height:clamp(260px,30vw,360px); overflow:hidden;
   background:
     linear-gradient(180deg, rgba(10,10,10,.25) 0%, rgba(10,10,10,.55) 45%, rgba(10,10,10,.92) 90%, #0A0A0A 100%),
     url('${MAP_BG}') center top / cover no-repeat;
 }
+.cbl-home .hero-map-streaklayer { position:absolute; inset:0; }
 .cbl-home .hero-inner { position:relative; z-index:1; max-width:1280px; margin:0 auto; }
 .cbl-home .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
@@ -789,6 +792,11 @@ export function Home() {
 
       {/* ── Hero (rotating showcase) ── */}
       <section className="hero">
+        {/* still map strip + light streams (see light-streams.css); kept as its own
+            layer so the two-column dashboard hero body is unaffected */}
+        <div className="hero-map cbl-light-streams" aria-hidden="true">
+          <div className="hero-map-streaklayer" />
+        </div>
         <div className="hero-inner">
           <div className="eyebrow">what's on your bucket list?</div>
           <div className="hero-grid">
