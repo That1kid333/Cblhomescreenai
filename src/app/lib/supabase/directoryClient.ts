@@ -4,9 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 // (directory.citybucketlist.com). The marketing site only ever reads from it
 // (posting/payment/sign-in stays on that app) — anon key is safe to fall back
 // to, access is governed by RLS.
-const SUPABASE_URL = import.meta.env.VITE_DIRECTORY_SUPABASE_URL || 'https://kcmygfvxjncjyopvblhx.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jgbaqzgkdqqvxmqytgsx.supabase.co';
 const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_DIRECTORY_SUPABASE_ANON_KEY || 'sb_publishable_fo2BCSFh2ecV25cstLBSFw_y7TuKTwe';
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_ftx_EkI4-nj0vfUqbP0FzQ_XRGsXZJ9';
 
 export const directoryClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: false },
@@ -73,21 +73,36 @@ export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {
 
 export async function getActiveBusinesses(opts: { city?: string; category?: string } = {}): Promise<DirectoryBusiness[]> {
   let query = directoryClient
-    .from('businesses')
+    .from('partners')
     .select(
-      'id, business_name, description, city, state, business_type, directory_category, logo_url, photos, rating, review_count, featured, plan'
+      'id, business_name, description, city, state, business_type, directory_category, logo_url, status, show_in_directory'
     )
-    .eq('is_active', true);
+    .eq('status', 'active')
+    .eq('show_in_directory', true);
 
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('directory_category', opts.category);
 
-  const { data, error } = await query.order('featured', { ascending: false });
+  const { data, error } = await query;
   if (error) {
     console.error('[directoryClient] getActiveBusinesses failed:', error.message);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).map((p: any) => ({
+    id: String(p.id),
+    business_name: p.business_name,
+    description: p.description,
+    city: p.city,
+    state: p.state,
+    business_type: p.business_type,
+    directory_category: p.directory_category,
+    logo_url: p.logo_url,
+    photos: p.logo_url ? [p.logo_url] : [],
+    rating: null,
+    review_count: null,
+    featured: false,
+    plan: null,
+  }));
 }
 
 export async function getActiveListings(opts: { city?: string; category?: string } = {}): Promise<DirectoryListing[]> {
