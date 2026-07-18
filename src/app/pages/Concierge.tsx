@@ -54,6 +54,11 @@ const CSS = `
    no hero image, consistent with the Affiliates hero. */
 .cbl-concierge .hero .wrap{position:relative;z-index:2;}
 .cbl-concierge .hero-copy{min-width:0;}
+/* CTAs + stats band directly below the hero (keeps the hero band the same
+   height as the other pages). */
+.cbl-concierge .hero-actions{padding:22px 48px 8px;}
+.cbl-concierge .hero-actions .hero-cta{margin-top:0;}
+.cbl-concierge .hero-actions .hero-stats{margin-top:22px;}
 .cbl-concierge .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:lowercase;margin-bottom:12px;}
 .cbl-concierge .eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);animation:cbl-pulse 2.4s ease-in-out infinite;}
 .cbl-concierge h1.hero-title{font-family:var(--display);font-weight:900;font-size:clamp(56px,7.4vw,108px);line-height:.9;letter-spacing:-.02em;text-transform:uppercase;margin:0;color:#fff;}
@@ -299,17 +304,24 @@ export function Concierge() {
               everything you book — powered by CityBucketList.com, the operating system for
               hospitality transportation.
             </StaggerItem>
-            <StaggerItem className="hero-cta" y={16}>
-              <a className="btn gold cbl-hover-lift" href="#apply">Become a Partner →</a>
-              <a className="btn ghost cbl-hover-lift" href="#dashboard">See the Dashboard</a>
-            </StaggerItem>
-            <StaggerItem className="hero-stats" y={16}>
-              <div className="s"><b className="gold">10%</b><span>per guest ride</span></div>
-              <div className="s"><b className="gold">$5</b><span>per driver referred</span></div>
-              <div className="s"><b>$0</b><span>free to join</span></div>
-              <div className="s"><b>10</b><span>preferred drivers</span></div>
-            </StaggerItem>
           </Stagger>
+        </div>
+      </section>
+
+      {/* CTAs + stats sit just below the hero so the hero band stays the same
+          height as the other pages (Affiliates, Transportation, etc.). */}
+      <section className="hero-actions">
+        <div className="wrap">
+          <div className="hero-cta">
+            <a className="btn gold cbl-hover-lift" href="#apply">Become a Partner →</a>
+            <a className="btn ghost cbl-hover-lift" href="#dashboard">See the Dashboard</a>
+          </div>
+          <div className="hero-stats">
+            <div className="s"><b className="gold">10%</b><span>per guest ride</span></div>
+            <div className="s"><b className="gold">$5</b><span>per driver referred</span></div>
+            <div className="s"><b>$0</b><span>free to join</span></div>
+            <div className="s"><b>10</b><span>preferred drivers</span></div>
+          </div>
         </div>
       </section>
 

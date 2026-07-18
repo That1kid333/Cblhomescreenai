@@ -1079,7 +1079,8 @@ const DESKTOP_CSS = `
     url('${IMG}cbl-map-backdrop.jpg') center top / cover no-repeat;
   padding:22px 48px 12px;
 }
-.cbl-eats .hero-inner { display:grid; grid-template-columns:1fr; gap:0; align-items:start; max-width:1280px; margin:0 auto; }
+.cbl-eats .hero-inner { display:grid; grid-template-columns:1fr; gap:0; align-items:start; max-width:1280px; margin:0 auto; position:relative; z-index:2; }
+.cbl-eats .hero-streams { position:absolute; inset:0; z-index:1; pointer-events:none; }
 .cbl-eats .eyebrow {
   display:inline-flex; align-items:center; gap:10px;
   font-family:${MONO}; font-size:12px; letter-spacing:.14em; font-weight:700;
@@ -1522,7 +1523,9 @@ function DesktopEats({
   return (
     <div className="cbl-eats-desktop">
       {/* HERO */}
-      <section className="hero">
+      <section className="hero cbl-light-streams">
+        {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
+        <div className="hero-streams" aria-hidden="true" />
         <div className="hero-inner">
           <div>
             <div className="eyebrow">what&rsquo;s on your list tonight?</div>
@@ -1656,8 +1659,10 @@ function DesktopEats({
 function EatsTitleBlock() {
   return (
     <div
+      className="cbl-light-streams"
       style={{
         position: 'relative',
+        overflow: 'hidden',
         padding: '10px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -1665,6 +1670,7 @@ function EatsTitleBlock() {
         background: `url(${IMG}cbl-map-backdrop.jpg) center/cover no-repeat`,
       }}
     >
+      {/* first child = darkening overlay; it also hosts 2 of the 4 light streams */}
       <div
         style={{
           position: 'absolute',
@@ -1677,6 +1683,7 @@ function EatsTitleBlock() {
         alt="Buckee"
         style={{
           position: 'relative',
+          zIndex: 2,
           width: 'clamp(84px,25vw,132px)',
           height: 'auto',
           objectFit: 'contain',
@@ -1687,6 +1694,7 @@ function EatsTitleBlock() {
       <div
         style={{
           position: 'relative',
+          zIndex: 2,
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
