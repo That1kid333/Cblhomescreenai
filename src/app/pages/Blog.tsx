@@ -230,7 +230,7 @@ const BLOG_CSS = `
   .cbl-blog .share-grid { grid-template-columns:1fr; gap:24px; }
 }
 @media (max-width:720px) {
-  .cbl-blog h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  .cbl-blog h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(36px,10.5vw,44px); }
   .cbl-blog h1.hero-title .title-stack { min-width:0; flex:1; }
   .cbl-blog h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-blog h1.hero-title .blog-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:44px; }
