@@ -260,7 +260,7 @@ const TRAVELS_CSS = `
 .cbl-travels h1.hero-title .stays-icon svg { width:100%; height:100%; }
 @media (max-width:1100px){ .cbl-travels h1.hero-title .stays-icon { width:180px; height:180px; } }
 @media (max-width:720px){
-  .cbl-travels h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(30px,8vw,44px); }
+  .cbl-travels h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(36px,10.5vw,44px); }
   .cbl-travels h1.hero-title .title-stack { min-width:0; flex:1; }
   .cbl-travels h1.hero-title .title-stack > span:first-child { display:block; padding-right:64px; }
   .cbl-travels h1.hero-title .stays-icon { display:flex; position:absolute; top:0; right:0; width:56px; height:56px; }
