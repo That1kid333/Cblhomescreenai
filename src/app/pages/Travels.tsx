@@ -229,6 +229,15 @@ const TRAVELS_CSS = `
   font-family:${DISPLAY}; font-weight:900; font-size:clamp(56px,7.4vw,108px);
   line-height:.9; letter-spacing:-.02em; text-transform:uppercase;
   display:flex; align-items:center; gap:28px; flex-wrap:nowrap; margin:0;
+  position:relative;
+}
+/* Desktop/tablet: the icon floats so it doesn't inflate the title row — the
+   eyebrow/title/subtitle/lede then line up exactly with the Affiliates & About
+   heroes. Below 721px the existing mobile rule positions the icon instead. */
+@media (min-width:721px){
+  .cbl-travels h1.hero-title .stays-icon {
+    position:absolute; right:0; top:50%; transform:translateY(-50%);
+  }
 }
 .cbl-travels h1.hero-title .title-stack { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .cbl-travels h1.hero-title .h1-main { color:#fff; white-space:nowrap; }

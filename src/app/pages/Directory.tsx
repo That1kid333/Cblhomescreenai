@@ -101,6 +101,14 @@ const DIR_CSS = `
   font-family:${DISPLAY}; font-weight:900; font-size:clamp(64px,7.4vw,108px);
   line-height:.9; letter-spacing:-.02em; text-transform:uppercase;
   display:flex; align-items:center; gap:28px; flex-wrap:nowrap; margin:0;
+  position:relative;
+}
+/* Desktop/tablet: float the icon so it doesn't inflate the title row — the
+   eyebrow/title/subtitle/lede line up with the Affiliates & About heroes. */
+@media (min-width:721px){
+  .cbl-dir h1.hero-title .dir-icon {
+    position:absolute; right:0; top:50%; transform:translateY(-50%);
+  }
 }
 .cbl-dir h1.hero-title .title-stack { display:flex; flex-direction:column; gap:2px; align-items:flex-start; }
 .cbl-dir h1.hero-title .h1-main { color:#fff; white-space:nowrap; position:relative; }
