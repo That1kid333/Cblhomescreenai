@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { useAuth } from '../lib/auth';
 
 // Great-circle distance in miles — used to order results closest-first.
 function milesBetween(a: Coords, b: [number, number]): number {
@@ -2413,6 +2414,7 @@ const PARTNER_CSS = `
 `;
 
 function PartnerBand() {
+  const { session } = useAuth();
   return (
     <section className="partner-band">
       <div className="ph">
@@ -2457,9 +2459,15 @@ function PartnerBand() {
             <li>Earn when owners, riders &amp; drivers join under it</li>
             <li>Help shape the Pittsburgh picks</li>
           </ul>
-          <Link to="/login" className="cta ghost">
-            Get your member card →
-          </Link>
+          {session ? (
+            <Link to="/directory" className="cta ghost">
+              Explore Directory →
+            </Link>
+          ) : (
+            <Link to="/login" className="cta ghost">
+              Get your member card →
+            </Link>
+          )}
         </div>
       </div>
     </section>

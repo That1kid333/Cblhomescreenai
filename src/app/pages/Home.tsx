@@ -13,6 +13,7 @@ import listyImage from '../../assets/listy.png';
 import riderDashboardImg from '../../assets/cbl-rider-dashboard.png';
 import { APP_URL, BUCKEE_PUBLIC_URL, SUPABASE_ANON_KEY } from '../lib/constants';
 import { JoinModal } from '../components/JoinModal';
+import { useAuth } from '../lib/auth';
 
 /**
  * Home — re-skinned to match the rest of the site (Our Story / Explore /
@@ -651,6 +652,7 @@ const HOME_CSS = `
 `;
 
 export function Home() {
+  const { session } = useAuth();
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -697,9 +699,12 @@ export function Home() {
   const chatScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Persist the teaser count so a refresh doesn't reset it.
-    if (Number(localStorage.getItem('buckee_teaser_count') || '0') >= BUCKEE_MAX) setGated(true);
-  }, []);
+    if (session) {
+      setGated(false);
+    } else if (Number(localStorage.getItem('buckee_teaser_count') || '0') >= BUCKEE_MAX) {
+      setGated(true);
+    }
+  }, [session]);
 
   const startMic = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -732,14 +737,16 @@ export function Home() {
     const content = text.trim();
     if (!content || sending || gated) return;
     const prevCount = Number(localStorage.getItem('buckee_teaser_count') || '0');
-    if (prevCount >= BUCKEE_MAX) { setGated(true); return; }
+    if (!session && prevCount >= BUCKEE_MAX) { setGated(true); return; }
 
     const nextMessages = [...messages, { role: 'user' as const, content }];
     setMessages(nextMessages);
     setChatInput('');
     setSending(true);
     const newCount = prevCount + 1;
-    localStorage.setItem('buckee_teaser_count', String(newCount));
+    if (!session) {
+      localStorage.setItem('buckee_teaser_count', String(newCount));
+    }
 
     let replyText = '';
     let limit = false;
@@ -758,7 +765,7 @@ export function Home() {
     }
     setMessages((m) => [...m, { role: 'assistant', content: replyText }]);
     setSending(false);
-    if (limit || newCount >= BUCKEE_MAX) setGated(true);
+    if (!session && (limit || newCount >= BUCKEE_MAX)) setGated(true);
     setTimeout(() => chatScrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }), 60);
   };
 
@@ -812,12 +819,20 @@ export function Home() {
                   </Link>
                 )}
               </p>
-              <button className="btn-primary" onClick={() => setJoinOpen(true)}>
-                Join Now — Free
-              </button>
-              <Link className="btn-ghost" to="/login">
-                Sign In
-              </Link>
+              {session ? (
+                <Link className="btn-primary" to="/directory">
+                  Explore Directory
+                </Link>
+              ) : (
+                <>
+                  <button className="btn-primary" onClick={() => setJoinOpen(true)}>
+                    Join Now — Free
+                  </button>
+                  <Link className="btn-ghost" to="/login">
+                    Sign In
+                  </Link>
+                </>
+              )}
 
               {/* Category + link chips, highlighting in sync with the rotation */}
               <div
@@ -1070,13 +1085,32 @@ export function Home() {
       {/* ── Final CTA ── */}
       <section className="band cta-band">
         <div className="band-inner">
-          <h2>
-            What's on <span className="it">your bucket list?</span>
-          </h2>
-          <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
-          <Link className="btn-primary" to="/login">
-            Join City Bucket List
-          </Link>
+          {session ? (
+            <>
+              <h2>
+                Ready to <span className="it">explore?</span>
+              </h2>
+              <p>Check out our member directory or read real local stories on the CBL Blog.</p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1.5rem' }}>
+                <Link className="btn-primary" to="/directory">
+                  Browse Directory
+                </Link>
+                <Link className="btn-ghost" to="/blog">
+                  Read CBL Blog
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h2>
+                What's on <span className="it">your bucket list?</span>
+              </h2>
+              <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
+              <Link className="btn-primary" to="/login">
+                Join City Bucket List
+              </Link>
+            </>
+          )}
         </div>
       </section>
 

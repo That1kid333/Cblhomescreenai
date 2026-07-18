@@ -22,7 +22,7 @@ const LANG_LOCALE: Record<string, string> = { EN: 'en-US', ES: 'es-ES', FR: 'fr-
 
 export type BuckeeMessage = { role: 'user' | 'assistant'; content: string };
 
-export function useBuckeeChat(lang: string) {
+export function useBuckeeChat(lang: string, hasSession?: boolean) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<BuckeeMessage[]>([]);
   const [input, setInput] = useState('');
@@ -34,8 +34,12 @@ export function useBuckeeChat(lang: string) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (Number(localStorage.getItem(COUNT_KEY) || '0') >= BUCKEE_MAX) setGated(true);
-  }, []);
+    if (hasSession) {
+      setGated(false);
+    } else if (Number(localStorage.getItem(COUNT_KEY) || '0') >= BUCKEE_MAX) {
+      setGated(true);
+    }
+  }, [hasSession]);
 
   const startMic = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -68,14 +72,16 @@ export function useBuckeeChat(lang: string) {
     const content = text.trim();
     if (!content || sending || gated) return;
     const prevCount = Number(localStorage.getItem(COUNT_KEY) || '0');
-    if (prevCount >= BUCKEE_MAX) { setGated(true); return; }
+    if (!hasSession && prevCount >= BUCKEE_MAX) { setGated(true); return; }
 
     const next = [...messages, { role: 'user' as const, content }];
     setMessages(next);
     setInput('');
     setSending(true);
     const newCount = prevCount + 1;
-    localStorage.setItem(COUNT_KEY, String(newCount));
+    if (!hasSession) {
+      localStorage.setItem(COUNT_KEY, String(newCount));
+    }
 
     let replyText = '';
     let limit = false;
@@ -93,7 +99,7 @@ export function useBuckeeChat(lang: string) {
     }
     setMessages((m) => [...m, { role: 'assistant', content: replyText }]);
     setSending(false);
-    if (limit || newCount >= BUCKEE_MAX) setGated(true);
+    if (!hasSession && (limit || newCount >= BUCKEE_MAX)) setGated(true);
     setTimeout(() => scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }), 60);
   };
 

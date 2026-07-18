@@ -4,6 +4,7 @@ import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import { useBuckeeChat, BUCKEE_GREETING, BUCKEE_GATE_LINE } from '../lib/useBuckeeChat';
+import { useAuth } from '../lib/auth';
 
 /**
  * Meet the Buckee Family — ported from the concierge-hero mockup into the
@@ -138,12 +139,13 @@ const PauseGlyph = () => (
 );
 
 export function MeetBuckee() {
+  const { session } = useAuth();
   const [active, setActive] = useState<CharKey>('buckee');
   const [qi, setQi] = useState(0);
   const [lang, setLang] = useState('EN');
   const [vplaying, setVplaying] = useState<CharKey | null>(null);
   const vidRefs = useRef<Record<string, HTMLVideoElement | null>>({});
-  const chat = useBuckeeChat(lang);
+  const chat = useBuckeeChat(lang, !!session);
   const chatBarRef = useRef<HTMLDivElement>(null);
   const scrollToChat = () => { chat.setOpen(true); chatBarRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }); };
   const onCard = (name: string) => {
@@ -209,9 +211,11 @@ export function MeetBuckee() {
             <button className="btn-gold" onClick={scrollToChat}>
               Say hi to Buckee ↓
             </button>
-            <Link className="btn-ghost" to="/login">
-              Join free →
-            </Link>
+            {!session && (
+              <Link className="btn-ghost" to="/login">
+                Join free →
+              </Link>
+            )}
           </div>
         </div>
       </section>

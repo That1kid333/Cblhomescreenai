@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
 import { PlatformNotice } from '../components/PlatformNotice';
@@ -956,6 +957,7 @@ function StayCard({ s }: { s: Stay }) {
 }
 
 function TripCard({ t }: { t: Trip }) {
+  const { session } = useAuth();
   return (
     <article className="trip-card">
       <div className="img" style={{ backgroundImage: `url(${t.img})` }} />
@@ -967,7 +969,11 @@ function TripCard({ t }: { t: Trip }) {
           <span className="pill">{t.loc.split('·')[0].trim()}</span>
         </div>
         <p>{t.p}</p>
-        <Link className="cta" to="/login" style={{ textDecoration: 'none' }}>Plan This Trip →</Link>
+        {session ? (
+          <Link className="cta" to="/meet-buckee" style={{ textDecoration: 'none' }}>Plan This Trip with Buckee →</Link>
+        ) : (
+          <Link className="cta" to="/login" style={{ textDecoration: 'none' }}>Plan This Trip →</Link>
+        )}
       </div>
     </article>
   );
@@ -1037,6 +1043,7 @@ function AirportRideBanner() {
 }
 
 function BuckeeBand() {
+  const { session } = useAuth();
   return (
     <section className="band buckee-band">
       <div className="band-inner">
@@ -1075,8 +1082,16 @@ function BuckeeBand() {
               </div>
             </div>
             <div className="buckee-cta-row">
-              <Link className="buckee-cta" to="/login" style={{ textDecoration: 'none' }}>Sign Up — Start Planning →</Link>
-              <span className="buckee-note">free to join · buckee unlocked at signup</span>
+              {session ? (
+                <Link className="buckee-cta" to="/meet-buckee" style={{ textDecoration: 'none' }}>Start Planning with Buckee →</Link>
+              ) : (
+                <Link className="buckee-cta" to="/login" style={{ textDecoration: 'none' }}>Sign Up — Start Planning →</Link>
+              )}
+              {session ? (
+                <span className="buckee-note">buckee unlocked · ready to plan</span>
+              ) : (
+                <span className="buckee-note">free to join · buckee unlocked at signup</span>
+              )}
             </div>
           </div>
 
