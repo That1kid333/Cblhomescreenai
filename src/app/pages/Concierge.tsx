@@ -16,7 +16,6 @@
 
 import { useState } from 'react';
 import { APP_URL } from '../lib/constants';
-import { Reveal, Stagger, StaggerItem } from '../components/Reveal';
 import conciergeDashImg from '../../assets/cbl-concierge-dashboard.png';
 import plaqueImg from '../../assets/cbl-concierge-desk-plaque.png';
 
@@ -291,20 +290,20 @@ export function Concierge() {
         {/* first child = dedicated streak layer (hosts 2 of the 4 streaks), kept under the copy */}
         <div className="hero-streams" aria-hidden="true" />
         <div className="wrap">
-          <Stagger className="hero-copy" on="load" gap={0.08}>
-            <StaggerItem className="eyebrow" y={16}>hotels &amp; hospitality<span className="eb-sm"> · partner program</span></StaggerItem>
-            <StaggerItem as="h1" className="hero-title" y={16}>Hotel &amp;</StaggerItem>
-            <StaggerItem className="hero-subtitle" y={16}>
+          <div className="hero-copy">
+            <div className="eyebrow">hotels &amp; hospitality<span className="eb-sm"> · partner program</span></div>
+            <h1 className="hero-title">Hotel &amp;</h1>
+            <div className="hero-subtitle">
               <span>Concierge Program.</span>
               <span className="it">earn on every ride.</span>
-            </StaggerItem>
-            <StaggerItem as="p" className="lede" y={16}>
+            </div>
+            <p className="lede">
               A free partnership for hotels, residences, and hospitality teams. Connect your guests
               with trusted local drivers, plan their complete itineraries, and earn commission on
               everything you book — powered by CityBucketList.com, the operating system for
               hospitality transportation.
-            </StaggerItem>
-          </Stagger>
+            </p>
+          </div>
         </div>
       </section>
 
@@ -313,8 +312,8 @@ export function Concierge() {
       <section className="hero-actions">
         <div className="wrap">
           <div className="hero-cta">
-            <a className="btn gold cbl-hover-lift" href="#apply">Become a Partner →</a>
-            <a className="btn ghost cbl-hover-lift" href="#dashboard">See the Dashboard</a>
+            <a className="btn gold" href="#apply">Become a Partner →</a>
+            <a className="btn ghost" href="#dashboard">See the Dashboard</a>
           </div>
           <div className="hero-stats">
             <div className="s"><b className="gold">10%</b><span>per guest ride</span></div>
@@ -328,16 +327,14 @@ export function Concierge() {
       {/* VALUE PROPS */}
       <section className="band">
         <div className="wrap">
-          <Stagger className="reveal-head" gap={0.08}>
-            <StaggerItem className="section-eyebrow">why partner</StaggerItem>
-            <StaggerItem as="h2" className="section-h2">Three ways <span className="it">you earn</span></StaggerItem>
-            <StaggerItem as="p" className="section-lede">
-              Your front desk already sends guests out the door every day. The Hotel &amp; Concierge Program turns
-              every ride, referral, and itinerary into ongoing revenue — free to join, with nothing to install.
-            </StaggerItem>
-          </Stagger>
-          <Stagger className="val-grid" gap={0.07}>
-            <StaggerItem className="val-card cbl-hover-card">
+          <div className="section-eyebrow">why partner</div>
+          <h2 className="section-h2">Three ways <span className="it">you earn</span></h2>
+          <p className="section-lede">
+            Your front desk already sends guests out the door every day. The Hotel &amp; Concierge Program turns
+            every ride, referral, and itinerary into ongoing revenue — free to join, with nothing to install.
+          </p>
+          <div className="val-grid">
+            <div className="val-card">
               <div className="ic">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11" /><path d="M5 11h14v5H5z" /><circle cx="7.5" cy="16.5" r="1.5" /><circle cx="16.5" cy="16.5" r="1.5" /></svg>
               </div>
@@ -345,8 +342,8 @@ export function Concierge() {
               <h3>On every ride</h3>
               <p>Earn 10% commission on every ride you schedule for a guest — credited the moment your
                  driver completes the drop-off. Payouts go straight to your bank via Stripe Connect.</p>
-            </StaggerItem>
-            <StaggerItem className="val-card cbl-hover-card">
+            </div>
+            <div className="val-card">
               <div className="ic">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="8" r="3" /><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6" /><path d="M17 11h4M19 9v4" /></svg>
               </div>
@@ -354,8 +351,8 @@ export function Concierge() {
               <h3>Per driver referred</h3>
               <p>Build your own driver network and earn $5 for every successful signup. Add ride-share
                  drivers you trust, fellow staff, or friends &amp; family — up to 10 preferred drivers.</p>
-            </StaggerItem>
-            <StaggerItem className="val-card cbl-hover-card">
+            </div>
+            <div className="val-card">
               <div className="ic">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16v15H4z" /><path d="M4 9h16M8 3v4M16 3v4" /></svg>
               </div>
@@ -363,70 +360,65 @@ export function Concierge() {
               <h3>Plan the whole trip</h3>
               <p>Organize complete travel plans for guests — round-trip transportation, driver
                  scheduling, restaurant reservations, and activities — all from one dashboard.</p>
-            </StaggerItem>
-          </Stagger>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section className="band alt">
         <div className="wrap">
-          <Stagger className="reveal-head" gap={0.08}>
-            <StaggerItem className="section-eyebrow">how it works</StaggerItem>
-            <StaggerItem as="h2" className="section-h2">From sign-up <span className="it">to earning</span></StaggerItem>
-            <StaggerItem as="p" className="section-lede">
-              Getting started is simple and free. Once you're approved, we send a welcome kit with your
-              front-desk plaque and QR code — everything you need to start connecting guests right away.
-            </StaggerItem>
-          </Stagger>
-          <Stagger className="steps" gap={0.07}>
-            <StaggerItem className="step">
+          <div className="section-eyebrow">how it works</div>
+          <h2 className="section-h2">From sign-up <span className="it">to earning</span></h2>
+          <p className="section-lede">
+            Getting started is simple and free. Once you're approved, we send a welcome kit with your
+            front-desk plaque and QR code — everything you need to start connecting guests right away.
+          </p>
+          <div className="steps">
+            <div className="step">
               <div className="num">01</div>
               <h4>Apply &amp; Authorize</h4>
               <p>Fill out the online form and sign the Building Management Authorization Letter. Once
                  approved, your welcome kit and desk placard ship out.</p>
-            </StaggerItem>
-            <StaggerItem className="step">
+            </div>
+            <div className="step">
               <div className="num">02</div>
               <h4>Refer Guests</h4>
               <p>Guests scan your unique QR code to join the private membership and your concierge
                  services — instantly.</p>
-            </StaggerItem>
-            <StaggerItem className="step">
+            </div>
+            <div className="step">
               <div className="num">03</div>
               <h4>Schedule Rides</h4>
               <p>Book trusted Independent Drivers for pre-scheduled guest transportation, right from
                  your dashboard.</p>
-            </StaggerItem>
-            <StaggerItem className="step">
+            </div>
+            <div className="step">
               <div className="num">04</div>
               <h4>Earn Commissions</h4>
               <p>Earn on every ride booked and every driver referred. Track it all and get paid via
                  secure Stripe payouts.</p>
-            </StaggerItem>
-          </Stagger>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* DASHBOARD PREVIEW */}
       <section className="band" id="dashboard">
         <div className="wrap">
-          <Stagger className="reveal-head" gap={0.08}>
-            <StaggerItem className="section-eyebrow">the concierge dashboard</StaggerItem>
-            <StaggerItem as="h2" className="section-h2">Your front desk, <span className="it">supercharged</span></StaggerItem>
-            <StaggerItem as="p" className="section-lede">
-              One simple dashboard puts your drivers, schedule, guests, and earnings in one place — plus
-              local Eats &amp; Drinks, Attractions, and Airport Info to share with every guest.
-            </StaggerItem>
-          </Stagger>
-          <Stagger className="dash-grid" gap={0.12}>
-            <StaggerItem
-              as="img"
+          <div className="section-eyebrow">the concierge dashboard</div>
+          <h2 className="section-h2">Your front desk, <span className="it">supercharged</span></h2>
+          <p className="section-lede">
+            One simple dashboard puts your drivers, schedule, guests, and earnings in one place — plus
+            local Eats &amp; Drinks, Attractions, and Airport Info to share with every guest.
+          </p>
+          <div className="dash-grid">
+            <img
               className="dash-phone"
               src={conciergeDashImg}
               alt="CityBucketList Concierge Dashboard on a phone — book rides for guests, manage drivers and guests, and track earnings in the Concierge Bank"
             />
-            <StaggerItem className="feat-list">
+            <div className="feat-list">
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11" /><path d="M5 11h14v5H5z" /></svg></div>
                 <div><h4>Book a Ride for Guest</h4><p>Select a guest, set drop-off and pickup time, choose a preferred driver, and add special requests (Black Car, XL, pet). 10% commission credited on drop-off.</p></div>
@@ -439,16 +431,16 @@ export function Concierge() {
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></svg></div>
                 <div><h4>Concierge Bank</h4><p>Connect your bank securely through Stripe Connect. See total earned, pending payouts, and your 10% commission rate — all in real time.</p></div>
               </div>
-            </StaggerItem>
-          </Stagger>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* WELCOME KIT / PLAQUE */}
       <section className="band alt">
         <div className="wrap">
-          <Stagger className="plaque-grid" gap={0.12}>
-            <StaggerItem>
+          <div className="plaque-grid">
+            <div>
               <div className="section-eyebrow">welcome kit</div>
               <h2 className="section-h2">A plaque for <span className="it">your front desk</span></h2>
               <p className="section-lede">
@@ -460,60 +452,57 @@ export function Concierge() {
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="4" width="7" height="7" /><rect x="13" y="4" width="7" height="7" /><rect x="4" y="13" width="7" height="7" /><path d="M13 13h3v3M20 16v4M16 20h4" /></svg></div><div><h4>One-Scan Guest Join</h4><p>Guests scan with any phone camera to access transportation, dining, attractions, and member savings.</p></div></div>
               <div className="feat"><div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L4 6v6c0 5 3.5 8 8 10 4.5-2 8-5 8-10V6z" /></svg></div><div><h4>Everything to Get Started</h4><p>The welcome packet includes your placard, QR codes, and referral links — no setup cost, no equipment.</p></div></div>
               </div>
-            </StaggerItem>
-            <StaggerItem
-              as="img"
+            </div>
+            <img
               className="plaque-img"
               src={plaqueImg}
               alt="CBL front-desk plaque example — The Schmieddy Hotel Concierge Service, powered by CityBucketList.com, with a scan-to-join QR code"
             />
-          </Stagger>
+          </div>
         </div>
       </section>
 
       {/* EARNINGS */}
       <section className="band">
         <div className="wrap">
-          <Stagger className="reveal-head" gap={0.08}>
-            <StaggerItem className="section-eyebrow">what you earn</StaggerItem>
-            <StaggerItem as="h2" className="section-h2">Commission, <span className="it">simply paid</span></StaggerItem>
-            <StaggerItem as="p" className="section-lede">
-              Your commission is funded by a small concierge fee added at booking and paid out securely
-              through Stripe Connect — so your driver always keeps 100% of their fare. Track every dollar
-              from your Concierge Bank.
-            </StaggerItem>
-          </Stagger>
-          <Stagger className="earn-grid" gap={0.07}>
-            <StaggerItem className="earn-card cbl-hover-card">
+          <div className="section-eyebrow">what you earn</div>
+          <h2 className="section-h2">Commission, <span className="it">simply paid</span></h2>
+          <p className="section-lede">
+            Your commission is funded by a small concierge fee added at booking and paid out securely
+            through Stripe Connect — so your driver always keeps 100% of their fare. Track every dollar
+            from your Concierge Bank.
+          </p>
+          <div className="earn-grid">
+            <div className="earn-card">
               <div className="e-num">10%</div>
               <div className="e-h">Per Guest Ride</div>
               <div className="e-sub">credited on driver drop-off</div>
               <p>Every ride you schedule for a guest earns you 10% — automatically, on every completed trip.</p>
-            </StaggerItem>
-            <StaggerItem className="earn-card cbl-hover-card">
+            </div>
+            <div className="earn-card">
               <div className="e-num">$5</div>
               <div className="e-h">Per Driver Signup</div>
               <div className="e-sub">ongoing monetization</div>
               <p>Refer drivers with your QR code or link and earn $5 for each one that successfully joins.</p>
-            </StaggerItem>
-            <StaggerItem className="earn-card cbl-hover-card">
+            </div>
+            <div className="earn-card">
               <div className="e-num">Free</div>
               <div className="e-h">To Join</div>
               <div className="e-sub">no fees · no equipment</div>
               <p>The program, the dashboard, the welcome kit, and Stripe payouts are all free for partners.</p>
-            </StaggerItem>
-          </Stagger>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* BUCKEE */}
       <section className="band alt">
         <div className="wrap">
-          <Stagger className="buckee" gap={0.1}>
-            <StaggerItem className="buckee-art">
+          <div className="buckee">
+            <div className="buckee-art">
               <img src="/eats/imagery/buckee-concierge.png" alt="Buckee, the CityBucketList concierge mascot" />
-            </StaggerItem>
-            <StaggerItem className="buckee-copy">
+            </div>
+            <div className="buckee-copy">
               <div className="section-eyebrow" style={{ marginBottom: '6px' }}>meet your sidekick</div>
               <h3>Buckee, your concierge sidekick <span className="it">always on call</span></h3>
               <p>
@@ -523,24 +512,22 @@ export function Concierge() {
                 Listee drop in now and then to lend a hand, too.
               </p>
               <div className="fam">Buckee · Citee · Listee — the CBL family</div>
-            </StaggerItem>
-          </Stagger>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* PRICING */}
       <section className="band" id="pricing">
         <div className="wrap">
-          <Stagger className="reveal-head" gap={0.08}>
-            <StaggerItem className="section-eyebrow">what it costs</StaggerItem>
-            <StaggerItem as="h2" className="section-h2">Free for your team, <span className="it">simple for your property</span></StaggerItem>
-            <StaggerItem as="p" className="section-lede">
-              Your staff never pay a cent — they earn. The property carries one flat annual subscription
-              for the full concierge platform. No per-seat fees, no equipment, no surprises.
-            </StaggerItem>
-          </Stagger>
-          <Stagger className="price-grid" gap={0.1}>
-            <StaggerItem className="price-card cbl-hover-card">
+          <div className="section-eyebrow">what it costs</div>
+          <h2 className="section-h2">Free for your team, <span className="it">simple for your property</span></h2>
+          <p className="section-lede">
+            Your staff never pay a cent — they earn. The property carries one flat annual subscription
+            for the full concierge platform. No per-seat fees, no equipment, no surprises.
+          </p>
+          <div className="price-grid">
+            <div className="price-card">
               <div className="pc-eyebrow">For your team</div>
               <h3>Always Free</h3>
               <div className="who">Bellmen · Front Desk · Concierge</div>
@@ -552,9 +539,9 @@ export function Concierge() {
                 <li>Full Concierge Dashboard + itinerary tools</li>
                 <li>Secure Stripe payouts — no equipment, no fees</li>
               </ul>
-              <a className="btn ghost cbl-hover-lift" href="#apply" onClick={() => setPlan('team')}>Join Free</a>
-            </StaggerItem>
-            <StaggerItem className="price-card feature cbl-hover-card">
+              <a className="btn ghost" href="#apply" onClick={() => setPlan('team')}>Join Free</a>
+            </div>
+            <div className="price-card feature">
               <div className="pc-eyebrow">For your property</div>
               <h3>Hotel Plan</h3>
               <div className="who">Per property · billed annually</div>
@@ -567,27 +554,25 @@ export function Concierge() {
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
               </ul>
-              <a className="btn gold cbl-hover-lift" href="#apply" onClick={() => setPlan('property')}>Start with a Founding Rate →</a>
-            </StaggerItem>
-          </Stagger>
-          <Reveal className="price-note">
-            Hotel groups &amp; chains — flat per-property pricing with <b>volume discounts</b>. Let's talk: <a className="cbl-underline" href="mailto:info@citybucketlist.com" style={{ color: 'var(--gold)' }}>info@citybucketlist.com</a>
-          </Reveal>
+              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start with a Founding Rate →</a>
+            </div>
+          </div>
+          <div className="price-note">
+            Hotel groups &amp; chains — flat per-property pricing with <b>volume discounts</b>. Let's talk: info@citybucketlist.com
+          </div>
         </div>
       </section>
 
       {/* FINAL CTA — partner application */}
       <section className="cta-final" id="apply">
-        <Stagger gap={0.08}>
-          <StaggerItem as="h2">Ready to become <span className="it">a partner?</span></StaggerItem>
-          <StaggerItem as="p">
-            Join free in minutes. Tell us about your property and we'll reach out within 24 hours
-            with your authorization letter and welcome kit — so you can start earning on every
-            guest booking.
-          </StaggerItem>
-        </Stagger>
+        <h2>Ready to become <span className="it">a partner?</span></h2>
+        <p>
+          Join free in minutes. Tell us about your property and we'll reach out within 24 hours
+          with your authorization letter and welcome kit — so you can start earning on every
+          guest booking.
+        </p>
 
-        <Reveal className="apply-card" delay={0.08}>
+        <div className="apply-card">
           {status === 'success' ? (
             <div className="apply-success">
               <div className="mark" aria-hidden="true">✓</div>
@@ -597,7 +582,7 @@ export function Concierge() {
                 step: create your CBL account now so we can activate your dashboard, referral
                 code, and payouts the moment you're approved.
               </p>
-              <a className="btn gold cbl-hover-lift" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
+              <a className="btn gold" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
                 Create your account in the app →
               </a>
             </div>
@@ -659,14 +644,14 @@ export function Concierge() {
                 <textarea id="ap-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Rooms, location, concierge team size — anything that helps us set you up faster." maxLength={1000} />
               </div>
 
-              <button type="submit" className="submit cbl-hover-lift" disabled={status === 'loading'}>
+              <button type="submit" className="submit" disabled={status === 'loading'}>
                 {status === 'loading' ? 'Sending…' : 'Become a Partner →'}
               </button>
             </form>
           )}
-        </Reveal>
+        </div>
 
-        <div className="note">Questions? <a className="cbl-underline" href="mailto:info@citybucketlist.com" style={{ color: 'var(--gold)' }}>info@citybucketlist.com</a> · CityBucketList.com is an LLC company</div>
+        <div className="note">Questions? info@citybucketlist.com · CityBucketList.com is an LLC company</div>
       </section>
     </main>
   );
