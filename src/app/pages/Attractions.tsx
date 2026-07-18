@@ -1254,14 +1254,16 @@ function Spotlight({ a }: { a: Attraction }) {
   );
 }
 
-function TopRated({ items }: { items: Attraction[] }) {
-  const top = items.slice(0, 10);
+function TopRated({ items, startRank = 1 }: { items: Attraction[]; startRank?: number }) {
+  const top = items.slice(0, 11 - startRank);
   return (
     <section className="band tight top10-band">
       <div className="band-inner">
         <div className="section-head">
           <div>
-            <div className="section-eyebrow">top rated · near you</div>
+            <div className="section-eyebrow">
+              {startRank > 1 ? 'more top rated · near you' : 'top rated · near you'}
+            </div>
             <h2 className="section-h2">
               The list <span className="it">worth your bucket list</span>
             </h2>
@@ -1273,7 +1275,7 @@ function TopRated({ items }: { items: Attraction[] }) {
         <div className="top10">
           {top.map((a, i) => (
             <div key={a.id} className="top10-item">
-              <div className="rank">{(i + 1).toString().padStart(2, '0')}</div>
+              <div className="rank">{(i + startRank).toString().padStart(2, '0')}</div>
               <div>
                 <div className="name">{a.name}</div>
                 <div className="when">
@@ -1619,7 +1621,17 @@ export function Attractions() {
       <WeatherStrip weather={weather} city={activeCity} />
       <Filters cat={cat} setCat={setCat} />
 
-      <TopRated items={list} />
+      {/* Lead with the featured photo pick (Book a Ride front and center),
+          then the ranked list of the rest, then the browsable photo grid. */}
+      {featured && (
+        <section className="band tight spotlight-lead">
+          <div className="band-inner">
+            <Spotlight a={featured} />
+          </div>
+        </section>
+      )}
+
+      {rest.length > 0 && <TopRated items={rest} startRank={2} />}
 
       <section className="band">
         <div className="band-inner">
@@ -1637,7 +1649,6 @@ export function Attractions() {
           </div>
 
           <div className="events-grid">
-            {featured && <Spotlight a={featured} />}
             {rest.length > 0 ? (
               rest.map((a) => <EventCard key={a.id} a={a} />)
             ) : !featured ? (
