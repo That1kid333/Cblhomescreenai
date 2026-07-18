@@ -666,6 +666,33 @@ const TRAVELS_CSS = `
      above) crams hotel names to 5 lines and clips review counts/badges.
      Must come AFTER the 1100px block so it wins on source order at phone widths. */
   .cbl-travels .stays-grid { grid-template-columns:1fr; }
+
+  /* Flight rows: the desktop 6-column grid (airline | route | stops | tag |
+     price | actions) overflows 390px and clips the stops/price/book columns
+     off-screen. Reflow into a stacked card with named areas. */
+  .cbl-travels .flight-row {
+    grid-template-columns:1fr auto;
+    grid-template-areas:
+      "airline price"
+      "route route"
+      "stops tag"
+      "actions actions";
+    gap:12px 12px; padding:16px 16px;
+  }
+  .cbl-travels .flight-row > div:first-child { grid-area:airline; }
+  .cbl-travels .flight-row .route { grid-area:route; }
+  .cbl-travels .flight-row .stops { grid-area:stops; text-align:left; align-self:center; }
+  .cbl-travels .flight-row .f-tag { grid-area:tag; justify-self:end; align-self:center; }
+  .cbl-travels .flight-row .price-block { grid-area:price; }
+  .cbl-travels .flight-row .actions { grid-area:actions; flex-direction:row; }
+  .cbl-travels .flight-row .actions button { flex:1; }
+
+  /* Airport-ride banner: 3-column grid (icon | text | button) pushes the CTA
+     off the right edge on phones. Stack it, full-width button. */
+  .cbl-travels .airport-banner {
+    grid-template-columns:1fr; gap:16px; padding:20px 20px;
+  }
+  .cbl-travels .airport-banner .cta { width:100%; justify-content:center; }
 }
 `;
 
