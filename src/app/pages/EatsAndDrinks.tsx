@@ -2000,7 +2000,7 @@ function GridCard({ r }: { r: Restaurant }) {
         minWidth: 0,
       }}
     >
-      <div style={{ height: 110, background: `url(${r.image}) center/cover no-repeat` }} />
+      <div style={{ height: 170, background: `url(${r.image}) center/cover no-repeat` }} />
       <div
         style={{ padding: '10px 10px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}
       >
@@ -2309,8 +2309,8 @@ function MobileFlow({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: 10,
+              gridTemplateColumns: '1fr',
+              gap: 12,
               padding: '18px 18px 0',
             }}
           >
