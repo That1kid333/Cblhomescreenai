@@ -342,19 +342,29 @@ export default async function handler(req: Request, context: Context): Promise<R
   const url = new URL(req.url);
   const origin = url.origin;
   const res = await context.next();
+
+  // Only rewrite successful 200 OK HTML documents. Pass through 304 Not Modified,
+  // redirects, and errors untouched to avoid body-reading crashes or blank pages.
+  if (res.status !== 200) return res;
+
   const ctype = res.headers.get('content-type') || '';
   // Only rewrite HTML documents; let static assets (images, etc.) pass through.
   if (!ctype.includes('text/html')) return res;
 
-  let html = await res.text();
-  const finish = () =>
-    new Response(html, {
-      status: 200,
-      headers: { 'content-type': 'text/html; charset=utf-8', 'x-cbl-prerender': '1', ...SECURITY_HEADERS },
-    });
+  // Clone the response first so we can fall back to the original response
+  // if reading or parsing the text body fails.
+  const fallbackRes = res.clone();
 
   try {
-    const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '') || '/';
+    let html = await res.text();
+    const finish = () =>
+      new Response(html, {
+        status: 200,
+        headers: { 'content-type': 'text/html; charset=utf-8', 'x-cbl-prerender': '1', ...SECURITY_HEADERS },
+      });
+
+    try {
+      const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '') || '/';
 
     // Static marketing pages (home + section/landing pages).
     const staticPage = STATIC_PAGES[path];
@@ -515,8 +525,11 @@ export default async function handler(req: Request, context: Context): Promise<R
       html = injectRoot(html, renderPost(origin, post));
       return finish();
     }
+    } catch (_err) {
+      // On any failure, fall through and serve the untouched SPA shell.
+    }
+    return finish();
   } catch (_err) {
-    // On any failure, fall through and serve the untouched SPA shell.
+    return fallbackRes;
   }
-  return finish();
 }
