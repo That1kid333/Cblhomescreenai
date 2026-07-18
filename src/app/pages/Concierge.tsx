@@ -50,14 +50,10 @@ const CSS = `
    copy (z-index:1 < the .wrap content at z-index:2) so text stays crisp. */
 .cbl-concierge .hero-streams{position:absolute;inset:0;z-index:1;pointer-events:none;}
 .cbl-concierge .wrap{max-width:1280px;margin:0 auto;}
-/* full-bleed hero: copy on the left over the FULL-width map; the front-desk
-   photo floats as a smaller card on the right so the map + light streams run
-   edge-to-edge behind the copy (matches the Affiliates hero feel). */
-.cbl-concierge .hero .wrap{position:relative;z-index:2;display:block;min-height:340px;}
-.cbl-concierge .hero-copy{min-width:0;max-width:640px;}
-.cbl-concierge .hero-media-slot{position:absolute;top:50%;right:0;transform:translateY(-50%);width:min(30vw,360px);z-index:1;}
-.cbl-concierge .hero-media{margin:0;}
-.cbl-concierge .hero-media img{width:100%;height:auto;max-height:360px;object-fit:cover;border-radius:22px 0 22px 0;border:1px solid rgba(201,151,66,.4);box-shadow:0 26px 56px rgba(0,0,0,.55);display:block;}
+/* full-bleed hero: copy on the left over the FULL-width map + light streams —
+   no hero image, consistent with the Affiliates hero. */
+.cbl-concierge .hero .wrap{position:relative;z-index:2;}
+.cbl-concierge .hero-copy{min-width:0;}
 .cbl-concierge .eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;letter-spacing:.14em;color:#fff;font-weight:700;text-transform:lowercase;margin-bottom:12px;}
 .cbl-concierge .eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--gold);animation:cbl-pulse 2.4s ease-in-out infinite;}
 .cbl-concierge h1.hero-title{font-family:var(--display);font-weight:900;font-size:clamp(56px,7.4vw,108px);line-height:.9;letter-spacing:-.02em;text-transform:uppercase;margin:0;color:#fff;}
@@ -214,16 +210,9 @@ const CSS = `
   .cbl-concierge .eyebrow{white-space:nowrap;font-size:11px;letter-spacing:.06em;}
   .cbl-concierge .eb-sm{display:none;}
 }
-/* below 1200px there isn't room for the floating photo beside the copy —
-   drop it and let the copy run full-width over the map, like Affiliates. */
-@media(max-width:1200px){
-  .cbl-concierge .hero-media-slot{display:none;}
-  .cbl-concierge .hero-copy{max-width:none;}
-}
 @media(max-width:1000px){
   .cbl-concierge section.band{padding:44px 24px 48px;}
   .cbl-concierge .hero{padding:22px 24px 16px;}
-  .cbl-concierge .hero-media{display:none;}
   .cbl-concierge .val-grid{grid-template-columns:1fr;}
   .cbl-concierge .steps{grid-template-columns:1fr 1fr;}
   .cbl-concierge .dash-grid{grid-template-columns:1fr;gap:32px;}
@@ -321,11 +310,6 @@ export function Concierge() {
               <div className="s"><b>10</b><span>preferred drivers</span></div>
             </StaggerItem>
           </Stagger>
-          <div className="hero-media-slot">
-            <Reveal className="hero-media" on="load" delay={0.18} y={16}>
-              <img src="/eats/imagery/hospitality-frontdesk.jpg" alt="A hotel concierge welcoming a guest with luggage at the front desk" />
-            </Reveal>
-          </div>
         </div>
       </section>
 
