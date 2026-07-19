@@ -362,16 +362,12 @@ export function MemberCard({ open, onClose }: MemberCardProps) {
           <button onClick={shareBiz}>{copiedBiz ? 'Copied ✓' : 'Send restaurant invite →'}</button>
         </div>
 
-        <div className="payout">
-          {payoutsOn ? (
-            <div className="payout-on">✓ Cash payouts active</div>
-          ) : (
-            <button onClick={startPayoutOnboarding} disabled={payoutBusy}>
-              {payoutBusy ? 'Opening…' : 'Set up cash payouts →'}
-            </button>
-          )}
-          {payoutNote && <div className="payout-note">{payoutNote}</div>}
-        </div>
+        {/* Payout section hidden: the member/rider payout edge functions
+            (create-member-connect-account, check-member-connect-status) don't
+            exist yet — the deployed functions (create-connect-account,
+            check-connect-status) are concierge-only. The riders table also
+            lacks a payouts_enabled column. Re-enable once member payout
+            infrastructure is built. */}
 
         <a className="go" href={APP_URL} target="_blank" rel="noopener noreferrer">Open your dashboard →</a>
 
