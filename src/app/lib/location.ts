@@ -179,7 +179,8 @@ function writeGeoCache(cache: Record<string, Coords>) {
 }
 
 // Resolve a place name to coordinates: gazetteer → localStorage cache →
-// keyless network provider. Best-effort; returns null if nothing resolves.
+// first-party proxy → direct keyless provider. Best-effort; returns null if
+// nothing resolves.
 export async function forwardGeocode(place: string): Promise<Coords | null> {
   const seed = seedCoords(place);
   if (seed) return seed;
@@ -188,6 +189,30 @@ export async function forwardGeocode(place: string): Promise<Coords | null> {
   const cache = readGeoCache();
   if (cache[key]) return cache[key];
 
+  // Primary path: our own /api/geocode function (netlify/functions/geocode.js
+  // — the same one EatsAndDrinks.tsx already uses for its city search). It's
+  // same-origin, so it's never blocked by CSP connect-src, and it holds the
+  // Google key server-side (falling back to keyless OpenStreetMap itself if
+  // unset) — so this works with NO client-exposed API key at all.
+  try {
+    const res = await fetch(`/api/geocode?q=${encodeURIComponent(place)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data?.coord) && typeof data.coord[0] === 'number') {
+        const coords = { lat: data.coord[0], lng: data.coord[1] };
+        cache[key] = coords;
+        writeGeoCache(cache);
+        return coords;
+      }
+    }
+  } catch {
+    /* fall through to direct providers below */
+  }
+
+  // Fallbacks below call Google/OpenStreetMap directly from the browser —
+  // kept as a last resort for the (unlikely) case the function itself is
+  // unreachable. Note the OpenStreetMap call requires nominatim.openstreetmap.org
+  // to be allowed in the site's CSP connect-src, which isn't guaranteed.
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
   if (apiKey) {
     try {
