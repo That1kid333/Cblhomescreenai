@@ -29,14 +29,12 @@ export type Partner = {
 };
 
 const PARTNER_COLUMNS =
-  'id, business_name, business_type, description, address, city, state, zip_code, logo_url, website_url, referral_code, directory_category';
+  'id, business_name, business_type, description, address, city, state, logo_url, website_url, referral_code, directory_category';
 
 export async function getActivePartners(opts: { city?: string; businessType?: string } = {}): Promise<Partner[]> {
   let query = ridesClient
-    .from('partners')
-    .select(PARTNER_COLUMNS)
-    .eq('status', 'active')
-    .eq('show_in_directory', true);
+    .from('partners_directory')
+    .select(PARTNER_COLUMNS);
 
   if (opts.businessType) query = query.eq('business_type', opts.businessType);
   if (opts.city) query = query.ilike('city', opts.city);
@@ -46,7 +44,10 @@ export async function getActivePartners(opts: { city?: string; businessType?: st
     console.error('[ridesClient] getActivePartners failed:', error.message);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).map((p: any) => ({
+    ...p,
+    zip_code: null,
+  }));
 }
 
 // Classifieds live in CBL-Rides `directory_listings` — the SAME project as member

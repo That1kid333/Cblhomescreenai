@@ -73,12 +73,10 @@ export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {
 
 export async function getActiveBusinesses(opts: { city?: string; category?: string } = {}): Promise<DirectoryBusiness[]> {
   let query = directoryClient
-    .from('partners')
+    .from('partners_directory')
     .select(
-      'id, business_name, description, city, state, business_type, directory_category, logo_url, status, show_in_directory'
-    )
-    .eq('status', 'active')
-    .eq('show_in_directory', true);
+      'id, business_name, description, city, state, business_type, directory_category, logo_url, show_in_directory'
+    );
 
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('directory_category', opts.category);
@@ -107,9 +105,8 @@ export async function getActiveBusinesses(opts: { city?: string; category?: stri
 
 export async function getActiveListings(opts: { city?: string; category?: string } = {}): Promise<DirectoryListing[]> {
   let query = directoryClient
-    .from('listings')
-    .select('id, title, description, category, subcategory, price, price_type, city, state, photos, featured, urgent')
-    .eq('status', 'active');
+    .from('directory_listings_public')
+    .select('id, title, description, category, neighborhood, price, price_type, city, state, photos, featured, urgent');
 
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('category', opts.category);
@@ -119,5 +116,18 @@ export async function getActiveListings(opts: { city?: string; category?: string
     console.error('[directoryClient] getActiveListings failed:', error.message);
     return [];
   }
-  return data ?? [];
+  return (data ?? []).map((l: any) => ({
+    id: String(l.id),
+    title: l.title,
+    description: l.description,
+    category: l.category,
+    subcategory: l.neighborhood ?? null,
+    price: l.price,
+    price_type: l.price_type,
+    city: l.city,
+    state: l.state,
+    photos: l.photos,
+    featured: l.featured,
+    urgent: l.urgent,
+  }));
 }
