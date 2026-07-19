@@ -620,8 +620,7 @@ type PlacesDef = { k: string; l: string; keyword: string; type: string; aliases:
 // "Pizza" and "Restaurants" can never show conflicting/overlapping results.
 const SHOP_CATEGORIES: (PlacesDef & { d: string })[] = [
   { k: "ALL", l: "All", d: "M4 6h16M4 12h16M4 18h16", keyword: "top rated local business", type: "point_of_interest", aliases: [] },
-  { k: "RESTAURANTS", l: "Restaurants", d: "M4 8h16v3a8 8 0 0 1-16 0V8z M3 21h18", keyword: "restaurants", type: "restaurant", aliases: ["restaurant", "dine", "eatery", "diner", "pizza", "pizzeria"] },
-  { k: "COFFEE", l: "Coffee & Cafes", d: "M4 3h12v9a6 6 0 0 1-12 0V3z M16 6h2a3 3 0 0 1 0 6h-2", keyword: "coffee cafe", type: "cafe", aliases: ["coffee", "cafe", "café", "espresso", "roaster"] },
+  { k: "RESTAURANTS", l: "Restaurants", d: "M4 8h16v3a8 8 0 0 1-16 0V8z M3 21h18", keyword: "restaurants", type: "restaurant", aliases: ["restaurant", "dine", "eatery", "diner", "pizza", "pizzeria", "coffee", "cafe", "café", "espresso", "roaster"] },
   { k: "BARS", l: "Bars & Nightlife", d: "M3 4h18l-9 9v7h4v2H8v-2h4v-7z", keyword: "bar nightlife", type: "bar", aliases: ["bar", "pub", "brewery", "nightclub", "lounge", "tavern"] },
   { k: "AUTO", l: "Auto Services", d: "M3 13l2-5h14l2 5v5h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3v-5z", keyword: "auto repair", type: "car_repair", aliases: ["auto", "mechanic", "tire", "car repair", "body shop", "car wash"] },
   { k: "HOME", l: "Home Services", d: "M3 12l9-8 9 8v8H3z", keyword: "home services contractor", type: "general_contractor", aliases: ["contractor", "plumb", "electric", "hvac", "landscap", "roofing", "cleaning", "handyman"] },
@@ -640,6 +639,10 @@ CHIPS.SHOP = SHOP_CATEGORIES.map((c) => ({ k: c.k, l: c.l, d: c.d }));
 const RESTAURANT_CUISINES: PlacesDef[] = [
   { k: "ALL", l: "All Cuisines", keyword: "restaurants", type: "restaurant", aliases: [] },
   { k: "PIZZA", l: "Pizza", keyword: "pizza", type: "restaurant", aliases: ["pizza", "pizzeria"] },
+  // Cafes are their own Google Places `type` (not "restaurant"), so this
+  // entry keeps that type for accurate results even though it's grouped
+  // under Restaurants in the UI, per how people actually look for coffee.
+  { k: "COFFEE", l: "Coffee & Cafes", keyword: "coffee cafe", type: "cafe", aliases: ["coffee", "cafe", "café", "espresso", "roaster"] },
   { k: "ITALIAN", l: "Italian", keyword: "italian", type: "restaurant", aliases: ["italian"] },
   { k: "MEXICAN", l: "Mexican", keyword: "mexican", type: "restaurant", aliases: ["mexican", "taqueria", "taco"] },
   { k: "CHINESE", l: "Chinese", keyword: "chinese", type: "restaurant", aliases: ["chinese"] },
@@ -722,7 +725,14 @@ function useLiveShopPlaces(coords: Coords | null, enabled: boolean, def: PlacesD
       .then((r) => r.json())
       .then((d) => {
         if (cancelled) return;
-        const results: RawPlace[] = d.configured && d.results?.length ? d.results : [];
+        if (!d.configured) {
+          // Server doesn't have the Places key (yet) — don't cache this, so
+          // a later retry (once it IS configured) isn't masked forever by a
+          // stale empty result from this same browser tab/session.
+          setLive([]);
+          return;
+        }
+        const results: RawPlace[] = d.results ?? [];
         shopLiveCache.set(cacheKey, results);
         setLive(results);
       })
