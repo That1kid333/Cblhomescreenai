@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
-import { APP_URL } from "../lib/constants";
+import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
@@ -42,7 +42,6 @@ const DISPLAY = "'myriad-pro','Source Sans 3',sans-serif";
 const ITALIC = "'Playfair Display',serif";
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const MAP_BG = "/eats/imagery/cbl-map-backdrop.jpg";
-const DIR_URL = "https://directory.citybucketlist.com/";
 
 // Pretty-print a stored 10-digit phone ("4129772408" → "(412) 977-2408").
 // Leaves anything that isn't a clean 10/11-digit US number untouched.
@@ -1225,7 +1224,7 @@ function PickupBanner() {
         <h3>Need a ride to pick up your purchase?</h3>
         <p>CBL Private Drivers handle classified-transaction pickups — safe, tracked meetups with verified locals. 12+ hours in advance.</p>
       </div>
-      <a className="cta" href={DIR_URL} target="_blank" rel="noopener noreferrer">Book a Pickup Ride →</a>
+      <a className="cta" href={RIDER_BOOK_URL} target="_blank" rel="noopener noreferrer">Book a Pickup Ride →</a>
     </div>
   );
 }

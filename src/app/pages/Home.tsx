@@ -164,9 +164,9 @@ const SLIDES: Slide[] = [
     caption: (
       <>
         Local business directory —{' '}
-        <a href="https://directory.citybucketlist.com/" target="_blank" rel="noopener noreferrer" className="cap-link">
+        <Link to="/directory" className="cap-link">
           browse now
-        </a>
+        </Link>
       </>
     ),
   },
@@ -855,16 +855,14 @@ export function Home() {
                   <ChipIcon k="blog" />
                   CBL Blog
                 </Link>
-                <a
-                  href="https://directory.citybucketlist.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to="/directory"
                   className={'chip' + (current === 5 ? ' active' : '')}
                   onMouseEnter={() => goTo(5)}
                 >
                   <ChipIcon k="directory" />
                   Directory
-                </a>
+                </Link>
               </div>
             </div>
 
@@ -896,16 +894,14 @@ export function Home() {
                 <ChipIcon k="blog" />
                 CBL Blog
               </Link>
-              <a
-                href="https://directory.citybucketlist.com/"
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                to="/directory"
                 className={'micon' + (current === 5 ? ' active' : '')}
                 onMouseEnter={() => goTo(5)}
               >
                 <ChipIcon k="directory" />
                 Directory
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -1064,10 +1060,8 @@ export function Home() {
                 <span className="go">Read now</span>
               </div>
             </Link>
-            <a
-              href="https://directory.citybucketlist.com/"
-              target="_blank"
-              rel="noopener noreferrer"
+            <Link
+              to="/directory"
               className="more-card"
             >
               <img src={directoryImage} alt="" />
@@ -1077,7 +1071,7 @@ export function Home() {
                 <p>Browse the City Bucket List directory and member savings near you.</p>
                 <span className="go">Explore directory</span>
               </div>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
