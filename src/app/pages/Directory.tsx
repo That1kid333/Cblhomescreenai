@@ -61,6 +61,7 @@ type Listing = {
   ownerId?: string | null; tier?: string | null; // for the owner's "edit photos" affordance
   driverCode?: string | null; // active-driver posts → "Verified CBL Driver" QR
   driverAd?: DriverAd | null; // driver business-card fields (driver_post only)
+  foot?: string; // overrides the card's default footer text (e.g. live Google results)
 };
 type Tier = {
   name: string; price: string; per: string; bullets: string[];
@@ -542,11 +543,8 @@ const CHIPS: Record<string, Chip[]> = {
     { k: "REC", l: "Recurring", d: "M3 5h18v16H3z M3 9h18" },
     { k: "GROUP", l: "Group / Party", d: "M9 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0z M3 21c0-4 4-6 9-6s9 2 9 6" },
   ],
-  SHOP: [
-    { k: "ALL", l: "All", d: "M4 6h16M4 12h16M4 18h16" },
-    { k: "LOCAL", l: "Local Shops", d: "M3 7h18l-1 14H4z M8 7V5a4 4 0 0 1 8 0v2" },
-    { k: "ONLINE", l: "Online", d: "M4 5h16v12H4z M2 21h20" },
-  ],
+  SHOP: [], // filled in below from SHOP_CATEGORIES so the chip list and the
+  // Google Places / partner-matching keywords can never drift apart.
   COUPONS: [
     { k: "ALL", l: "All Coupons", d: "M4 6h16M4 12h16M4 18h16" },
     { k: "FOOD", l: "Food & Bev", d: "M7 2v8M11 2v8M9 10v12" },
@@ -605,6 +603,104 @@ function partnerToCard(p: Partner): Listing {
     featured: true,
     placeholder: !p.logo_url,
   };
+}
+
+// Fixed Shopping-section taxonomy. Each category carries everything needed to
+// keep search "correct" end to end: `keyword`/`type` drive the live Google
+// Places lookup (same /api/places proxy Eats & Attractions use — see
+// netlify/functions/places.js), and `aliases` match a partner's free-text
+// business_type/directory_category into the same bucket, so "Pizza" shows
+// pizza places whether they're a real CBL partner or a live nearby result.
+const SHOP_CATEGORIES: { k: string; l: string; d: string; keyword: string; type: string; aliases: string[] }[] = [
+  { k: "ALL", l: "All", d: "M4 6h16M4 12h16M4 18h16", keyword: "top rated local business", type: "point_of_interest", aliases: [] },
+  { k: "RESTAURANTS", l: "Restaurants", d: "M4 8h16v3a8 8 0 0 1-16 0V8z M3 21h18", keyword: "restaurants", type: "restaurant", aliases: ["restaurant", "dine", "eatery", "grill", "diner", "kitchen"] },
+  { k: "PIZZA", l: "Pizza", d: "M3 3l18 9-18 9V3z", keyword: "pizza", type: "restaurant", aliases: ["pizza", "pizzeria"] },
+  { k: "COFFEE", l: "Coffee & Cafes", d: "M4 3h12v9a6 6 0 0 1-12 0V3z M16 6h2a3 3 0 0 1 0 6h-2", keyword: "coffee cafe", type: "cafe", aliases: ["coffee", "cafe", "café", "espresso", "roaster"] },
+  { k: "BARS", l: "Bars & Nightlife", d: "M3 4h18l-9 9v7h4v2H8v-2h4v-7z", keyword: "bar nightlife", type: "bar", aliases: ["bar", "pub", "brewery", "nightclub", "lounge", "tavern"] },
+  { k: "AUTO", l: "Auto Services", d: "M3 13l2-5h14l2 5v5h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3v-5z", keyword: "auto repair", type: "car_repair", aliases: ["auto", "mechanic", "tire", "car repair", "body shop", "car wash"] },
+  { k: "HOME", l: "Home Services", d: "M3 12l9-8 9 8v8H3z", keyword: "home services contractor", type: "general_contractor", aliases: ["contractor", "plumb", "electric", "hvac", "landscap", "roofing", "cleaning", "handyman"] },
+  { k: "BEAUTY", l: "Health & Beauty", d: "M9 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0z M3 21c0-4 4-6 9-6s9 2 9 6", keyword: "salon spa", type: "beauty_salon", aliases: ["salon", "spa", "barber", "beauty", "nail", "skincare"] },
+  { k: "FITNESS", l: "Fitness", d: "M4 9h2v6H4z M18 9h2v6h-2z M8 11h8v2H8z", keyword: "gym fitness", type: "gym", aliases: ["gym", "fitness", "yoga", "pilates", "crossfit", "martial arts"] },
+  { k: "RETAIL", l: "Retail & Shops", d: "M3 7h18l-1 14H4z M8 7V5a4 4 0 0 1 8 0v2", keyword: "shop store", type: "store", aliases: ["shop", "store", "boutique", "retail", "market"] },
+  { k: "PROFESSIONAL", l: "Professional Services", d: "M14 7l3 3-9 9H5v-3l9-9z M16 5l3 3", keyword: "professional services", type: "lawyer", aliases: ["law", "attorney", "account", "insurance", "real estate", "financial", "notary"] },
+  { k: "PETS", l: "Pet Services", d: "M12 13c-3 0-5 2-5 4v1h10v-1c0-2-2-4-5-4z M7 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z M17 9a2 2 0 1 1 0-4 2 2 0 0 1 0 4z", keyword: "pet store vet groomer", type: "veterinary_care", aliases: ["pet", "vet", "groom", "kennel"] },
+  { k: "ENTERTAINMENT", l: "Entertainment", d: "M3 8h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4V8z", keyword: "entertainment", type: "movie_theater", aliases: ["theater", "theatre", "cinema", "entertainment", "arcade", "bowling", "venue"] },
+];
+CHIPS.SHOP = SHOP_CATEGORIES.map((c) => ({ k: c.k, l: c.l, d: c.d }));
+
+function matchesShopCategory(p: Partner, catKey: string): boolean {
+  if (catKey === "ALL") return true;
+  const def = SHOP_CATEGORIES.find((c) => c.k === catKey);
+  if (!def) return true;
+  const text = `${p.business_type ?? ""} ${p.directory_category ?? ""}`.toLowerCase();
+  return def.aliases.some((a) => text.includes(a));
+}
+
+// Raw shape returned by /api/places (netlify/functions/places.js) — already
+// sorted best-rated-first and capped at 6 server-side.
+type RawPlace = {
+  id: string; name: string; rating: number | null; reviews: number; price: string;
+  open: boolean | null; address: string; coord: [number, number] | null; photo: string | null;
+};
+
+function placeToCard(p: RawPlace, categoryLabel: string): Listing {
+  return {
+    id: `g-${p.id}`,
+    name: p.name,
+    loc: [p.address, categoryLabel].filter(Boolean).join(" · "),
+    desc: p.reviews
+      ? `${p.reviews.toLocaleString()} local reviews${p.open === false ? " · closed now" : p.open === true ? " · open now" : ""}.`
+      : "Popular nearby business.",
+    price: p.rating ? `★ ${p.rating.toFixed(1)} (${p.reviews ?? 0})` : "New listing",
+    img: p.photo || undefined,
+    badges: [{ t: "⭐ Top Rated Nearby" }],
+    featured: false,
+    placeholder: !p.photo,
+    foot: "Top-rated nearby",
+  };
+}
+
+const shopLiveCache = new Map<string, RawPlace[]>();
+
+// Backfills the Shopping section with real, live-rated nearby businesses
+// (via Google Places) for the selected category whenever CBL doesn't yet
+// have enough of its own partners there — same proxy/pattern EatsAndDrinks.tsx
+// uses for restaurants. Safe no-op (returns []) if the API key isn't
+// configured on the server; callers should treat null as "still loading".
+function useLiveShopPlaces(coords: Coords | null, enabled: boolean, catKey: string): RawPlace[] | null {
+  const [live, setLive] = useState<RawPlace[] | null>(null);
+  const def = SHOP_CATEGORIES.find((c) => c.k === catKey) ?? SHOP_CATEGORIES[0];
+  useEffect(() => {
+    if (!enabled || !coords) {
+      setLive(null);
+      return;
+    }
+    const cacheKey = `${def.k}@${coords.lat.toFixed(2)},${coords.lng.toFixed(2)}`;
+    const cached = shopLiveCache.get(cacheKey);
+    if (cached) {
+      setLive(cached);
+      return;
+    }
+    let cancelled = false;
+    const params = new URLSearchParams({
+      lat: String(coords.lat), lng: String(coords.lng), keyword: def.keyword, type: def.type,
+    });
+    fetch(`/api/places?${params}`)
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const results: RawPlace[] = d.configured && d.results?.length ? d.results : [];
+        shopLiveCache.set(cacheKey, results);
+        setLive(results);
+      })
+      .catch(() => {
+        if (!cancelled) setLive([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, coords?.lat, coords?.lng, def.k]);
+  return live;
 }
 
 const PRICING: Tier[] = [
@@ -1161,7 +1257,7 @@ function ClassifiedCard({ l }: { l: Listing }) {
         <p className="desc">{l.desc}</p>
         <div className="price">{l.price}</div>
         <div className="foot">
-          <span>{l.featured ? <span style={{ color: "#C99742" }}>★ Featured · 247 views</span> : "Basic listing"}</span>
+          <span>{l.foot ?? (l.featured ? <span style={{ color: "#C99742" }}>★ Featured · 247 views</span> : "Basic listing")}</span>
           <span className="arrow">›</span>
         </div>
       </div>
@@ -2711,9 +2807,25 @@ export function Directory() {
     [listings, city, state, scope, searchCoords, cityGeo],
   );
 
+  const shopCategory = SHOP_CATEGORIES.find((c) => c.k === cat) ?? SHOP_CATEGORIES[0];
+  const shopPartnersLive = useMemo(() => {
+    const inCategory = cat === "ALL" ? partners : partners.filter((p) => matchesShopCategory(p, cat));
+    return filterByLocation(inCategory);
+  }, [partners, cat, city, state, scope, searchCoords, cityGeo]);
+
+  // We rarely have 6 real partners yet in any given category/location, so
+  // backfill the rest of the row with live, top-rated real businesses nearby
+  // (Google Places) — same source EatsAndDrinks.tsx uses for restaurants.
+  const liveShopPlaces = useLiveShopPlaces(searchCoords ?? coords, section === "SHOP", cat);
+  const shopPartnerCards = useMemo(() => shopPartnersLive.map(partnerToCard), [shopPartnersLive]);
   const shopLive = useMemo(() => {
-    return filterByLocation(partners).map(partnerToCard);
-  }, [partners, city, state, scope, searchCoords, cityGeo]);
+    const need = Math.max(0, 6 - shopPartnerCards.length);
+    const liveCards = need > 0 && liveShopPlaces
+      ? liveShopPlaces.slice(0, need).map((p) => placeToCard(p, shopCategory.l))
+      : [];
+    return [...shopPartnerCards, ...liveCards];
+  }, [shopPartnerCards, liveShopPlaces, shopCategory.l]);
+  const shopShowingLiveOnly = shopPartnerCards.length === 0 && shopLive.length > 0;
 
   return (
     <DirModalCtx.Provider value={setModalL}>
@@ -2813,6 +2925,12 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="SHOPPING" onPost={openPost} />
+            {shopShowingLiveOnly && (
+              <p style={{ color: "#999", fontSize: 13, marginBottom: 16 }}>
+                No CBL partners in {shopCategory.l.toLowerCase()} near {city ?? "you"} yet — here are the
+                top-rated real spots nearby.
+              </p>
+            )}
             {shopLive.length === 0 ? (
               <EmptyState city={city} onPost={openPost} ctaLabel="List Your Shop" />
             ) : (
