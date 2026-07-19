@@ -611,10 +611,16 @@ function partnerToCard(p: Partner): Listing {
 // netlify/functions/places.js), and `aliases` match a partner's free-text
 // business_type/directory_category into the same bucket, so "Pizza" shows
 // pizza places whether they're a real CBL partner or a live nearby result.
-const SHOP_CATEGORIES: { k: string; l: string; d: string; keyword: string; type: string; aliases: string[] }[] = [
+type PlacesDef = { k: string; l: string; keyword: string; type: string; aliases: string[] };
+
+// Top-level Shopping-section taxonomy — mutually exclusive venue *types*
+// (Google Places `type` values), so no two top-level categories compete for
+// the same businesses. Cuisine (Pizza, Italian, ...) is a REFINEMENT within
+// Restaurants, not a sibling of it — see RESTAURANT_CUISINES below — so
+// "Pizza" and "Restaurants" can never show conflicting/overlapping results.
+const SHOP_CATEGORIES: (PlacesDef & { d: string })[] = [
   { k: "ALL", l: "All", d: "M4 6h16M4 12h16M4 18h16", keyword: "top rated local business", type: "point_of_interest", aliases: [] },
-  { k: "RESTAURANTS", l: "Restaurants", d: "M4 8h16v3a8 8 0 0 1-16 0V8z M3 21h18", keyword: "restaurants", type: "restaurant", aliases: ["restaurant", "dine", "eatery", "grill", "diner", "kitchen"] },
-  { k: "PIZZA", l: "Pizza", d: "M3 3l18 9-18 9V3z", keyword: "pizza", type: "restaurant", aliases: ["pizza", "pizzeria"] },
+  { k: "RESTAURANTS", l: "Restaurants", d: "M4 8h16v3a8 8 0 0 1-16 0V8z M3 21h18", keyword: "restaurants", type: "restaurant", aliases: ["restaurant", "dine", "eatery", "diner", "pizza", "pizzeria"] },
   { k: "COFFEE", l: "Coffee & Cafes", d: "M4 3h12v9a6 6 0 0 1-12 0V3z M16 6h2a3 3 0 0 1 0 6h-2", keyword: "coffee cafe", type: "cafe", aliases: ["coffee", "cafe", "café", "espresso", "roaster"] },
   { k: "BARS", l: "Bars & Nightlife", d: "M3 4h18l-9 9v7h4v2H8v-2h4v-7z", keyword: "bar nightlife", type: "bar", aliases: ["bar", "pub", "brewery", "nightclub", "lounge", "tavern"] },
   { k: "AUTO", l: "Auto Services", d: "M3 13l2-5h14l2 5v5h-2a2 2 0 0 1-4 0H9a2 2 0 0 1-4 0H3v-5z", keyword: "auto repair", type: "car_repair", aliases: ["auto", "mechanic", "tire", "car repair", "body shop", "car wash"] },
@@ -628,9 +634,35 @@ const SHOP_CATEGORIES: { k: string; l: string; d: string; keyword: string; type:
 ];
 CHIPS.SHOP = SHOP_CATEGORIES.map((c) => ({ k: c.k, l: c.l, d: c.d }));
 
+// Cuisine sub-filter — only shown/applied when "Restaurants" is the selected
+// top-level category. Keyword values match the ones EatsAndDrinks.tsx already
+// uses for the same cuisines, so "Pizza" means the same thing app-wide.
+const RESTAURANT_CUISINES: PlacesDef[] = [
+  { k: "ALL", l: "All Cuisines", keyword: "restaurants", type: "restaurant", aliases: [] },
+  { k: "PIZZA", l: "Pizza", keyword: "pizza", type: "restaurant", aliases: ["pizza", "pizzeria"] },
+  { k: "ITALIAN", l: "Italian", keyword: "italian", type: "restaurant", aliases: ["italian"] },
+  { k: "MEXICAN", l: "Mexican", keyword: "mexican", type: "restaurant", aliases: ["mexican", "taqueria", "taco"] },
+  { k: "CHINESE", l: "Chinese", keyword: "chinese", type: "restaurant", aliases: ["chinese"] },
+  { k: "AMERICAN", l: "American", keyword: "american restaurant", type: "restaurant", aliases: ["american", "grill", "diner"] },
+  { k: "SUSHI", l: "Sushi & Japanese", keyword: "sushi japanese", type: "restaurant", aliases: ["sushi", "japanese", "hibachi"] },
+  { k: "THAI", l: "Thai", keyword: "thai", type: "restaurant", aliases: ["thai"] },
+  { k: "INDIAN", l: "Indian", keyword: "indian", type: "restaurant", aliases: ["indian"] },
+  { k: "SEAFOOD", l: "Seafood", keyword: "seafood", type: "restaurant", aliases: ["seafood"] },
+  { k: "BURGERS", l: "Burgers", keyword: "burgers", type: "restaurant", aliases: ["burger"] },
+  { k: "BREAKFAST", l: "Breakfast & Brunch", keyword: "breakfast brunch", type: "restaurant", aliases: ["breakfast", "brunch", "pancake"] },
+];
+
 function matchesShopCategory(p: Partner, catKey: string): boolean {
   if (catKey === "ALL") return true;
   const def = SHOP_CATEGORIES.find((c) => c.k === catKey);
+  if (!def) return true;
+  const text = `${p.business_type ?? ""} ${p.directory_category ?? ""}`.toLowerCase();
+  return def.aliases.some((a) => text.includes(a));
+}
+
+function matchesCuisine(p: Partner, cuisineKey: string): boolean {
+  if (cuisineKey === "ALL") return true;
+  const def = RESTAURANT_CUISINES.find((c) => c.k === cuisineKey);
   if (!def) return true;
   const text = `${p.business_type ?? ""} ${p.directory_category ?? ""}`.toLowerCase();
   return def.aliases.some((a) => text.includes(a));
@@ -663,13 +695,14 @@ function placeToCard(p: RawPlace, categoryLabel: string): Listing {
 const shopLiveCache = new Map<string, RawPlace[]>();
 
 // Backfills the Shopping section with real, live-rated nearby businesses
-// (via Google Places) for the selected category whenever CBL doesn't yet
-// have enough of its own partners there — same proxy/pattern EatsAndDrinks.tsx
-// uses for restaurants. Safe no-op (returns []) if the API key isn't
-// configured on the server; callers should treat null as "still loading".
-function useLiveShopPlaces(coords: Coords | null, enabled: boolean, catKey: string): RawPlace[] | null {
+// (via Google Places) for the selected category/cuisine whenever CBL doesn't
+// yet have enough of its own partners there — same proxy/pattern
+// EatsAndDrinks.tsx uses for restaurants. Safe no-op (returns []) if the API
+// key isn't configured on the server; callers should treat null as "still
+// loading". Takes the resolved def directly (category or cuisine) so a
+// Restaurants + Pizza selection queries "pizza", not the generic "restaurants".
+function useLiveShopPlaces(coords: Coords | null, enabled: boolean, def: PlacesDef): RawPlace[] | null {
   const [live, setLive] = useState<RawPlace[] | null>(null);
-  const def = SHOP_CATEGORIES.find((c) => c.k === catKey) ?? SHOP_CATEGORIES[0];
   useEffect(() => {
     if (!enabled || !coords) {
       setLive(null);
@@ -2808,23 +2841,39 @@ export function Directory() {
   );
 
   const shopCategory = SHOP_CATEGORIES.find((c) => c.k === cat) ?? SHOP_CATEGORIES[0];
+  // Cuisine only ever refines "Restaurants" — reset it whenever the visitor
+  // picks a different top-level category (or leaves Shopping) so a stale
+  // "Pizza" pick can't silently apply once they're looking at, say, Auto.
+  const [shopCuisine, setShopCuisine] = useState("ALL");
+  useEffect(() => {
+    setShopCuisine("ALL");
+  }, [cat, section]);
+  const shopQueryDef: PlacesDef =
+    cat === "RESTAURANTS" && shopCuisine !== "ALL"
+      ? (RESTAURANT_CUISINES.find((c) => c.k === shopCuisine) ?? RESTAURANT_CUISINES[0])
+      : shopCategory;
+  const shopResultLabel = shopQueryDef === shopCategory ? shopCategory.l : `${shopQueryDef.l} (Restaurants)`;
+
   const shopPartnersLive = useMemo(() => {
-    const inCategory = cat === "ALL" ? partners : partners.filter((p) => matchesShopCategory(p, cat));
+    let inCategory = cat === "ALL" ? partners : partners.filter((p) => matchesShopCategory(p, cat));
+    if (cat === "RESTAURANTS" && shopCuisine !== "ALL") {
+      inCategory = inCategory.filter((p) => matchesCuisine(p, shopCuisine));
+    }
     return filterByLocation(inCategory);
-  }, [partners, cat, city, state, scope, searchCoords, cityGeo]);
+  }, [partners, cat, shopCuisine, city, state, scope, searchCoords, cityGeo]);
 
   // We rarely have 6 real partners yet in any given category/location, so
   // backfill the rest of the row with live, top-rated real businesses nearby
   // (Google Places) — same source EatsAndDrinks.tsx uses for restaurants.
-  const liveShopPlaces = useLiveShopPlaces(searchCoords ?? coords, section === "SHOP", cat);
+  const liveShopPlaces = useLiveShopPlaces(searchCoords ?? coords, section === "SHOP", shopQueryDef);
   const shopPartnerCards = useMemo(() => shopPartnersLive.map(partnerToCard), [shopPartnersLive]);
   const shopLive = useMemo(() => {
     const need = Math.max(0, 6 - shopPartnerCards.length);
     const liveCards = need > 0 && liveShopPlaces
-      ? liveShopPlaces.slice(0, need).map((p) => placeToCard(p, shopCategory.l))
+      ? liveShopPlaces.slice(0, need).map((p) => placeToCard(p, shopResultLabel))
       : [];
     return [...shopPartnerCards, ...liveCards];
-  }, [shopPartnerCards, liveShopPlaces, shopCategory.l]);
+  }, [shopPartnerCards, liveShopPlaces, shopResultLabel]);
   const shopShowingLiveOnly = shopPartnerCards.length === 0 && shopLive.length > 0;
 
   return (
@@ -2925,9 +2974,22 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="SHOPPING" onPost={openPost} />
+            {cat === "RESTAURANTS" && (
+              <ScrollRow className="chip-row">
+                {RESTAURANT_CUISINES.map((c) => (
+                  <button
+                    key={c.k}
+                    className={"chip" + (shopCuisine === c.k ? " active" : "")}
+                    onClick={() => setShopCuisine(c.k)}
+                  >
+                    {c.l}
+                  </button>
+                ))}
+              </ScrollRow>
+            )}
             {shopShowingLiveOnly && (
               <p style={{ color: "#999", fontSize: 13, marginBottom: 16 }}>
-                No CBL partners in {shopCategory.l.toLowerCase()} near {city ?? "you"} yet — here are the
+                No CBL partners in {shopResultLabel.toLowerCase()} near {city ?? "you"} yet — here are the
                 top-rated real spots nearby.
               </p>
             )}
