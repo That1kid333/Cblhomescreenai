@@ -13,7 +13,12 @@ import type { Context } from 'https://edge.netlify.com';
 
 const SUPABASE_URL = 'https://jgbaqzgkdqqvxmqytgsx.supabase.co';
 const PUBLISHABLE = 'sb_publishable_ftx_EkI4-nj0vfUqbP0FzQ_XRGsXZJ9';
-const OG_FALLBACK = '/eats/imagery/cbl-map-backdrop.jpg';
+// Square logo (matches the favicon/apple-touch-icon) — used as the default
+// share-preview image wherever a page has no image of its own. The old
+// default (cbl-map-backdrop.jpg, a 1800x478 wide hero banner) had too extreme
+// an aspect ratio for iMessage/Facebook/Twitter link previews, which silently
+// drop the image and show text-only when it's this far from ~1.91:1 or 1:1.
+const OG_FALLBACK = '/CBL-1024.png';
 
 // Security headers — set here because netlify.toml [[headers]] do NOT apply to
 // edge-function responses (this function returns its own Response). Mirrors the
@@ -329,7 +334,7 @@ function articleJsonLd(origin: string, p: Post) {
     publisher: {
       '@type': 'Organization',
       name: 'City Bucket List',
-      logo: { '@type': 'ImageObject', url: `${origin}/eats/imagery/cbl-map-backdrop.jpg` },
+      logo: { '@type': 'ImageObject', url: `${origin}/CBL-1024.png` },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': `${origin}/blog/${p.slug}` },
     ...(p.city ? { locationCreated: { '@type': 'Place', name: p.city } } : {}),
@@ -377,7 +382,7 @@ export default async function handler(req: Request, context: Context): Promise<R
               '@type': 'Organization',
               name: 'City Bucket List',
               url: `${origin}/`,
-              logo: `${origin}/eats/imagery/cbl-map-backdrop.jpg`,
+              logo: `${origin}/CBL-1024.png`,
               description: staticPage.description,
               sameAs: [
                 'https://www.youtube.com/@CitybucketlistCBL',
