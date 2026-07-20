@@ -53,6 +53,80 @@ export type MyDriverProfile = {
   vehicleInfo: string | null; // make/model, e.g. "Santa Fe"
 };
 
+// ── Real member sign-up (mirrors the app's own rider signup flow exactly —
+// citybucketlist.com's src/components/home/MembershipForm.tsx) ─────────────
+// This creates the SAME kind of account as app.citybucketlist.com: a real
+// Supabase Auth user (with password) plus its `riders` row, so the member can
+// sign into the app, the directory, and everywhere else with that password —
+// not just a lead-capture record. Uses `authClient` (this site's persisted
+// session) so the visitor is also immediately signed in here.
+export type MemberSignUpInput = {
+  name: string;
+  email: string;
+  phone: string;
+  password: string;
+  smsOptIn: boolean;
+};
+
+const ALREADY_SIGNED_IN_ERROR =
+  'That email already has an account. Enter your password to sign in, or use "Forgot password" in the app.';
+
+export async function signUpMember(input: MemberSignUpInput): Promise<{ error: string | null }> {
+  const email = input.email.trim();
+
+  // Matches the app's own MembershipForm: a returning email signs in instead
+  // of erroring, rather than trying (and failing) to re-create the account.
+  const { data: existingRider } = await authClient
+    .from('riders')
+    .select('id, email')
+    .eq('email', email)
+    .maybeSingle();
+  if (existingRider) {
+    const { error } = await authClient.auth.signInWithPassword({ email, password: input.password });
+    return { error: error ? ALREADY_SIGNED_IN_ERROR : null };
+  }
+
+  const { data: authData, error: authError } = await authClient.auth.signUp({
+    email,
+    password: input.password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/`,
+      data: { name: input.name, phone: input.phone },
+    },
+  });
+
+  if (authError) {
+    if (authError.message.toLowerCase().includes('already registered')) {
+      const { error } = await authClient.auth.signInWithPassword({ email, password: input.password });
+      return { error: error ? ALREADY_SIGNED_IN_ERROR : null };
+    }
+    return { error: authError.message };
+  }
+
+  const userId = authData.user?.id;
+  if (!userId) return { error: 'Something went wrong creating your account. Please try again.' };
+
+  // Auth user exists and is signed in (no email-confirmation gate on this
+  // project) — now create their `riders` profile row, same shape the app's
+  // own signup writes (RLS: auth.uid() = id, satisfied by the session above).
+  const { error: riderError } = await authClient.from('riders').insert({
+    id: userId,
+    name: input.name,
+    email,
+    phone: input.phone,
+    sms_opt_in: input.smsOptIn,
+    sms_consent_timestamp: input.smsOptIn ? new Date().toISOString() : null,
+  });
+  if (riderError) return { error: riderError.message };
+
+  // Fire-and-forget welcome email — the SAME edge function the app's own
+  // signup invokes (supabase/functions/send-rider-welcome in the app repo).
+  // Best-effort: a delivery failure here shouldn't block the account existing.
+  void authClient.functions.invoke('send-rider-welcome', { body: { riderId: userId } }).catch(() => {});
+
+  return { error: null };
+}
+
 export async function getMyDriverProfile(): Promise<MyDriverProfile | null> {
   const {
     data: { session },

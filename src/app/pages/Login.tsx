@@ -12,16 +12,17 @@
  * /eats/imagery/cbl-map-backdrop.jpg; the PMA seal lives at
  * /eats/imagery/cbl-pma-seal.png (uploaded alongside the page).
  *
- * The membership form is the no-password "quick join" — it POSTs to /api/lead
- * (Netlify function → Resend → info@citybucketlist.com), same pipeline as the
- * homepage JoinModal. Real password auth stays in the app (APP_URL); the
- * "Sign in here" button links there. Full password-protected accounts unlock
- * complete blog + directory access once the auth phase lands (Justin's side).
+ * The membership form ("Quick Join") creates a REAL, password-protected City
+ * Bucket List account — same as the homepage JoinModal and the same account
+ * type app.citybucketlist.com's own rider signup creates (see authClient.ts's
+ * signUpMember). Members can sign into the app, the directory, and this
+ * site with that password, and get the real welcome email.
  */
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { APP_URL } from '../lib/constants';
 import { useAuth, firstNameOf } from '../lib/auth';
+import { signUpMember } from '../lib/supabase/authClient';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -309,6 +310,7 @@ export function Login() {
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [smsConsent, setSmsConsent] = useState(false);
   const [company, setCompany] = useState(''); // honeypot
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -317,31 +319,25 @@ export function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (status === 'loading') return;
+    // Honeypot tripped — pretend success, do nothing (bots fill hidden fields).
+    if (company.trim()) {
+      setStatus('success');
+      return;
+    }
     setStatus('loading');
     setErrorMessage('');
-    try {
-      const res = await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName,
-          email,
-          phone,
-          smsConsent: Boolean(phone.trim() && smsConsent),
-          source: 'login-page',
-          company,
-        }),
-      });
-      const result = await res.json().catch(() => ({}));
-      if (res.ok && result.success) {
-        setStatus('success');
-      } else {
-        setStatus('error');
-        setErrorMessage(result.error || 'Something went wrong. Please try again.');
-      }
-    } catch {
+    const { error } = await signUpMember({
+      name: firstName,
+      email,
+      phone,
+      password,
+      smsOptIn: Boolean(phone.trim() && smsConsent),
+    });
+    if (error) {
       setStatus('error');
-      setErrorMessage('Network error. Please check your connection and try again.');
+      setErrorMessage(error);
+    } else {
+      setStatus('success');
     }
   };
 
@@ -461,30 +457,20 @@ export function Login() {
                     <div className="mark" aria-hidden="true">✓</div>
                     <h3>You're <span className="g">in.</span></h3>
                     <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-                    <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
+                    <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">Open the CBL App →</a>
                     <p className="note">
-                      Quick join keeps you in the loop. For full blog &amp; directory access — and
-                      rides in the app — you'll need a free password-protected account.
+                      Your account is live — check your inbox for a welcome email, then sign into
+                      the CBL App with the email &amp; password you just created.
                     </p>
                   </div>
                 ) : (
                   <>
-                    {/* Option 1 — full membership (featured) */}
                     <ul className="perks">
                       <li><b>Full blog &amp; directory access</b> — post, save spots, member pricing</li>
                       <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
                       <li><b>Buckee, your AI concierge</b> — plus savings in every partner city</li>
                     </ul>
-                    <a className="btn btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
-                      Create Full Account <span className="arr">→</span>
-                    </a>
-                    <p className="note" style={{ textAlign: 'center' }}>
-                      100% free · password-protected · everything unlocked
-                    </p>
 
-                    <div className="switch">In a hurry? Quick join</div>
-
-                    {/* Option 2 — easy two-step, no password */}
                     <form onSubmit={handleSubmit}>
                       {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
@@ -537,6 +523,22 @@ export function Login() {
                         />
                       </div>
 
+                      <div className="field">
+                        <label className="label" htmlFor="join-password">Password <span className="req">*</span></label>
+                        <input
+                          type="password"
+                          id="join-password"
+                          name="password"
+                          placeholder="Create a password (min 6 characters)"
+                          autoComplete="new-password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          minLength={6}
+                          maxLength={72}
+                          required
+                        />
+                      </div>
+
                       {/* Honeypot — hidden from real users, bots fill it in */}
                       <div className="hp" aria-hidden="true">
                         <input
@@ -566,12 +568,11 @@ export function Login() {
                       </div>
 
                       <button type="submit" className="btn btn-primary" disabled={status === 'loading'}>
-                        {status === 'loading' ? 'Sending…' : <>Quick Join — No Password <span className="arr">→</span></>}
+                        {status === 'loading' ? 'Creating account…' : <>Create My Free Account <span className="arr">→</span></>}
                       </button>
 
-                      <p className="note">
-                        Quick join keeps you in the loop — updates &amp; local tips only. Full access
-                        lives in your free account above.
+                      <p className="note" style={{ textAlign: 'center' }}>
+                        100% free · password-protected · everything unlocked
                       </p>
 
                       <div className="signin-line">
