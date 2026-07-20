@@ -11,7 +11,7 @@ import buckeeServerImg from '../../assets/buckee_server.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import riderDashboardImg from '../../assets/cbl-rider-dashboard.png';
-import { APP_URL, BUCKEE_PUBLIC_URL, SUPABASE_ANON_KEY } from '../lib/constants';
+import { APP_URL } from '../lib/constants';
 import { JoinModal } from '../components/JoinModal';
 import { useAuth } from '../lib/auth';
 
@@ -367,8 +367,8 @@ const HOME_CSS = `
 
 /* ── Talk to Buckee voice bar ── */
 .cbl-home .talk-band { padding:18px 48px 0; }
-.cbl-home .talk-wrap { position:relative; max-width:1280px; margin:0 auto; }
-.cbl-home .talk-row { display:flex; align-items:center; gap:20px; }
+.cbl-home .talk-wrap { position:relative; max-width:1280px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+.cbl-home .talk-row { display:flex; align-items:center; gap:20px; order:1; }
 .cbl-home .tb-note { text-transform:none; letter-spacing:0; color:#B8B8B8; font-weight:400; }
 .cbl-home .buckee-bubble { position:absolute; bottom:calc(100% + 12px); left:0; z-index:20; max-width:560px; background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:18px 18px 18px 0; padding:16px 20px; box-shadow:0 18px 44px rgba(0,0,0,.55); animation:cbl-bubble-pop .26s cubic-bezier(.2,.9,.3,1.25) both; }
 .cbl-home .buckee-bubble::after { content:''; position:absolute; bottom:-9px; left:30px; width:18px; height:18px; background:#141414; border-right:1px solid rgba(201,151,66,.45); border-bottom:1px solid rgba(201,151,66,.45); transform:rotate(45deg); }
@@ -380,10 +380,14 @@ const HOME_CSS = `
 @keyframes cbl-bubble-pop { 0% { opacity:0; transform:translateY(8px) scale(.96); } 100% { opacity:1; transform:translateY(0) scale(1); } }
 @media (max-width:1000px) { .cbl-home .buckee-bubble { max-width:none; right:0; } }
 .cbl-home .talk-buckee { width:100px; height:100px; flex-shrink:0; object-fit:contain; filter:drop-shadow(0 10px 22px rgba(0,0,0,.5)); }
-.cbl-home .talk-card { flex:1; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg, rgba(201,151,66,.10) 0%, #141414 100%); border:1px solid rgba(201,151,66,.35); border-radius:18px 0 18px 0; padding:16px 22px; }
-.cbl-home .mic-btn { flex-shrink:0; width:64px; height:64px; border-radius:50%; border:0; background:${GOLD}; color:#000; display:grid; place-items:center; box-shadow:0 0 0 6px rgba(201,151,66,.12); transition:transform .2s, background .2s; }
+.cbl-home .talk-card { flex:1; min-width:0; display:flex; align-items:center; gap:20px; background:linear-gradient(180deg, rgba(201,151,66,.10) 0%, #141414 100%); border:1px solid rgba(201,151,66,.35); border-radius:18px 0 18px 0; padding:16px 22px; }
+.cbl-home .mic-btn { flex-shrink:0; width:64px; height:64px; border-radius:50%; border:0; background:${GOLD}; color:#000; display:grid; place-items:center; box-shadow:0 0 0 6px rgba(201,151,66,.12); transition:transform .2s, background .2s; text-decoration:none; }
 .cbl-home .mic-btn:hover { transform:scale(1.05); background:#DDB15F; }
 .cbl-home .mic-btn svg { width:24px; height:24px; }
+/* Promo copy + CTA now live INSIDE the one horizontal card (between mic and language chips) */
+.cbl-home .talk-promo { flex:1; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:12px; }
+.cbl-home .promo-text { font-size:16px; line-height:1.42; color:#EAEAEA; }
+.cbl-home .talk-promo .buckee-cta { display:inline-flex; align-items:center; gap:6px; }
 .cbl-home .talk-text { flex:1; min-width:0; }
 .cbl-home .talk-eyebrow { font-family:${MONO}; font-size:12px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:4px; }
 .cbl-home .talk-lede { font-size:18px; line-height:1.3; color:#E8E8E8; }
@@ -394,13 +398,13 @@ const HOME_CSS = `
 
 /* ── Talk to Buckee: teaser chat panel ── */
 .cbl-home .buckee-chat {
-  position:absolute; bottom:calc(100% + 12px); left:0; right:0; z-index:20; max-width:560px;
-  background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:18px 18px 18px 0;
+  order:2; position:static; z-index:20; max-width:560px;
+  background:#141414; border:1px solid rgba(201,151,66,.45); border-radius:0 18px 18px 18px;
   padding:12px 14px; box-shadow:0 18px 44px rgba(0,0,0,.55);
   display:flex; flex-direction:column; gap:10px;
   animation:cbl-bubble-pop .26s cubic-bezier(.2,.9,.3,1.25) both;
 }
-.cbl-home .buckee-chat-head { display:flex; align-items:center; justify-content:space-between; }
+.cbl-home .buckee-chat-head { display:none; align-items:center; justify-content:space-between; } /* redundant on desktop (bar carries the label); re-shown on mobile */
 .cbl-home .buckee-chat-close { background:transparent; border:0; color:#888; cursor:pointer; font-size:13px; line-height:1; padding:2px 4px; }
 .cbl-home .buckee-chat-close:hover { color:#fff; }
 .cbl-home .buckee-chat-scroll { display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px; }
@@ -419,6 +423,8 @@ const HOME_CSS = `
 .cbl-home .buckee-send:disabled { opacity:.4; cursor:default; }
 .cbl-home .buckee-gate { display:flex; flex-direction:column; gap:10px; align-items:flex-start; }
 .cbl-home .buckee-gate-text { font-size:14px; color:#EDEDED; }
+.cbl-home .buckee-cta-row { display:flex; padding-top:2px; }
+.cbl-home .buckee-cta { display:inline-flex; align-items:center; gap:6px; }
 .cbl-home .mic-btn.listening { animation:cbl-mic-pulse 1.2s ease-in-out infinite; }
 @keyframes cbl-mic-pulse { 0%,100%{ box-shadow:0 0 0 6px rgba(201,151,66,.12);} 50%{ box-shadow:0 0 0 13px rgba(201,151,66,.22);} }
 /* Buckee walk-in + idle bob (triggered when the bar scrolls into view) */
@@ -438,27 +444,24 @@ const HOME_CSS = `
   .cbl-home .talk-band.talk-in .talk-buckee { animation:none !important; }
 }
 @media (max-width:1000px) {
-  /* Buckee joins the opening screen: a [Buckee · big Speak mic · languages 2×2] row,
-     the "Speak to Buckee" label centered on the mic, and Buckee's chat auto-open
-     IN-FLOW right below (no box). */
-  /* A tight, centered [Buckee · mic · languages] cluster. */
-  .cbl-home section.band.talk-band { padding:2px 20px 12px; } /* beat the generic section.band 48px */
-  .cbl-home .talk-wrap { display:flex; flex-direction:column; gap:6px; }
-  .cbl-home .talk-row { order:1; display:flex; flex-direction:row; align-items:center; justify-content:center; gap:12px; width:100%; }
-  .cbl-home .talk-buckee { width:80px; height:80px; }
-  .cbl-home .talk-buckee-wrap { align-self:center; margin-right:-4px; } /* Buckee snug to the mic */
+  /* Same one block, stacked for phones: Buckee on top, then the card holding a
+     centered [mic · languages] row with the greeting + CTA full-width beneath. */
+  .cbl-home section.band.talk-band { padding:2px 20px 16px; } /* beat the generic section.band 48px */
+  .cbl-home .talk-wrap { display:flex; flex-direction:column; }
+  .cbl-home .talk-row { order:1; display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
+  .cbl-home .talk-buckee { width:76px; height:76px; }
+  .cbl-home .talk-buckee-wrap { align-self:center; }
   .cbl-home .talk-card {
-    flex:none; min-width:0; padding:0; background:none; border:0; box-shadow:none;
-    display:flex; align-items:center; gap:10px;
+    flex:none; width:100%; padding:16px;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px;
   }
-  .cbl-home .talk-card .mic-btn { width:74px; height:74px; }
-  .cbl-home .talk-card .mic-btn svg { width:32px; height:32px; }
-  .cbl-home .talk-card .talk-text { display:none; } /* the label now lives in the chat bubble header */
-  .cbl-home .talk-card .lang-chips { display:grid; grid-template-columns:1fr 1fr; gap:4px; width:auto; } /* half-size, snug to the mic */
-  .cbl-home .talk-card .lang-chip { flex:none; min-width:0; padding:4px 7px; font-size:11px; letter-spacing:.04em; border-radius:7px; }
-  /* Chat auto-shows in the flow, bumped up right under the mic bar; its header is
-     "Speak to Buckee (Multilingual)". */
-  .cbl-home .buckee-chat { order:2; position:static; width:100%; max-width:none; margin:0; border-radius:16px; }
+  .cbl-home .talk-card .mic-btn { order:1; width:60px; height:60px; }
+  .cbl-home .talk-card .mic-btn svg { width:26px; height:26px; }
+  .cbl-home .talk-card .lang-chips { order:2; display:flex; gap:6px; }
+  .cbl-home .talk-card .lang-chip { flex:none; min-width:0; padding:6px 10px; font-size:12px; letter-spacing:.04em; border-radius:8px; }
+  .cbl-home .talk-card .talk-promo { order:3; flex-basis:100%; align-items:center; gap:12px; }
+  .cbl-home .talk-card .promo-text { text-align:center; }
+  .cbl-home .talk-card .buckee-cta { width:100%; justify-content:center; }
 }
 
 /* ── Meet the Buckee Family teaser ── */
@@ -670,104 +673,24 @@ export function Home() {
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  // ── Talk to Buckee: free teaser chat (5 messages, then a signup gate) ──
-  const BUCKEE_MAX = 5;
+  // ── Meet Buckee: signup-first teaser (NO public chat) ──
+  // The marketing site deliberately has no live chat: a public, unauthenticated AI
+  // endpoint would be an abuse/cost vector. Buckee greets and invites a free signup;
+  // the real, ongoing chat lives inside the app, behind auth.
   const BUCKEE_GREETING: Record<string, string> = {
-    EN: "Hey, I'm Buckee 👋 Ask me anything about the city.",
-    ES: '¡Hola! Soy Buckee 👋 Pregúntame lo que quieras sobre la ciudad.',
-    FR: 'Salut, je suis Buckee 👋 Demandez-moi ce que vous voulez sur la ville.',
-    PT: 'Oi, eu sou o Buckee 👋 Pergunte o que quiser sobre a cidade.',
+    EN: "Hi, I'm Buckee, your AI Concierge 👋 The full me — trip planning, rides, reservations — lives in the app. Meet me there!",
+    ES: 'Hola, soy Buckee, tu concierge de IA 👋 El Buckee completo —planes de viaje, traslados, reservas— vive en la app. ¡Nos vemos ahí!',
+    FR: 'Salut, je suis Buckee, votre concierge IA 👋 Le vrai moi — voyages, trajets, réservations — vit dans l’appli. Retrouvez-moi là-bas !',
+    PT: 'Oi, eu sou o Buckee, seu concierge de IA 👋 O Buckee completo — viagens, corridas, reservas — mora no app. Encontre-me lá!',
   };
-  const GATE_LINE: Record<string, string> = {
-    EN: "I'd love to keep helping — join free and I'm all yours. 💛",
-    ES: 'Me encantaría seguir ayudándote: únete gratis y estoy a tu disposición. 💛',
-    FR: "J'adorerais continuer à vous aider — inscrivez-vous gratuitement et je suis à vous. 💛",
-    PT: 'Adoraria continuar ajudando — cadastre-se grátis e estou à disposição. 💛',
-  };
-  const LANG_LOCALE: Record<string, string> = { EN: 'en-US', ES: 'es-ES', FR: 'fr-FR', PT: 'pt-BR' };
-
-  // Auto-open Buckee's chat on mobile so his greeting shows without a tap; on
-  // desktop it stays click-to-open (the bar opens the panel).
-  const [chatOpen, setChatOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 1000);
-  const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([]);
-  const [chatInput, setChatInput] = useState('');
-  const [sending, setSending] = useState(false);
-  const [gated, setGated] = useState(false);
-  const [listening, setListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  const chatInputRef = useRef<HTMLInputElement>(null);
-  const chatScrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (session) {
-      setGated(false);
-    } else if (Number(localStorage.getItem('buckee_teaser_count') || '0') >= BUCKEE_MAX) {
-      setGated(true);
-    }
-  }, [session]);
-
-  const startMic = () => {
-    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { chatInputRef.current?.focus(); return; } // graceful fallback: just focus the input
-    try {
-      const rec = new SR();
-      rec.lang = LANG_LOCALE[talkLang] || 'en-US';
-      rec.interimResults = false;
-      rec.maxAlternatives = 1;
-      rec.onresult = (e: any) => {
-        const t = e.results?.[0]?.[0]?.transcript || '';
-        setChatInput((prev) => (prev ? prev + ' ' : '') + t);
-      };
-      rec.onend = () => setListening(false);
-      rec.onerror = () => setListening(false);
-      recognitionRef.current = rec;
-      setListening(true);
-      rec.start();
-    } catch { setListening(false); chatInputRef.current?.focus(); }
+  const BUCKEE_CTA: Record<string, string> = {
+    EN: 'Join free to meet Buckee',
+    ES: 'Únete gratis y conoce a Buckee',
+    FR: 'Inscrivez-vous — c’est gratuit',
+    PT: 'Cadastre-se grátis',
   };
 
-  const onMicClick = () => {
-    setChatOpen(true);
-    if (listening) { recognitionRef.current?.stop?.(); setListening(false); return; }
-    startMic();
-    setTimeout(() => chatInputRef.current?.focus(), 60);
-  };
 
-  const sendMessage = async (text: string) => {
-    const content = text.trim();
-    if (!content || sending || gated) return;
-    const prevCount = Number(localStorage.getItem('buckee_teaser_count') || '0');
-    if (!session && prevCount >= BUCKEE_MAX) { setGated(true); return; }
-
-    const nextMessages = [...messages, { role: 'user' as const, content }];
-    setMessages(nextMessages);
-    setChatInput('');
-    setSending(true);
-    const newCount = prevCount + 1;
-    if (!session) {
-      localStorage.setItem('buckee_teaser_count', String(newCount));
-    }
-
-    let replyText = '';
-    let limit = false;
-    try {
-      const res = await fetch(BUCKEE_PUBLIC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-        body: JSON.stringify({ messages: nextMessages, language: talkLang }),
-      });
-      const data = await res.json();
-      replyText = data?.message || '…';
-      limit = !!data?.limitReached;
-    } catch {
-      // Endpoint not deployed yet (or offline) — graceful fallback so the flow still demos.
-      replyText = "I'm just warming up — I'll have real answers the moment we go live. What else are you curious about? 😊";
-    }
-    setMessages((m) => [...m, { role: 'assistant', content: replyText }]);
-    setSending(false);
-    if (!session && (limit || newCount >= BUCKEE_MAX)) setGated(true);
-    setTimeout(() => chatScrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }), 60);
-  };
 
   useEffect(() => {
     if (paused) return;
@@ -907,60 +830,25 @@ export function Home() {
         </div>
       </section>
 
-      {/* ── Talk to Buckee (voice) ── */}
+      {/* ── Meet Buckee (signup-first promo — one horizontal block) ── */}
       <section ref={talkRef} className={'band talk-band' + (buckeeIn ? ' talk-in' : '')}>
         <div className="talk-wrap">
-          {chatOpen && (
-            <div className="buckee-chat" role="log" aria-live="polite">
-              <div className="buckee-chat-head">
-                <span className="bubble-eyebrow">Speak to Buckee <span className="tb-note">(Multilingual)</span></span>
-                <button className="buckee-chat-close" aria-label="Close chat" onClick={() => setChatOpen(false)}>✕</button>
-              </div>
-              <div className="buckee-chat-scroll" ref={chatScrollRef}>
-                <div className="bmsg buckee">{BUCKEE_GREETING[talkLang]}</div>
-                {messages.map((m, i) => (
-                  <div key={i} className={'bmsg ' + (m.role === 'user' ? 'me' : 'buckee')}>{m.content}</div>
-                ))}
-                {sending && (
-                  <div className="bmsg buckee typing"><span></span><span></span><span></span></div>
-                )}
-              </div>
-              {gated ? (
-                <div className="buckee-gate">
-                  <div className="buckee-gate-text">{GATE_LINE[talkLang]}</div>
-                  <Link className="btn-primary" to="/login">Join now — free</Link>
-                </div>
-              ) : (
-                <form className="buckee-input" onSubmit={(e) => { e.preventDefault(); sendMessage(chatInput); }}>
-                  <input
-                    ref={chatInputRef}
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    placeholder={listening ? 'Listening…' : 'Ask Buckee anything…'}
-                    maxLength={500}
-                    aria-label="Message Buckee"
-                  />
-                  <button type="submit" className="buckee-send" aria-label="Send" disabled={sending || !chatInput.trim()}>→</button>
-                </form>
-              )}
-            </div>
-          )}
           <div className="talk-row">
           <span className="talk-buckee-wrap">
             <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
           </span>
           <div className="talk-card">
-            <button className={'mic-btn' + (listening ? ' listening' : '')} aria-label="Talk to Buckee" onClick={onMicClick}>
+            <a className="mic-btn" aria-label="Meet Buckee in the app" href={APP_URL}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="9" y="2.5" width="6" height="11" rx="3" fill="currentColor" stroke="none" />
                 <path d="M5 11a7 7 0 0 0 14 0" />
                 <line x1="12" y1="18" x2="12" y2="22" />
                 <line x1="8.5" y1="22" x2="15.5" y2="22" />
               </svg>
-            </button>
-            <div className="talk-text">
-              <div className="talk-eyebrow">Speak to Buckee <span className="tb-note">(Multilingual)</span></div>
-              <div className="talk-lede">Your AI concierge — ask him anything about the city.</div>
+            </a>
+            <div className="talk-promo">
+              <div className="promo-text">{BUCKEE_GREETING[talkLang]}</div>
+              <a className="btn-primary buckee-cta" href={APP_URL}>{BUCKEE_CTA[talkLang]} →</a>
             </div>
             <div className="lang-chips">
               {['EN', 'ES', 'FR', 'PT'].map((l) => (
