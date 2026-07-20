@@ -66,6 +66,8 @@ export type MemberSignUpInput = {
   phone: string;
   password: string;
   smsOptIn: boolean;
+  /** Which on-site CTA drove this signup (e.g. "home-hero", "login-page") — stored in auth metadata for analytics. */
+  source?: string;
 };
 
 const ALREADY_SIGNED_IN_ERROR =
@@ -91,7 +93,7 @@ export async function signUpMember(input: MemberSignUpInput): Promise<{ error: s
     password: input.password,
     options: {
       emailRedirectTo: `${window.location.origin}/`,
-      data: { name: input.name, phone: input.phone },
+      data: { name: input.name, phone: input.phone, signup_source: input.source ?? null },
     },
   });
 

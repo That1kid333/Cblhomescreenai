@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { APP_URL } from '../lib/constants';
 import { signUpMember } from '../lib/supabase/authClient';
+import { useAuth, firstNameOf } from '../lib/auth';
 
 /**
  * JoinModal — real member sign-up, right on the site.
@@ -113,6 +114,8 @@ type JoinModalProps = {
 };
 
 export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
+  const { session, profile, signIn } = useAuth();
+  const [mode, setMode] = useState<'signup' | 'signin'>('signup');
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -121,6 +124,11 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const [company, setCompany] = useState(''); // honeypot
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [siEmail, setSiEmail] = useState('');
+  const [siPassword, setSiPassword] = useState('');
+  const [siStatus, setSiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
+  const [siError, setSiError] = useState('');
 
   const panelRef = useRef<HTMLDivElement>(null);
   const firstFieldRef = useRef<HTMLInputElement>(null);
@@ -164,9 +172,23 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       document.body.style.overflow = prevOverflow;
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [open]);
+  }, [open, mode]);
 
   if (!open) return null;
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (siStatus === 'loading') return;
+    setSiStatus('loading');
+    setSiError('');
+    const { error } = await signIn(siEmail.trim(), siPassword);
+    if (error) {
+      setSiStatus('error');
+      setSiError(error);
+    } else {
+      setSiStatus('idle');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +206,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       phone,
       password,
       smsOptIn: Boolean(phone.trim() && smsConsent),
+      source,
     });
     if (error) {
       setStatus('error');
@@ -207,13 +230,67 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       <div className="panel" ref={panelRef}>
         <button className="close" aria-label="Close" onClick={onClose}>✕</button>
 
-        {status === 'success' ? (
+        {session ? (
+          <div className="success">
+            <div className="mark" aria-hidden="true">✓</div>
+            <h3>You're <span className="g">signed in.</span></h3>
+            <p>Welcome back, {firstNameOf(profile, session)} — your member card is in the top-right corner.</p>
+            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Open the CBL App →</a>
+          </div>
+        ) : status === 'success' ? (
           <div className="success">
             <div className="mark" aria-hidden="true">✓</div>
             <h3>You're <span className="g">in.</span></h3>
             <p>Your account is live — check your inbox for a welcome email, then sign into the CBL App with the email &amp; password you just created.</p>
             <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Open the CBL App →</a>
           </div>
+        ) : mode === 'signin' ? (
+          <>
+            <div className="eyebrow">welcome back</div>
+            <h2 id="cbl-join-title">Sign <span className="it">in.</span></h2>
+            <p className="sub">Use the email &amp; password from your City Bucket List account.</p>
+
+            {siStatus === 'error' && <div className="alert err" role="alert">{siError}</div>}
+
+            <form onSubmit={handleSignIn}>
+              <div className="field">
+                <label htmlFor="cbl-signin-email">Email <span className="req">*</span></label>
+                <input
+                  ref={firstFieldRef}
+                  id="cbl-signin-email"
+                  type="email"
+                  value={siEmail}
+                  onChange={(e) => setSiEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  autoComplete="email"
+                  required
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="cbl-signin-password">Password <span className="req">*</span></label>
+                <input
+                  id="cbl-signin-password"
+                  type="password"
+                  value={siPassword}
+                  onChange={(e) => setSiPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+              <button type="submit" className="submit" disabled={siStatus === 'loading'}>
+                {siStatus === 'loading' ? 'Signing in…' : 'Sign In'}
+              </button>
+              <p className="note">
+                Forgot your password? <a href={APP_URL} target="_blank" rel="noopener noreferrer">Reset it in the app →</a>
+              </p>
+            </form>
+
+            <div className="switch">New here?</div>
+            <button type="button" className="alt" style={{ border: 0 }} onClick={() => setMode('signup')}>
+              Create a Free Account →
+            </button>
+          </>
         ) : (
           <>
             <div className="eyebrow">join the list</div>
@@ -312,6 +389,12 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
                 {status === 'loading' ? 'Creating account…' : 'Create My Free Account'}
               </button>
               {accessNote}
+              <p className="note" style={{ textAlign: 'center' }}>
+                Already a member?{' '}
+                <button type="button" onClick={() => setMode('signin')} style={{ background: 'none', border: 0, color: GOLD, cursor: 'pointer', font: 'inherit', textDecoration: 'underline', padding: 0 }}>
+                  Sign in here →
+                </button>
+              </p>
             </form>
           </>
         )}
