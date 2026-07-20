@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { APP_URL } from '../lib/constants';
+import { signUpMember } from '../lib/supabase/authClient';
 
 /**
- * JoinModal — the two-path "Join Now — Free" chooser.
+ * JoinModal — real member sign-up, right on the site.
  *
- * Option A (featured): no-password quick join — first name + email (+ optional
- * cell with SMS consent) POSTed to /api/lead, which emails the lead to
- * info@citybucketlist.com and sends the visitor a branded confirmation.
- * Option B: link out to the full app signup at app.citybucketlist.com.
+ * Creates the SAME kind of account as app.citybucketlist.com's own rider
+ * signup (see authClient.ts's signUpMember, which mirrors that app's
+ * MembershipForm.tsx exactly): a real Supabase Auth user with a password,
+ * plus its `riders` row — so members can sign into the app, the directory,
+ * and everywhere else with that password, and get the real welcome email
+ * (send-rider-welcome edge function) instead of a marketing note.
  *
  * Scoped under .cbl-join (per-component <style> injection, like every page).
  * Mount as a direct child of a page's <main> — position:fixed breaks inside
@@ -113,6 +116,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [smsConsent, setSmsConsent] = useState(false);
   const [company, setCompany] = useState(''); // honeypot
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -167,38 +171,32 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (status === 'loading') return;
+    // Honeypot tripped — pretend success, do nothing (bots fill hidden fields).
+    if (company.trim()) {
+      setStatus('success');
+      return;
+    }
     setStatus('loading');
     setErrorMessage('');
-    try {
-      const res = await fetch('/api/lead', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstName,
-          email,
-          phone,
-          smsConsent: Boolean(phone.trim() && smsConsent),
-          source,
-          company,
-        }),
-      });
-      const result = await res.json().catch(() => ({}));
-      if (res.ok && result.success) {
-        setStatus('success');
-      } else {
-        setStatus('error');
-        setErrorMessage(result.error || 'Something went wrong. Please try again.');
-      }
-    } catch {
+    const { error } = await signUpMember({
+      name: firstName,
+      email,
+      phone,
+      password,
+      smsOptIn: Boolean(phone.trim() && smsConsent),
+    });
+    if (error) {
       setStatus('error');
-      setErrorMessage('Network error. Please check your connection and try again.');
+      setErrorMessage(error);
+    } else {
+      setStatus('success');
     }
   };
 
   const accessNote = (
     <p className="note">
-      Quick join keeps you in the loop. Full site &amp; app access requires a free
-      password-protected account — <a href={APP_URL} target="_blank" rel="noopener noreferrer">create yours here →</a>
+      This creates your real, password-protected City Bucket List account — the same one
+      you'll use in the CBL App. <a href={APP_URL} target="_blank" rel="noopener noreferrer">Get the app →</a>
     </p>
   );
 
@@ -213,15 +211,14 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
           <div className="success">
             <div className="mark" aria-hidden="true">✓</div>
             <h3>You're <span className="g">in.</span></h3>
-            <p>Check your inbox — we'll keep you posted on the best of the city.</p>
-            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
-            {accessNote}
+            <p>Your account is live — check your inbox for a welcome email, then sign into the CBL App with the email &amp; password you just created.</p>
+            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Open the CBL App →</a>
           </div>
         ) : (
           <>
             <div className="eyebrow">join the list</div>
             <h2 id="cbl-join-title">Get in <span className="it">free.</span></h2>
-            <p className="sub">First name, email, and cell — that's it. No password, no spam.</p>
+            <p className="sub">Create your real, password-protected City Bucket List account — takes under a minute.</p>
 
             {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 
@@ -270,6 +267,21 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
                 />
               </div>
 
+              <div className="field">
+                <label htmlFor="cbl-join-password">Password <span className="req">*</span></label>
+                <input
+                  id="cbl-join-password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Create a password (min 6 characters)"
+                  autoComplete="new-password"
+                  minLength={6}
+                  maxLength={72}
+                  required
+                />
+              </div>
+
               {phone.trim() !== '' && (
                 <div className="sms-consent">
                   <input
@@ -297,14 +309,10 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
               </div>
 
               <button type="submit" className="submit" disabled={status === 'loading'}>
-                {status === 'loading' ? 'Sending…' : 'Join Free — No Password'}
+                {status === 'loading' ? 'Creating account…' : 'Create My Free Account'}
               </button>
               {accessNote}
             </form>
-
-            <div className="switch">Prefer the full app?</div>
-            <a className="alt" href={APP_URL} target="_blank" rel="noopener noreferrer">Create your free account →</a>
-            <p className="alt-cap">app.citybucketlist.com</p>
           </>
         )}
       </div>
