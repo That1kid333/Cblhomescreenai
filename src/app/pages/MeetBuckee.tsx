@@ -3,8 +3,9 @@ import { Link } from 'react-router';
 import buckeeConcierge from '../../assets/buckee_concierge.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
-import { useBuckeeChat, BUCKEE_GREETING, BUCKEE_GATE_LINE } from '../lib/useBuckeeChat';
+import { useBuckeeChat, BUCKEE_GREETING } from '../lib/useBuckeeChat';
 import { useAuth } from '../lib/auth';
+import { APP_URL } from '../lib/constants';
 
 /**
  * Meet the Buckee Family — ported from the concierge-hero mockup into the
@@ -96,8 +97,9 @@ const CHAR_STATUS: Record<CharKey, 'on-duty' | 'coming-soon'> = {
 // easy toggling. (Optional future polish: add poster frames so the black first frame isn't blank.)
 const SHOW_CREW_VIDEOS = true;
 
-// §5b.3 — the wired Talk-to-Buckee bar on this page (same buckee-public endpoint + shared
-// teaser counter as the home screen). Set false to hide behind a flag if it ships pre-wiring.
+// §5b.3 — the Talk-to-Buckee bar on this page. Signup-first like Home: the "chat" is
+// fully scripted/local (no public AI endpoint — see useBuckeeChat.ts); Buckee's one
+// reply invites the visitor into the app. Set false to hide the bar entirely.
 const SHOW_MEET_BUCKEE_CHAT = true;
 
 // §5b.2 — prompt each "What can Buckee do?" card fires into the chat (empty = just open + focus).
@@ -309,7 +311,7 @@ export function MeetBuckee() {
         </div>
       </section>
 
-      {/* ── TALK TO BUCKEE — wired teaser chat (§5b.3) ── */}
+      {/* ── TALK TO BUCKEE — scripted signup-first teaser (§5b.3) ── */}
       {SHOW_MEET_BUCKEE_CHAT && (
       <section className="wrap voice" ref={chatBarRef}>
         {chat.open && (
@@ -322,9 +324,13 @@ export function MeetBuckee() {
               {chat.sending && <div className="bkmsg bot typing"><span></span><span></span><span></span></div>}
             </div>
             {chat.gated ? (
+              /* Buckee's bubble already made the pitch — the gate is just the CTA. */
               <div className="bkgate">
-                <div>{BUCKEE_GATE_LINE[lang]}</div>
-                <Link className="btn-gold" to="/login">Join now — free</Link>
+                {session ? (
+                  <a className="btn-gold" href={APP_URL}>Open the app →</a>
+                ) : (
+                  <Link className="btn-gold" to="/login">Join now — free</Link>
+                )}
               </div>
             ) : (
               <form className="bkinput" onSubmit={(e) => { e.preventDefault(); chat.send(chat.input); }}>
