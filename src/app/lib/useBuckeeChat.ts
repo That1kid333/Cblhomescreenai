@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { BUCKEE_PUBLIC_URL, SUPABASE_ANON_KEY } from './constants';
+import { useRef, useState } from 'react';
 
-// Free teaser chat shared by the Home hero bar and the Meet Buckee page.
-// One localStorage key => the 5-message limit is shared SITE-WIDE (handoff §5b.3).
-export const BUCKEE_MAX = 5;
-const COUNT_KEY = 'buckee_teaser_count';
+// Meet-Buckee scripted teaser — signup-first, NO public chat (same fix as Home).
+// The marketing site deliberately never calls an AI endpoint: a public,
+// unauthenticated Buckee would be an abuse/cost vector. Whatever the visitor
+// asks, Buckee replies locally with an invitation to join and meet him in the
+// app, then the input gives way to the Join/Open-the-app CTA.
 
 export const BUCKEE_GREETING: Record<string, string> = {
   EN: "Hey, I'm Buckee 👋 Ask me anything about the city.",
@@ -12,12 +12,22 @@ export const BUCKEE_GREETING: Record<string, string> = {
   FR: 'Salut, je suis Buckee 👋 Demandez-moi ce que vous voulez sur la ville.',
   PT: 'Oi, eu sou o Buckee 👋 Pergunte o que quiser sobre a cidade.',
 };
-export const BUCKEE_GATE_LINE: Record<string, string> = {
-  EN: "I'd love to keep helping — join free and I'm all yours. 💛",
-  ES: 'Me encantaría seguir ayudándote: únete gratis y estoy a tu disposición. 💛',
-  FR: "J'adorerais continuer à vous aider — inscrivez-vous gratuitement et je suis à vous. 💛",
-  PT: 'Adoraria continuar ajudando — cadastre-se grátis e estou à disposição. 💛',
+
+// Buckee's one scripted reply: sign up free and meet him in the app.
+const BUCKEE_REPLY: Record<string, string> = {
+  EN: 'Please sign up for free and meet me in the app! The full me — trip planning, rides, reservations — lives there. 💛',
+  ES: '¡Regístrate gratis y nos vemos en la app! El Buckee completo — planes, traslados, reservas — vive ahí. 💛',
+  FR: "Inscrivez-vous gratuitement et retrouvez-moi dans l'appli ! Le vrai moi — voyages, trajets, réservations — vit là-bas. 💛",
+  PT: 'Cadastre-se grátis e me encontre no app! O Buckee completo — viagens, corridas, reservas — mora lá. 💛',
 };
+// Signed-in members skip the signup pitch and get pointed straight at the app.
+const BUCKEE_REPLY_MEMBER: Record<string, string> = {
+  EN: "You're already in — open the app and I'm all yours! Trip planning, rides, reservations. 💛",
+  ES: 'Ya eres miembro — ¡abre la app y estoy a tu disposición! Planes, traslados, reservas. 💛',
+  FR: "Vous êtes déjà membre — ouvrez l'appli et je suis à vous ! Voyages, trajets, réservations. 💛",
+  PT: 'Você já é membro — abra o app e estou à disposição! Viagens, corridas, reservas. 💛',
+};
+
 const LANG_LOCALE: Record<string, string> = { EN: 'en-US', ES: 'es-ES', FR: 'fr-FR', PT: 'pt-BR' };
 
 export type BuckeeMessage = { role: 'user' | 'assistant'; content: string };
@@ -33,14 +43,7 @@ export function useBuckeeChat(lang: string, hasSession?: boolean) {
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (hasSession) {
-      setGated(false);
-    } else if (Number(localStorage.getItem(COUNT_KEY) || '0') >= BUCKEE_MAX) {
-      setGated(true);
-    }
-  }, [hasSession]);
-
+  // Mic is browser-local SpeechRecognition — it only fills the input, no network.
   const startMic = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { inputRef.current?.focus(); return; } // graceful fallback: focus the input
@@ -68,39 +71,20 @@ export function useBuckeeChat(lang: string, hasSession?: boolean) {
     setTimeout(() => inputRef.current?.focus(), 60);
   };
 
-  const send = async (text: string) => {
+  const send = (text: string) => {
     const content = text.trim();
     if (!content || sending || gated) return;
-    const prevCount = Number(localStorage.getItem(COUNT_KEY) || '0');
-    if (!hasSession && prevCount >= BUCKEE_MAX) { setGated(true); return; }
-
-    const next = [...messages, { role: 'user' as const, content }];
-    setMessages(next);
+    setMessages((m) => [...m, { role: 'user', content }]);
     setInput('');
     setSending(true);
-    const newCount = prevCount + 1;
-    if (!hasSession) {
-      localStorage.setItem(COUNT_KEY, String(newCount));
-    }
-
-    let replyText = '';
-    let limit = false;
-    try {
-      const res = await fetch(BUCKEE_PUBLIC_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
-        body: JSON.stringify({ messages: next, language: lang }),
-      });
-      const data = await res.json();
-      replyText = data?.message || '…';
-      limit = !!data?.limitReached;
-    } catch {
-      replyText = "I'm just warming up — I'll have real answers the moment we go live. What else are you curious about? 😊";
-    }
-    setMessages((m) => [...m, { role: 'assistant', content: replyText }]);
-    setSending(false);
-    if (!hasSession && (limit || newCount >= BUCKEE_MAX)) setGated(true);
-    setTimeout(() => scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }), 60);
+    // Brief typing-dots beat so the scripted reply still feels like Buckee.
+    setTimeout(() => {
+      const reply = (hasSession ? BUCKEE_REPLY_MEMBER : BUCKEE_REPLY)[lang] || BUCKEE_REPLY.EN;
+      setMessages((m) => [...m, { role: 'assistant', content: reply }]);
+      setSending(false);
+      setGated(true);
+      setTimeout(() => scrollRef.current?.scrollTo({ top: 999999, behavior: 'smooth' }), 60);
+    }, 900);
   };
 
   // Used by the Meet Buckee prompt-starter cards: open the chat and fire a prompt.
