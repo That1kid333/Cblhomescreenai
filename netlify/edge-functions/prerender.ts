@@ -386,7 +386,7 @@ export default async function handler(req: Request, context: Context): Promise<R
               description: staticPage.description,
               sameAs: [
                 'https://www.youtube.com/@CitybucketlistCBL',
-                'https://www.instagram.com/citybucketlist_pittsburgh/',
+                'https://www.instagram.com/citybucketlist_com/',
                 'https://www.tiktok.com/@citybucketlist.com',
                 'https://x.com/citybucketlists',
                 'https://www.facebook.com/groups/cbl.mobi',
