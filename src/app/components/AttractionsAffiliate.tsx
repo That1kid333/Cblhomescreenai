@@ -17,6 +17,7 @@
  * Myriad/Playfair/mono, diagonal-corner image framing (24px 0 24px 0), no gold
  * borders on images.
  */
+import { type ReactNode } from 'react';
 import { AFFILIATE_REL, TIQETS_CITIES, affiliateHref, tiqetsCityFor, type TiqetsCity } from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 
@@ -43,13 +44,41 @@ function TicketIcon({ s = 14, color = '#000' }: { s?: number; color?: string }) 
   );
 }
 
-export function AttractionsAffiliate({ activeCity }: { activeCity: string }) {
-  const local = tiqetsCityFor(activeCity);
+// A compact source-briefing strip so visitors know who fulfills the booking —
+// the official Tiqets teal wordmark + a one-line description. Builds trust and
+// keeps the paid partner clearly distinct from CBL's own brand.
+function TiqetsIntro({ placement }: { placement: string }) {
+  return (
+    <div className="aff-intro" data-placement={placement}>
+      <img className="aff-intro-logo" src="/attractions/tiqets-logo.svg" alt="Tiqets" width={92} height={35} />
+      <p className="aff-intro-copy">
+        <b>Tickets powered by Tiqets</b> — an online booking platform for museums and attractions
+        that connects travelers worldwide with more ways to experience culture.
+      </p>
+    </div>
+  );
+}
+
+export function AttractionsAffiliate({
+  activeCity,
+  destinationsOnly = false,
+  heading,
+  eyebrow,
+  sub,
+}: {
+  activeCity?: string;
+  destinationsOnly?: boolean;
+  heading?: ReactNode;
+  eyebrow?: string;
+  sub?: string;
+}) {
+  const local = destinationsOnly ? null : tiqetsCityFor(activeCity);
   const localLink = local ? affiliateHref('tiqets', local.target, `attractions_${local.key}_local`) : null;
 
   // Destination cards: every covered city except the one already shown locally.
+  const placementBase = destinationsOnly ? 'travels' : 'attractions';
   const destinations = TIQETS_CITIES.filter((c) => c.key !== local?.key)
-    .map((c) => ({ city: c, link: affiliateHref('tiqets', c.target, `attractions_${c.key}_dest`) }))
+    .map((c) => ({ city: c, link: affiliateHref('tiqets', c.target, `${placementBase}_${c.key}_dest`) }))
     .filter((d): d is { city: TiqetsCity; link: NonNullable<ReturnType<typeof affiliateHref>> } => !!d.link);
 
   const showLocal = !!(local && localLink);
@@ -59,6 +88,12 @@ export function AttractionsAffiliate({ activeCity }: { activeCity: string }) {
   return (
     <div className="cbl-aff">
       <style>{CSS}</style>
+
+      <section className="band tight aff-intro-band">
+        <div className="band-inner">
+          <TiqetsIntro placement={placementBase} />
+        </div>
+      </section>
 
       {showLocal && local && localLink && (
         <section className="band">
@@ -99,11 +134,11 @@ export function AttractionsAffiliate({ activeCity }: { activeCity: string }) {
         <section className="band tight">
           <div className="band-inner">
             <div className="aff-head">
-              <div className="section-eyebrow">plan your next trip</div>
+              <div className="section-eyebrow">{eyebrow ?? 'plan your next trip'}</div>
               <h2 className="section-h2">
-                Where to <span className="it">next?</span>
+                {heading ?? (<>Where to <span className="it">next?</span></>)}
               </h2>
-              <p className="aff-sub">Skip-the-line tickets and timed entry in the world's most-visited cities.</p>
+              <p className="aff-sub">{sub ?? "Skip-the-line tickets and timed entry in the world's most-visited cities."}</p>
             </div>
             <div className="dest-grid">
               {destinations.map(({ city, link }) => (
@@ -146,6 +181,17 @@ const CSS = `
 .cbl-aff section.band { padding:36px 48px 20px; }
 .cbl-aff section.band.tight { padding:20px 48px 28px; }
 .cbl-aff .band-inner { max-width:1280px; margin:0 auto; }
+
+/* Source-briefing strip (Tiqets logo + one-liner) */
+.cbl-aff .aff-intro-band { padding-bottom:6px; }
+.cbl-aff .aff-intro {
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  background:#0F0F0F; border:1px solid rgba(255,255,255,.08);
+  border-radius:16px 0 16px 0; padding:14px 18px;
+}
+.cbl-aff .aff-intro-logo { height:30px; width:auto; flex-shrink:0; display:block; }
+.cbl-aff .aff-intro-copy { margin:0; font-size:13px; line-height:1.5; color:#9A9A9A; flex:1; min-width:220px; }
+.cbl-aff .aff-intro-copy b { color:#D4D4D4; font-weight:700; }
 
 .cbl-aff .aff-head { margin-bottom:20px; }
 .cbl-aff .section-eyebrow {
