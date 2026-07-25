@@ -108,21 +108,22 @@ export type TiqetsCity = {
   name: string;
   country: string;
   target: string;
-  tint: string;      // per-city gradient tint over the shared map texture
+  tint: string;      // per-city gradient tint over the shared map texture (fallback)
+  photo?: string;    // self-hosted city photo (e.g. /attractions/cities/paris.jpg); overrides tint
   fromPrice: string;
   count: string;
 };
 
 export const TIQETS_CITIES: TiqetsCity[] = [
-  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', target: 'https://tiqets.com/en/new-york-c66097/', tint: 'rgba(201,151,66,.55), rgba(10,10,10,.86)', fromPrice: 'from $22', count: '250+ things to do' },
-  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', target: 'https://www.tiqets.com/en/search?q=Paris', tint: 'rgba(120,90,180,.5), rgba(10,10,10,.86)', fromPrice: 'from $18', count: '200+ things to do' },
-  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Rome', tint: 'rgba(180,110,60,.5), rgba(10,10,10,.86)', fromPrice: 'from $16', count: '220+ things to do' },
-  { key: 'milan', match: ['milan', 'milano'], name: 'Milan', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Milan', tint: 'rgba(90,120,150,.5), rgba(10,10,10,.86)', fromPrice: 'from $14', count: '120+ things to do' },
-  { key: 'florence', match: ['florence', 'firenze'], name: 'Florence', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Florence', tint: 'rgba(160,120,70,.5), rgba(10,10,10,.86)', fromPrice: 'from $17', count: '90+ things to do' },
-  { key: 'venice', match: ['venice', 'venezia'], name: 'Venice', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Venice', tint: 'rgba(70,130,150,.5), rgba(10,10,10,.86)', fromPrice: 'from $15', count: '80+ things to do' },
-  { key: 'lisbon', match: ['lisbon', 'lisboa'], name: 'Lisbon', country: 'Portugal', target: 'https://www.tiqets.com/en/search?q=Lisbon', tint: 'rgba(200,140,80,.5), rgba(10,10,10,.86)', fromPrice: 'from $13', count: '110+ things to do' },
-  { key: 'amsterdam', match: ['amsterdam'], name: 'Amsterdam', country: 'Netherlands', target: 'https://www.tiqets.com/en/search?q=Amsterdam', tint: 'rgba(150,90,60,.5), rgba(10,10,10,.86)', fromPrice: 'from $19', count: '160+ things to do' },
-  { key: 'london', match: ['london'], name: 'London', country: 'UK', target: 'https://www.tiqets.com/en/search?q=London', tint: 'rgba(100,110,130,.5), rgba(10,10,10,.86)', fromPrice: 'from $21', count: '240+ things to do' },
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', target: 'https://tiqets.com/en/new-york-c66097/', tint: 'rgba(201,151,66,.55), rgba(10,10,10,.86)', photo: '/attractions/cities/new-york.jpg', fromPrice: 'from $22', count: '250+ things to do' },
+  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', target: 'https://www.tiqets.com/en/search?q=Paris', tint: 'rgba(120,90,180,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/paris.jpg', fromPrice: 'from $18', count: '200+ things to do' },
+  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Rome', tint: 'rgba(180,110,60,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/rome.jpg', fromPrice: 'from $16', count: '220+ things to do' },
+  { key: 'milan', match: ['milan', 'milano'], name: 'Milan', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Milan', tint: 'rgba(90,120,150,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/milan.jpg', fromPrice: 'from $14', count: '120+ things to do' },
+  { key: 'florence', match: ['florence', 'firenze'], name: 'Florence', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Florence', tint: 'rgba(160,120,70,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/florence.jpg', fromPrice: 'from $17', count: '90+ things to do' },
+  { key: 'venice', match: ['venice', 'venezia'], name: 'Venice', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Venice', tint: 'rgba(70,130,150,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/venice.jpg', fromPrice: 'from $15', count: '80+ things to do' },
+  { key: 'lisbon', match: ['lisbon', 'lisboa'], name: 'Lisbon', country: 'Portugal', target: 'https://www.tiqets.com/en/search?q=Lisbon', tint: 'rgba(200,140,80,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/lisbon.jpg', fromPrice: 'from $13', count: '110+ things to do' },
+  { key: 'amsterdam', match: ['amsterdam'], name: 'Amsterdam', country: 'Netherlands', target: 'https://www.tiqets.com/en/search?q=Amsterdam', tint: 'rgba(150,90,60,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/amsterdam.jpg', fromPrice: 'from $19', count: '160+ things to do' },
+  { key: 'london', match: ['london'], name: 'London', country: 'UK', target: 'https://www.tiqets.com/en/search?q=London', tint: 'rgba(100,110,130,.5), rgba(10,10,10,.86)', photo: '/attractions/cities/london.jpg', fromPrice: 'from $21', count: '240+ things to do' },
 ];
 
 /** Find the Tiqets city that matches the visitor's active city, if any. */

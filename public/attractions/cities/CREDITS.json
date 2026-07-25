@@ -1,0 +1,76 @@
+[
+  {
+    "key": "new-york",
+    "query": "New York City skyline",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHg5MDAwNTctaW1hZ2Uta3d2eGJmbDYuanBn.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/5920420/photo-image-public-domain-free-city"
+  },
+  {
+    "key": "paris",
+    "query": "Paris Eiffel Tower cityscape",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdXB3azYxOTAwNjM2LXdpa2ltZWRpYS1pbWFnZS1rb3dldWJqNi1remVsb3BnbS5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/3285771/free-photo-image-paris-cityscape-tower-bridge"
+  },
+  {
+    "key": "rome",
+    "query": "Rome Colosseum",
+    "src": "rawpixel.com (CC0)",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/9641643/views-rome-the-colosseum-giovanni-battista-piranesi",
+    "note": "re-sourced 2026-07-25 (original was a PD engraving; replaced with a real photo)"
+  },
+  {
+    "key": "milan",
+    "query": "Milan Duomo cathedral",
+    "src": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL3B4OTg2MDU2LWltYWdlLWt3dnVxb2N3LmpwZw.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/5903685/the-milan-cathedral-free-public-domain-cc0-photo"
+  },
+  {
+    "key": "florence",
+    "query": "Florence cathedral skyline",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdXB3azYyMDY3NDA3LXdpa2ltZWRpYS1pbWFnZS1rb3dmbWRrai5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/3286368/free-photo-image-italy-firenze-florence"
+  },
+  {
+    "key": "venice",
+    "query": "Venice Grand Canal gondola",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvZnJ2ZW5pY2VfZ29uZG9sYXNfcGFya2luZ19wb3J0LWltYWdlLWt5YmNoNnhmLmpwZw.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/6030325/photo-image-public-domain-free"
+  },
+  {
+    "key": "lisbon",
+    "query": "Lisbon Portugal tram street",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdXB3azYxODk5ODI1LXdpa2ltZWRpYS1pbWFnZS1rb3dlejdwMi5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/3285790/free-photo-image-portugal-lisbon-street"
+  },
+  {
+    "key": "amsterdam",
+    "query": "Amsterdam canal houses",
+    "src": "rawpixel.com (CC0)",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/514805/free-illustration-image-vintage-architecture-antique-architectural-illustrations",
+    "note": "re-sourced 2026-07-25 (original was a PD engraving; replaced with a real photo)"
+  },
+  {
+    "key": "london",
+    "query": "London Tower Bridge",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvaXMxNDc4NC1pbWFnZS1rd3Z3dTJyay5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel",
+    "openverse": "https://www.rawpixel.com/image/5917218/image-public-domain-water-free"
+  }
+]
