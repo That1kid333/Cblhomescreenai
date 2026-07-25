@@ -4,37 +4,38 @@
  * never hardcode an affiliate URL; they call buildAffiliateLink() / affiliateHref()
  * with a placement tag and let this module decide the destination.
  *
- * ── DARK LAUNCH ──────────────────────────────────────────────────────────────
- * Each program's base deep link (PROGRAM_BASE) is empty until the real link
- * arrives from the Travelpayouts dashboard's "Create link" tool. While a program
- * isn't wired, buildAffiliateLink() returns null and every UI block whose links
- * are null hides itself — so production never ships an untracked or off-city
- * affiliate link. On preview/localhost, affiliateHref() falls back to the plain
- * (un-monetized) destination purely so the design can be reviewed before go-live.
+ * Base links are the real, live Travelpayouts deeplinks (generated 2026-07-25).
+ * They carry our marker (704468), traffic source (trs=499800), the per-brand
+ * campaign_id and program-placement id (p), and a url-encoded destination (u).
+ * buildAffiliateLink() re-targets `u` to the specific city page and appends a
+ * per-placement sub_id; every other param is passed through UNCHANGED per brand.
+ *
+ * NOTE: these use `marker=` (NOT `shmarker=`) and have no `promo_id` — that's the
+ * standard tp.media/r deeplink format. Do not "normalize" the params; shmarker
+ * belongs to White Label widgets, which we don't use.
  *
  * Compliance (per the CBL media kit): every affiliate anchor uses
  * target="_blank" rel="sponsored nofollow noopener", and any section containing
  * affiliate links renders <AffiliateDisclosure/>.
  */
 
-// Our Travelpayouts affiliate marker / account id.
+// Our Travelpayouts affiliate marker / account id, and our traffic source.
+// Both are baked into every base link below; kept here for reference/config.
 export const TP_MARKER = '704468';
+export const TP_TRS = '499800';
 
 /**
- * Base Travelpayouts deep link per program, copied from the "Create link" tool.
- * These already carry the marker, campaign/promo ids, AND our traffic-source
- * (trs) — so the base link is the single source of truth. buildAffiliateLink()
- * injects a per-placement sub_id into the marker and appends the visitor-facing
- * destination. Empty string = NOT YET WIRED → links gate off (see module note).
- *
- * TO GO LIVE: paste each program's base link here. That's the only change needed.
+ * Live base Travelpayouts deeplink per program (from the dashboard). Single
+ * source of truth — buildAffiliateLink() re-targets `u` and adds a sub_id, and
+ * passes campaign_id/marker/p/trs through unchanged. An empty string would gate
+ * that program off (buildAffiliateLink → null → UI hides it); all five are wired.
  */
 const PROGRAM_BASE: Record<Program, string> = {
-  tiqets: '',
-  klook: '',
-  gocity: '',
-  ticketnetwork: '',
-  wegotrip: '',
+  tiqets: 'https://tp.media/r?campaign_id=89&marker=704468&p=2074&trs=499800&u=https%3A%2F%2Ftiqets.com',
+  klook: 'https://tp.media/r?campaign_id=137&marker=704468&p=4110&trs=499800&u=https%3A%2F%2Fwww.klook.com',
+  gocity: 'https://tp.media/r?campaign_id=62&marker=704468&p=1942&trs=499800&u=https%3A%2F%2Fgocity.com',
+  ticketnetwork: 'https://tp.media/r?campaign_id=72&marker=704468&p=1948&trs=499800&u=https%3A%2F%2Fwww.ticketnetwork.com',
+  wegotrip: 'https://tp.media/r?campaign_id=150&marker=704468&p=4487&trs=499800&u=https%3A%2F%2Fwegotrip.com',
 };
 
 export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip';
@@ -53,12 +54,14 @@ export function isProgramReady(program: Program): boolean {
 }
 
 /**
- * Wrap a destination in our tracked Travelpayouts link, tagging the placement
- * as a sub_id so TP reports show which surface earned (e.g. attractions_nyc_local).
- * Returns null while the program is unwired — callers treat null as "hide me".
+ * Wrap a destination in our tracked Travelpayouts link: take the program's base
+ * deeplink, point `u` at the specific city page, and tag the placement as a
+ * sub_id so TP reports show which surface earned (e.g. attractions_new-york_local).
+ * campaign_id / marker / p / trs pass through unchanged. Returns null if the
+ * program is unwired or no destination is given — callers treat null as "hide me".
  *
- *   base:  https://tp.media/click?shmarker=704468&campaign_id=..&trs=..
- *   out:   https://tp.media/click?shmarker=704468.attractions_nyc_local&campaign_id=..&trs=..&sub_id=attractions_nyc_local&u=<target>
+ *   base: https://tp.media/r?campaign_id=89&marker=704468&p=2074&trs=499800&u=https%3A%2F%2Ftiqets.com
+ *   out:  https://tp.media/r?campaign_id=89&marker=704468&p=2074&trs=499800&u=<enc city page>&sub_id=<placement>
  */
 export function buildAffiliateLink(
   program: Program,
@@ -68,15 +71,10 @@ export function buildAffiliateLink(
   const base = PROGRAM_BASE[program];
   if (!base || !target) return null;
 
-  // Inject the placement as a sub_id on the marker: 704468 -> 704468.placement.
-  let url = base.includes('shmarker=')
-    ? base.replace(/(shmarker=)([^&]+)/, (_m, p1, val) => `${p1}${String(val).split('.')[0]}.${placement}`)
-    : `${base}${base.includes('?') ? '&' : '?'}shmarker=${TP_MARKER}.${placement}`;
-
-  // Redundant standalone sub_id (some TP reports key on this) + the destination.
-  url += `&sub_id=${encodeURIComponent(placement)}`;
-  url += `&u=${encodeURIComponent(target)}`;
-  return url;
+  const url = new URL(base);
+  url.searchParams.set('u', target); // URL handles the encoding; replaces the base destination
+  url.searchParams.set('sub_id', placement);
+  return url.toString();
 }
 
 export type AffiliateHref = { href: string; tracked: boolean } | null;
@@ -100,9 +98,10 @@ export const AFFILIATE_REL = 'sponsored nofollow noopener';
 // ── Tiqets city coverage ─────────────────────────────────────────────────────
 // The only cities Tiqets currently sells (per program terms). `match` holds the
 // activeCity strings (lowercased) that resolve to this destination so detection
-// variants ("New York City", "NYC") all map correctly. `target` is a placeholder
-// Tiqets destination that is REPLACED by the exact "Create link" URL at go-live;
-// `photo`/`fromPrice`/`count` are card copy and can be tuned freely.
+// variants ("New York City", "NYC") all map correctly. `target` is the Tiqets
+// page `u` points at — New York uses its verified city page (c66097); the rest
+// use guaranteed-valid Tiqets search URLs (swap in verified city-page IDs later
+// for nicer landing pages). `tint`/`fromPrice`/`count` are card copy, tune freely.
 export type TiqetsCity = {
   key: string;
   match: string[];
@@ -115,7 +114,7 @@ export type TiqetsCity = {
 };
 
 export const TIQETS_CITIES: TiqetsCity[] = [
-  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', target: 'https://www.tiqets.com/en/search?q=New%20York', tint: 'rgba(201,151,66,.55), rgba(10,10,10,.86)', fromPrice: 'from $22', count: '250+ things to do' },
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', target: 'https://tiqets.com/en/new-york-c66097/', tint: 'rgba(201,151,66,.55), rgba(10,10,10,.86)', fromPrice: 'from $22', count: '250+ things to do' },
   { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', target: 'https://www.tiqets.com/en/search?q=Paris', tint: 'rgba(120,90,180,.5), rgba(10,10,10,.86)', fromPrice: 'from $18', count: '200+ things to do' },
   { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Rome', tint: 'rgba(180,110,60,.5), rgba(10,10,10,.86)', fromPrice: 'from $16', count: '220+ things to do' },
   { key: 'milan', match: ['milan', 'milano'], name: 'Milan', country: 'Italy', target: 'https://www.tiqets.com/en/search?q=Milan', tint: 'rgba(90,120,150,.5), rgba(10,10,10,.86)', fromPrice: 'from $14', count: '120+ things to do' },
