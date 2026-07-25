@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 
 // Travel booking (search + Book Now) is gated OFF until a booking-partner contract
 // is live (KAYAK still in case-by-case review; Travelpayouts' Booking.com/Expedia
@@ -1241,6 +1242,17 @@ export function Travels() {
           <DealsBand />
         </>
       )}
+
+      {/* Things to do at the destination — Tiqets experiences (Phase 1 affiliate).
+          Complements the KAYAK flights/hotels; self-hides until the TP links are
+          wired. destinationsOnly = no location-gated local band on this page. */}
+      <AttractionsAffiliate
+        destinationsOnly
+        eyebrow="things to do · at your destination"
+        heading={<>Book the <span className="it">experiences</span></>}
+        sub="Skip-the-line museum and attraction tickets for the world's most-visited cities."
+      />
+
       <PlatformNotice variant="marketplace" />
     </main>
   );
