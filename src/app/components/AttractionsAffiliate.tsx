@@ -26,8 +26,13 @@ const ITALIC = "'Playfair Display', serif";
 const GOLD = '#C99742';
 const MAP_TEXTURE = '/eats/imagery/cbl-map-backdrop.jpg';
 
+// Real self-hosted photo when set (neutral bottom scrim keeps the city name/price
+// legible); otherwise the per-city gradient tint over the shared map texture.
+const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30) 50%, rgba(10,10,10,.90) 100%)';
 const cityBg = (c: TiqetsCity) =>
-  `linear-gradient(150deg, ${c.tint}), url('${MAP_TEXTURE}')`;
+  c.photo
+    ? `${PHOTO_SCRIM}, url('${c.photo}')`
+    : `linear-gradient(150deg, ${c.tint}), url('${MAP_TEXTURE}')`;
 
 function TicketIcon({ s = 14, color = '#000' }: { s?: number; color?: string }) {
   return (
