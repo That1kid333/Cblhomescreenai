@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 
 // Travel booking (search + Book Now) is gated OFF until a booking-partner contract
 // is live (KAYAK still in case-by-case review; Travelpayouts' Booking.com/Expedia
@@ -1139,8 +1140,11 @@ function DealsBand() {
 export function Travels() {
   const [tab, setTab] = useState<TabKey>('HOTELS');
 
-  const stays = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR' ? STAYS[tab] : null;
   const isLodging = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR';
+  // Lodging (KAYAK) is still "Coming Soon" — show a tight top-3 sample so the page
+  // leads with the live money-makers (the Tiqets experiences band) instead of a
+  // long list of not-yet-bookable rooms.
+  const stays = isLodging ? STAYS[tab].slice(0, 3) : null;
 
   return (
     <main className="cbl-travels">
@@ -1231,6 +1235,17 @@ export function Travels() {
         </section>
       )}
 
+      {/* Money-maker up front: Tiqets experiences (Phase 1 affiliate) render right
+          after the tab content — above the Buckee/Deals promo bands — since lodging
+          is still Coming Soon. Complements the KAYAK flights/hotels; self-hides until
+          the TP links are wired. destinationsOnly = no location-gated local band here. */}
+      <AttractionsAffiliate
+        destinationsOnly
+        eyebrow="things to do · at your destination"
+        heading={<>Book the <span className="it">experiences</span></>}
+        sub="Skip-the-line museum and attraction tickets for the world's most-visited cities."
+      />
+
       {tab === 'BUCKEE' && <BuckeeBand />}
       {tab === 'DEALS' && <DealsBand />}
 
@@ -1241,6 +1256,7 @@ export function Travels() {
           <DealsBand />
         </>
       )}
+
       <PlatformNotice variant="marketplace" />
     </main>
   );
