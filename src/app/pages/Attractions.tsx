@@ -3,6 +3,7 @@ import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 
 /**
  * Attractions — location-aware live listings.
@@ -1666,6 +1667,12 @@ export function Attractions() {
           </div>
         </div>
       </section>
+
+      {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
+          plus a "Where to next?" destinations band shown everywhere. Self-hides
+          on production until the Travelpayouts links are wired (see affiliates.ts). */}
+      <AttractionsAffiliate activeCity={activeCity} />
+
       <SuggestBand />
       <PlatformNotice variant="marketplace" />
       <AttractionModal a={modalA} onClose={() => setModalA(null)} />
