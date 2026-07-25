@@ -89,12 +89,6 @@ export function AttractionsAffiliate({
     <div className="cbl-aff">
       <style>{CSS}</style>
 
-      <section className="band tight aff-intro-band">
-        <div className="band-inner">
-          <TiqetsIntro placement={placementBase} />
-        </div>
-      </section>
-
       {showLocal && local && localLink && (
         <section className="band">
           <div className="band-inner">
@@ -104,6 +98,7 @@ export function AttractionsAffiliate({
                 Skip the line <span className="it">in {local.name}</span>
               </h2>
             </div>
+            <TiqetsIntro placement={placementBase} />
             <a
               className="local-feature"
               href={localLink.href}
@@ -140,6 +135,7 @@ export function AttractionsAffiliate({
               </h2>
               <p className="aff-sub">{sub ?? "Skip-the-line tickets and timed entry in the world's most-visited cities."}</p>
             </div>
+            {!showLocal && <TiqetsIntro placement={placementBase} />}
             <div className="dest-grid">
               {destinations.map(({ city, link }) => (
                 <a
@@ -182,12 +178,11 @@ const CSS = `
 .cbl-aff section.band.tight { padding:20px 48px 28px; }
 .cbl-aff .band-inner { max-width:1280px; margin:0 auto; }
 
-/* Source-briefing strip (Tiqets logo + one-liner) */
-.cbl-aff .aff-intro-band { padding-bottom:6px; }
+/* Source-briefing strip (Tiqets logo + one-liner) — sits directly above the cards */
 .cbl-aff .aff-intro {
   display:flex; align-items:center; gap:16px; flex-wrap:wrap;
   background:#0F0F0F; border:1px solid rgba(255,255,255,.08);
-  border-radius:16px 0 16px 0; padding:14px 18px;
+  border-radius:16px 0 16px 0; padding:14px 18px; margin-bottom:18px;
 }
 .cbl-aff .aff-intro-logo { height:30px; width:auto; flex-shrink:0; display:block; }
 .cbl-aff .aff-intro-copy { margin:0; font-size:13px; line-height:1.5; color:#9A9A9A; flex:1; min-width:220px; }
