@@ -170,8 +170,8 @@ const CSS = `
 /* Trusted-partners strip — official logos on white chips */
 .cbl-aff .partners { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
 .cbl-aff .partners .p-label { font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
-.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); }
-.cbl-aff .logo-chip img { height:20px; width:auto; display:block; }
+.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); height:32px; }
+.cbl-aff .logo-chip img { max-height:20px; max-width:104px; width:auto; height:auto; display:block; }
 
 /* City card grid (opens the on-site detail panel) */
 .cbl-aff .aff-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
