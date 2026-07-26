@@ -20,9 +20,10 @@
 import { useState } from 'react';
 import {
   AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
-  localCityOffers, hasCityPhoto, slugify,
+  localCityOffers, hasCityPhoto, slugify, nearestMajorCity,
   type AffiliateOffer, type Program,
 } from '../lib/affiliates';
+import type { Coords } from '../lib/location';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import { AffiliateDetailModal, type CityDetail } from './AffiliateDetailModal';
 
@@ -68,14 +69,22 @@ function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetai
 
 export function AttractionsAffiliate({
   activeCity,
+  coords,
   placement = 'attractions',
 }: {
   activeCity?: string;
+  coords?: Coords | null;
   placement?: string;
 }) {
   const [detail, setDetail] = useState<CityDetail | null>(null);
 
-  const localKey = affiliateCityFor(activeCity)?.key ?? null;
+  // Resolve the "near you" city: snap the visitor's coords to the nearest major
+  // metro (so an obscure IP place like "Glenmoor" becomes "Pittsburgh"), falling
+  // back to the detected name only if it's itself a recognized city.
+  const detected = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
+  const localName = nearestMajorCity(coords) ?? (detected && affiliateCityFor(detected) ? detected : null);
+  const localKey = localName ? affiliateCityFor(localName)?.key ?? null : null;
+
   const cards: CityCard[] = AFFILIATE_CITIES
     .map((c) => {
       const offers = cityOffers(c.key, placement);
@@ -84,28 +93,24 @@ export function AttractionsAffiliate({
     .filter((c) => c.offers.length > 0);
 
   if (localKey) {
-    // Detected city IS one of our curated cities → float it first.
+    // Resolved metro IS one of our curated cities → float it first.
     const i = cards.findIndex((c) => c.key === localKey);
     if (i > 0) cards.unshift(cards.splice(i, 1)[0]);
-  } else {
-    // Detected city is NOT curated (e.g. Pittsburgh) → add it as a location-aware
-    // LOCAL card, nationwide: TicketNetwork events (live now) + Viator experiences
-    // (when its tier opens). Driven by the visitor's detected city.
-    const realCity = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
-    if (realCity) {
-      const localOffers = localCityOffers(realCity, placement);
-      if (localOffers.length) {
-        cards.unshift({
-          key: 'local-' + slugify(realCity),
-          name: realCity,
-          country: '',
-          photo: hasCityPhoto(realCity) ? cityPhoto(slugify(realCity)) : '',
-          types: typesOf(localOffers),
-          price: minPrice(localOffers),
-          offers: localOffers,
-          local: true,
-        });
-      }
+  } else if (localName) {
+    // Resolved metro is NOT curated (e.g. Pittsburgh) → add it as a location-aware
+    // LOCAL card, nationwide: TicketNetwork events (live) + others as they open.
+    const localOffers = localCityOffers(localName, placement);
+    if (localOffers.length) {
+      cards.unshift({
+        key: 'local-' + slugify(localName),
+        name: localName,
+        country: '',
+        photo: hasCityPhoto(localName) ? cityPhoto(slugify(localName)) : '',
+        types: typesOf(localOffers),
+        price: minPrice(localOffers),
+        offers: localOffers,
+        local: true,
+      });
     }
   }
   const shown = cards.slice(0, CAP);
@@ -170,8 +175,8 @@ const CSS = `
 /* Trusted-partners strip — official logos on white chips */
 .cbl-aff .partners { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
 .cbl-aff .partners .p-label { font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
-.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); }
-.cbl-aff .logo-chip img { height:20px; width:auto; display:block; }
+.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); height:32px; }
+.cbl-aff .logo-chip img { max-height:20px; max-width:104px; width:auto; height:auto; display:block; }
 
 /* City card grid (opens the on-site detail panel) */
 .cbl-aff .aff-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
