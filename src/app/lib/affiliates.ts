@@ -40,9 +40,12 @@ const PROGRAM_BASE: Record<Program, string> = {
   // driven by the visitor's detected location). Empty until Keith pastes the base
   // link from the TP dashboard → dark-launched (preview shows the plain link).
   viator: '',
+  // BikesBooking — bike/scooter/motorcycle rentals, location-driven (search by city).
+  // Empty until Keith confirms it's unlocked + pastes the base link → dark-launched.
+  bikesbooking: '',
 };
 
-export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator';
+export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking';
 
 // Preview/localhost detection — mirrors auth.tsx's isPreviewHost so the
 // un-monetized design preview only ever appears off production.
@@ -218,6 +221,19 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Instant mobile ticket delivery',
     ],
   },
+  bikesbooking: {
+    partner: 'BikesBooking',
+    logo: '/attractions/bikesbooking-logo.png',
+    cta: 'Rent a ride',
+    briefing:
+      'Rentals powered by BikesBooking — compare bikes, scooters and motorcycles from local rental shops and book your ride online.',
+    highlights: [
+      'Bikes, scooters & motorcycles',
+      'Compare local rental shops',
+      'Book online, pick up in the city',
+      'Great for exploring on two wheels',
+    ],
+  },
 };
 
 // ── Go City coverage (all-in-one city passes). Slug = the /en/{slug} path on
@@ -385,11 +401,30 @@ export function ticketNetworkOffer(cityName: string, placement: string): Affilia
   };
 }
 
+// ── BikesBooking: bike/scooter/motorcycle rentals, location-driven (search by
+// city). Nationwide via search?location={city}. Dark-launched until unlocked.
+export function bikesBookingUrl(cityName: string): string {
+  return `https://bikesbooking.com/en/search?location=${encodeURIComponent(cityName)}`;
+}
+export function bikesBookingOffer(cityName: string, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.bikesbooking!;
+  const link = affiliateHref('bikesbooking', bikesBookingUrl(cityName), placement);
+  if (!link) return null;
+  const key = slugify(cityName);
+  return {
+    program: 'bikesbooking', partner: meta.partner, cityKey: key, name: cityName, country: '',
+    photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT, kicker: 'Rent a ride',
+    title: `Rentals in ${cityName}`, price: 'Bikes · scooters', meta: 'Two-wheel rentals',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
 /**
  * Location-driven LOCAL offers for the visitor's detected city — the nationwide
  * "near you" layer. TicketNetwork (events, LIVE now) + Viator (experiences, opens
- * in Oct); each resolves independently, so today the card is powered by
- * TicketNetwork and Viator joins automatically when its tier unlocks.
+ * in Oct) + BikesBooking (rentals). Each resolves independently, so today the card
+ * is powered by TicketNetwork and the rest join automatically when their base links
+ * are wired.
  */
 export function localCityOffers(cityName: string, placement: string): AffiliateOffer[] {
   const out: AffiliateOffer[] = [];
@@ -397,6 +432,8 @@ export function localCityOffers(cityName: string, placement: string): AffiliateO
   if (tn) out.push(tn);
   const v = viatorOffer(cityName, `${placement}_viator_local`);
   if (v) out.push(v);
+  const bb = bikesBookingOffer(cityName, `${placement}_bikesbooking_local`);
+  if (bb) out.push(bb);
   return out;
 }
 
@@ -448,6 +485,8 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
   // Viator covers ~everywhere — add local experiences to every known city too.
   if (cityMeta?.name) { const o = viatorOffer(cityMeta.name, `${placement}_viator_${cityKey}`); if (o) out.push(o); }
+  // BikesBooking rentals (dark-launched) — offered per city where wired.
+  if (cityMeta?.name) { const o = bikesBookingOffer(cityMeta.name, `${placement}_bikesbooking_${cityKey}`); if (o) out.push(o); }
   return out;
 }
 
@@ -459,5 +498,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences',
+  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
 };
