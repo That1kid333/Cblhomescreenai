@@ -36,9 +36,13 @@ const PROGRAM_BASE: Record<Program, string> = {
   gocity: 'https://tp.media/r?campaign_id=62&marker=704468&p=1942&trs=499800&u=https%3A%2F%2Fgocity.com',
   ticketnetwork: 'https://tp.media/r?campaign_id=72&marker=704468&p=1948&trs=499800&u=https%3A%2F%2Fwww.ticketnetwork.com',
   wegotrip: 'https://tp.media/r?campaign_id=150&marker=704468&p=4487&trs=499800&u=https%3A%2F%2Fwegotrip.com',
+  // Viator — the NATIONWIDE local-experiences layer (covers ~any US city, so it's
+  // driven by the visitor's detected location). Empty until Keith pastes the base
+  // link from the TP dashboard → dark-launched (preview shows the plain link).
+  viator: '',
 };
 
-export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip';
+export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator';
 
 // Preview/localhost detection — mirrors auth.tsx's isPreviewHost so the
 // un-monetized design preview only ever appears off production.
@@ -188,6 +192,32 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Skip-the-line tickets on select tours',
     ],
   },
+  viator: {
+    partner: 'Viator',
+    logo: '/attractions/viator-logo.svg',
+    cta: 'See experiences',
+    briefing:
+      'Local experiences powered by Viator — tours, food crawls, tickets and things to do in almost any city, wherever you are, with real traveler reviews.',
+    highlights: [
+      'Tours, food crawls, tickets & experiences',
+      'Available in almost any city — near you or away',
+      'Real traveler reviews & ratings',
+      'Free cancellation on most, book on your phone',
+    ],
+  },
+  ticketnetwork: {
+    partner: 'TicketNetwork',
+    logo: '/attractions/ticketnetwork-logo.svg',
+    cta: 'Find tickets',
+    briefing:
+      'Event tickets powered by TicketNetwork — concerts, sports and live theater in your city and beyond, on a trusted resale marketplace.',
+    highlights: [
+      'Concerts, sports & live theater',
+      'Events near you and nationwide',
+      'Seat-by-seat selection',
+      'Instant mobile ticket delivery',
+    ],
+  },
 };
 
 // ── Go City coverage (all-in-one city passes). Slug = the /en/{slug} path on
@@ -300,6 +330,76 @@ export function tiqetsOffer(entry: TiqetsCity, placement: string): AffiliateOffe
   };
 }
 
+// ── Self-hosted city photos (slug → /attractions/cities/{slug}.jpg exists). Used
+// so a visitor's-own-city card shows a real photo when we have one, else a gradient.
+export const CITY_PHOTO_KEYS = new Set([
+  'new-york', 'paris', 'rome', 'milan', 'florence', 'venice', 'lisbon', 'amsterdam', 'london',
+  'las-vegas', 'orlando', 'los-angeles', 'san-francisco', 'miami', 'chicago', 'boston', 'new-orleans',
+  'pittsburgh',
+]);
+export const slugify = (city: string) => city.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+export const hasCityPhoto = (city: string) => CITY_PHOTO_KEYS.has(slugify(city));
+
+// ── Viator: the NATIONWIDE local-experiences layer. Viator covers ~any city, so
+// it's driven by the visitor's DETECTED city (same geolocation as Eats/Attractions)
+// — not a fixed list. Known cities get a curated destination page; every other city
+// uses Viator search (valid anywhere), so "things to do in {your city}" works
+// nationwide with no per-city IDs to maintain.
+const VIATOR_DEST: Record<string, string> = {
+  pittsburgh: 'https://www.viator.com/Pittsburgh/d22639',
+};
+export function viatorUrl(cityName: string): string {
+  return VIATOR_DEST[slugify(cityName)] ?? `https://www.viator.com/searchResults/all?text=${encodeURIComponent(cityName)}`;
+}
+
+/** Viator "things to do in {city}" offer for ANY city — the local/nationwide layer. */
+export function viatorOffer(cityName: string, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.viator!;
+  const link = affiliateHref('viator', viatorUrl(cityName), placement);
+  if (!link) return null;
+  const key = slugify(cityName);
+  return {
+    program: 'viator', partner: meta.partner, cityKey: key, name: cityName, country: '',
+    photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT, kicker: 'Local experiences',
+    title: `Things to do in ${cityName}`, price: 'from $15', meta: 'Tours · food · tickets',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+// ── TicketNetwork: LIVE nationwide events layer (unlocked now). Like Viator, it's
+// driven by the visitor's DETECTED city — search?q={city} works for any US city.
+// Website-only per program terms (no mobile tracking → no app placements).
+export function ticketNetworkUrl(cityName: string): string {
+  return `https://www.ticketnetwork.com/search?q=${encodeURIComponent(cityName)}`;
+}
+export function ticketNetworkOffer(cityName: string, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.ticketnetwork!;
+  const link = affiliateHref('ticketnetwork', ticketNetworkUrl(cityName), placement);
+  if (!link) return null;
+  const key = slugify(cityName);
+  return {
+    program: 'ticketnetwork', partner: meta.partner, cityKey: key, name: cityName, country: '',
+    photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT, kicker: 'Events & tickets',
+    title: `Events in ${cityName}`, price: 'See prices', meta: 'Concerts · sports · theater',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+/**
+ * Location-driven LOCAL offers for the visitor's detected city — the nationwide
+ * "near you" layer. TicketNetwork (events, LIVE now) + Viator (experiences, opens
+ * in Oct); each resolves independently, so today the card is powered by
+ * TicketNetwork and Viator joins automatically when its tier unlocks.
+ */
+export function localCityOffers(cityName: string, placement: string): AffiliateOffer[] {
+  const out: AffiliateOffer[] = [];
+  const tn = ticketNetworkOffer(cityName, `${placement}_ticketnetwork_local`);
+  if (tn) out.push(tn);
+  const v = viatorOffer(cityName, `${placement}_viator_local`);
+  if (v) out.push(v);
+  return out;
+}
+
 // ── City-centric model: ONE card per city, every partner's booking option
 // attached. Union of the three programs' coverage (17 cities). ─────────────────
 export type AffiliateCity = { key: string; match: string[]; name: string; country: string };
@@ -343,6 +443,11 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (g) { const o = goCityOffer(g, `${placement}_gocity_${cityKey}`); if (o) out.push(o); }
   const w = WEGOTRIP_CITIES.find((c) => c.key === cityKey);
   if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
+  // US cities also get TicketNetwork events (it's US-focused).
+  const cityMeta = AFFILIATE_CITIES.find((c) => c.key === cityKey);
+  if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
+  // Viator covers ~everywhere — add local experiences to every known city too.
+  if (cityMeta?.name) { const o = viatorOffer(cityMeta.name, `${placement}_viator_${cityKey}`); if (o) out.push(o); }
   return out;
 }
 
@@ -354,5 +459,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours',
+  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences',
 };
