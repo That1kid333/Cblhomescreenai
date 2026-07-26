@@ -18,6 +18,8 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const GOLD = '#C99742';
 const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.05) 0%, rgba(0,0,0,.35) 55%, rgba(20,20,20,.94) 100%)';
+const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(20,20,20,.94)), url('/eats/imagery/cbl-map-backdrop.jpg')";
+const shotBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 
 export type CityDetail = { name: string; country: string; photo: string; offers: AffiliateOffer[] };
 
@@ -40,7 +42,7 @@ export function AffiliateDetailModal({ detail, onClose }: { detail: CityDetail |
       <div className="panel">
         <button className="close" onClick={onClose} aria-label="Close">✕</button>
 
-        <div className="shot" style={{ backgroundImage: `${PHOTO_SCRIM}, url('${detail.photo}')` }}>
+        <div className="shot" style={{ backgroundImage: shotBg(detail.photo) }}>
           <div className="shot-cap">
             <span className="country">{detail.country}</span>
             <span className="city">{detail.name}</span>
