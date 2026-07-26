@@ -20,7 +20,8 @@
 import { useState } from 'react';
 import {
   AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
-  type AffiliateOffer,
+  localCityOffers, hasCityPhoto, slugify,
+  type AffiliateOffer, type Program,
 } from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import { AffiliateDetailModal, type CityDetail } from './AffiliateDetailModal';
@@ -30,10 +31,16 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const GOLD = '#C99742';
 const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30) 50%, rgba(10,10,10,.90) 100%)';
+// Fallback for a visitor's-own-city card when we have no photo for it (nationwide
+// case): the shared map texture with a gold wash, so it still reads on-brand.
+const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
+const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 const CAP = 12;
-const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip'] as const;
+const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'ticketnetwork', 'viator'] as const;
+const typesOf = (offers: AffiliateOffer[]) =>
+  PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);
 
-type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[] };
+type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[]; local?: boolean };
 
 function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetail) => void }) {
   const anyPreview = card.offers.some((o) => !o.tracked);
@@ -42,15 +49,16 @@ function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetai
       className="aff-card"
       onClick={() => onOpen({ name: card.name, country: card.country, photo: card.photo, offers: card.offers })}
     >
-      <div className="ac-img" style={{ backgroundImage: `${PHOTO_SCRIM}, url('${card.photo}')` }}>
+      <div className="ac-img" style={{ backgroundImage: cardBg(card.photo) }}>
+        {card.local && <span className="near-badge">Near you</span>}
         {anyPreview && <span className="preview-flag">preview</span>}
-        <span className="ac-country">{card.country}</span>
+        <span className="ac-country">{card.country || (card.local ? 'Your city' : '')}</span>
         <span className="ac-name">{card.name}</span>
       </div>
       <div className="ac-body">
         <span className="ac-types">{card.types.join(' · ')}</span>
         <span className="ac-cta">
-          <span className="price-chip">{card.price}</span>
+          {card.price ? <span className="price-chip">{card.price}</span> : <span />}
           <span className="cta ghost">View options →</span>
         </span>
       </div>
@@ -71,19 +79,41 @@ export function AttractionsAffiliate({
   const cards: CityCard[] = AFFILIATE_CITIES
     .map((c) => {
       const offers = cityOffers(c.key, placement);
-      const types = PARTNER_ORDER
-        .filter((p) => offers.some((o) => o.program === p))
-        .map((p) => OPTION_WORD[p] as string);
-      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types, price: minPrice(offers), offers };
+      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types: typesOf(offers), price: minPrice(offers), offers };
     })
     .filter((c) => c.offers.length > 0);
 
   if (localKey) {
+    // Detected city IS one of our curated cities → float it first.
     const i = cards.findIndex((c) => c.key === localKey);
     if (i > 0) cards.unshift(cards.splice(i, 1)[0]);
+  } else {
+    // Detected city is NOT curated (e.g. Pittsburgh) → add it as a location-aware
+    // LOCAL card, nationwide: TicketNetwork events (live now) + Viator experiences
+    // (when its tier opens). Driven by the visitor's detected city.
+    const realCity = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
+    if (realCity) {
+      const localOffers = localCityOffers(realCity, placement);
+      if (localOffers.length) {
+        cards.unshift({
+          key: 'local-' + slugify(realCity),
+          name: realCity,
+          country: '',
+          photo: hasCityPhoto(realCity) ? cityPhoto(slugify(realCity)) : '',
+          types: typesOf(localOffers),
+          price: minPrice(localOffers),
+          offers: localOffers,
+          local: true,
+        });
+      }
+    }
   }
   const shown = cards.slice(0, CAP);
   if (shown.length === 0) return null;
+
+  // Partner strip shows only brands with a resolvable offer among the shown cards
+  // (so a gated program like Viator doesn't advertise itself before it's live).
+  const livePrograms = new Set<Program>(shown.flatMap((c) => c.offers.map((o) => o.program)));
 
   return (
     <div className="cbl-aff">
@@ -99,10 +129,11 @@ export function AttractionsAffiliate({
             </p>
           </div>
 
-          {/* Trusted-partners strip: the three brands, official logos on white chips. */}
+          {/* Trusted-partners strip: official logos on white chips — only the brands
+              that actually have a bookable offer among the shown cards. */}
           <div className="partners">
             <span className="p-label">Book with</span>
-            {PARTNER_ORDER.map((p) => {
+            {PARTNER_ORDER.filter((p) => livePrograms.has(p)).map((p) => {
               const meta = PARTNER_META[p];
               return meta ? (
                 <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
@@ -156,6 +187,7 @@ const CSS = `
 .cbl-aff .price-chip { font-family:${MONO}; font-size:11px; letter-spacing:.04em; color:${GOLD}; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:4px 10px; white-space:nowrap; }
 .cbl-aff .cta.ghost { font-family:${DISPLAY}; font-weight:800; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:${GOLD}; }
 .cbl-aff .preview-flag { position:absolute; top:10px; right:10px; z-index:3; font-family:${MONO}; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#eee; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.25); padding:3px 7px; border-radius:3px; }
+.cbl-aff .near-badge { position:absolute; top:10px; left:10px; z-index:3; font-family:${MONO}; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:#062615; background:#4DBF66; padding:4px 9px; border-radius:2px; }
 
 @media (max-width:1100px){
   .cbl-aff section.band { padding:30px 24px 20px; }
