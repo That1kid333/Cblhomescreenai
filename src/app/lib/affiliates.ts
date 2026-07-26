@@ -132,3 +132,170 @@ export function tiqetsCityFor(activeCity: string | null | undefined): TiqetsCity
   const c = activeCity.trim().toLowerCase();
   return TIQETS_CITIES.find((city) => city.match.includes(c)) ?? null;
 }
+
+// ── Shared city registry ─────────────────────────────────────────────────────
+// All programs reuse the same self-hosted city photos, keyed by slug.
+export const cityPhoto = (key: string) => `/attractions/cities/${key}.jpg`;
+const NEUTRAL_TINT = 'rgba(201,151,66,.35), rgba(10,10,10,.86)';
+
+// ── Partner metadata (drives the source-briefing strip + the on-site detail
+// panel). One place per brand for its logo, CTA verb, one-line briefing, and the
+// "what you get" highlights shown before the hand-off. ─────────────────────────
+export type PartnerMeta = {
+  partner: string;
+  logo: string;      // self-hosted brand logo (shown on a white chip on dark)
+  cta: string;       // button verb, e.g. "Book tickets"
+  briefing: string;  // one-liner: who they are
+  highlights: string[];
+};
+export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
+  tiqets: {
+    partner: 'Tiqets',
+    logo: '/attractions/tiqets-logo.svg',
+    cta: 'Book tickets',
+    briefing:
+      'Tickets powered by Tiqets — an online booking platform for museums and attractions that connects travelers worldwide with more ways to experience culture.',
+    highlights: [
+      'Skip-the-line & timed-entry tickets',
+      'Instant tickets on your phone',
+      'Free cancellation on many options',
+      'Museums, landmarks & experiences',
+    ],
+  },
+  gocity: {
+    partner: 'Go City',
+    logo: '/attractions/gocity-logo.svg',
+    cta: 'Get the pass',
+    briefing:
+      'Passes powered by Go City — one pass gets you into dozens of a city’s top attractions for a single price, with big savings versus buying separately.',
+    highlights: [
+      'One pass, dozens of top attractions',
+      'Save up to 50% vs buying separately',
+      'All-Inclusive or build-your-own passes',
+      'On your phone — nothing to print',
+    ],
+  },
+  wegotrip: {
+    partner: 'WeGoTrip',
+    logo: '/attractions/wegotrip-logo.svg',
+    cta: 'Get the tour',
+    briefing:
+      'Audio tours powered by WeGoTrip — self-guided tours you follow on your phone, at your own pace, with skip-the-line tickets on select tours.',
+    highlights: [
+      'Self-guided audio tours on your phone',
+      'Start, pause and finish anytime',
+      'Download once, use offline',
+      'Skip-the-line tickets on select tours',
+    ],
+  },
+};
+
+// ── Go City coverage (all-in-one city passes). Slug = the /en/{slug} path on
+// gocity.com (verified pattern). Big US coverage — its strength. ───────────────
+export type GoCityEntry = { key: string; match: string[]; name: string; country: string; slug: string; fromPrice: string; attractions: string };
+export const GOCITY_CITIES: GoCityEntry[] = [
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', slug: 'new-york', fromPrice: 'from $89', attractions: '100+ attractions' },
+  { key: 'las-vegas', match: ['las vegas', 'vegas'], name: 'Las Vegas', country: 'USA', slug: 'las-vegas', fromPrice: 'from $59', attractions: '45+ attractions' },
+  { key: 'orlando', match: ['orlando'], name: 'Orlando', country: 'USA', slug: 'orlando', fromPrice: 'from $115', attractions: '25+ attractions' },
+  { key: 'los-angeles', match: ['los angeles', 'la'], name: 'Los Angeles', country: 'USA', slug: 'los-angeles', fromPrice: 'from $95', attractions: '40+ attractions' },
+  { key: 'san-francisco', match: ['san francisco', 'sf'], name: 'San Francisco', country: 'USA', slug: 'san-francisco', fromPrice: 'from $94', attractions: '45+ attractions' },
+  { key: 'miami', match: ['miami'], name: 'Miami', country: 'USA', slug: 'miami', fromPrice: 'from $99', attractions: '35+ attractions' },
+  { key: 'chicago', match: ['chicago'], name: 'Chicago', country: 'USA', slug: 'chicago', fromPrice: 'from $109', attractions: '30+ attractions' },
+  { key: 'boston', match: ['boston'], name: 'Boston', country: 'USA', slug: 'boston', fromPrice: 'from $69', attractions: '45+ attractions' },
+  { key: 'new-orleans', match: ['new orleans', 'nola'], name: 'New Orleans', country: 'USA', slug: 'new-orleans', fromPrice: 'from $79', attractions: '25+ attractions' },
+  { key: 'london', match: ['london'], name: 'London', country: 'UK', slug: 'london', fromPrice: 'from $99', attractions: '90+ attractions' },
+  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', slug: 'paris', fromPrice: 'from $85', attractions: '45+ attractions' },
+  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', slug: 'rome', fromPrice: 'from $99', attractions: '40+ attractions' },
+  { key: 'amsterdam', match: ['amsterdam'], name: 'Amsterdam', country: 'Netherlands', slug: 'amsterdam', fromPrice: 'from $75', attractions: '40+ attractions' },
+];
+export function goCityFor(activeCity: string | null | undefined): GoCityEntry | null {
+  if (!activeCity) return null;
+  const c = activeCity.trim().toLowerCase();
+  return GOCITY_CITIES.find((city) => city.match.includes(c)) ?? null;
+}
+
+// ── WeGoTrip coverage (self-guided audio tours). `url` is the exact city page
+// from wegotrip.com's sitemap (they use /{slug}-d{id}/). ───────────────────────
+export type WeGoTripEntry = { key: string; match: string[]; name: string; country: string; url: string; fromPrice: string };
+export const WEGOTRIP_CITIES: WeGoTripEntry[] = [
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', url: 'https://wegotrip.com/new-york-city-d5128581/', fromPrice: 'from $12' },
+  { key: 'new-orleans', match: ['new orleans', 'nola'], name: 'New Orleans', country: 'USA', url: 'https://wegotrip.com/new-orleans-d4335045/', fromPrice: 'from $10' },
+  { key: 'san-francisco', match: ['san francisco', 'sf'], name: 'San Francisco', country: 'USA', url: 'https://wegotrip.com/san-francisco-5391959-d5391959/', fromPrice: 'from $10' },
+  { key: 'los-angeles', match: ['los angeles', 'la'], name: 'Los Angeles', country: 'USA', url: 'https://wegotrip.com/los-angeles-5368361-d5368361/', fromPrice: 'from $10' },
+  { key: 'boston', match: ['boston'], name: 'Boston', country: 'USA', url: 'https://wegotrip.com/boston-4930956-d4930956/', fromPrice: 'from $10' },
+  { key: 'chicago', match: ['chicago'], name: 'Chicago', country: 'USA', url: 'https://wegotrip.com/chicago-d4887398/', fromPrice: 'from $10' },
+  { key: 'miami', match: ['miami'], name: 'Miami', country: 'USA', url: 'https://wegotrip.com/miami-d4164138/', fromPrice: 'from $10' },
+  { key: 'las-vegas', match: ['las vegas', 'vegas'], name: 'Las Vegas', country: 'USA', url: 'https://wegotrip.com/las-vegas-d5475433/', fromPrice: 'from $10' },
+  { key: 'london', match: ['london'], name: 'London', country: 'UK', url: 'https://wegotrip.com/london-d2643743/', fromPrice: 'from $12' },
+  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', url: 'https://wegotrip.com/paris-d2988507/', fromPrice: 'from $11' },
+  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', url: 'https://wegotrip.com/rome-d3169070/', fromPrice: 'from $11' },
+  { key: 'venice', match: ['venice', 'venezia'], name: 'Venice', country: 'Italy', url: 'https://wegotrip.com/venice-d3164603/', fromPrice: 'from $11' },
+  { key: 'florence', match: ['florence', 'firenze'], name: 'Florence', country: 'Italy', url: 'https://wegotrip.com/florence-d3176959/', fromPrice: 'from $11' },
+  { key: 'milan', match: ['milan', 'milano'], name: 'Milan', country: 'Italy', url: 'https://wegotrip.com/milan-d3173435/', fromPrice: 'from $11' },
+  { key: 'lisbon', match: ['lisbon', 'lisboa'], name: 'Lisbon', country: 'Portugal', url: 'https://wegotrip.com/lisbon-d2267057/', fromPrice: 'from $10' },
+  { key: 'amsterdam', match: ['amsterdam'], name: 'Amsterdam', country: 'Netherlands', url: 'https://wegotrip.com/amsterdam-d2759794/', fromPrice: 'from $12' },
+];
+export function weGoTripFor(activeCity: string | null | undefined): WeGoTripEntry | null {
+  if (!activeCity) return null;
+  const c = activeCity.trim().toLowerCase();
+  return WEGOTRIP_CITIES.find((city) => city.match.includes(c)) ?? null;
+}
+
+// ── Unified offer shape consumed by the cards + the on-site detail panel ───────
+export type AffiliateOffer = {
+  program: Program;
+  partner: string;
+  cityKey: string;
+  name: string;
+  country: string;
+  photo: string;
+  tint: string;
+  kicker: string;   // small label, e.g. "All-in-one pass"
+  title: string;    // panel headline
+  price: string;
+  meta: string;     // e.g. "100+ attractions"
+  highlights: string[];
+  cta: string;
+  logo: string;
+  href: string;     // resolved tracked link (or preview fallback)
+  tracked: boolean;
+};
+
+/** Build a Go City offer for a covered city, or null if unwired/unavailable. */
+export function goCityOffer(entry: GoCityEntry, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.gocity!;
+  const link = affiliateHref('gocity', `https://gocity.com/en/${entry.slug}`, placement);
+  if (!link) return null;
+  return {
+    program: 'gocity', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'All-in-one pass',
+    title: `The ${entry.name} Pass`, price: entry.fromPrice, meta: entry.attractions,
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+/** Build a WeGoTrip offer for a covered city, or null if unwired/unavailable. */
+export function weGoTripOffer(entry: WeGoTripEntry, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.wegotrip!;
+  const link = affiliateHref('wegotrip', entry.url, placement);
+  if (!link) return null;
+  return {
+    program: 'wegotrip', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'Self-guided audio tour',
+    title: `${entry.name} audio tours`, price: entry.fromPrice, meta: 'Self-guided · offline',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+/** Build a Tiqets offer from a covered city. */
+export function tiqetsOffer(entry: TiqetsCity, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.tiqets!;
+  const link = affiliateHref('tiqets', entry.target, placement);
+  if (!link) return null;
+  return {
+    program: 'tiqets', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: entry.photo ?? cityPhoto(entry.key), tint: entry.tint, kicker: 'Skip-the-line tickets',
+    title: `Things to do in ${entry.name}`, price: entry.fromPrice, meta: entry.count,
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
