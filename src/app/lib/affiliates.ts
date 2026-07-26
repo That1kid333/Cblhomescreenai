@@ -151,8 +151,11 @@ export function tiqetsCityFor(activeCity: string | null | undefined): TiqetsCity
 }
 
 // ── Shared city registry ─────────────────────────────────────────────────────
-// All programs reuse the same self-hosted city photos, keyed by slug.
-export const cityPhoto = (key: string) => `/attractions/cities/${key}.jpg`;
+// All programs reuse the same self-hosted city photos, keyed by slug. PHOTO_V is
+// a cache-buster — bump it whenever a city photo is swapped in place (same
+// filename) so browsers/CDN fetch the new image instead of the stale cached one.
+const PHOTO_V = '2';
+export const cityPhoto = (key: string) => `/attractions/cities/${key}.jpg?v=${PHOTO_V}`;
 const NEUTRAL_TINT = 'rgba(201,151,66,.35), rgba(10,10,10,.86)';
 
 // ── Partner metadata (drives the source-briefing strip + the on-site detail
