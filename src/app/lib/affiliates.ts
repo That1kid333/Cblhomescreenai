@@ -19,6 +19,8 @@
  * affiliate links renders <AffiliateDisclosure/>.
  */
 
+import { milesBetween, type Coords } from './location';
+
 // Our Travelpayouts affiliate marker / account id, and our traffic source.
 // Both are baked into every base link below; kept here for reference/config.
 export const TP_MARKER = '704468';
@@ -86,13 +88,21 @@ export function buildAffiliateLink(
 
 export type AffiliateHref = { href: string; tracked: boolean } | null;
 
+// Programs that are BUILT but PARKED — hidden EVERYWHERE (preview included) until
+// their tier/approval opens, so the preview isn't cluttered by something months
+// out. The config/UI stay ready; to launch, remove it here AND paste its base
+// link. Viator: gated in TP's locked tier, review deferred to ~Oct.
+const PARKED_PROGRAMS = new Set<Program>(['viator']);
+
 /**
  * Resolve the href a component should actually use:
+ *   - parked program           → null (hidden everywhere, incl. preview)
  *   - program wired            → tracked TP link
  *   - not wired, preview host  → plain destination (un-monetized, for design review)
  *   - not wired, production    → null (component hides the block)
  */
 export function affiliateHref(program: Program, target: string, placement: string): AffiliateHref {
+  if (PARKED_PROGRAMS.has(program)) return null;
   const tracked = buildAffiliateLink(program, target, placement);
   if (tracked) return { href: tracked, tracked: true };
   if (isPreviewHost() && target) return { href: target, tracked: false };
@@ -355,6 +365,49 @@ export const CITY_PHOTO_KEYS = new Set([
 ]);
 export const slugify = (city: string) => city.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 export const hasCityPhoto = (city: string) => CITY_PHOTO_KEYS.has(slugify(city));
+
+// ── Nearest-metro resolver ───────────────────────────────────────────────────
+// IP geolocation often returns a tiny/obscure place (e.g. "Glenmoor") that makes
+// no sense as a featured city AND has no affiliate inventory. So the "Near you"
+// local card snaps the visitor's coordinates to the nearest MAJOR metro — which
+// reads sensibly and is where the bookable events/experiences actually are.
+const MAJOR_CITIES: { name: string; lat: number; lng: number }[] = [
+  { name: 'New York', lat: 40.71, lng: -74.01 }, { name: 'Los Angeles', lat: 34.05, lng: -118.24 },
+  { name: 'Chicago', lat: 41.88, lng: -87.63 }, { name: 'Houston', lat: 29.76, lng: -95.37 },
+  { name: 'Phoenix', lat: 33.45, lng: -112.07 }, { name: 'Philadelphia', lat: 39.95, lng: -75.16 },
+  { name: 'San Antonio', lat: 29.42, lng: -98.49 }, { name: 'San Diego', lat: 32.72, lng: -117.16 },
+  { name: 'Dallas', lat: 32.78, lng: -96.80 }, { name: 'Austin', lat: 30.27, lng: -97.74 },
+  { name: 'San Jose', lat: 37.34, lng: -121.89 }, { name: 'San Francisco', lat: 37.77, lng: -122.42 },
+  { name: 'Seattle', lat: 47.61, lng: -122.33 }, { name: 'Denver', lat: 39.74, lng: -104.99 },
+  { name: 'Washington', lat: 38.91, lng: -77.04 }, { name: 'Boston', lat: 42.36, lng: -71.06 },
+  { name: 'Nashville', lat: 36.16, lng: -86.78 }, { name: 'Las Vegas', lat: 36.17, lng: -115.14 },
+  { name: 'Portland', lat: 45.51, lng: -122.68 }, { name: 'Detroit', lat: 42.33, lng: -83.05 },
+  { name: 'Memphis', lat: 35.15, lng: -90.05 }, { name: 'Louisville', lat: 38.25, lng: -85.76 },
+  { name: 'Milwaukee', lat: 43.04, lng: -87.91 }, { name: 'Baltimore', lat: 39.29, lng: -76.61 },
+  { name: 'Atlanta', lat: 33.75, lng: -84.39 }, { name: 'Miami', lat: 25.76, lng: -80.19 },
+  { name: 'Orlando', lat: 28.54, lng: -81.38 }, { name: 'Tampa', lat: 27.95, lng: -82.46 },
+  { name: 'New Orleans', lat: 29.95, lng: -90.07 }, { name: 'Minneapolis', lat: 44.98, lng: -93.27 },
+  { name: 'Cleveland', lat: 41.50, lng: -81.69 }, { name: 'Columbus', lat: 39.96, lng: -82.99 },
+  { name: 'Cincinnati', lat: 39.10, lng: -84.51 }, { name: 'Kansas City', lat: 39.10, lng: -94.58 },
+  { name: 'Indianapolis', lat: 39.77, lng: -86.16 }, { name: 'Pittsburgh', lat: 40.44, lng: -79.996 },
+  { name: 'St. Louis', lat: 38.63, lng: -90.20 }, { name: 'Charlotte', lat: 35.23, lng: -80.84 },
+  { name: 'Raleigh', lat: 35.78, lng: -78.64 }, { name: 'Salt Lake City', lat: 40.76, lng: -111.89 },
+  { name: 'Sacramento', lat: 38.58, lng: -121.49 }, { name: 'Buffalo', lat: 42.89, lng: -78.88 },
+  { name: 'Richmond', lat: 37.54, lng: -77.44 }, { name: 'Jacksonville', lat: 30.33, lng: -81.66 },
+  { name: 'Oklahoma City', lat: 35.47, lng: -97.52 }, { name: 'Phoenix', lat: 33.45, lng: -112.07 },
+];
+
+/** Snap coordinates to the nearest major metro within `maxMi`; null if none/no coords. */
+export function nearestMajorCity(coords: Coords | null | undefined, maxMi = 80): string | null {
+  if (!coords) return null;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const c of MAJOR_CITIES) {
+    const d = milesBetween(coords, { lat: c.lat, lng: c.lng });
+    if (d < bestD) { bestD = d; best = c.name; }
+  }
+  return best && bestD <= maxMi ? best : null;
+}
 
 // ── Viator: the NATIONWIDE local-experiences layer. Viator covers ~any city, so
 // it's driven by the visitor's DETECTED city (same geolocation as Eats/Attractions)
