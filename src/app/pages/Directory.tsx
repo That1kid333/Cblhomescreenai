@@ -243,8 +243,8 @@ const DIR_CSS = `
 /* Driver grid PREVIEW card — a compact echo of the full "Need a Ride?" card so
    the grid teaser matches the detail modal riders open. */
 .cbl-dir .listing.dpc { overflow:hidden; }
-.cbl-dir .dpc-hero { position:relative; padding:20px 16px 16px; text-align:center; background:linear-gradient(180deg, rgba(10,10,10,.35), rgba(10,10,10,.82)), url(${MAP_BG}); background-size:cover; background-position:center; }
-.cbl-dir .dpc-av { width:66px; height:66px; margin:0 auto 10px; border-radius:50%; overflow:hidden; border:2.5px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.5); }
+.cbl-dir .dpc-hero { position:relative; padding:20px 16px 16px; text-align:left; background:linear-gradient(180deg, rgba(10,10,10,.35), rgba(10,10,10,.82)), url(${MAP_BG}); background-size:cover; background-position:center; }
+.cbl-dir .dpc-av { width:66px; height:66px; margin:0 0 10px; border-radius:50%; overflow:hidden; border:2.5px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.5); }
 .cbl-dir .dpc-av img { width:100%; height:100%; object-fit:cover; }
 .cbl-dir .dpc-eb { font-family:${MONO}; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#C99742; margin-bottom:5px; }
 .cbl-dir .dpc-h { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:.95; text-transform:uppercase; color:#fff; }
