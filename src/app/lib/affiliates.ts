@@ -299,3 +299,60 @@ export function tiqetsOffer(entry: TiqetsCity, placement: string): AffiliateOffe
     highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
   };
 }
+
+// ── City-centric model: ONE card per city, every partner's booking option
+// attached. Union of the three programs' coverage (17 cities). ─────────────────
+export type AffiliateCity = { key: string; match: string[]; name: string; country: string };
+export const AFFILIATE_CITIES: AffiliateCity[] = [
+  // US first (our home market), then international.
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA' },
+  { key: 'las-vegas', match: ['las vegas', 'vegas'], name: 'Las Vegas', country: 'USA' },
+  { key: 'los-angeles', match: ['los angeles', 'la'], name: 'Los Angeles', country: 'USA' },
+  { key: 'san-francisco', match: ['san francisco', 'sf'], name: 'San Francisco', country: 'USA' },
+  { key: 'new-orleans', match: ['new orleans', 'nola'], name: 'New Orleans', country: 'USA' },
+  { key: 'miami', match: ['miami'], name: 'Miami', country: 'USA' },
+  { key: 'chicago', match: ['chicago'], name: 'Chicago', country: 'USA' },
+  { key: 'boston', match: ['boston'], name: 'Boston', country: 'USA' },
+  { key: 'orlando', match: ['orlando'], name: 'Orlando', country: 'USA' },
+  { key: 'london', match: ['london'], name: 'London', country: 'UK' },
+  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France' },
+  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy' },
+  { key: 'amsterdam', match: ['amsterdam'], name: 'Amsterdam', country: 'Netherlands' },
+  { key: 'venice', match: ['venice', 'venezia'], name: 'Venice', country: 'Italy' },
+  { key: 'florence', match: ['florence', 'firenze'], name: 'Florence', country: 'Italy' },
+  { key: 'milan', match: ['milan', 'milano'], name: 'Milan', country: 'Italy' },
+  { key: 'lisbon', match: ['lisbon', 'lisboa'], name: 'Lisbon', country: 'Portugal' },
+];
+
+export function affiliateCityFor(activeCity: string | null | undefined): AffiliateCity | null {
+  if (!activeCity) return null;
+  const c = activeCity.trim().toLowerCase();
+  return AFFILIATE_CITIES.find((city) => city.match.includes(c)) ?? null;
+}
+
+/**
+ * Every available booking option for a city, across all wired programs, in a
+ * sensible order (tickets → pass → audio tour). Each offer keeps its own tracked
+ * link + placement sub_id, so a single card still reports per-partner earnings.
+ */
+export function cityOffers(cityKey: string, placement: string): AffiliateOffer[] {
+  const out: AffiliateOffer[] = [];
+  const t = TIQETS_CITIES.find((c) => c.key === cityKey);
+  if (t) { const o = tiqetsOffer(t, `${placement}_tiqets_${cityKey}`); if (o) out.push(o); }
+  const g = GOCITY_CITIES.find((c) => c.key === cityKey);
+  if (g) { const o = goCityOffer(g, `${placement}_gocity_${cityKey}`); if (o) out.push(o); }
+  const w = WEGOTRIP_CITIES.find((c) => c.key === cityKey);
+  if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
+  return out;
+}
+
+// Lowest "from $X" across a city's offers, for the card's headline price.
+export function minPrice(offers: AffiliateOffer[]): string {
+  const nums = offers.map((o) => Number((o.price.match(/\d+/) || [])[0])).filter((n) => !Number.isNaN(n));
+  return nums.length ? `from $${Math.min(...nums)}` : '';
+}
+
+// Short option word per program, for the card's "Tickets · Pass · Tours" line.
+export const OPTION_WORD: Partial<Record<Program, string>> = {
+  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours',
+};
