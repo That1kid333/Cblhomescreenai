@@ -98,6 +98,15 @@ const CSS = `
 .cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; }
 .cbl-post .body blockquote p:last-child { margin:0; }
 
+/* Inline images in the body (markdown ![caption](url)) */
+.cbl-post .body figure.mdfig { margin:26px 0 30px; }
+.cbl-post .body figure.mdfig img { width:100%; border-radius:14px 0 14px 0; display:block; border:1px solid rgba(255,255,255,.08); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+.cbl-post .body figure.mdfig figcaption { margin-top:9px; font-family:${MONO}; font-size:10.5px; letter-spacing:.04em; color:#888; }
+.cbl-post .body figure.mdfig figcaption b, .cbl-post .body figure.mdfig figcaption strong { color:${GOLD}; }
+/* Portrait card image — constrained so a tall card isn't full-bleed */
+.cbl-post .body figure.mdfig.card { max-width:320px; }
+.cbl-post .body figure.mdfig.card img { border-color:rgba(201,151,66,.3); box-shadow:0 14px 40px rgba(0,0,0,.6); }
+
 /* Driver's Take — a dedicated optional callout (renders only when the field is filled) */
 .cbl-post .dtake { max-width:720px; margin:38px 0 6px; padding:22px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.08); border-radius:0 14px 14px 0; }
 .cbl-post .dtake .dtake-label { font-family:${MONO}; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:${GOLD}; margin-bottom:10px; }
