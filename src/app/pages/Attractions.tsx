@@ -1684,7 +1684,7 @@ export function Attractions() {
       {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
           plus a "Where to next?" destinations band shown everywhere. Self-hides
           on production until the Travelpayouts links are wired (see affiliates.ts). */}
-      <AttractionsAffiliate activeCity={activeCity} />
+      <AttractionsAffiliate activeCity={activeCity} coords={coords} />
 
       <SuggestBand />
       <PlatformNotice variant="marketplace" />
