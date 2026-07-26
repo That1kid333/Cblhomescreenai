@@ -43,8 +43,8 @@ const PROGRAM_BASE: Record<Program, string> = {
   // link from the TP dashboard → dark-launched (preview shows the plain link).
   viator: '',
   // BikesBooking — bike/scooter/motorcycle rentals, location-driven (search by city).
-  // Empty until Keith confirms it's unlocked + pastes the base link → dark-launched.
-  bikesbooking: '',
+  // LIVE (unlocked 2026-07-26). 4% / 30-day cookie / MOBILE WEB ONLY (no app tracking).
+  bikesbooking: 'https://tp.media/r?campaign_id=57&marker=704468&p=1767&trs=499800&u=https%3A%2F%2Fwww.bikesbooking.com',
 };
 
 export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking';
