@@ -20,6 +20,7 @@
 import { useState } from 'react';
 import {
   AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
+  viatorOffer, hasCityPhoto, slugify,
   type AffiliateOffer,
 } from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
@@ -30,10 +31,14 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const GOLD = '#C99742';
 const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30) 50%, rgba(10,10,10,.90) 100%)';
+// Fallback for a visitor's-own-city card when we have no photo for it (nationwide
+// case): the shared map texture with a gold wash, so it still reads on-brand.
+const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
+const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 const CAP = 12;
-const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip'] as const;
+const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'viator'] as const;
 
-type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[] };
+type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[]; local?: boolean };
 
 function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetail) => void }) {
   const anyPreview = card.offers.some((o) => !o.tracked);
@@ -42,9 +47,10 @@ function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetai
       className="aff-card"
       onClick={() => onOpen({ name: card.name, country: card.country, photo: card.photo, offers: card.offers })}
     >
-      <div className="ac-img" style={{ backgroundImage: `${PHOTO_SCRIM}, url('${card.photo}')` }}>
+      <div className="ac-img" style={{ backgroundImage: cardBg(card.photo) }}>
+        {card.local && <span className="near-badge">Near you</span>}
         {anyPreview && <span className="preview-flag">preview</span>}
-        <span className="ac-country">{card.country}</span>
+        <span className="ac-country">{card.country || (card.local ? 'Your city' : '')}</span>
         <span className="ac-name">{card.name}</span>
       </div>
       <div className="ac-body">
@@ -79,8 +85,28 @@ export function AttractionsAffiliate({
     .filter((c) => c.offers.length > 0);
 
   if (localKey) {
+    // Detected city IS one of our curated cities → float it first.
     const i = cards.findIndex((c) => c.key === localKey);
     if (i > 0) cards.unshift(cards.splice(i, 1)[0]);
+  } else {
+    // Detected city is NOT curated (e.g. Pittsburgh) → add it as a location-aware
+    // LOCAL card powered by Viator, so any US city shows real hometown experiences.
+    const realCity = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
+    if (realCity) {
+      const vo = viatorOffer(realCity, `${placement}_viator_local`);
+      if (vo) {
+        cards.unshift({
+          key: 'local-' + slugify(realCity),
+          name: realCity,
+          country: '',
+          photo: hasCityPhoto(realCity) ? cityPhoto(slugify(realCity)) : '',
+          types: ['Experiences'],
+          price: vo.price,
+          offers: [vo],
+          local: true,
+        });
+      }
+    }
   }
   const shown = cards.slice(0, CAP);
   if (shown.length === 0) return null;
@@ -156,6 +182,7 @@ const CSS = `
 .cbl-aff .price-chip { font-family:${MONO}; font-size:11px; letter-spacing:.04em; color:${GOLD}; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:4px 10px; white-space:nowrap; }
 .cbl-aff .cta.ghost { font-family:${DISPLAY}; font-weight:800; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:${GOLD}; }
 .cbl-aff .preview-flag { position:absolute; top:10px; right:10px; z-index:3; font-family:${MONO}; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#eee; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.25); padding:3px 7px; border-radius:3px; }
+.cbl-aff .near-badge { position:absolute; top:10px; left:10px; z-index:3; font-family:${MONO}; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; font-weight:700; color:#062615; background:#4DBF66; padding:4px 9px; border-radius:2px; }
 
 @media (max-width:1100px){
   .cbl-aff section.band { padding:30px 24px 20px; }
