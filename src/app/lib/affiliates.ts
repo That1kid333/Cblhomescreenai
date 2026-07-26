@@ -205,6 +205,19 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Free cancellation on most, book on your phone',
     ],
   },
+  ticketnetwork: {
+    partner: 'TicketNetwork',
+    logo: '/attractions/ticketnetwork-logo.svg',
+    cta: 'Find tickets',
+    briefing:
+      'Event tickets powered by TicketNetwork — concerts, sports and live theater in your city and beyond, on a trusted resale marketplace.',
+    highlights: [
+      'Concerts, sports & live theater',
+      'Events near you and nationwide',
+      'Seat-by-seat selection',
+      'Instant mobile ticket delivery',
+    ],
+  },
 };
 
 // ── Go City coverage (all-in-one city passes). Slug = the /en/{slug} path on
@@ -353,6 +366,40 @@ export function viatorOffer(cityName: string, placement: string): AffiliateOffer
   };
 }
 
+// ── TicketNetwork: LIVE nationwide events layer (unlocked now). Like Viator, it's
+// driven by the visitor's DETECTED city — search?q={city} works for any US city.
+// Website-only per program terms (no mobile tracking → no app placements).
+export function ticketNetworkUrl(cityName: string): string {
+  return `https://www.ticketnetwork.com/search?q=${encodeURIComponent(cityName)}`;
+}
+export function ticketNetworkOffer(cityName: string, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.ticketnetwork!;
+  const link = affiliateHref('ticketnetwork', ticketNetworkUrl(cityName), placement);
+  if (!link) return null;
+  const key = slugify(cityName);
+  return {
+    program: 'ticketnetwork', partner: meta.partner, cityKey: key, name: cityName, country: '',
+    photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT, kicker: 'Events & tickets',
+    title: `Events in ${cityName}`, price: 'See prices', meta: 'Concerts · sports · theater',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+/**
+ * Location-driven LOCAL offers for the visitor's detected city — the nationwide
+ * "near you" layer. TicketNetwork (events, LIVE now) + Viator (experiences, opens
+ * in Oct); each resolves independently, so today the card is powered by
+ * TicketNetwork and Viator joins automatically when its tier unlocks.
+ */
+export function localCityOffers(cityName: string, placement: string): AffiliateOffer[] {
+  const out: AffiliateOffer[] = [];
+  const tn = ticketNetworkOffer(cityName, `${placement}_ticketnetwork_local`);
+  if (tn) out.push(tn);
+  const v = viatorOffer(cityName, `${placement}_viator_local`);
+  if (v) out.push(v);
+  return out;
+}
+
 // ── City-centric model: ONE card per city, every partner's booking option
 // attached. Union of the three programs' coverage (17 cities). ─────────────────
 export type AffiliateCity = { key: string; match: string[]; name: string; country: string };
@@ -396,9 +443,11 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (g) { const o = goCityOffer(g, `${placement}_gocity_${cityKey}`); if (o) out.push(o); }
   const w = WEGOTRIP_CITIES.find((c) => c.key === cityKey);
   if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
+  // US cities also get TicketNetwork events (it's US-focused).
+  const cityMeta = AFFILIATE_CITIES.find((c) => c.key === cityKey);
+  if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
   // Viator covers ~everywhere — add local experiences to every known city too.
-  const name = AFFILIATE_CITIES.find((c) => c.key === cityKey)?.name;
-  if (name) { const o = viatorOffer(name, `${placement}_viator_${cityKey}`); if (o) out.push(o); }
+  if (cityMeta?.name) { const o = viatorOffer(cityMeta.name, `${placement}_viator_${cityKey}`); if (o) out.push(o); }
   return out;
 }
 
@@ -410,5 +459,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', viator: 'Experiences',
+  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences',
 };

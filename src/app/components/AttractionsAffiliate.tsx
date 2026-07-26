@@ -20,8 +20,8 @@
 import { useState } from 'react';
 import {
   AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
-  viatorOffer, hasCityPhoto, slugify,
-  type AffiliateOffer,
+  localCityOffers, hasCityPhoto, slugify,
+  type AffiliateOffer, type Program,
 } from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import { AffiliateDetailModal, type CityDetail } from './AffiliateDetailModal';
@@ -36,7 +36,9 @@ const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30)
 const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
 const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 const CAP = 12;
-const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'viator'] as const;
+const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'ticketnetwork', 'viator'] as const;
+const typesOf = (offers: AffiliateOffer[]) =>
+  PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);
 
 type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[]; local?: boolean };
 
@@ -56,7 +58,7 @@ function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetai
       <div className="ac-body">
         <span className="ac-types">{card.types.join(' · ')}</span>
         <span className="ac-cta">
-          <span className="price-chip">{card.price}</span>
+          {card.price ? <span className="price-chip">{card.price}</span> : <span />}
           <span className="cta ghost">View options →</span>
         </span>
       </div>
@@ -77,10 +79,7 @@ export function AttractionsAffiliate({
   const cards: CityCard[] = AFFILIATE_CITIES
     .map((c) => {
       const offers = cityOffers(c.key, placement);
-      const types = PARTNER_ORDER
-        .filter((p) => offers.some((o) => o.program === p))
-        .map((p) => OPTION_WORD[p] as string);
-      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types, price: minPrice(offers), offers };
+      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types: typesOf(offers), price: minPrice(offers), offers };
     })
     .filter((c) => c.offers.length > 0);
 
@@ -90,19 +89,20 @@ export function AttractionsAffiliate({
     if (i > 0) cards.unshift(cards.splice(i, 1)[0]);
   } else {
     // Detected city is NOT curated (e.g. Pittsburgh) → add it as a location-aware
-    // LOCAL card powered by Viator, so any US city shows real hometown experiences.
+    // LOCAL card, nationwide: TicketNetwork events (live now) + Viator experiences
+    // (when its tier opens). Driven by the visitor's detected city.
     const realCity = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
     if (realCity) {
-      const vo = viatorOffer(realCity, `${placement}_viator_local`);
-      if (vo) {
+      const localOffers = localCityOffers(realCity, placement);
+      if (localOffers.length) {
         cards.unshift({
           key: 'local-' + slugify(realCity),
           name: realCity,
           country: '',
           photo: hasCityPhoto(realCity) ? cityPhoto(slugify(realCity)) : '',
-          types: ['Experiences'],
-          price: vo.price,
-          offers: [vo],
+          types: typesOf(localOffers),
+          price: minPrice(localOffers),
+          offers: localOffers,
           local: true,
         });
       }
@@ -110,6 +110,10 @@ export function AttractionsAffiliate({
   }
   const shown = cards.slice(0, CAP);
   if (shown.length === 0) return null;
+
+  // Partner strip shows only brands with a resolvable offer among the shown cards
+  // (so a gated program like Viator doesn't advertise itself before it's live).
+  const livePrograms = new Set<Program>(shown.flatMap((c) => c.offers.map((o) => o.program)));
 
   return (
     <div className="cbl-aff">
@@ -125,10 +129,11 @@ export function AttractionsAffiliate({
             </p>
           </div>
 
-          {/* Trusted-partners strip: the three brands, official logos on white chips. */}
+          {/* Trusted-partners strip: official logos on white chips — only the brands
+              that actually have a bookable offer among the shown cards. */}
           <div className="partners">
             <span className="p-label">Book with</span>
-            {PARTNER_ORDER.map((p) => {
+            {PARTNER_ORDER.filter((p) => livePrograms.has(p)).map((p) => {
               const meta = PARTNER_META[p];
               return meta ? (
                 <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
