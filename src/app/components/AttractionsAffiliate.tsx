@@ -36,7 +36,7 @@ const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30)
 const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
 const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 const CAP = 12;
-const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'ticketnetwork', 'viator'] as const;
+const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
 const typesOf = (offers: AffiliateOffer[]) =>
   PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);
 
