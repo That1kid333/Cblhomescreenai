@@ -75,6 +75,20 @@ export function Markdown({ source }: { source: string }) {
       k++;
       continue;
     }
+    // Standalone image on its own line: ![caption](url) or ![caption](url "class")
+    const img = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)\s*$/.exec(line);
+    if (img) {
+      const [, alt, url, cls] = img;
+      blocks.push(
+        <figure key={k} className={`mdfig${cls ? ` ${cls}` : ''}`}>
+          <img src={url} alt={alt.replace(/[*_]/g, '')} loading="lazy" />
+          {alt.trim() && <figcaption>{inline(alt, `f${k}`)}</figcaption>}
+        </figure>,
+      );
+      i++;
+      k++;
+      continue;
+    }
     if (line.startsWith('- ')) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith('- ')) {

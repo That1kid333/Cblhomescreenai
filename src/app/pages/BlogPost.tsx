@@ -67,7 +67,7 @@ const CSS = `
 .cbl-post .back:hover { color:${GOLD}; }
 
 .cbl-post .kick { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin:22px 0 12px; }
-.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; }
+.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; text-wrap:pretty; }
 .cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; }
 .cbl-post .by { font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; margin-bottom:24px; }
 .cbl-post .by b { color:${GOLD}; font-weight:700; }
