@@ -72,5 +72,61 @@
     "license": "cc0",
     "provider": "rawpixel",
     "openverse": "https://www.rawpixel.com/image/5917218/image-public-domain-water-free"
+  },
+  {
+    "key": "las-vegas",
+    "query": "Las Vegas Strip night",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHg2NjQ3NzYtaW1hZ2Uta3d5b3dpOXkuanBn.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "orlando",
+    "query": "Orlando Florida downtown",
+    "src": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA5L2xvYzIwMjA3MjA4NjQtaW1hZ2UuanBn.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "los-angeles",
+    "query": "Los Angeles downtown skyline",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcGQ1MWI1LTA4NC1hZS5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "san-francisco",
+    "query": "San Francisco Golden Gate Bridge",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcGQ1MWI1LTA1My1qai5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "miami",
+    "query": "Miami skyline beach",
+    "src": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA5L2xvYzIwMjA3MjA5ODQtaW1hZ2UuanBn.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "chicago",
+    "query": "Chicago skyline river",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHgxMTczODkwLWltYWdlLWt3eXF6Mnh0LmpwZw.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "boston",
+    "query": "Boston skyline harbor",
+    "src": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI1LTA0L2RpZ2l0YWxjd2NvbW1vbndlYWx0aHg2MzNmYzM2ei1pbWFnZS5qcGc.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
+  },
+  {
+    "key": "new-orleans",
+    "query": "New Orleans French Quarter street",
+    "src": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcGQyMDctMi0yNTcuanBn.jpg",
+    "license": "cc0",
+    "provider": "rawpixel"
   }
 ]
