@@ -1235,16 +1235,12 @@ export function Travels() {
         </section>
       )}
 
-      {/* Money-maker up front: Tiqets experiences (Phase 1 affiliate) render right
-          after the tab content — above the Buckee/Deals promo bands — since lodging
-          is still Coming Soon. Complements the KAYAK flights/hotels; self-hides until
-          the TP links are wired. destinationsOnly = no location-gated local band here. */}
-      <AttractionsAffiliate
-        destinationsOnly
-        eyebrow="things to do · at your destination"
-        heading={<>Book the <span className="it">experiences</span></>}
-        sub="Skip-the-line museum and attraction tickets for the world's most-visited cities."
-      />
+      {/* Money-maker up front: affiliate experiences (tickets, city passes, audio
+          tours) render right after the tab content — above the Buckee/Deals promo
+          bands — since lodging is still Coming Soon. Complements the KAYAK flights/
+          hotels; self-hides until the TP links are wired. placement="travels" tags
+          its clicks separately from the Attractions page in reports. */}
+      <AttractionsAffiliate placement="travels" />
 
       {tab === 'BUCKEE' && <BuckeeBand />}
       {tab === 'DEALS' && <DealsBand />}

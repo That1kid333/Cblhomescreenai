@@ -1,172 +1,124 @@
 /**
- * Attractions affiliate bands (Phase 1 — Tiqets). Two honestly-labeled sections:
+ * Affiliate section — ONE card per city, every partner's booking option attached.
+ * A card opens an on-site detail panel (AffiliateDetailModal) listing every way to
+ * explore that city — skip-the-line tickets (Tiqets), an all-in-one pass (Go City),
+ * a self-guided audio tour (WeGoTrip) — whichever cover it. Only the "Book" button
+ * the visitor chooses leaves, in a new tab, preserving the affiliate cookie.
  *
- *   1. "In {city}" local band — shown ONLY when the visitor's active city is one
- *      Tiqets actually sells (coverage-gated), so we never show an off-city block.
- *   2. "Where to next?" destinations band — shown everywhere, framing the covered
- *      cities as trip ideas so a visitor in an uncovered market (e.g. Pittsburgh)
- *      sees genuine trip-planning content instead of an empty section.
+ * Collapsing the old three-band-per-partner layout into one city grid removes the
+ * duplicate cards (New York no longer appears three times) and turns discovery into
+ * a single "pick a city → see all your options" flow. Each option keeps its own
+ * tracked link + placement sub_id, so per-partner earnings still report.
  *
- * Everything routes through affiliateHref(): tracked TP links once wired, the
- * plain destination on preview/localhost for design review, and null on
- * production until go-live — in which case a band with no resolvable links
- * renders nothing. If neither band has content, the whole section (disclosure
- * included) returns null.
+ * `activeCity` (when known) floats that city first. `placement` tags sub_ids
+ * (attractions_* vs travels_*). Cities with no resolvable offers are skipped; if
+ * none resolve, the section returns null.
  *
- * Design tokens mirror Attractions.tsx exactly: black canvas, gold #C99742,
- * Myriad/Playfair/mono, diagonal-corner image framing (24px 0 24px 0), no gold
- * borders on images.
+ * Design tokens mirror Attractions.tsx: black canvas, gold #C99742, Playfair italic,
+ * diagonal-corner (24px 0 24px 0) framing, no gold borders on images.
  */
-import { type ReactNode } from 'react';
-import { AFFILIATE_REL, TIQETS_CITIES, affiliateHref, tiqetsCityFor, type TiqetsCity } from '../lib/affiliates';
+import { useState } from 'react';
+import {
+  AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
+  type AffiliateOffer,
+} from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
+import { AffiliateDetailModal, type CityDetail } from './AffiliateDetailModal';
 
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const GOLD = '#C99742';
-const MAP_TEXTURE = '/eats/imagery/cbl-map-backdrop.jpg';
-
-// Real self-hosted photo when set (neutral bottom scrim keeps the city name/price
-// legible); otherwise the per-city gradient tint over the shared map texture.
 const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30) 50%, rgba(10,10,10,.90) 100%)';
-const cityBg = (c: TiqetsCity) =>
-  c.photo
-    ? `${PHOTO_SCRIM}, url('${c.photo}')`
-    : `linear-gradient(150deg, ${c.tint}), url('${MAP_TEXTURE}')`;
+const CAP = 12;
+const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip'] as const;
 
-function TicketIcon({ s = 14, color = '#000' }: { s?: number; color?: string }) {
-  return (
-    <svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M4 8V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4Z" />
-      <path d="M9 4v16" strokeDasharray="2 3" />
-    </svg>
-  );
-}
+type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[] };
 
-// A compact source-briefing strip so visitors know who fulfills the booking —
-// the official Tiqets teal wordmark + a one-line description. Builds trust and
-// keeps the paid partner clearly distinct from CBL's own brand.
-function TiqetsIntro({ placement }: { placement: string }) {
+function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetail) => void }) {
+  const anyPreview = card.offers.some((o) => !o.tracked);
   return (
-    <div className="aff-intro" data-placement={placement}>
-      <img className="aff-intro-logo" src="/attractions/tiqets-logo.svg" alt="Tiqets" width={92} height={35} />
-      <p className="aff-intro-copy">
-        <b>Tickets powered by Tiqets</b> — an online booking platform for museums and attractions
-        that connects travelers worldwide with more ways to experience culture.
-      </p>
-    </div>
+    <button
+      className="aff-card"
+      onClick={() => onOpen({ name: card.name, country: card.country, photo: card.photo, offers: card.offers })}
+    >
+      <div className="ac-img" style={{ backgroundImage: `${PHOTO_SCRIM}, url('${card.photo}')` }}>
+        {anyPreview && <span className="preview-flag">preview</span>}
+        <span className="ac-country">{card.country}</span>
+        <span className="ac-name">{card.name}</span>
+      </div>
+      <div className="ac-body">
+        <span className="ac-types">{card.types.join(' · ')}</span>
+        <span className="ac-cta">
+          <span className="price-chip">{card.price}</span>
+          <span className="cta ghost">View options →</span>
+        </span>
+      </div>
+    </button>
   );
 }
 
 export function AttractionsAffiliate({
   activeCity,
-  destinationsOnly = false,
-  heading,
-  eyebrow,
-  sub,
+  placement = 'attractions',
 }: {
   activeCity?: string;
-  destinationsOnly?: boolean;
-  heading?: ReactNode;
-  eyebrow?: string;
-  sub?: string;
+  placement?: string;
 }) {
-  const local = destinationsOnly ? null : tiqetsCityFor(activeCity);
-  const localLink = local ? affiliateHref('tiqets', local.target, `attractions_${local.key}_local`) : null;
+  const [detail, setDetail] = useState<CityDetail | null>(null);
 
-  // Destination cards: every covered city except the one already shown locally.
-  const placementBase = destinationsOnly ? 'travels' : 'attractions';
-  const destinations = TIQETS_CITIES.filter((c) => c.key !== local?.key)
-    .map((c) => ({ city: c, link: affiliateHref('tiqets', c.target, `${placementBase}_${c.key}_dest`) }))
-    .filter((d): d is { city: TiqetsCity; link: NonNullable<ReturnType<typeof affiliateHref>> } => !!d.link);
+  const localKey = affiliateCityFor(activeCity)?.key ?? null;
+  const cards: CityCard[] = AFFILIATE_CITIES
+    .map((c) => {
+      const offers = cityOffers(c.key, placement);
+      const types = PARTNER_ORDER
+        .filter((p) => offers.some((o) => o.program === p))
+        .map((p) => OPTION_WORD[p] as string);
+      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types, price: minPrice(offers), offers };
+    })
+    .filter((c) => c.offers.length > 0);
 
-  const showLocal = !!(local && localLink);
-  const showDestinations = destinations.length > 0;
-  if (!showLocal && !showDestinations) return null; // nothing resolvable → hide entirely
+  if (localKey) {
+    const i = cards.findIndex((c) => c.key === localKey);
+    if (i > 0) cards.unshift(cards.splice(i, 1)[0]);
+  }
+  const shown = cards.slice(0, CAP);
+  if (shown.length === 0) return null;
 
   return (
     <div className="cbl-aff">
       <style>{CSS}</style>
-
-      {showLocal && local && localLink && (
-        <section className="band">
-          <div className="band-inner">
-            <div className="aff-head">
-              <div className="section-eyebrow">tickets &amp; passes · {local.name}</div>
-              <h2 className="section-h2">
-                Skip the line <span className="it">in {local.name}</span>
-              </h2>
-            </div>
-            <TiqetsIntro placement={placementBase} />
-            <a
-              className="local-feature"
-              href={localLink.href}
-              target="_blank"
-              rel={AFFILIATE_REL}
-              style={{ backgroundImage: cityBg(local) }}
-            >
-              {!localLink.tracked && <span className="preview-flag">preview link</span>}
-              <div className="lf-body">
-                <div className="lf-kicker">Powered by Tiqets</div>
-                <h3>
-                  {local.count} in <span className="it">{local.name}</span>
-                </h3>
-                <p>Museums, landmarks and experiences — booked in seconds, straight to your phone.</p>
-                <div className="lf-actions">
-                  <span className="price-chip">{local.fromPrice}</span>
-                  <span className="cta">
-                    <TicketIcon /> Book tickets
-                  </span>
-                </div>
-              </div>
-            </a>
+      <section className="band">
+        <div className="band-inner">
+          <div className="aff-head">
+            <div className="section-eyebrow">things to do · at your destination</div>
+            <h2 className="section-h2">Book the <span className="it">experiences</span></h2>
+            <p className="aff-sub">
+              Skip-the-line tickets, all-in-one city passes and self-guided audio tours — pick a city
+              to see every way to explore it.
+            </p>
           </div>
-        </section>
-      )}
 
-      {showDestinations && (
-        <section className="band tight">
-          <div className="band-inner">
-            <div className="aff-head">
-              <div className="section-eyebrow">{eyebrow ?? 'plan your next trip'}</div>
-              <h2 className="section-h2">
-                {heading ?? (<>Where to <span className="it">next?</span></>)}
-              </h2>
-              <p className="aff-sub">{sub ?? "Skip-the-line tickets and timed entry in the world's most-visited cities."}</p>
-            </div>
-            {!showLocal && <TiqetsIntro placement={placementBase} />}
-            <div className="dest-grid">
-              {destinations.map(({ city, link }) => (
-                <a
-                  key={city.key}
-                  className="dest-card"
-                  href={link.href}
-                  target="_blank"
-                  rel={AFFILIATE_REL}
-                >
-                  <div className="dc-img" style={{ backgroundImage: cityBg(city) }}>
-                    {!link.tracked && <span className="preview-flag">preview link</span>}
-                    <span className="dc-country">{city.country}</span>
-                    <span className="dc-name">{city.name}</span>
-                  </div>
-                  <div className="dc-body">
-                    <span className="dc-count">{city.count}</span>
-                    <span className="dc-cta">
-                      <span className="price-chip sm">{city.fromPrice}</span>
-                      <span className="cta ghost">
-                        <TicketIcon color={GOLD} /> Book tickets
-                      </span>
-                    </span>
-                  </div>
-                </a>
-              ))}
-            </div>
+          {/* Trusted-partners strip: the three brands, official logos on white chips. */}
+          <div className="partners">
+            <span className="p-label">Book with</span>
+            {PARTNER_ORDER.map((p) => {
+              const meta = PARTNER_META[p];
+              return meta ? (
+                <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
+              ) : null;
+            })}
           </div>
-        </section>
-      )}
 
+          <div className="aff-grid">
+            {shown.map((c) => (
+              <OfferCityCard key={c.key} card={c} onOpen={setDetail} />
+            ))}
+          </div>
+        </div>
+      </section>
       <AffiliateDisclosure />
+      <AffiliateDetailModal detail={detail} onClose={() => setDetail(null)} />
     </div>
   );
 }
@@ -174,97 +126,42 @@ export function AttractionsAffiliate({
 const CSS = `
 .cbl-aff { font-family:${DISPLAY}; -webkit-font-smoothing:antialiased; }
 .cbl-aff * { box-sizing:border-box; }
-.cbl-aff section.band { padding:36px 48px 20px; }
-.cbl-aff section.band.tight { padding:20px 48px 28px; }
+.cbl-aff section.band { padding:34px 48px 24px; }
 .cbl-aff .band-inner { max-width:1280px; margin:0 auto; }
 
-/* Source-briefing strip (Tiqets logo + one-liner) — sits directly above the cards */
-.cbl-aff .aff-intro {
-  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
-  background:#0F0F0F; border:1px solid rgba(255,255,255,.08);
-  border-radius:16px 0 16px 0; padding:14px 18px; margin-bottom:18px;
-}
-.cbl-aff .aff-intro-logo { height:30px; width:auto; flex-shrink:0; display:block; }
-.cbl-aff .aff-intro-copy { margin:0; font-size:13px; line-height:1.5; color:#9A9A9A; flex:1; min-width:220px; }
-.cbl-aff .aff-intro-copy b { color:#D4D4D4; font-weight:700; }
-
-.cbl-aff .aff-head { margin-bottom:20px; }
-.cbl-aff .section-eyebrow {
-  display:inline-flex; align-items:center; gap:8px;
-  font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-  color:${GOLD}; margin-bottom:10px;
-}
+.cbl-aff .aff-head { margin-bottom:16px; }
+.cbl-aff .section-eyebrow { display:inline-flex; align-items:center; gap:8px; font-family:${MONO}; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; margin-bottom:10px; }
 .cbl-aff .section-eyebrow::before { content:''; width:28px; height:1px; background:${GOLD}; }
-.cbl-aff .section-h2 {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(28px,3.4vw,40px);
-  line-height:1; letter-spacing:-.02em; text-transform:uppercase; color:#fff; margin:0;
-}
+.cbl-aff .section-h2 { font-family:${DISPLAY}; font-weight:900; font-size:clamp(28px,3.4vw,40px); line-height:1; letter-spacing:-.02em; text-transform:uppercase; color:#fff; margin:0; }
 .cbl-aff .section-h2 .it { font-family:${ITALIC}; font-style:italic; color:${GOLD}; font-weight:600; text-transform:none; }
-.cbl-aff .aff-sub { color:#9A9A9A; font-size:14.5px; line-height:1.5; margin:10px 0 0; max-width:560px; }
+.cbl-aff .aff-sub { color:#9A9A9A; font-size:14.5px; line-height:1.5; margin:10px 0 0; max-width:600px; }
 
-/* Shared bits */
-.cbl-aff .price-chip {
-  font-family:${MONO}; font-size:12px; letter-spacing:.04em; color:${GOLD};
-  border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:5px 12px; white-space:nowrap;
-}
-.cbl-aff .price-chip.sm { font-size:11px; padding:4px 10px; }
-.cbl-aff .cta {
-  display:inline-flex; align-items:center; gap:7px;
-  background:${GOLD}; color:#000; font-family:${DISPLAY}; font-weight:800; font-size:12px;
-  letter-spacing:.08em; text-transform:uppercase; padding:11px 18px; border-radius:999px;
-}
-.cbl-aff .cta.ghost { background:transparent; border:1.5px solid rgba(201,151,66,.5); color:${GOLD}; padding:9px 14px; }
-.cbl-aff a { text-decoration:none; }
-.cbl-aff .preview-flag {
-  position:absolute; top:10px; right:10px; z-index:3;
-  font-family:${MONO}; font-size:9px; letter-spacing:.12em; text-transform:uppercase;
-  color:#eee; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.25);
-  padding:3px 7px; border-radius:3px;
-}
+/* Trusted-partners strip — official logos on white chips */
+.cbl-aff .partners { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.cbl-aff .partners .p-label { font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
+.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); }
+.cbl-aff .logo-chip img { height:20px; width:auto; display:block; }
 
-/* Local feature card */
-.cbl-aff .local-feature {
-  position:relative; display:block; overflow:hidden;
-  border-radius:24px 0 24px 0; background-size:cover; background-position:center;
-  min-height:220px; display:flex; align-items:flex-end;
-  transition:transform .2s ease;
-}
-.cbl-aff .local-feature:hover { transform:translateY(-3px); }
-.cbl-aff .lf-body { padding:26px 30px; max-width:560px; }
-.cbl-aff .lf-kicker { font-family:${MONO}; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; margin-bottom:8px; }
-.cbl-aff .local-feature h3 {
-  font-family:${DISPLAY}; font-weight:900; font-size:clamp(24px,3vw,34px); line-height:1;
-  text-transform:uppercase; color:#fff; margin:0 0 8px; letter-spacing:-.01em;
-}
-.cbl-aff .local-feature h3 .it { font-family:${ITALIC}; font-style:italic; color:${GOLD}; font-weight:600; text-transform:none; }
-.cbl-aff .local-feature p { color:#D4D4D4; font-size:14px; line-height:1.5; margin:0 0 16px; }
-.cbl-aff .lf-actions { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-
-/* Destinations grid */
-.cbl-aff .dest-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
-.cbl-aff .dest-card {
-  display:flex; flex-direction:column; background:#141414;
-  border:1px solid rgba(255,255,255,.07); border-radius:24px 0 24px 0; overflow:hidden;
-  transition:transform .2s ease, border-color .2s ease;
-}
-.cbl-aff .dest-card:hover { transform:translateY(-4px); border-color:rgba(201,151,66,.45); }
-.cbl-aff .dc-img {
-  position:relative; height:150px; background-size:cover; background-position:center;
-  display:flex; flex-direction:column; justify-content:flex-end; padding:14px 16px;
-}
-.cbl-aff .dc-country { font-family:${MONO}; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:${GOLD}; }
-.cbl-aff .dc-name { font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:26px; color:#fff; line-height:1; }
-.cbl-aff .dc-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; flex:1; }
-.cbl-aff .dc-count { font-size:12.5px; color:#9A9A9A; }
-.cbl-aff .dc-cta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; }
+/* City card grid (opens the on-site detail panel) */
+.cbl-aff .aff-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+.cbl-aff .aff-card { display:flex; flex-direction:column; background:#141414; border:1px solid rgba(255,255,255,.07); border-radius:24px 0 24px 0; overflow:hidden; cursor:pointer; text-align:left; padding:0; font:inherit; color:inherit; transition:transform .2s ease, border-color .2s ease; }
+.cbl-aff .aff-card:hover { transform:translateY(-4px); border-color:rgba(201,151,66,.45); }
+.cbl-aff .aff-card:focus-visible { outline:2px solid ${GOLD}; outline-offset:2px; }
+.cbl-aff .ac-img { position:relative; height:150px; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:flex-end; padding:14px 16px; }
+.cbl-aff .ac-country { font-family:${MONO}; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:${GOLD}; }
+.cbl-aff .ac-name { font-family:${ITALIC}; font-style:italic; font-weight:700; font-size:26px; color:#fff; line-height:1; }
+.cbl-aff .ac-body { padding:14px 16px 16px; display:flex; flex-direction:column; gap:12px; flex:1; }
+.cbl-aff .ac-types { font-family:${MONO}; font-size:11px; letter-spacing:.03em; color:#9A9A9A; }
+.cbl-aff .ac-cta { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; }
+.cbl-aff .price-chip { font-family:${MONO}; font-size:11px; letter-spacing:.04em; color:${GOLD}; border:1px solid rgba(201,151,66,.5); border-radius:999px; padding:4px 10px; white-space:nowrap; }
+.cbl-aff .cta.ghost { font-family:${DISPLAY}; font-weight:800; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:${GOLD}; }
+.cbl-aff .preview-flag { position:absolute; top:10px; right:10px; z-index:3; font-family:${MONO}; font-size:9px; letter-spacing:.12em; text-transform:uppercase; color:#eee; background:rgba(0,0,0,.6); border:1px solid rgba(255,255,255,.25); padding:3px 7px; border-radius:3px; }
 
 @media (max-width:1100px){
-  .cbl-aff section.band { padding:32px 24px 18px; }
-  .cbl-aff section.band.tight { padding:18px 24px 26px; }
-  .cbl-aff .dest-grid { grid-template-columns:repeat(2,1fr); }
+  .cbl-aff section.band { padding:30px 24px 20px; }
+  .cbl-aff .aff-grid { grid-template-columns:repeat(2,1fr); }
 }
 @media (max-width:560px){
-  .cbl-aff .dest-grid { grid-template-columns:1fr; }
-  .cbl-aff .lf-body { padding:22px 20px; }
+  .cbl-aff .aff-grid { grid-template-columns:1fr; }
 }
 `;
