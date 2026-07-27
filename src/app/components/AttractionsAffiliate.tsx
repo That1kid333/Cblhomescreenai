@@ -36,12 +36,12 @@ const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30)
 // case): the shared map texture with a gold wash, so it still reads on-brand.
 const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
 const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
-const CAP = 12;
-const PARTNER_ORDER = ['tiqets', 'gocity', 'wegotrip', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
+const GROUP_CAP = 8; // cards shown per section (U.S. / International) — two tidy rows of four
+const PARTNER_ORDER = ['tiqets', 'gocity', 'turbopass', 'wegotrip', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
 const typesOf = (offers: AffiliateOffer[]) =>
   PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);
 
-type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[]; local?: boolean };
+type CityCard = { key: string; name: string; country: string; photo: string; types: string[]; price: string; offers: AffiliateOffer[]; local?: boolean; us: boolean };
 
 function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetail) => void }) {
   const anyPreview = card.offers.some((o) => !o.tracked);
@@ -88,7 +88,7 @@ export function AttractionsAffiliate({
   const cards: CityCard[] = AFFILIATE_CITIES
     .map((c) => {
       const offers = cityOffers(c.key, placement);
-      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types: typesOf(offers), price: minPrice(offers), offers };
+      return { key: c.key, name: c.name, country: c.country, photo: cityPhoto(c.key), types: typesOf(offers), price: minPrice(offers), offers, us: c.country === 'USA' };
     })
     .filter((c) => c.offers.length > 0);
 
@@ -110,15 +110,38 @@ export function AttractionsAffiliate({
         price: minPrice(localOffers),
         offers: localOffers,
         local: true,
+        us: true, // nearestMajorCity only resolves US metros → always the U.S. section
       });
     }
   }
-  const shown = cards.slice(0, CAP);
+
+  // Split into U.S. and International sections (Keith's request). Order within each
+  // preserves AFFILIATE_CITIES order, with any "near you" card floated to the front
+  // of its section. Each section is capped independently for a tidy two-row grid.
+  const usCards = cards.filter((c) => c.us).slice(0, GROUP_CAP);
+  const intlCards = cards.filter((c) => !c.us).slice(0, GROUP_CAP);
+  const shown = [...usCards, ...intlCards];
   if (shown.length === 0) return null;
 
   // Partner strip shows only brands with a resolvable offer among the shown cards
   // (so a gated program like Viator doesn't advertise itself before it's live).
   const livePrograms = new Set<Program>(shown.flatMap((c) => c.offers.map((o) => o.program)));
+
+  const renderGroup = (label: string, sub: string, list: CityCard[]) =>
+    list.length > 0 ? (
+      <div className="aff-group">
+        <div className="aff-group-h">
+          <span className="agh-k">{label}</span>
+          <span className="agh-sub">{sub}</span>
+          <span className="agh-line" />
+        </div>
+        <div className="aff-grid">
+          {list.map((c) => (
+            <OfferCityCard key={c.key} card={c} onOpen={setDetail} />
+          ))}
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className="cbl-aff">
@@ -146,11 +169,8 @@ export function AttractionsAffiliate({
             })}
           </div>
 
-          <div className="aff-grid">
-            {shown.map((c) => (
-              <OfferCityCard key={c.key} card={c} onOpen={setDetail} />
-            ))}
-          </div>
+          {renderGroup('U.S. Travel', 'Tickets · passes · tours · events', usCards)}
+          {renderGroup('International Travel', 'Explore the world', intlCards)}
         </div>
       </section>
       <AffiliateDisclosure />
@@ -178,6 +198,13 @@ const CSS = `
 .cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); height:32px; }
 .cbl-aff .logo-chip img { max-height:20px; max-width:104px; width:auto; height:auto; display:block; }
 
+/* U.S. / International section groups */
+.cbl-aff .aff-group + .aff-group { margin-top:30px; }
+.cbl-aff .aff-group-h { display:flex; align-items:center; gap:14px; margin:6px 0 16px; }
+.cbl-aff .aff-group-h .agh-k { font-family:${DISPLAY}; font-weight:800; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#fff; white-space:nowrap; }
+.cbl-aff .aff-group-h .agh-sub { font-family:${MONO}; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A8A; white-space:nowrap; }
+.cbl-aff .aff-group-h .agh-line { flex:1; height:1px; background:rgba(201,151,66,.20); }
+
 /* City card grid (opens the on-site detail panel) */
 .cbl-aff .aff-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
 .cbl-aff .aff-card { display:flex; flex-direction:column; background:#141414; border:1px solid rgba(255,255,255,.07); border-radius:24px 0 24px 0; overflow:hidden; cursor:pointer; text-align:left; padding:0; font:inherit; color:inherit; transition:transform .2s ease, border-color .2s ease; }
@@ -200,5 +227,6 @@ const CSS = `
 }
 @media (max-width:560px){
   .cbl-aff .aff-grid { grid-template-columns:1fr; }
+  .cbl-aff .aff-group-h .agh-sub { display:none; }
 }
 `;

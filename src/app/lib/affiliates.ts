@@ -396,6 +396,19 @@ export function goCityOffer(entry: GoCityEntry, placement: string): AffiliateOff
   };
 }
 
+/** Build a Turbopass city-pass offer for a covered city, or null if unavailable. */
+export function turbopassOffer(entry: TurbopassCity, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.turbopass!;
+  const link = affiliateHref('turbopass', entry.url, placement);
+  if (!link) return null;
+  return {
+    program: 'turbopass', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'City pass',
+    title: `${entry.name} City Pass`, price: 'See prices', meta: 'Attractions + transport',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
 /** Build a WeGoTrip offer for a covered city, or null if unwired/unavailable. */
 export function weGoTripOffer(entry: WeGoTripEntry, placement: string): AffiliateOffer | null {
   const meta = PARTNER_META.wegotrip!;
@@ -597,6 +610,8 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (t) { const o = tiqetsOffer(t, `${placement}_tiqets_${cityKey}`); if (o) out.push(o); }
   const g = GOCITY_CITIES.find((c) => c.key === cityKey);
   if (g) { const o = goCityOffer(g, `${placement}_gocity_${cityKey}`); if (o) out.push(o); }
+  const tp = TURBOPASS_CITIES.find((c) => c.key === cityKey);
+  if (tp) { const o = turbopassOffer(tp, `${placement}_turbopass_${cityKey}`); if (o) out.push(o); }
   const w = WEGOTRIP_CITIES.find((c) => c.key === cityKey);
   if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
   // US cities also get TicketNetwork events (it's US-focused).
@@ -617,5 +632,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
+  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
 };
