@@ -168,6 +168,8 @@ type SeedItem = {
   img: string;
   desc: string;
   featured: boolean;
+  rating?: number;  // override the id-derived placeholder (for landmark spots)
+  reviews?: number;
 };
 
 const SEED: SeedItem[] = [
@@ -179,6 +181,17 @@ const SEED: SeedItem[] = [
     img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&h=900&fit=crop',
     desc: 'Free outdoor arts festival featuring 70+ visual artists, three concert stages, and food vendors along the rivers.',
     featured: true,
+  },
+  {
+    id: 16,
+    name: 'Mount Washington',
+    venue: 'Grandview Overlook · Mount Washington',
+    cat: 'OUTDOORS',
+    img: '/blog/mount-washington/pgh-dusk.jpg',
+    desc: 'The city’s signature view — downtown and the three rivers laid out below Grandview Avenue, reached by the historic Duquesne and Monongahela inclines.',
+    featured: false,
+    rating: 4.8,
+    reviews: 6803,
   },
   {
     id: 2,
@@ -316,8 +329,8 @@ function seedToAttraction(s: SeedItem): Attraction {
     name: s.name,
     cat: s.cat,
     address: s.venue,
-    rating: Math.round((4.3 + (s.id % 6) * 0.08) * 10) / 10,
-    reviews: 240 + s.id * 137,
+    rating: s.rating ?? Math.round((4.3 + (s.id % 6) * 0.08) * 10) / 10,
+    reviews: s.reviews ?? 240 + s.id * 137,
     open: null,
     coord: [0, 0],
     photo: s.img,
