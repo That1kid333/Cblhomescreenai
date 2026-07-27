@@ -315,6 +315,9 @@ const AFFILIATES_CSS = `
   font-size:14px; letter-spacing:.14em; text-transform:uppercase; transition:background .2s;
 }
 .cbl-affiliates .apply:hover { background:#DDB15F; }
+.cbl-affiliates .cta-actions { display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
+.cbl-affiliates .apply.mediakit { background:transparent; color:${GOLD}; border:1px solid ${GOLD}; }
+.cbl-affiliates .apply.mediakit:hover { background:${GOLD}; color:#000; }
 
 /* ── Responsive ── */
 @media (max-width:1100px){
@@ -442,9 +445,14 @@ export function Affiliates() {
             Ready to partner <span className="it">with CBL?</span>
           </h2>
           <p>Apply in minutes. Tell us about your business and we'll get you set up across the platform.</p>
-          <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer">
-            Apply Now →
-          </a>
+          <div className="cta-actions">
+            <a className="apply" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer">
+              Apply Now →
+            </a>
+            <a className="apply mediakit" href="/CityBucketList-Media-Kit-2026.pdf" target="_blank" rel="noopener noreferrer">
+              Download Media Kit
+            </a>
+          </div>
         </div>
       </section>
     </main>
