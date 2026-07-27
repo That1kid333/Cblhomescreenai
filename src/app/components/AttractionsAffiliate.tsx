@@ -201,7 +201,7 @@ const CSS = `
 /* U.S. / International section groups */
 .cbl-aff .aff-group + .aff-group { margin-top:30px; }
 .cbl-aff .aff-group-h { display:flex; align-items:center; gap:14px; margin:6px 0 16px; }
-.cbl-aff .aff-group-h .agh-k { font-family:${DISPLAY}; font-weight:800; font-size:15px; letter-spacing:.12em; text-transform:uppercase; color:#fff; white-space:nowrap; }
+.cbl-aff .aff-group-h .agh-k { font-family:${DISPLAY}; font-weight:800; font-size:18px; letter-spacing:.1em; text-transform:uppercase; color:#fff; white-space:nowrap; }
 .cbl-aff .aff-group-h .agh-sub { font-family:${MONO}; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A8A; white-space:nowrap; }
 .cbl-aff .aff-group-h .agh-line { flex:1; height:1px; background:rgba(201,151,66,.20); }
 

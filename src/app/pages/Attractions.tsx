@@ -1269,7 +1269,9 @@ function Spotlight({ a }: { a: Attraction }) {
 }
 
 function TopRated({ items, startRank = 1 }: { items: Attraction[]; startRank?: number }) {
-  const top = items.slice(0, 11 - startRank);
+  // Show up to 8 ranked rows. As the "rest of the list" extension under Top Picks
+  // (startRank 8), this continues the ranking without an arbitrary top-10 cutoff.
+  const top = items.slice(0, 8);
   return (
     <section className="band tight top10-band">
       <div className="band-inner">
@@ -1618,6 +1620,12 @@ export function Attractions() {
 
   const featured = list[0];
   const rest = list.slice(1);
+  // Top Picks shows the top spots as photo cards; "The list" below continues the
+  // SAME ranking as a compact numbered index (no images), so no attraction appears
+  // twice. (Previously both rendered `rest`, duplicating every spot on the page.)
+  const PICKS_N = 6;
+  const cardItems = rest.slice(0, PICKS_N);
+  const listItems = rest.slice(PICKS_N);
   const activeLabel = CATS.find((c) => c.key === cat)?.label ?? 'Top Picks';
 
   return (
@@ -1645,8 +1653,6 @@ export function Attractions() {
         </section>
       )}
 
-      {rest.length > 0 && <TopRated items={rest} startRank={2} />}
-
       <section className="band">
         <div className="band-inner">
           <div className="section-head">
@@ -1663,8 +1669,8 @@ export function Attractions() {
           </div>
 
           <div className="events-grid">
-            {rest.length > 0 ? (
-              rest.map((a) => <EventCard key={a.id} a={a} />)
+            {cardItems.length > 0 ? (
+              cardItems.map((a) => <EventCard key={a.id} a={a} />)
             ) : !featured ? (
               <div className="empty">
                 <h4>
@@ -1680,6 +1686,10 @@ export function Attractions() {
           </div>
         </div>
       </section>
+
+      {/* "The list" continues the same ranking below Top Picks as a compact
+          numbered index (no images) — an extension of Top Picks, not a duplicate. */}
+      {listItems.length > 0 && <TopRated items={listItems} startRank={PICKS_N + 2} />}
 
       {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
           plus a "Where to next?" destinations band shown everywhere. Self-hides
