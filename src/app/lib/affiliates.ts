@@ -32,7 +32,7 @@ export const TP_TRS = '499800';
  * passes campaign_id/marker/p/trs through unchanged. An empty string would gate
  * that program off (buildAffiliateLink → null → UI hides it); all five are wired.
  */
-const PROGRAM_BASE: Record<Program, string> = {
+const PROGRAM_BASE: Partial<Record<Program, string>> = {
   tiqets: 'https://tp.media/r?campaign_id=89&marker=704468&p=2074&trs=499800&u=https%3A%2F%2Ftiqets.com',
   klook: 'https://tp.media/r?campaign_id=137&marker=704468&p=4110&trs=499800&u=https%3A%2F%2Fwww.klook.com',
   gocity: 'https://tp.media/r?campaign_id=62&marker=704468&p=1942&trs=499800&u=https%3A%2F%2Fgocity.com',
@@ -47,7 +47,23 @@ const PROGRAM_BASE: Record<Program, string> = {
   bikesbooking: 'https://tp.media/r?campaign_id=57&marker=704468&p=1767&trs=499800&u=https%3A%2F%2Fwww.bikesbooking.com',
 };
 
-export type Program = 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking';
+export type Program =
+  | 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking'
+  // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
+  | 'turbopass';
+
+// ── Awin network ─────────────────────────────────────────────────────────────
+// Turbopass (city passes) is our first Awin merchant — a SECOND affiliate network
+// with a different link anatomy from Travelpayouts. Awin links are
+//   https://www.awin1.com/cread.php?awinmid=<merchant>&awinaffid=<publisher>&ued=<enc dest>&clickref=<placement>
+// where `awinaffid` is our fixed publisher id, `awinmid` is the merchant, `ued` is
+// the url-encoded destination, and `clickref` is Awin's per-placement attribution
+// (their equivalent of Travelpayouts' sub_id). buildAffiliateLink() dispatches to
+// the Awin format for any program listed in AWIN_MID, else the tp.media format.
+const AWIN_AFFID = '2772460'; // our Awin publisher id — must never change
+const AWIN_MID: Partial<Record<Program, string>> = {
+  turbopass: '100613', // Turbopass US (approved 2026-07-27) — ≥6% commission, avg cart >€230
+};
 
 // Preview/localhost detection — mirrors auth.tsx's isPreviewHost so the
 // un-monetized design preview only ever appears off production.
@@ -57,9 +73,9 @@ function isPreviewHost(): boolean {
   return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.netlify.app');
 }
 
-/** True once a program's base deep link has been pasted in (i.e. it can earn). */
+/** True once a program can earn — a Travelpayouts base link is pasted, or it's an Awin merchant. */
 export function isProgramReady(program: Program): boolean {
-  return !!PROGRAM_BASE[program];
+  return !!AWIN_MID[program] || !!PROGRAM_BASE[program];
 }
 
 /**
@@ -77,9 +93,24 @@ export function buildAffiliateLink(
   target: string,
   placement: string,
 ): string | null {
-  const base = PROGRAM_BASE[program];
-  if (!base || !target) return null;
+  if (!target) return null;
 
+  // Awin network (awin1.com/cread) — different anatomy from tp.media. `awinmid` is
+  // the merchant, `awinaffid` our fixed publisher, `ued` the destination, `clickref`
+  // the per-placement attribution. Handled BEFORE PROGRAM_BASE (Awin has no tp base).
+  const awinMid = AWIN_MID[program];
+  if (awinMid) {
+    const url = new URL('https://www.awin1.com/cread.php');
+    url.searchParams.set('awinmid', awinMid);
+    url.searchParams.set('awinaffid', AWIN_AFFID);
+    url.searchParams.set('ued', target); // URL handles the encoding
+    url.searchParams.set('clickref', placement);
+    return url.toString();
+  }
+
+  // Travelpayouts network (tp.media/r deeplink).
+  const base = PROGRAM_BASE[program];
+  if (!base) return null;
   const url = new URL(base);
   url.searchParams.set('u', target); // URL handles the encoding; replaces the base destination
   url.searchParams.set('sub_id', placement);
@@ -195,6 +226,19 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'On your phone — nothing to print',
     ],
   },
+  turbopass: {
+    partner: 'Turbopass',
+    logo: '/attractions/turbopass-logo.svg',
+    cta: 'Get the pass',
+    briefing:
+      'City passes powered by Turbopass — one digital pass covers a city’s top attractions, museums and often public transport, delivered to your phone.',
+    highlights: [
+      'One digital pass, dozens of top attractions',
+      'Public transport included in many cities',
+      'Delivered instantly to your phone',
+      'Flexible 1–7 day validity',
+    ],
+  },
   wegotrip: {
     partner: 'WeGoTrip',
     logo: '/attractions/wegotrip-logo.svg',
@@ -271,6 +315,25 @@ export function goCityFor(activeCity: string | null | undefined): GoCityEntry | 
   if (!activeCity) return null;
   const c = activeCity.trim().toLowerCase();
   return GOCITY_CITIES.find((city) => city.match.includes(c)) ?? null;
+}
+
+// ── Turbopass coverage (all-in-one city passes, via Awin). Mostly European cities
+// + New York (their only US city). `url` is the VERIFIED live city-pass page — the
+// European cities use /en/{city}/{city}-city-pass; New York uses its legacy
+// /new-york-sightseeing-pass path. Complements Go City rather than replacing it;
+// only the cities Turbopass actually covers are listed (no guessed URLs). ────────
+export type TurbopassCity = { key: string; match: string[]; name: string; country: string; url: string };
+export const TURBOPASS_CITIES: TurbopassCity[] = [
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', url: 'https://www.turbopass.com/new-york-sightseeing-pass' },
+  { key: 'paris', match: ['paris'], name: 'Paris', country: 'France', url: 'https://www.turbopass.com/en/paris/paris-city-pass' },
+  { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy', url: 'https://www.turbopass.com/en/rome/rome-city-pass' },
+  { key: 'london', match: ['london'], name: 'London', country: 'UK', url: 'https://www.turbopass.com/en/london/london-city-pass' },
+  { key: 'florence', match: ['florence', 'firenze'], name: 'Florence', country: 'Italy', url: 'https://www.turbopass.com/en/florence/florence-city-pass' },
+];
+export function turbopassFor(activeCity: string | null | undefined): TurbopassCity | null {
+  if (!activeCity) return null;
+  const c = activeCity.trim().toLowerCase();
+  return TURBOPASS_CITIES.find((city) => city.match.includes(c)) ?? null;
 }
 
 // ── WeGoTrip coverage (self-guided audio tours). `url` is the exact city page
