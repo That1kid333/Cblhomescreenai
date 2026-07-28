@@ -16,7 +16,7 @@ import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
 import { affiliateHref, AFFILIATE_REL, type Program } from "../lib/affiliates";
-import { submitDeal, type DealSubmission } from "../lib/deals";
+import { submitDeal, AFFILIATE_PARTNERS, type DealSubmission } from "../lib/deals";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
@@ -673,10 +673,15 @@ function DealSubmitModal({ open, onClose }: { open: boolean; onClose: () => void
           <form onSubmit={submit}>
             <div className="eyebrow">Partners · Free to submit</div>
             <h2 id="cbl-deal-title">Submit a <span className="it">travel deal</span></h2>
-            <p className="sub">Tell us about your offer. Approved deals publish with CBL's own affiliate tracking, so there's no cost to post.</p>
+            <p className="sub">For the partners we're already signed up with. Approved deals publish with CBL's own affiliate tracking, so there's no cost to post.</p>
             <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={(e) => set('website', e.target.value)} />
             <div className="row">
-              <div className="field"><label>Brand <span className="req">*</span></label><input value={f.partner} onChange={(e) => set('partner', e.target.value)} placeholder="e.g. Go City" /></div>
+              <div className="field"><label>Brand <span className="req">*</span></label>
+                <select value={f.partner} onChange={(e) => set('partner', e.target.value)}>
+                  <option value="">Select a partner…</option>
+                  {AFFILIATE_PARTNERS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
               <div className="field"><label>Deal title <span className="req">*</span></label><input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="London All-Inclusive Pass" /></div>
             </div>
             <div className="row">

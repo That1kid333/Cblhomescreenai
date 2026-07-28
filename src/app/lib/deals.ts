@@ -12,6 +12,14 @@ const nn = (s?: string): string | null => {
 };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Only the affiliate partners we're actually signed up with can be submitted. This
+// scopes the form to real partners (deals must route through our tracking anyway)
+// AND limits abuse — a spammer can't promote a random brand. Enforced BOTH here and
+// by a DB check constraint on `deal_submissions.partner`, so a direct POST can't skip it.
+export const AFFILIATE_PARTNERS = [
+  'Go City', 'Turbopass', 'Tiqets', 'Klook', 'WeGoTrip', 'USA Guided Tours', 'TicketNetwork', 'BikesBooking',
+] as const;
+
 export type DealSubmission = {
   partner: string;
   title: string;
@@ -30,8 +38,11 @@ export type DealSubmission = {
 
 export async function submitDeal(input: DealSubmission): Promise<{ error: string | null }> {
   if (input.website && input.website.trim()) return { error: null }; // bot — pretend success
-  if (!input.partner.trim() || !input.title.trim() || !input.destUrl.trim()) {
-    return { error: 'Please add at least the brand, the deal, and the link.' };
+  if (!(AFFILIATE_PARTNERS as readonly string[]).includes(input.partner.trim())) {
+    return { error: 'Please choose one of our partner brands from the list.' };
+  }
+  if (!input.title.trim() || !input.destUrl.trim()) {
+    return { error: 'Please add the deal title and the booking link.' };
   }
   if (!EMAIL_RE.test(input.contactEmail.trim())) {
     return { error: 'Please enter a valid contact email so we can reach you.' };
