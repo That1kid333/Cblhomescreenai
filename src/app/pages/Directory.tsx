@@ -307,12 +307,11 @@ const DIR_CSS = `
 .cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
 .cbl-dir .coupon .partner-logo { height:21px; width:auto; max-width:150px; align-self:flex-start; display:block; margin-bottom:6px; filter:brightness(0) invert(1); opacity:.92; }
 .cbl-dir .deals-band { margin-top:4px; }
-.cbl-dir .deals-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 14px; margin-bottom:16px; }
+.cbl-dir .deals-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin-bottom:16px; }
+.cbl-dir .deals-head-l { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 14px; }
 .cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
 .cbl-dir .deals-head .deals-disc { font-family:${MONO}; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; }
 .cbl-dir .deals-note { margin:18px 0 0; font-size:12.5px; color:#8a8a8a; font-style:italic; }
-.cbl-dir .deals-foot { display:flex; align-items:center; justify-content:space-between; gap:14px 20px; flex-wrap:wrap; margin-top:16px; }
-.cbl-dir .deals-foot .deals-note { margin:0; flex:1; min-width:240px; }
 .cbl-dir .deal-submit-cta { flex-shrink:0; background:transparent; border:1px solid rgba(201,151,66,.5); color:#C99742; font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:9px 16px; cursor:pointer; transition:background .18s, color .18s; }
 .cbl-dir .deal-submit-cta:hover { background:#C99742; color:#0A0A0A; }
 
@@ -711,18 +710,18 @@ function TravelDealsBand({ onSubmit }: { onSubmit: () => void }) {
   return (
     <div className="deals-band">
       <div className="deals-head">
-        <span className="deals-label">✈ Travel Deals</span>
-        <span className="deals-disc">Partner offers · CBL may earn a commission when you book, at no extra cost to you.</span>
+        <div className="deals-head-l">
+          <span className="deals-label">✈ Travel Deals</span>
+          <span className="deals-disc">Partner offers · CBL may earn a commission when you book, at no extra cost to you.</span>
+        </div>
+        <button type="button" className="deal-submit-cta" onClick={onSubmit}>Partner? Submit a deal, free →</button>
       </div>
       {deals.length > 0 && (
         <div className="coupons-grid">
           {deals.map((d) => <TravelDealCard key={d.id} d={d} />)}
         </div>
       )}
-      <div className="deals-foot">
-        <p className="deals-note">Local member coupons are coming soon — members and partner businesses will be able to post their own offers right here.</p>
-        <button type="button" className="deal-submit-cta" onClick={onSubmit}>Are you a partner? Submit a deal — free →</button>
-      </div>
+      <p className="deals-note">Local member coupons are coming soon. Members and partner businesses will be able to post their own offers right here.</p>
     </div>
   );
 }
