@@ -16,6 +16,7 @@ import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
+import { affiliateHref, AFFILIATE_REL, type Program } from "../lib/affiliates";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
