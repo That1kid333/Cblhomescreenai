@@ -484,7 +484,7 @@ export function tiqetsOffer(entry: TiqetsCity, placement: string): AffiliateOffe
 export const CITY_PHOTO_KEYS = new Set([
   'new-york', 'paris', 'rome', 'milan', 'florence', 'venice', 'lisbon', 'amsterdam', 'london',
   'las-vegas', 'orlando', 'los-angeles', 'san-francisco', 'miami', 'chicago', 'boston', 'new-orleans',
-  'pittsburgh', 'washington',
+  'pittsburgh', 'washington', 'cleveland',
 ]);
 export const slugify = (city: string) => city.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 export const hasCityPhoto = (city: string) => CITY_PHOTO_KEYS.has(slugify(city));
