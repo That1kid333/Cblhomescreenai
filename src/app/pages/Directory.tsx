@@ -558,6 +558,85 @@ const CHIPS: Record<string, Chip[]> = {
 // have no real backing source yet (see ComingSoonSection usage below), so
 // there are no mock arrays for them.
 
+// ── Travel Deals (affiliate partner offers shown in Coupons & Offers) ──────────
+// Real, tracked partner promos, walled off from local member coupons. Each carries
+// an `expires` date so stale deals drop off automatically. The link is resolved
+// through affiliateHref() so it stays tracked (or a plain link off production).
+type TravelDeal = {
+  id: string;
+  program: Program;
+  badge: string;        // big gold badge, e.g. "FREE" or "15%"
+  badgeSmall: string;   // caption under it, e.g. "off pass"
+  partner: string;
+  title: string;
+  terms: string;
+  code?: string;        // promo code the visitor enters at checkout
+  dest: string;         // destination URL the tracked link points at
+  placement: string;    // sub_id / clickref for attribution
+  expires: string;      // ISO date (YYYY-MM-DD); hidden after this day
+  featured?: boolean;
+};
+
+const TRAVEL_DEALS: TravelDeal[] = [
+  {
+    id: "gocity-ny-bigbus", program: "gocity", badge: "FREE", badgeSmall: "bus tour",
+    partner: "Go City", title: "New York Explorer Pass",
+    terms: "Free Big Bus Tour (worth up to $81) with the 5, 6, 7 and 10-choice New York Explorer Passes.",
+    dest: "https://gocity.com/en/new-york", placement: "directory_deal_gocity_ny",
+    expires: "2026-09-07", featured: true,
+  },
+  {
+    id: "gocity-london", program: "gocity", badge: "15%", badgeSmall: "off pass",
+    partner: "Go City", title: "London All-Inclusive Pass",
+    terms: "15% off the All-Inclusive Pass (110+ attractions), or 10% off the Explorer Pass.",
+    code: "LONDON", dest: "https://gocity.com/en/london", placement: "directory_deal_gocity_london",
+    expires: "2026-08-23",
+  },
+];
+
+// Deals still within their window (compared to the visitor's local date).
+function activeTravelDeals(): TravelDeal[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return TRAVEL_DEALS.filter((d) => new Date(`${d.expires}T23:59:59`) >= today);
+}
+
+function TravelDealCard({ d }: { d: TravelDeal }) {
+  const link = affiliateHref(d.program, d.dest, d.placement);
+  if (!link) return null;
+  return (
+    <a className={"coupon deal" + (d.featured ? " featured" : "")} href={link.href} target="_blank" rel={AFFILIATE_REL}>
+      <div className="disc">{d.badge}<small>{d.badgeSmall}</small></div>
+      <div className="body">
+        <span className="partner">{d.partner}</span>
+        <h4>{d.title}</h4>
+        <div className="terms">{d.terms}</div>
+        <div className="code">
+          {d.code ? <>Code <b>{d.code}</b> · </> : null}
+          <span className="deal-cta">Get the deal →</span>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+function TravelDealsBand() {
+  const deals = activeTravelDeals();
+  if (deals.length === 0) return null;
+  return (
+    <div className="deals-band">
+      <div className="deals-head">
+        <span className="deals-label">✈ Travel Deals</span>
+        <span className="deals-disc">Partner offers · CBL may earn a commission when you book, at no extra cost to you.</span>
+      </div>
+      <div className="coupons-grid">
+        {deals.map((d) => <TravelDealCard key={d.id} d={d} />)}
+      </div>
+      <p className="deals-note">Local member coupons are coming soon — CBL members and partner businesses will be able to post their own offers right here.</p>
+    </div>
+  );
+}
+
 function listingToCard(l: DirectoryListing): Listing {
   return {
     id: l.id,
