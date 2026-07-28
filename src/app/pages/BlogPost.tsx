@@ -110,7 +110,7 @@ const CSS = `
 .cbl-post .body figure.mdfig.card { max-width:320px; }
 .cbl-post .body figure.mdfig.card img { border-color:rgba(201,151,66,.3); box-shadow:0 14px 40px rgba(0,0,0,.6); }
 .cbl-post .body figure.mdfig.logo { max-width:none; margin:22px 0 8px; }
-.cbl-post .body figure.mdfig.logo img { width:auto; height:34px; max-width:100%; border:0; filter:brightness(0) invert(1); opacity:.92; }
+.cbl-post .body figure.mdfig.logo img { width:auto; height:34px; max-width:100%; border:0; box-shadow:none; border-radius:0; filter:brightness(0) invert(1); opacity:.92; }
 
 /* Driver's Take — a dedicated optional callout (renders only when the field is filled) */
 .cbl-post .dtake { max-width:720px; margin:38px 0 6px; padding:22px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.08); border-radius:0 14px 14px 0; }
