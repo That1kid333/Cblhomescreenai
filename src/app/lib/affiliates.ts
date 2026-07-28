@@ -50,7 +50,7 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
 export type Program =
   | 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking'
   // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
-  | 'turbopass';
+  | 'turbopass' | 'usaguidedtours';
 
 // ── Awin network ─────────────────────────────────────────────────────────────
 // Turbopass (city passes) is our first Awin merchant — a SECOND affiliate network
@@ -63,6 +63,7 @@ export type Program =
 const AWIN_AFFID = '2772460'; // our Awin publisher id — must never change
 const AWIN_MID: Partial<Record<Program, string>> = {
   turbopass: '100613', // Turbopass US (approved 2026-07-27) — ≥6% commission, avg cart >€230
+  usaguidedtours: '37792', // USA Guided Tours (approved 2026-07-27) — guided sightseeing, DC + NYC only
 };
 
 // Preview/localhost detection — mirrors auth.tsx's isPreviewHost so the
@@ -239,6 +240,19 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Flexible 1–7 day validity',
     ],
   },
+  usaguidedtours: {
+    partner: 'USA Guided Tours',
+    logo: '/attractions/usaguidedtours-logo.svg',
+    cta: 'Book a tour',
+    briefing:
+      'Guided sightseeing powered by USA Guided Tours — award-winning bus, boat and walking tours of Washington DC and New York, led by certified local guides.',
+    highlights: [
+      'Certified local guides',
+      'Day, night & private tours',
+      'Transport between the big sights',
+      'Small-group and VIP options',
+    ],
+  },
   wegotrip: {
     partner: 'WeGoTrip',
     logo: '/attractions/wegotrip-logo.svg',
@@ -336,6 +350,23 @@ export function turbopassFor(activeCity: string | null | undefined): TurbopassCi
   return TURBOPASS_CITIES.find((city) => city.match.includes(c)) ?? null;
 }
 
+// ── USA Guided Tours coverage (guided sightseeing, via Awin). DC + NYC ONLY —
+// VERIFIED on usaguidedtours.com; the "Boston area" in early notes is NOT a real
+// market (their site redirects /boston to DC), so it's deliberately not wired.
+// USA Guided Tours is the GENERALIST tour partner in these markets; DC is INTERIM —
+// swap this entry for a dedicated DC tour merchant (e.g. "Tour of Washington DC")
+// once that program approves, without touching NYC. ─────────────────────────────
+export type GuidedToursCity = { key: string; match: string[]; name: string; country: string; url: string; fromPrice: string };
+export const USAGUIDEDTOURS_CITIES: GuidedToursCity[] = [
+  { key: 'washington', match: ['washington', 'washington dc', 'dc', 'washington, d.c.'], name: 'Washington DC', country: 'USA', url: 'https://usaguidedtours.com/dc/tour/', fromPrice: 'from $59' }, // INTERIM DC partner
+  { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA', url: 'https://usaguidedtours.com/nyc/tour/', fromPrice: 'from $39' },
+];
+export function usaGuidedToursFor(activeCity: string | null | undefined): GuidedToursCity | null {
+  if (!activeCity) return null;
+  const c = activeCity.trim().toLowerCase();
+  return USAGUIDEDTOURS_CITIES.find((city) => city.match.includes(c)) ?? null;
+}
+
 // ── WeGoTrip coverage (self-guided audio tours). `url` is the exact city page
 // from wegotrip.com's sitemap (they use /{slug}-d{id}/). ───────────────────────
 export type WeGoTripEntry = { key: string; match: string[]; name: string; country: string; url: string; fromPrice: string };
@@ -409,6 +440,19 @@ export function turbopassOffer(entry: TurbopassCity, placement: string): Affilia
   };
 }
 
+/** Build a USA Guided Tours (guided sightseeing) offer for a covered city. */
+export function usaGuidedToursOffer(entry: GuidedToursCity, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.usaguidedtours!;
+  const link = affiliateHref('usaguidedtours', entry.url, placement);
+  if (!link) return null;
+  return {
+    program: 'usaguidedtours', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'Guided tour',
+    title: `${entry.name} guided tours`, price: entry.fromPrice, meta: 'Day · night · private',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
 /** Build a WeGoTrip offer for a covered city, or null if unwired/unavailable. */
 export function weGoTripOffer(entry: WeGoTripEntry, placement: string): AffiliateOffer | null {
   const meta = PARTNER_META.wegotrip!;
@@ -440,7 +484,7 @@ export function tiqetsOffer(entry: TiqetsCity, placement: string): AffiliateOffe
 export const CITY_PHOTO_KEYS = new Set([
   'new-york', 'paris', 'rome', 'milan', 'florence', 'venice', 'lisbon', 'amsterdam', 'london',
   'las-vegas', 'orlando', 'los-angeles', 'san-francisco', 'miami', 'chicago', 'boston', 'new-orleans',
-  'pittsburgh',
+  'pittsburgh', 'washington',
 ]);
 export const slugify = (city: string) => city.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 export const hasCityPhoto = (city: string) => CITY_PHOTO_KEYS.has(slugify(city));
@@ -583,6 +627,7 @@ export const AFFILIATE_CITIES: AffiliateCity[] = [
   { key: 'chicago', match: ['chicago'], name: 'Chicago', country: 'USA' },
   { key: 'boston', match: ['boston'], name: 'Boston', country: 'USA' },
   { key: 'orlando', match: ['orlando'], name: 'Orlando', country: 'USA' },
+  { key: 'washington', match: ['washington', 'washington dc', 'dc', 'washington, d.c.'], name: 'Washington DC', country: 'USA' },
   { key: 'london', match: ['london'], name: 'London', country: 'UK' },
   { key: 'paris', match: ['paris'], name: 'Paris', country: 'France' },
   { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy' },
@@ -614,6 +659,8 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (tp) { const o = turbopassOffer(tp, `${placement}_turbopass_${cityKey}`); if (o) out.push(o); }
   const w = WEGOTRIP_CITIES.find((c) => c.key === cityKey);
   if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
+  const ug = USAGUIDEDTOURS_CITIES.find((c) => c.key === cityKey);
+  if (ug) { const o = usaGuidedToursOffer(ug, `${placement}_usaguidedtours_${cityKey}`); if (o) out.push(o); }
   // US cities also get TicketNetwork events (it's US-focused).
   const cityMeta = AFFILIATE_CITIES.find((c) => c.key === cityKey);
   if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
@@ -632,5 +679,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
+  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
 };
