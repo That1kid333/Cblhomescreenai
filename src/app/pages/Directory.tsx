@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
@@ -16,6 +16,7 @@ import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
 import { affiliateHref, AFFILIATE_REL, type Program } from "../lib/affiliates";
+import { submitDeal, type DealSubmission } from "../lib/deals";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
@@ -310,6 +311,10 @@ const DIR_CSS = `
 .cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
 .cbl-dir .deals-head .deals-disc { font-family:${MONO}; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; }
 .cbl-dir .deals-note { margin:18px 0 0; font-size:12.5px; color:#8a8a8a; font-style:italic; }
+.cbl-dir .deals-foot { display:flex; align-items:center; justify-content:space-between; gap:14px 20px; flex-wrap:wrap; margin-top:16px; }
+.cbl-dir .deals-foot .deals-note { margin:0; flex:1; min-width:240px; }
+.cbl-dir .deal-submit-cta { flex-shrink:0; background:transparent; border:1px solid rgba(201,151,66,.5); color:#C99742; font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:9px 16px; cursor:pointer; transition:background .18s, color .18s; }
+.cbl-dir .deal-submit-cta:hover { background:#C99742; color:#0A0A0A; }
 
 /* Pricing tiers */
 .cbl-dir .tiers { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
@@ -631,19 +636,93 @@ function TravelDealCard({ d }: { d: TravelDeal }) {
   );
 }
 
-function TravelDealsBand() {
+const EMPTY_DEAL: DealSubmission = {
+  partner: '', title: '', discount: '', discountLabel: '', terms: '', code: '',
+  destUrl: '', city: '', expires: '', contactName: '', contactEmail: '', notes: '', website: '',
+};
+
+// Free "Submit a Travel Deal" — affiliates/partners propose an offer; it lands in
+// deal_submissions for review, and we publish approved ones with CBL's tracked link.
+function DealSubmitModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [f, setF] = useState<DealSubmission>(EMPTY_DEAL);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [err, setErr] = useState<string | null>(null);
+  if (!open) return null;
+  const set = (k: keyof DealSubmission, v: string) => setF((p) => ({ ...p, [k]: v }));
+  const close = () => { onClose(); setTimeout(() => { setF(EMPTY_DEAL); setStatus('idle'); setErr(null); }, 220); };
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setErr(null); setStatus('sending');
+    const { error } = await submitDeal(f);
+    if (error) { setErr(error); setStatus('idle'); return; }
+    setStatus('done');
+  };
+  return (
+    <div className="cbl-drivermodal" role="dialog" aria-modal="true" aria-labelledby="cbl-deal-title">
+      <style>{DRIVERMODAL_CSS}</style>
+      <div className="backdrop" onClick={close} />
+      <div className="panel">
+        <button className="close" onClick={close} aria-label="Close">✕</button>
+        {status === 'done' ? (
+          <div className="success">
+            <div className="mark">✓</div>
+            <h2>Thanks — <span className="it">we've got it.</span></h2>
+            <p className="sub">We'll review your deal and, if it's a fit, publish it with CBL's own tracking. We feature partners we're affiliated with, so we may reach out first.</p>
+            <button className="submit" onClick={close}>Done</button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <div className="eyebrow">Partners · Free to submit</div>
+            <h2 id="cbl-deal-title">Submit a <span className="it">travel deal</span></h2>
+            <p className="sub">Tell us about your offer. Approved deals publish with CBL's own affiliate tracking, so there's no cost to post.</p>
+            <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={(e) => set('website', e.target.value)} />
+            <div className="row">
+              <div className="field"><label>Brand <span className="req">*</span></label><input value={f.partner} onChange={(e) => set('partner', e.target.value)} placeholder="e.g. Go City" /></div>
+              <div className="field"><label>Deal title <span className="req">*</span></label><input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="London All-Inclusive Pass" /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Discount</label><input value={f.discount} onChange={(e) => set('discount', e.target.value)} placeholder="15% or FREE" /></div>
+              <div className="field"><label>Badge label</label><input value={f.discountLabel} onChange={(e) => set('discountLabel', e.target.value)} placeholder="off pass" /></div>
+            </div>
+            <div className="field"><label>Terms</label><textarea value={f.terms} onChange={(e) => set('terms', e.target.value)} placeholder="What's included and any conditions." /></div>
+            <div className="row">
+              <div className="field"><label>Promo code</label><input value={f.code} onChange={(e) => set('code', e.target.value)} placeholder="optional" /></div>
+              <div className="field"><label>City / market</label><input value={f.city} onChange={(e) => set('city', e.target.value)} placeholder="optional" /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Booking link <span className="req">*</span></label><input value={f.destUrl} onChange={(e) => set('destUrl', e.target.value)} placeholder="https://…" /></div>
+              <div className="field"><label>Expires</label><input type="date" value={f.expires} onChange={(e) => set('expires', e.target.value)} /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Your name</label><input value={f.contactName} onChange={(e) => set('contactName', e.target.value)} placeholder="optional" /></div>
+              <div className="field"><label>Your email <span className="req">*</span></label><input type="email" value={f.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="you@brand.com" /></div>
+            </div>
+            {err && <div className="alert">{err}</div>}
+            <button className="submit" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : 'Submit deal →'}</button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TravelDealsBand({ onSubmit }: { onSubmit: () => void }) {
   const deals = activeTravelDeals();
-  if (deals.length === 0) return null;
   return (
     <div className="deals-band">
       <div className="deals-head">
         <span className="deals-label">✈ Travel Deals</span>
         <span className="deals-disc">Partner offers · CBL may earn a commission when you book, at no extra cost to you.</span>
       </div>
-      <div className="coupons-grid">
-        {deals.map((d) => <TravelDealCard key={d.id} d={d} />)}
+      {deals.length > 0 && (
+        <div className="coupons-grid">
+          {deals.map((d) => <TravelDealCard key={d.id} d={d} />)}
+        </div>
+      )}
+      <div className="deals-foot">
+        <p className="deals-note">Local member coupons are coming soon — members and partner businesses will be able to post their own offers right here.</p>
+        <button type="button" className="deal-submit-cta" onClick={onSubmit}>Are you a partner? Submit a deal — free →</button>
       </div>
-      <p className="deals-note">Local member coupons are coming soon — CBL members and partner businesses will be able to post their own offers right here.</p>
     </div>
   );
 }
@@ -2790,6 +2869,7 @@ export function Directory() {
   const [listings, setListings] = useState<DirectoryListing[]>([]);
   const [postOpen, setPostOpen] = useState(false);
   const openPost = () => setPostOpen(true);
+  const [dealSubmitOpen, setDealSubmitOpen] = useState(false);
   // Driver posts get the dedicated card builder (member-gated) instead of the
   // generic classifieds form.
   const [driverAdOpen, setDriverAdOpen] = useState(false);
@@ -3109,7 +3189,7 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="COUPONS" onPost={openPost} />
-            <TravelDealsBand />
+            <TravelDealsBand onSubmit={() => setDealSubmitOpen(true)} />
             <CompareBand onPost={openPost} />
           </div>
         </section>
@@ -3119,6 +3199,7 @@ export function Directory() {
 
       <Newsletter />
 
+      <DealSubmitModal open={dealSubmitOpen} onClose={() => setDealSubmitOpen(false)} />
       <PostListingModal
         open={postOpen}
         onClose={() => setPostOpen(false)}
