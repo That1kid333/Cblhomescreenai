@@ -36,7 +36,7 @@ const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30)
 // case): the shared map texture with a gold wash, so it still reads on-brand.
 const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
 const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
-const GROUP_CAP = 8; // cards shown per section (U.S. / International) — two tidy rows of four
+const GROUP_CAP = 12; // cards shown per section (U.S. / International) — enough to show every covered city
 const PARTNER_ORDER = ['tiqets', 'gocity', 'turbopass', 'wegotrip', 'usaguidedtours', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
 const typesOf = (offers: AffiliateOffer[]) =>
   PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);

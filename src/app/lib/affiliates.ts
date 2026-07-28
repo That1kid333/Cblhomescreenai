@@ -619,6 +619,7 @@ export type AffiliateCity = { key: string; match: string[]; name: string; countr
 export const AFFILIATE_CITIES: AffiliateCity[] = [
   // US first (our home market), then international.
   { key: 'new-york', match: ['new york', 'new york city', 'nyc', 'manhattan', 'brooklyn'], name: 'New York', country: 'USA' },
+  { key: 'washington', match: ['washington', 'washington dc', 'dc', 'washington, d.c.'], name: 'Washington DC', country: 'USA' },
   { key: 'las-vegas', match: ['las vegas', 'vegas'], name: 'Las Vegas', country: 'USA' },
   { key: 'los-angeles', match: ['los angeles', 'la'], name: 'Los Angeles', country: 'USA' },
   { key: 'san-francisco', match: ['san francisco', 'sf'], name: 'San Francisco', country: 'USA' },
@@ -627,7 +628,6 @@ export const AFFILIATE_CITIES: AffiliateCity[] = [
   { key: 'chicago', match: ['chicago'], name: 'Chicago', country: 'USA' },
   { key: 'boston', match: ['boston'], name: 'Boston', country: 'USA' },
   { key: 'orlando', match: ['orlando'], name: 'Orlando', country: 'USA' },
-  { key: 'washington', match: ['washington', 'washington dc', 'dc', 'washington, d.c.'], name: 'Washington DC', country: 'USA' },
   { key: 'london', match: ['london'], name: 'London', country: 'UK' },
   { key: 'paris', match: ['paris'], name: 'Paris', country: 'France' },
   { key: 'rome', match: ['rome', 'roma'], name: 'Rome', country: 'Italy' },
