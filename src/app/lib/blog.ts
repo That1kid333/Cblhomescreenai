@@ -28,6 +28,7 @@ export type BlogCard = {
   author_name: string | null;
   featured: boolean;
   published_at: string | null;
+  tags: string[];
 };
 
 export type BlogPost = BlogCard & {
@@ -42,7 +43,7 @@ export type BlogPost = BlogCard & {
 };
 
 const CARD_COLS =
-  'slug, title, subtitle, kicker, vertical, city, excerpt, hero_image, author_name, featured, published_at';
+  'slug, title, subtitle, kicker, vertical, city, excerpt, hero_image, author_name, featured, published_at, tags';
 const FULL_COLS =
   `${CARD_COLS}, body_md, media, drivers_take, drivers_take_name, riders_take, riders_take_name, seo_title, seo_description`;
 
@@ -57,7 +58,7 @@ export async function getPublishedPosts(): Promise<BlogCard[]> {
     console.error('getPublishedPosts', error.message);
     return [];
   }
-  return (data as BlogCard[]) ?? [];
+  return ((data as BlogCard[]) ?? []).map((p) => ({ ...p, tags: Array.isArray(p.tags) ? p.tags : [] }));
 }
 
 export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
