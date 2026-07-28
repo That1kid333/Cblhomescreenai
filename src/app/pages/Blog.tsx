@@ -24,6 +24,7 @@ type CatDef = { key: string; label: string; Icon: (p: { s?: number }) => JSX.Ele
 type Card = {
   slug: string;
   cat: string;
+  cats: string[];
   catLabel: string;
   title: string;
   excerpt: string;
@@ -361,6 +362,16 @@ const VERTICAL_CAT: Record<string, string> = {
   itinerary: 'ATTRACTIONS',
 };
 
+// Cross-listing: a post's `tags` can place it in ADDITIONAL category tabs beyond
+// the one its `vertical` implies. A New Orleans "where the locals go" story tagged
+// 'travels' shows under Travels AND its vertical's tab (Attractions). Tag → category.
+const TAG_CAT: Record<string, string> = {
+  travels: 'TRAVELS', travel: 'TRAVELS', trip: 'TRAVELS', flights: 'TRAVELS', stays: 'TRAVELS', hotels: 'TRAVELS',
+  attractions: 'ATTRACTIONS', attraction: 'ATTRACTIONS', 'things-to-do': 'ATTRACTIONS', entertainment: 'ATTRACTIONS', events: 'ATTRACTIONS',
+  eats: 'EATS', 'eats-and-drinks': 'EATS', food: 'EATS', dining: 'EATS', drinks: 'EATS',
+  transportation: 'TRANSPO', transpo: 'TRANSPO', drivers: 'TRANSPO', riders: 'TRANSPO', rideshare: 'TRANSPO',
+};
+
 // Maps a ?category= URL slug (from the CBL Blog nav dropdown) to a filter key.
 const CATEGORY_PARAM: Record<string, string> = {
   all: 'ALL',
@@ -386,12 +397,23 @@ function fmtDate(iso: string | null): string {
 function toCard(p: BlogCard, likes: number): Card {
   const catKey = VERTICAL_CAT[(p.vertical || '').toLowerCase()];
   const cat = catKey || 'ALL';
+  // Every tab this post belongs to: its primary category (from `vertical`) plus any
+  // categories named in its `tags` (cross-listing), so it can appear under more than
+  // one tab. Falls back to ['ALL'] for uncategorized posts.
+  const catSet = new Set<string>();
+  if (catKey) catSet.add(catKey);
+  for (const t of p.tags || []) {
+    const tc = TAG_CAT[t.trim().toLowerCase()];
+    if (tc) catSet.add(tc);
+  }
+  const cats = catSet.size ? [...catSet] : ['ALL'];
   // Pill shows the brand category (matches the rail); unmapped verticals fall
   // back to a title-cased label so the pill is never blank.
   const catLabel = (catKey && CATS.find((c) => c.key === catKey)?.label) || (p.vertical ? titleCase(p.vertical) : 'Story');
   return {
     slug: p.slug,
     cat,
+    cats,
     catLabel,
     title: p.title,
     excerpt: p.excerpt || '',
@@ -741,7 +763,7 @@ export function Blog() {
   const query = q.trim().toLowerCase();
   const matchesQuery = (p: Card) =>
     !query || [p.title, p.excerpt, p.author, p.city, p.catLabel].some((f) => f.toLowerCase().includes(query));
-  const filtered = posts.filter((p) => (cat === 'ALL' || p.cat === cat) && matchesQuery(p));
+  const filtered = posts.filter((p) => (cat === 'ALL' || p.cats.includes(cat)) && matchesQuery(p));
   const searching = query.length > 0;
   const catLabel = cats.find((c) => c.key === cat)?.label;
   const featured = searching ? undefined : filtered.find((p) => p.featured);
