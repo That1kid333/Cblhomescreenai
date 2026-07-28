@@ -9,16 +9,25 @@
  *
  * GET /api/city-photo?q=Cleveland[&w=1200]
  */
-const photoRefFor = async (query, key) => {
+const search = async (query, key) => {
   const url =
     `https://maps.googleapis.com/maps/api/place/textsearch/json` +
     `?query=${encodeURIComponent(query)}&key=${key}`;
-  const data = await (await fetch(url)).json();
-  for (const p of data.results || []) {
-    const ref = p.photos?.[0]?.photo_reference;
-    if (ref) return ref;
-  }
-  return null;
+  return (await (await fetch(url)).json()).results || [];
+};
+const refOf = (p) => p.photos?.[0]?.photo_reference || null;
+
+// Resolve a real cityscape photo, not a business named "<City> Skyline". Prefer the
+// LOCALITY result (the city itself — its photo is a curated city image), then any
+// photo from the plain search, then a downtown fallback.
+const cityPhotoRef = async (city, key) => {
+  const results = await search(city, key);
+  const locality = results.find((p) => (p.types || []).includes('locality') && refOf(p));
+  if (locality) return refOf(locality);
+  const any = results.find((p) => refOf(p));
+  if (any) return refOf(any);
+  const dt = (await search(`downtown ${city}`, key)).find((p) => refOf(p));
+  return dt ? refOf(dt) : null;
 };
 
 export const handler = async (event) => {
@@ -29,8 +38,7 @@ export const handler = async (event) => {
   const city = String(q).slice(0, 60).trim();
   const maxwidth = Math.min(Number((event.queryStringParameters || {}).w) || 1200, 1600);
   try {
-    // Bias toward a cityscape; fall back to the plain city (locality) photo.
-    const ref = (await photoRefFor(`${city} skyline`, key)) || (await photoRefFor(city, key));
+    const ref = await cityPhotoRef(city, key);
     if (!ref) return { statusCode: 404, body: 'No photo' };
 
     const res = await fetch(
