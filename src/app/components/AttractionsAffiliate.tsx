@@ -193,10 +193,10 @@ const CSS = `
 .cbl-aff .aff-sub { color:#9A9A9A; font-size:14.5px; line-height:1.5; margin:10px 0 0; max-width:600px; }
 
 /* Trusted-partners strip — official logos on white chips */
-.cbl-aff .partners { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:20px; }
+.cbl-aff .partners { display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-bottom:20px; }
 .cbl-aff .partners .p-label { font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
-.cbl-aff .logo-chip { background:#fff; border-radius:8px 0 8px 0; padding:6px 11px; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,.35); height:32px; }
-.cbl-aff .logo-chip img { max-height:20px; max-width:104px; width:auto; height:auto; display:block; }
+.cbl-aff .logo-chip { display:flex; align-items:center; justify-content:center; flex-shrink:0; height:26px; }
+.cbl-aff .logo-chip img { max-height:22px; max-width:112px; width:auto; height:auto; display:block; filter:brightness(0) invert(1); opacity:.82; }
 
 /* U.S. / International section groups */
 .cbl-aff .aff-group + .aff-group { margin-top:30px; }

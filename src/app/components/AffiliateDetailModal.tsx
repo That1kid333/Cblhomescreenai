@@ -101,8 +101,8 @@ const CSS = `
 
 .cbl-affmodal .options { display:flex; flex-direction:column; gap:10px; }
 .cbl-affmodal .opt { display:flex; align-items:center; gap:12px; background:#0F0F0F; border:1px solid rgba(255,255,255,.08); border-radius:14px 0 14px 0; padding:12px 14px; }
-.cbl-affmodal .opt-logo { background:#fff; border-radius:7px 0 7px 0; padding:5px 8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; width:96px; height:29px; }
-.cbl-affmodal .opt-logo img { max-height:18px; max-width:80px; width:auto; height:auto; display:block; }
+.cbl-affmodal .opt-logo { display:flex; align-items:center; flex-shrink:0; height:26px; }
+.cbl-affmodal .opt-logo img { max-height:22px; max-width:100px; width:auto; height:auto; display:block; filter:brightness(0) invert(1); opacity:.85; }
 .cbl-affmodal .opt-txt { flex:1; min-width:0; }
 .cbl-affmodal .opt-label { font-size:14px; font-weight:700; color:#fff; line-height:1.2; }
 .cbl-affmodal .opt-meta { font-family:${MONO}; font-size:10.5px; letter-spacing:.02em; text-transform:uppercase; color:#8A8A8A; margin-top:3px; }

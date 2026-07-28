@@ -304,7 +304,7 @@ const DIR_CSS = `
 /* Travel Deals (affiliate) band inside Coupons & Offers */
 .cbl-dir a.coupon.deal { text-decoration:none; color:inherit; }
 .cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
-.cbl-dir .coupon .partner-logo { height:23px; width:auto; max-width:100%; display:block; border-radius:5px; margin-bottom:3px; }
+.cbl-dir .coupon .partner-logo { height:21px; width:auto; max-width:150px; align-self:flex-start; display:block; margin-bottom:6px; filter:brightness(0) invert(1); opacity:.92; }
 .cbl-dir .deals-band { margin-top:4px; }
 .cbl-dir .deals-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 14px; margin-bottom:16px; }
 .cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
@@ -592,14 +592,14 @@ const TRAVEL_DEALS: TravelDeal[] = [
     partner: "Go City", title: "New York Explorer Pass",
     terms: "Free Big Bus Tour (worth up to $81) with the 5, 6, 7 and 10-choice New York Explorer Passes.",
     dest: "https://gocity.com/en/new-york", placement: "directory_deal_gocity_ny",
-    expires: "2026-09-07", featured: true, logoChip: "/blog/partners/gocity-chip.png",
+    expires: "2026-09-07", featured: true, logoChip: "/attractions/gocity-logo.svg",
   },
   {
     id: "gocity-london", program: "gocity", badge: "15%", badgeSmall: "off pass",
     partner: "Go City", title: "London All-Inclusive Pass",
     terms: "15% off the All-Inclusive Pass (110+ attractions), or 10% off the Explorer Pass.",
     code: "LONDON", dest: "https://gocity.com/en/london", placement: "directory_deal_gocity_london",
-    expires: "2026-08-23", logoChip: "/blog/partners/gocity-chip.png",
+    expires: "2026-08-23", logoChip: "/attractions/gocity-logo.svg",
   },
 ];
 
