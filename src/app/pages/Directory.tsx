@@ -12,7 +12,6 @@ import {
   getOwnListing, uploadListingPhoto, uploadDriverAdPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
 } from "../lib/listingPhotos";
 import { useVisitorLocation, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
-import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
@@ -302,6 +301,15 @@ const DIR_CSS = `
 .cbl-dir .coupon .terms { font-size:11px; line-height:1.4; color:#888; }
 .cbl-dir .coupon .code { margin-top:6px; font-family:${MONO}; font-size:11px; color:#fff; letter-spacing:.14em; border-top:1px solid rgba(255,255,255,.06); padding-top:6px; }
 .cbl-dir .coupon .code b { color:#C99742; }
+/* Travel Deals (affiliate) band inside Coupons & Offers */
+.cbl-dir a.coupon.deal { text-decoration:none; color:inherit; }
+.cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
+.cbl-dir .coupon .partner-logo { height:23px; width:auto; max-width:100%; display:block; border-radius:5px; margin-bottom:3px; }
+.cbl-dir .deals-band { margin-top:4px; }
+.cbl-dir .deals-head { display:flex; align-items:baseline; flex-wrap:wrap; gap:6px 14px; margin-bottom:16px; }
+.cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
+.cbl-dir .deals-head .deals-disc { font-family:${MONO}; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; }
+.cbl-dir .deals-note { margin:18px 0 0; font-size:12.5px; color:#8a8a8a; font-style:italic; }
 
 /* Pricing tiers */
 .cbl-dir .tiers { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
@@ -575,6 +583,7 @@ type TravelDeal = {
   placement: string;    // sub_id / clickref for attribution
   expires: string;      // ISO date (YYYY-MM-DD); hidden after this day
   featured?: boolean;
+  logoChip?: string;    // white partner logo chip (replaces the text partner label)
 };
 
 const TRAVEL_DEALS: TravelDeal[] = [
@@ -583,14 +592,14 @@ const TRAVEL_DEALS: TravelDeal[] = [
     partner: "Go City", title: "New York Explorer Pass",
     terms: "Free Big Bus Tour (worth up to $81) with the 5, 6, 7 and 10-choice New York Explorer Passes.",
     dest: "https://gocity.com/en/new-york", placement: "directory_deal_gocity_ny",
-    expires: "2026-09-07", featured: true,
+    expires: "2026-09-07", featured: true, logoChip: "/blog/partners/gocity-chip.png",
   },
   {
     id: "gocity-london", program: "gocity", badge: "15%", badgeSmall: "off pass",
     partner: "Go City", title: "London All-Inclusive Pass",
     terms: "15% off the All-Inclusive Pass (110+ attractions), or 10% off the Explorer Pass.",
     code: "LONDON", dest: "https://gocity.com/en/london", placement: "directory_deal_gocity_london",
-    expires: "2026-08-23",
+    expires: "2026-08-23", logoChip: "/blog/partners/gocity-chip.png",
   },
 ];
 
@@ -608,7 +617,9 @@ function TravelDealCard({ d }: { d: TravelDeal }) {
     <a className={"coupon deal" + (d.featured ? " featured" : "")} href={link.href} target="_blank" rel={AFFILIATE_REL}>
       <div className="disc">{d.badge}<small>{d.badgeSmall}</small></div>
       <div className="body">
-        <span className="partner">{d.partner}</span>
+        {d.logoChip
+          ? <img className="partner-logo" src={d.logoChip} alt={d.partner} loading="lazy" />
+          : <span className="partner">{d.partner}</span>}
         <h4>{d.title}</h4>
         <div className="terms">{d.terms}</div>
         <div className="code">
@@ -3098,10 +3109,7 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="COUPONS" onPost={openPost} />
-            <ComingSoonSection
-              title="Affiliate Coupons — Coming Soon"
-              blurb="Coupons and deals from local affiliates and partners — free for everyone to browse. (Posting an offer requires a partner account.) Coming soon."
-            />
+            <TravelDealsBand />
             <CompareBand onPost={openPost} />
           </div>
         </section>
