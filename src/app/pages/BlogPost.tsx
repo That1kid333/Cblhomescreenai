@@ -93,6 +93,9 @@ const CSS = `
 .cbl-post .body ul { margin:0 0 20px; padding-left:0; list-style:none; }
 .cbl-post .body li { position:relative; padding-left:22px; margin-bottom:11px; }
 .cbl-post .body li::before { content:''; position:absolute; left:0; top:11px; width:8px; height:8px; border-radius:50%; background:${GOLD}; }
+.cbl-post .body ol { margin:4px 0 22px; padding-left:0; list-style:none; counter-reset:bl; }
+.cbl-post .body ol li { padding-left:42px; margin-bottom:14px; }
+.cbl-post .body ol li::before { counter-increment:bl; content:counter(bl,decimal-leading-zero); width:auto; height:auto; background:none; border-radius:0; top:1px; font-family:${MONO}; font-size:15px; font-weight:700; color:${GOLD}; }
 .cbl-post .body strong { color:#fff; font-weight:700; }
 .cbl-post .body blockquote { margin:30px 0; padding:20px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.07); border-radius:0 10px 10px 0; }
 .cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; }
@@ -106,6 +109,8 @@ const CSS = `
 /* Portrait card image — constrained so a tall card isn't full-bleed */
 .cbl-post .body figure.mdfig.card { max-width:320px; }
 .cbl-post .body figure.mdfig.card img { border-color:rgba(201,151,66,.3); box-shadow:0 14px 40px rgba(0,0,0,.6); }
+.cbl-post .body figure.mdfig.logo { max-width:172px; margin:10px 0 4px; }
+.cbl-post .body figure.mdfig.logo img { border:0; border-radius:12px 0 12px 0; box-shadow:0 4px 16px rgba(0,0,0,.4); }
 
 /* Driver's Take — a dedicated optional callout (renders only when the field is filled) */
 .cbl-post .dtake { max-width:720px; margin:38px 0 6px; padding:22px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.08); border-radius:0 14px 14px 0; }
@@ -304,7 +309,14 @@ export function BlogPost() {
               <div className="author-name">{post.author_name}</div>
               <p className="author-bio">
                 {authorBio ||
-                  `${post.author_name.split(' ')[0]} is part of the City Bucket List network${post.city ? ` in ${post.city}` : ''} — sharing the local spots worth your bucket list.`}
+                  (() => {
+                    // Only claim "in {city}" for LOCAL posts; a travel/destination
+                    // post (Travels) is about a place the author isn't necessarily from.
+                    const first = post.author_name.split(' ')[0];
+                    const local = !['travels', 'flights', 'stays'].includes((post.vertical || '').toLowerCase());
+                    const where = local && post.city ? ` in ${post.city}` : '';
+                    return `${first} is part of the City Bucket List network${where}, sharing the ${local ? 'local ' : ''}spots worth your bucket list.`;
+                  })()}
               </p>
             </div>
           </div>
