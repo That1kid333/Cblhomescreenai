@@ -17,7 +17,7 @@
  * Design tokens mirror Attractions.tsx: black canvas, gold #C99742, Playfair italic,
  * diagonal-corner (24px 0 24px 0) framing, no gold borders on images.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   AFFILIATE_CITIES, PARTNER_META, affiliateCityFor, cityOffers, cityPhoto, minPrice, OPTION_WORD,
   localCityOffers, hasCityPhoto, slugify, nearestMajorCity,
@@ -67,6 +67,26 @@ function OfferCityCard({ card, onOpen }: { card: CityCard; onOpen: (d: CityDetai
   );
 }
 
+// Live city hero for the "Near you" card when we have no curated photo file:
+// probe /api/city-photo and use it ONLY if it actually loads, so a failed/absent
+// photo leaves the card on its on-brand map texture. Featured cities never reach
+// here — they use their hand-curated self-hosted photo.
+function useCityPhoto(city: string | null): string | null {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    setUrl(null);
+    if (!city) return;
+    const src = `/api/city-photo?q=${encodeURIComponent(city)}`;
+    const img = new Image();
+    let alive = true;
+    img.onload = () => { if (alive && img.naturalWidth > 1) setUrl(src); };
+    img.onerror = () => { if (alive) setUrl(null); };
+    img.src = src;
+    return () => { alive = false; };
+  }, [city]);
+  return url;
+}
+
 export function AttractionsAffiliate({
   activeCity,
   coords,
@@ -84,6 +104,8 @@ export function AttractionsAffiliate({
   const detected = activeCity && activeCity.trim().toLowerCase() !== 'your city' ? activeCity.trim() : null;
   const localName = nearestMajorCity(coords) ?? (detected && affiliateCityFor(detected) ? detected : null);
   const localKey = localName ? affiliateCityFor(localName)?.key ?? null : null;
+  // Only fetch a live photo for a non-curated "near you" city with no photo file.
+  const liveLocalPhoto = useCityPhoto(localName && !localKey && !hasCityPhoto(localName) ? localName : null);
 
   const cards: CityCard[] = AFFILIATE_CITIES
     .map((c) => {
@@ -105,7 +127,7 @@ export function AttractionsAffiliate({
         key: 'local-' + slugify(localName),
         name: localName,
         country: '',
-        photo: hasCityPhoto(localName) ? cityPhoto(slugify(localName)) : '',
+        photo: hasCityPhoto(localName) ? cityPhoto(slugify(localName)) : (liveLocalPhoto || ''),
         types: typesOf(localOffers),
         price: minPrice(localOffers),
         offers: localOffers,
