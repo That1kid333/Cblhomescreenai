@@ -721,5 +721,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
+  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', extranomical: 'Guided tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
 };
