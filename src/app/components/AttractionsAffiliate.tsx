@@ -183,12 +183,14 @@ export function AttractionsAffiliate({
               that actually have a bookable offer among the shown cards. */}
           <div className="partners">
             <span className="p-label">Book with</span>
-            {PARTNER_ORDER.filter((p) => livePrograms.has(p)).map((p) => {
-              const meta = PARTNER_META[p];
-              return meta ? (
-                <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
-              ) : null;
-            })}
+            <span className="logo-row">
+              {PARTNER_ORDER.filter((p) => livePrograms.has(p)).map((p) => {
+                const meta = PARTNER_META[p];
+                return meta ? (
+                  <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
+                ) : null;
+              })}
+            </span>
           </div>
 
           {renderGroup('U.S. Travel', 'Tickets · passes · tours · events', usCards)}
@@ -215,10 +217,11 @@ const CSS = `
 .cbl-aff .aff-sub { color:#9A9A9A; font-size:14.5px; line-height:1.5; margin:10px 0 0; max-width:600px; }
 
 /* Trusted-partners strip — official logos on white chips */
-.cbl-aff .partners { display:flex; align-items:center; gap:6px 8px; flex-wrap:wrap; margin-bottom:20px; }
-.cbl-aff .partners .p-label { flex:0 0 auto; margin-right:6px; font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
-.cbl-aff .logo-chip { flex:0 0 auto; width:124px; display:flex; align-items:center; justify-content:center; height:26px; }
-.cbl-aff .logo-chip img { max-height:22px; max-width:108px; width:auto; height:auto; display:block; filter:brightness(0) invert(1); opacity:.82; }
+.cbl-aff .partners { display:flex; align-items:center; gap:12px 16px; flex-wrap:wrap; margin-bottom:20px; }
+.cbl-aff .partners .p-label { flex:0 0 auto; font-family:${MONO}; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; }
+.cbl-aff .logo-row { flex:1 1 auto; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:16px 22px; flex-wrap:wrap; }
+.cbl-aff .logo-chip { flex:0 0 auto; display:flex; align-items:center; justify-content:center; height:26px; }
+.cbl-aff .logo-chip img { max-height:22px; max-width:106px; width:auto; height:auto; display:block; filter:brightness(0) invert(1); opacity:.82; }
 
 /* U.S. / International section groups */
 .cbl-aff .aff-group + .aff-group { margin-top:30px; }
