@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type SyntheticEvent } from "react";
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
@@ -300,8 +300,12 @@ const DIR_CSS = `
 .cbl-dir .coupon h4 { font-family:${DISPLAY}; font-weight:900; font-size:18px; line-height:1.1; text-transform:uppercase; }
 .cbl-dir .coupon .partner { font-family:${MONO}; font-size:10px; color:#C99742; letter-spacing:.12em; text-transform:uppercase; }
 .cbl-dir .coupon .terms { font-size:11px; line-height:1.4; color:#888; }
-.cbl-dir .coupon .code { margin-top:6px; font-family:${MONO}; font-size:11px; color:#fff; letter-spacing:.14em; border-top:1px solid rgba(255,255,255,.06); padding-top:6px; }
+.cbl-dir .coupon .code { margin-top:6px; font-family:${MONO}; font-size:11px; color:#fff; letter-spacing:.14em; border-top:1px solid rgba(255,255,255,.06); padding-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .cbl-dir .coupon .code b { color:#C99742; }
+.cbl-dir .code-copy { font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.14em; color:#C99742; background:rgba(201,151,66,.12); border:1px solid rgba(201,151,66,.45); border-radius:8px 0 8px 0; padding:3px 9px; cursor:pointer; transition:background .16s, color .16s, border-color .16s; user-select:none; }
+.cbl-dir .code-copy:hover { background:#C99742; color:#0A0A0A; }
+.cbl-dir .code-copy:focus-visible { outline:2px solid #C99742; outline-offset:2px; }
+.cbl-dir .code-copy.copied { background:#4DBF66; border-color:#4DBF66; color:#0A0A0A; letter-spacing:.06em; }
 /* Travel Deals (affiliate) band inside Coupons & Offers */
 .cbl-dir a.coupon.deal { text-decoration:none; color:inherit; }
 .cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
@@ -605,6 +609,16 @@ const TRAVEL_DEALS: TravelDeal[] = [
     code: "LONDON", dest: "https://gocity.com/en/london", placement: "directory_deal_gocity_london",
     expires: "2026-08-23", logoChip: "/attractions/gocity-logo.svg",
   },
+  {
+    // Extranomical Tours (Awin 29767) — our San Francisco specialist. Percentage deliberately
+    // NOT hardcoded: the advertiser's own offer title says 12% but its body says 11%, so the
+    // permanent UI just points to the code. See ANTIGRAVITY-PROMPT-extranomical-coupons.md.
+    id: "extranomical-sf", program: "extranomical", badge: "SAVE", badgeSmall: "on tours",
+    partner: "Extranomical Tours", title: "San Francisco Tours & Day Trips",
+    terms: "Save on select SF tours and Bay Area day trips: Yosemite, Muir Woods with Napa and Sonoma wine, Monterey and Carmel, and Alcatraz.",
+    code: "BLOG12", dest: "https://www.extranomical.com", placement: "directory_deal_extranomical_sf",
+    expires: "2029-05-22", logoChip: "/attractions/extranomical-logo.svg",
+  },
 ];
 
 // Deals still within their window (compared to the visitor's local date).
@@ -612,6 +626,31 @@ function activeTravelDeals(): TravelDeal[] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   return TRAVEL_DEALS.filter((d) => new Date(`${d.expires}T23:59:59`) >= today);
+}
+
+// Tap the code to copy it (lives inside the card's <a>, so it must swallow the click
+// and stop the parent link from navigating). Span-based to stay valid inside an anchor.
+function CouponCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = (e: SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard?.writeText(code).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <span
+      className={"code-copy" + (copied ? " copied" : "")}
+      role="button"
+      tabIndex={0}
+      aria-label={`Copy code ${code}`}
+      onClick={copy}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") copy(e); }}
+    >
+      {copied ? "Copied" : code}
+    </span>
+  );
 }
 
 function TravelDealCard({ d }: { d: TravelDeal }) {
@@ -627,7 +666,7 @@ function TravelDealCard({ d }: { d: TravelDeal }) {
         <h4>{d.title}</h4>
         <div className="terms">{d.terms}</div>
         <div className="code">
-          {d.code ? <>Code <b>{d.code}</b> · </> : null}
+          {d.code ? <>Code <CouponCode code={d.code} /> · </> : null}
           <span className="deal-cta">Get the deal →</span>
         </div>
       </div>
