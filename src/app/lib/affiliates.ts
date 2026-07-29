@@ -50,7 +50,7 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
 export type Program =
   | 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking'
   // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
-  | 'turbopass' | 'usaguidedtours';
+  | 'turbopass' | 'usaguidedtours' | 'extranomical';
 
 // ── Awin network ─────────────────────────────────────────────────────────────
 // Turbopass (city passes) is our first Awin merchant — a SECOND affiliate network
@@ -64,7 +64,13 @@ const AWIN_AFFID = '2772460'; // our Awin publisher id — must never change
 const AWIN_MID: Partial<Record<Program, string>> = {
   turbopass: '100613', // Turbopass US (approved 2026-07-27) — ≥6% commission, avg cart >€230
   usaguidedtours: '37792', // USA Guided Tours (approved 2026-07-27) — guided sightseeing, DC + NYC only
+  extranomical: '29767', // Extranomical Tours (approved 2026-07-29) — SAN FRANCISCO guided-tours specialist
 };
+
+// Guided-tours placement rule (Awin, agreed w/ Keith): ONE tour partner per city.
+// A city specialist wins its home city; USA Guided Tours is the generalist used only
+// where there's no specialist. Extranomical owns SF, so USA Guided Tours stays out of
+// SF (it only covers DC + NYC anyway). Keep coverage lists non-overlapping.
 
 // Preview/localhost detection — mirrors auth.tsx's isPreviewHost so the
 // un-monetized design preview only ever appears off production.
@@ -253,6 +259,19 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Small-group and VIP options',
     ],
   },
+  extranomical: {
+    partner: 'Extranomical Tours',
+    logo: '/attractions/extranomical-logo.svg',
+    cta: 'Book a tour',
+    briefing:
+      'San Francisco tours and Bay Area day trips powered by Extranomical — 20+ years running Muir Woods, wine country, Yosemite and Alcatraz trips with small groups.',
+    highlights: [
+      'San Francisco city tours',
+      'Muir Woods, wine country & Yosemite day trips',
+      'Alcatraz packages',
+      '20+ years, small groups',
+    ],
+  },
   wegotrip: {
     partner: 'WeGoTrip',
     logo: '/attractions/wegotrip-logo.svg',
@@ -367,6 +386,14 @@ export function usaGuidedToursFor(activeCity: string | null | undefined): Guided
   return USAGUIDEDTOURS_CITIES.find((city) => city.match.includes(c)) ?? null;
 }
 
+// ── Extranomical Tours coverage (guided tours, via Awin). The SAN FRANCISCO
+// specialist — SF city tours + Bay Area day trips (Muir Woods, wine country,
+// Yosemite, Alcatraz). Owns SF outright; USA Guided Tours (generalist) is kept out
+// of SF. Whole site is SF/Bay Area, so ued = the homepage. ────────────────────────
+export const EXTRANOMICAL_CITIES: GuidedToursCity[] = [
+  { key: 'san-francisco', match: ['san francisco', 'sf'], name: 'San Francisco', country: 'USA', url: 'https://www.extranomical.com', fromPrice: 'from $59' },
+];
+
 // ── WeGoTrip coverage (self-guided audio tours). `url` is the exact city page
 // from wegotrip.com's sitemap (they use /{slug}-d{id}/). ───────────────────────
 export type WeGoTripEntry = { key: string; match: string[]; name: string; country: string; url: string; fromPrice: string };
@@ -449,6 +476,19 @@ export function usaGuidedToursOffer(entry: GuidedToursCity, placement: string): 
     program: 'usaguidedtours', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
     photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'Guided tour',
     title: `${entry.name} guided tours`, price: entry.fromPrice, meta: 'Day · night · private',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
+/** Build an Extranomical (SF guided tours + Bay Area day trips) offer. */
+export function extranomicalOffer(entry: GuidedToursCity, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.extranomical!;
+  const link = affiliateHref('extranomical', entry.url, placement);
+  if (!link) return null;
+  return {
+    program: 'extranomical', partner: meta.partner, cityKey: entry.key, name: entry.name, country: entry.country,
+    photo: cityPhoto(entry.key), tint: NEUTRAL_TINT, kicker: 'Guided tour',
+    title: `${entry.name} tours & day trips`, price: entry.fromPrice, meta: 'City tours · day trips',
     highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
   };
 }
@@ -661,6 +701,8 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (w) { const o = weGoTripOffer(w, `${placement}_wegotrip_${cityKey}`); if (o) out.push(o); }
   const ug = USAGUIDEDTOURS_CITIES.find((c) => c.key === cityKey);
   if (ug) { const o = usaGuidedToursOffer(ug, `${placement}_usaguidedtours_${cityKey}`); if (o) out.push(o); }
+  const ex = EXTRANOMICAL_CITIES.find((c) => c.key === cityKey);
+  if (ex) { const o = extranomicalOffer(ex, `${placement}_extranomical_${cityKey}`); if (o) out.push(o); }
   // US cities also get TicketNetwork events (it's US-focused).
   const cityMeta = AFFILIATE_CITIES.find((c) => c.key === cityKey);
   if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
