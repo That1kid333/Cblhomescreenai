@@ -24,12 +24,6 @@ export const RIDER_BOOK_URL = `${APP_URL}/rider/login`;
 // a read-only preview of the same data (see lib/supabase/directoryClient.ts).
 export const DIRECTORY_APP_URL = 'https://directory.citybucketlist.com/';
 
-// Public teaser Buckee edge function (lives in the main-app Supabase project).
-// Deployed by Justin per BUCKEE_HOMESCREEN_HANDOFF.md §3; override once it's live.
-export const BUCKEE_PUBLIC_URL =
-  import.meta.env.VITE_BUCKEE_PUBLIC_URL ||
-  'https://jgbaqzgkdqqvxmqytgsx.supabase.co/functions/v1/buckee-public';
-
 // Restaurant-partner Stripe Checkout (Supabase edge function in the main-app
 // project). POST { plan: 'bronze'|'silver'|'gold' } → { url, mode }; redirect
 // to url. Test mode until app_settings.stripe_live_payments_enabled = "true".

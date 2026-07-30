@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type SyntheticEvent } from "react";
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
@@ -12,10 +12,11 @@ import {
   getOwnListing, uploadListingPhoto, uploadDriverAdPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
 } from "../lib/listingPhotos";
 import { useVisitorLocation, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
-import { ComingSoonSection } from "../components/ComingSoon";
 import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
+import { affiliateHref, AFFILIATE_REL, type Program } from "../lib/affiliates";
+import { submitDeal, AFFILIATE_PARTNERS, type DealSubmission } from "../lib/deals";
 
 /**
  * Directory — ported from the approved "CBL Directory Desktop" design
@@ -243,8 +244,8 @@ const DIR_CSS = `
 /* Driver grid PREVIEW card — a compact echo of the full "Need a Ride?" card so
    the grid teaser matches the detail modal riders open. */
 .cbl-dir .listing.dpc { overflow:hidden; }
-.cbl-dir .dpc-hero { position:relative; padding:20px 16px 16px; text-align:center; background:linear-gradient(180deg, rgba(10,10,10,.35), rgba(10,10,10,.82)), url(${MAP_BG}); background-size:cover; background-position:center; }
-.cbl-dir .dpc-av { width:66px; height:66px; margin:0 auto 10px; border-radius:50%; overflow:hidden; border:2.5px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.5); }
+.cbl-dir .dpc-hero { position:relative; padding:20px 16px 16px; text-align:left; background:linear-gradient(180deg, rgba(10,10,10,.35), rgba(10,10,10,.82)), url(${MAP_BG}); background-size:cover; background-position:center; }
+.cbl-dir .dpc-av { width:66px; height:66px; margin:0 0 10px; border-radius:50%; overflow:hidden; border:2.5px solid #C99742; background:#1A1A1A; display:grid; place-items:center; color:#C99742; font-weight:800; font-size:22px; box-shadow:0 4px 14px rgba(0,0,0,.5); }
 .cbl-dir .dpc-av img { width:100%; height:100%; object-fit:cover; }
 .cbl-dir .dpc-eb { font-family:${MONO}; font-size:9px; letter-spacing:.2em; text-transform:uppercase; color:#C99742; margin-bottom:5px; }
 .cbl-dir .dpc-h { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:.95; text-transform:uppercase; color:#fff; }
@@ -299,8 +300,24 @@ const DIR_CSS = `
 .cbl-dir .coupon h4 { font-family:${DISPLAY}; font-weight:900; font-size:18px; line-height:1.1; text-transform:uppercase; }
 .cbl-dir .coupon .partner { font-family:${MONO}; font-size:10px; color:#C99742; letter-spacing:.12em; text-transform:uppercase; }
 .cbl-dir .coupon .terms { font-size:11px; line-height:1.4; color:#888; }
-.cbl-dir .coupon .code { margin-top:6px; font-family:${MONO}; font-size:11px; color:#fff; letter-spacing:.14em; border-top:1px solid rgba(255,255,255,.06); padding-top:6px; }
+.cbl-dir .coupon .code { margin-top:6px; font-family:${MONO}; font-size:11px; color:#fff; letter-spacing:.14em; border-top:1px solid rgba(255,255,255,.06); padding-top:6px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 .cbl-dir .coupon .code b { color:#C99742; }
+.cbl-dir .code-copy { font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.14em; color:#C99742; background:rgba(201,151,66,.12); border:1px solid rgba(201,151,66,.45); border-radius:8px 0 8px 0; padding:3px 9px; cursor:pointer; transition:background .16s, color .16s, border-color .16s; user-select:none; }
+.cbl-dir .code-copy:hover { background:#C99742; color:#0A0A0A; }
+.cbl-dir .code-copy:focus-visible { outline:2px solid #C99742; outline-offset:2px; }
+.cbl-dir .code-copy.copied { background:#4DBF66; border-color:#4DBF66; color:#0A0A0A; letter-spacing:.06em; }
+/* Travel Deals (affiliate) band inside Coupons & Offers */
+.cbl-dir a.coupon.deal { text-decoration:none; color:inherit; }
+.cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
+.cbl-dir .coupon .partner-logo { height:21px; width:auto; max-width:150px; align-self:flex-start; display:block; margin-bottom:6px; filter:brightness(0) invert(1); opacity:.92; }
+.cbl-dir .deals-band { margin-top:4px; }
+.cbl-dir .deals-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin-bottom:16px; }
+.cbl-dir .deals-head-l { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 14px; }
+.cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
+.cbl-dir .deals-head .deals-disc { font-family:${MONO}; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; }
+.cbl-dir .deals-note { margin:18px 0 0; font-size:12.5px; color:#8a8a8a; font-style:italic; }
+.cbl-dir .deal-submit-cta { flex-shrink:0; background:transparent; border:1px solid rgba(201,151,66,.5); color:#C99742; font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:9px 16px; cursor:pointer; transition:background .18s, color .18s; }
+.cbl-dir .deal-submit-cta:hover { background:#C99742; color:#0A0A0A; }
 
 /* Pricing tiers */
 .cbl-dir .tiers { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
@@ -556,6 +573,202 @@ const CHIPS: Record<string, Chip[]> = {
 // Live data only past this point — Driver Posts, Rider Requests, and Coupons
 // have no real backing source yet (see ComingSoonSection usage below), so
 // there are no mock arrays for them.
+
+// ── Travel Deals (affiliate partner offers shown in Coupons & Offers) ──────────
+// Real, tracked partner promos, walled off from local member coupons. Each carries
+// an `expires` date so stale deals drop off automatically. The link is resolved
+// through affiliateHref() so it stays tracked (or a plain link off production).
+type TravelDeal = {
+  id: string;
+  program: Program;
+  badge: string;        // big gold badge, e.g. "FREE" or "15%"
+  badgeSmall: string;   // caption under it, e.g. "off pass"
+  partner: string;
+  title: string;
+  terms: string;
+  code?: string;        // promo code the visitor enters at checkout
+  dest: string;         // destination URL the tracked link points at
+  placement: string;    // sub_id / clickref for attribution
+  expires: string;      // ISO date (YYYY-MM-DD); hidden after this day
+  featured?: boolean;
+  logoChip?: string;    // white partner logo chip (replaces the text partner label)
+};
+
+const TRAVEL_DEALS: TravelDeal[] = [
+  {
+    id: "gocity-ny-bigbus", program: "gocity", badge: "FREE", badgeSmall: "bus tour",
+    partner: "Go City", title: "New York Explorer Pass",
+    terms: "Free Big Bus Tour (worth up to $81) with the 5, 6, 7 and 10-choice New York Explorer Passes.",
+    dest: "https://gocity.com/en/new-york", placement: "directory_deal_gocity_ny",
+    expires: "2026-09-07", featured: true, logoChip: "/attractions/gocity-logo.svg",
+  },
+  {
+    id: "gocity-london", program: "gocity", badge: "15%", badgeSmall: "off pass",
+    partner: "Go City", title: "London All-Inclusive Pass",
+    terms: "15% off the All-Inclusive Pass (110+ attractions), or 10% off the Explorer Pass.",
+    code: "LONDON", dest: "https://gocity.com/en/london", placement: "directory_deal_gocity_london",
+    expires: "2026-08-23", logoChip: "/attractions/gocity-logo.svg",
+  },
+  {
+    // Extranomical Tours (Awin 29767) — our San Francisco specialist. Percentage deliberately
+    // NOT hardcoded: the advertiser's own offer title says 12% but its body says 11%, so the
+    // permanent UI just points to the code. See ANTIGRAVITY-PROMPT-extranomical-coupons.md.
+    id: "extranomical-sf", program: "extranomical", badge: "SAVE", badgeSmall: "on tours",
+    partner: "Extranomical Tours", title: "San Francisco Tours & Day Trips",
+    terms: "Save on select SF tours and Bay Area day trips: Yosemite, Muir Woods with Napa and Sonoma wine, Monterey and Carmel, and Alcatraz.",
+    code: "BLOG12", dest: "https://www.extranomical.com", placement: "directory_deal_extranomical_sf",
+    expires: "2029-05-22", logoChip: "/attractions/extranomical-logo.svg",
+  },
+];
+
+// Deals still within their window (compared to the visitor's local date).
+function activeTravelDeals(): TravelDeal[] {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return TRAVEL_DEALS.filter((d) => new Date(`${d.expires}T23:59:59`) >= today);
+}
+
+// Tap the code to copy it (lives inside the card's <a>, so it must swallow the click
+// and stop the parent link from navigating). Span-based to stay valid inside an anchor.
+function CouponCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = (e: SyntheticEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard?.writeText(code).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
+  return (
+    <span
+      className={"code-copy" + (copied ? " copied" : "")}
+      role="button"
+      tabIndex={0}
+      aria-label={`Copy code ${code}`}
+      onClick={copy}
+      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") copy(e); }}
+    >
+      {copied ? "Copied" : code}
+    </span>
+  );
+}
+
+function TravelDealCard({ d }: { d: TravelDeal }) {
+  const link = affiliateHref(d.program, d.dest, d.placement);
+  if (!link) return null;
+  return (
+    <a className={"coupon deal" + (d.featured ? " featured" : "")} href={link.href} target="_blank" rel={AFFILIATE_REL}>
+      <div className="disc">{d.badge}<small>{d.badgeSmall}</small></div>
+      <div className="body">
+        {d.logoChip
+          ? <img className="partner-logo" src={d.logoChip} alt={d.partner} loading="lazy" />
+          : <span className="partner">{d.partner}</span>}
+        <h4>{d.title}</h4>
+        <div className="terms">{d.terms}</div>
+        <div className="code">
+          {d.code ? <>Code <CouponCode code={d.code} /> · </> : null}
+          <span className="deal-cta">Get the deal →</span>
+        </div>
+      </div>
+    </a>
+  );
+}
+
+const EMPTY_DEAL: DealSubmission = {
+  partner: '', title: '', discount: '', discountLabel: '', terms: '', code: '',
+  destUrl: '', city: '', expires: '', contactName: '', contactEmail: '', notes: '', website: '',
+};
+
+// Free "Submit a Travel Deal" — affiliates/partners propose an offer; it lands in
+// deal_submissions for review, and we publish approved ones with CBL's tracked link.
+function DealSubmitModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [f, setF] = useState<DealSubmission>(EMPTY_DEAL);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'done'>('idle');
+  const [err, setErr] = useState<string | null>(null);
+  if (!open) return null;
+  const set = (k: keyof DealSubmission, v: string) => setF((p) => ({ ...p, [k]: v }));
+  const close = () => { onClose(); setTimeout(() => { setF(EMPTY_DEAL); setStatus('idle'); setErr(null); }, 220); };
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    setErr(null); setStatus('sending');
+    const { error } = await submitDeal(f);
+    if (error) { setErr(error); setStatus('idle'); return; }
+    setStatus('done');
+  };
+  return (
+    <div className="cbl-drivermodal" role="dialog" aria-modal="true" aria-labelledby="cbl-deal-title">
+      <style>{DRIVERMODAL_CSS}</style>
+      <div className="backdrop" onClick={close} />
+      <div className="panel">
+        <button className="close" onClick={close} aria-label="Close">✕</button>
+        {status === 'done' ? (
+          <div className="success">
+            <div className="mark">✓</div>
+            <h2>Thanks — <span className="it">we've got it.</span></h2>
+            <p className="sub">We'll review your deal and, if it's a fit, publish it with CBL's own tracking. We feature partners we're affiliated with, so we may reach out first.</p>
+            <button className="submit" onClick={close}>Done</button>
+          </div>
+        ) : (
+          <form onSubmit={submit}>
+            <div className="eyebrow">Partners · Free to submit</div>
+            <h2 id="cbl-deal-title">Submit a <span className="it">travel deal</span></h2>
+            <p className="sub">For the partners we're already signed up with. Approved deals publish with CBL's own affiliate tracking, so there's no cost to post.</p>
+            <input className="hp" type="text" tabIndex={-1} autoComplete="off" aria-hidden="true" value={f.website} onChange={(e) => set('website', e.target.value)} />
+            <div className="row">
+              <div className="field"><label>Brand <span className="req">*</span></label>
+                <select value={f.partner} onChange={(e) => set('partner', e.target.value)}>
+                  <option value="">Select a partner…</option>
+                  {AFFILIATE_PARTNERS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+              <div className="field"><label>Deal title <span className="req">*</span></label><input value={f.title} onChange={(e) => set('title', e.target.value)} placeholder="London All-Inclusive Pass" /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Discount</label><input value={f.discount} onChange={(e) => set('discount', e.target.value)} placeholder="15% or FREE" /></div>
+              <div className="field"><label>Badge label</label><input value={f.discountLabel} onChange={(e) => set('discountLabel', e.target.value)} placeholder="off pass" /></div>
+            </div>
+            <div className="field"><label>Terms</label><textarea value={f.terms} onChange={(e) => set('terms', e.target.value)} placeholder="What's included and any conditions." /></div>
+            <div className="row">
+              <div className="field"><label>Promo code</label><input value={f.code} onChange={(e) => set('code', e.target.value)} placeholder="optional" /></div>
+              <div className="field"><label>City / market</label><input value={f.city} onChange={(e) => set('city', e.target.value)} placeholder="optional" /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Booking link <span className="req">*</span></label><input value={f.destUrl} onChange={(e) => set('destUrl', e.target.value)} placeholder="https://…" /></div>
+              <div className="field"><label>Expires</label><input type="date" value={f.expires} onChange={(e) => set('expires', e.target.value)} /></div>
+            </div>
+            <div className="row">
+              <div className="field"><label>Your name</label><input value={f.contactName} onChange={(e) => set('contactName', e.target.value)} placeholder="optional" /></div>
+              <div className="field"><label>Your email <span className="req">*</span></label><input type="email" value={f.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} placeholder="you@brand.com" /></div>
+            </div>
+            {err && <div className="alert">{err}</div>}
+            <button className="submit" type="submit" disabled={status === 'sending'}>{status === 'sending' ? 'Sending…' : 'Submit deal →'}</button>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function TravelDealsBand({ onSubmit }: { onSubmit: () => void }) {
+  const deals = activeTravelDeals();
+  return (
+    <div className="deals-band">
+      <div className="deals-head">
+        <div className="deals-head-l">
+          <span className="deals-label">✈ Travel Deals</span>
+          <span className="deals-disc">Partner offers · CBL may earn a commission when you book, at no extra cost to you.</span>
+        </div>
+        <button type="button" className="deal-submit-cta" onClick={onSubmit}>Partner? Submit a deal, free →</button>
+      </div>
+      {deals.length > 0 && (
+        <div className="coupons-grid">
+          {deals.map((d) => <TravelDealCard key={d.id} d={d} />)}
+        </div>
+      )}
+      <p className="deals-note">Local member coupons are coming soon. Members and partner businesses will be able to post their own offers right here.</p>
+    </div>
+  );
+}
 
 function listingToCard(l: DirectoryListing): Listing {
   return {
@@ -2699,6 +2912,7 @@ export function Directory() {
   const [listings, setListings] = useState<DirectoryListing[]>([]);
   const [postOpen, setPostOpen] = useState(false);
   const openPost = () => setPostOpen(true);
+  const [dealSubmitOpen, setDealSubmitOpen] = useState(false);
   // Driver posts get the dedicated card builder (member-gated) instead of the
   // generic classifieds form.
   const [driverAdOpen, setDriverAdOpen] = useState(false);
@@ -3018,10 +3232,7 @@ export function Directory() {
         <section className="band">
           <div className="band-inner">
             <SectionHead section="COUPONS" onPost={openPost} />
-            <ComingSoonSection
-              title="Affiliate Coupons — Coming Soon"
-              blurb="Coupons and deals from local affiliates and partners — free for everyone to browse. (Posting an offer requires a partner account.) Coming soon."
-            />
+            <TravelDealsBand onSubmit={() => setDealSubmitOpen(true)} />
             <CompareBand onPost={openPost} />
           </div>
         </section>
@@ -3031,6 +3242,7 @@ export function Directory() {
 
       <Newsletter />
 
+      <DealSubmitModal open={dealSubmitOpen} onClose={() => setDealSubmitOpen(false)} />
       <PostListingModal
         open={postOpen}
         onClose={() => setPostOpen(false)}
