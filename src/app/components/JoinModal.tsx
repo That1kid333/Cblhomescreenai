@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { APP_URL } from '../lib/constants';
-import { signUpMember } from '../lib/supabase/authClient';
+import { signUpMember, authClient } from '../lib/supabase/authClient';
 import { useAuth, firstNameOf } from '../lib/auth';
+import { captureRefFromUrl } from '../lib/referral';
 
 /**
  * JoinModal — real member sign-up, right on the site.
@@ -130,8 +131,43 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
   const [siStatus, setSiStatus] = useState<'idle' | 'loading' | 'error'>('idle');
   const [siError, setSiError] = useState('');
 
-  const panelRef = useRef<HTMLDivElement>(null);
-  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const [referrer, setReferrer] = useState<{ name: string; photo: string | null; type: 'driver' | 'rider' } | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const refCode = captureRefFromUrl();
+    if (!refCode) return;
+
+    let cancelled = false;
+    async function loadReferrer() {
+      const { data: d } = await authClient
+        .from('drivers')
+        .select('name, photo')
+        .ilike('referral_code', refCode!)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (d) {
+        setReferrer({ name: d.name, photo: d.photo, type: 'driver' });
+        return;
+      }
+
+      const { data: r } = await authClient
+        .from('riders')
+        .select('name, photo')
+        .ilike('referral_code', refCode!)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (r) {
+        setReferrer({ name: r.name || 'Fellow Rider', photo: r.photo, type: 'rider' });
+      }
+    }
+    loadReferrer();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Hold onClose in a ref so the open-effect never re-runs when a parent
   // re-render recreates the callback (e.g. Home's hero rotation every 4s) —
@@ -296,6 +332,18 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
             <div className="eyebrow">join the list</div>
             <h2 id="cbl-join-title">Get in <span className="it">free.</span></h2>
             <p className="sub">Create your real, password-protected City Bucket List account — takes under a minute.</p>
+
+            {referrer && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(201,151,66,.12)', border: '1px solid rgba(201,151,66,.4)', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', background: GOLD, color: '#000', fontWeight: 'bold', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: '18px' }}>
+                  {referrer.photo ? <img src={referrer.photo} alt={referrer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (referrer.name?.charAt(0) || 'D')}
+                </div>
+                <div>
+                  <div style={{ fontSize: '11px', color: GOLD, fontFamily: MONO, textTransform: 'uppercase', letterSpacing: '.12em' }}>Invited by {referrer.type === 'driver' ? 'Driver' : 'Member'}</div>
+                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>{referrer.name}</div>
+                </div>
+              </div>
+            )}
 
             {status === 'error' && <div className="alert err" role="alert">{errorMessage}</div>}
 

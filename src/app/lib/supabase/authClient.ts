@@ -76,6 +76,38 @@ const ALREADY_SIGNED_IN_ERROR =
 export async function signUpMember(input: MemberSignUpInput): Promise<{ error: string | null }> {
   const email = input.email.trim();
 
+  // Check for stored referral code from URL/localStorage
+  let referralDriverId: number | null = null;
+  let referralRiderId: string | null = null;
+  let referrerType: 'driver' | 'rider' | null = null;
+  const refCode = (() => {
+    try { return localStorage.getItem('ref') || localStorage.getItem('cbl_referrer_code'); } catch { return null; }
+  })();
+
+  if (refCode) {
+    const { data: driverData } = await authClient
+      .from('drivers')
+      .select('id')
+      .ilike('referral_code', refCode)
+      .maybeSingle();
+
+    if (driverData) {
+      referralDriverId = driverData.id;
+      referrerType = 'driver';
+    } else {
+      const { data: riderData } = await authClient
+        .from('riders')
+        .select('id')
+        .ilike('referral_code', refCode)
+        .maybeSingle();
+
+      if (riderData) {
+        referralRiderId = riderData.id;
+        referrerType = 'rider';
+      }
+    }
+  }
+
   // Matches the app's own MembershipForm: a returning email signs in instead
   // of erroring, rather than trying (and failing) to re-create the account.
   const { data: existingRider } = await authClient
@@ -93,7 +125,15 @@ export async function signUpMember(input: MemberSignUpInput): Promise<{ error: s
     password: input.password,
     options: {
       emailRedirectTo: `${window.location.origin}/`,
-      data: { name: input.name, phone: input.phone, signup_source: input.source ?? null },
+      data: {
+        name: input.name,
+        phone: input.phone,
+        signup_source: input.source ?? null,
+        referred_by: refCode || null,
+        referrer_type: referrerType,
+        referrer_driver_id: referralDriverId,
+        referrer_rider_id: referralRiderId,
+      },
     },
   });
 
@@ -116,10 +156,47 @@ export async function signUpMember(input: MemberSignUpInput): Promise<{ error: s
     name: input.name,
     email,
     phone: input.phone,
+    referrer_driver_id: referralDriverId,
+    preferred_driver_id: referralDriverId,
     sms_opt_in: input.smsOptIn,
     sms_consent_timestamp: input.smsOptIn ? new Date().toISOString() : null,
   });
   if (riderError) return { error: riderError.message };
+
+  // If referred by a driver, add to their driver_clients list
+  if (referralDriverId) {
+    void authClient
+      .from('driver_clients')
+      .insert({
+        driver_id: referralDriverId,
+        name: input.name,
+        email,
+        phone: input.phone,
+        notes: 'Added via referral signup on website',
+      })
+      .then(() => {})
+      .catch(() => {});
+  }
+
+  // Create referral reward entry
+  if (referrerType && (referralDriverId || referralRiderId)) {
+    const referrerId = referralDriverId || referralRiderId;
+    if (referrerId) {
+      void authClient
+        .from('referral_rewards')
+        .insert({
+          referrer_id: String(referrerId),
+          referrer_type: referrerType,
+          referred_id: userId,
+          referred_type: 'rider',
+          status: 'completed',
+          points_awarded: 10,
+          created_at: new Date().toISOString(),
+        })
+        .then(() => {})
+        .catch(() => {});
+    }
+  }
 
   // Fire-and-forget welcome email — the SAME edge function the app's own
   // signup invokes (supabase/functions/send-rider-welcome in the app repo).

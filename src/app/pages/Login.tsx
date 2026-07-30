@@ -18,11 +18,12 @@
  * signUpMember). Members can sign into the app, the directory, and this
  * site with that password, and get the real welcome email.
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { APP_URL } from '../lib/constants';
 import { useAuth, firstNameOf } from '../lib/auth';
-import { signUpMember } from '../lib/supabase/authClient';
+import { signUpMember, authClient } from '../lib/supabase/authClient';
+import { captureRefFromUrl } from '../lib/referral';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -307,6 +308,46 @@ export function Login() {
     }
   };
 
+  const [referrer, setReferrer] = useState<{ name: string; photo: string | null; type: 'driver' | 'rider' } | null>(null);
+
+  useEffect(() => {
+    const refCode = captureRefFromUrl();
+    if (!refCode) return;
+
+    let cancelled = false;
+    async function loadReferrer() {
+      const { data: d } = await authClient
+        .from('drivers')
+        .select('name, photo')
+        .ilike('referral_code', refCode!)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (d) {
+        setReferrer({ name: d.name, photo: d.photo, type: 'driver' });
+        // Auto open sign up tab if arriving via referral link
+        setSigninOpen(false);
+        return;
+      }
+
+      const { data: r } = await authClient
+        .from('riders')
+        .select('name, photo')
+        .ilike('referral_code', refCode!)
+        .maybeSingle();
+
+      if (cancelled) return;
+      if (r) {
+        setReferrer({ name: r.name || 'Fellow Rider', photo: r.photo, type: 'rider' });
+        setSigninOpen(false);
+      }
+    }
+    loadReferrer();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [firstName, setFirstName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -465,6 +506,18 @@ export function Login() {
                   </div>
                 ) : (
                   <>
+                    {referrer && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(201,151,66,.12)', border: '1px solid rgba(201,151,66,.4)', borderRadius: '12px', padding: '10px 14px', marginBottom: '16px' }}>
+                        <div style={{ width: '42px', height: '42px', borderRadius: '50%', overflow: 'hidden', background: GOLD, color: '#000', fontWeight: 'bold', display: 'grid', placeItems: 'center', flexShrink: 0, fontSize: '18px' }}>
+                          {referrer.photo ? <img src={referrer.photo} alt={referrer.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (referrer.name?.charAt(0) || 'D')}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '11px', color: GOLD, fontFamily: MONO, textTransform: 'uppercase', letterSpacing: '.12em' }}>Invited by {referrer.type === 'driver' ? 'Driver' : 'Member'}</div>
+                          <div style={{ fontSize: '15px', fontWeight: 800, color: '#fff' }}>{referrer.name}</div>
+                        </div>
+                      </div>
+                    )}
+
                     <ul className="perks">
                       <li><b>Full blog &amp; directory access</b> — post, save spots, member pricing</li>
                       <li><b>Rides with your own driver</b> — schedule &amp; message from the app</li>
