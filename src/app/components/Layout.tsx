@@ -380,7 +380,7 @@ export function Layout() {
               <a href="https://www.youtube.com/@CitybucketlistCBL" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on YouTube" className="transition-transform hover:scale-110">
                 <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="#FF0000" d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8Z" /><path fill="#fff" d="M9.5 15.6V8.4l6.3 3.6-6.3 3.6Z" /></svg>
               </a>
-              <a href="https://www.instagram.com/citybucketlist_pittsburgh/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="transition-transform hover:scale-110">
+              <a href="https://www.instagram.com/citybucketlist_com/" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on Instagram" className="transition-transform hover:scale-110">
                 <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="cbl-ig" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stopColor="#FEDA75" /><stop offset=".35" stopColor="#FA7E1E" /><stop offset=".6" stopColor="#D62976" /><stop offset=".8" stopColor="#962FBF" /><stop offset="1" stopColor="#4F5BD5" /></linearGradient></defs><rect x="2" y="2" width="20" height="20" rx="5.5" fill="url(#cbl-ig)" /><circle cx="12" cy="12" r="4.2" fill="none" stroke="#fff" strokeWidth="1.9" /><circle cx="17.6" cy="6.4" r="1.2" fill="#fff" /></svg>
               </a>
               <a href="https://www.tiktok.com/@citybucketlist.com" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on TikTok" className="transition-transform hover:scale-110">
@@ -389,7 +389,10 @@ export function Layout() {
               <a href="https://x.com/citybucketlists" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List on X" className="transition-transform hover:scale-110">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.657l-5.214-6.817-5.966 6.817H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" /></svg>
               </a>
-              {/* Facebook group icon slots in here once the group link is confirmed */}
+              {/* Facebook group for now — swap URL to the official FB Page once Keith has it set up */}
+              <a href="https://www.facebook.com/groups/cbl.mobi" target="_blank" rel="noopener noreferrer" aria-label="City Bucket List Facebook group" className="transition-transform hover:scale-110">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#1877F2" /><path fill="#fff" d="M16.671 15.543l.532-3.47h-3.328v-2.25c0-.949.465-1.874 1.956-1.874h1.513V4.996s-1.374-.235-2.686-.235c-2.741 0-4.533 1.662-4.533 4.669v2.643H7.078v3.47h3.047v8.385a12.14 12.14 0 0 0 3.75 0v-8.385h2.796z" /></svg>
+              </a>
             </div>
             <div className="flex items-center gap-6 text-[10px] uppercase">
               <Link to="/our-story" className="hover:text-[#FDB913] transition-colors">Story</Link>

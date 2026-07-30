@@ -67,7 +67,7 @@ const CSS = `
 .cbl-post .back:hover { color:${GOLD}; }
 
 .cbl-post .kick { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin:22px 0 12px; }
-.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; }
+.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; text-wrap:pretty; }
 .cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; }
 .cbl-post .by { font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; margin-bottom:24px; }
 .cbl-post .by b { color:${GOLD}; font-weight:700; }
@@ -93,10 +93,24 @@ const CSS = `
 .cbl-post .body ul { margin:0 0 20px; padding-left:0; list-style:none; }
 .cbl-post .body li { position:relative; padding-left:22px; margin-bottom:11px; }
 .cbl-post .body li::before { content:''; position:absolute; left:0; top:11px; width:8px; height:8px; border-radius:50%; background:${GOLD}; }
+.cbl-post .body ol { margin:4px 0 22px; padding-left:0; list-style:none; counter-reset:bl; }
+.cbl-post .body ol li { padding-left:42px; margin-bottom:14px; }
+.cbl-post .body ol li::before { counter-increment:bl; content:counter(bl,decimal-leading-zero); width:auto; height:auto; background:none; border-radius:0; top:1px; font-family:${MONO}; font-size:15px; font-weight:700; color:${GOLD}; }
 .cbl-post .body strong { color:#fff; font-weight:700; }
 .cbl-post .body blockquote { margin:30px 0; padding:20px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.07); border-radius:0 10px 10px 0; }
 .cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; }
 .cbl-post .body blockquote p:last-child { margin:0; }
+
+/* Inline images in the body (markdown ![caption](url)) */
+.cbl-post .body figure.mdfig { margin:26px 0 30px; }
+.cbl-post .body figure.mdfig img { width:100%; border-radius:14px 0 14px 0; display:block; border:1px solid rgba(255,255,255,.08); box-shadow:0 12px 34px rgba(0,0,0,.5); }
+.cbl-post .body figure.mdfig figcaption { margin-top:9px; font-family:${MONO}; font-size:10.5px; letter-spacing:.04em; color:#888; }
+.cbl-post .body figure.mdfig figcaption b, .cbl-post .body figure.mdfig figcaption strong { color:${GOLD}; }
+/* Portrait card image — constrained so a tall card isn't full-bleed */
+.cbl-post .body figure.mdfig.card { max-width:320px; }
+.cbl-post .body figure.mdfig.card img { border-color:rgba(201,151,66,.3); box-shadow:0 14px 40px rgba(0,0,0,.6); }
+.cbl-post .body figure.mdfig.logo { max-width:none; margin:22px 0 8px; }
+.cbl-post .body figure.mdfig.logo img { width:auto; height:34px; max-width:100%; border:0; box-shadow:none; border-radius:0; filter:brightness(0) invert(1); opacity:.92; }
 
 /* Driver's Take — a dedicated optional callout (renders only when the field is filled) */
 .cbl-post .dtake { max-width:720px; margin:38px 0 6px; padding:22px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.08); border-radius:0 14px 14px 0; }
@@ -295,7 +309,14 @@ export function BlogPost() {
               <div className="author-name">{post.author_name}</div>
               <p className="author-bio">
                 {authorBio ||
-                  `${post.author_name.split(' ')[0]} is part of the City Bucket List network${post.city ? ` in ${post.city}` : ''} — sharing the local spots worth your bucket list.`}
+                  (() => {
+                    // Only claim "in {city}" for LOCAL posts; a travel/destination
+                    // post (Travels) is about a place the author isn't necessarily from.
+                    const first = post.author_name.split(' ')[0];
+                    const local = !['travels', 'flights', 'stays'].includes((post.vertical || '').toLowerCase());
+                    const where = local && post.city ? ` in ${post.city}` : '';
+                    return `${first} is part of the City Bucket List network${where}, sharing the ${local ? 'local ' : ''}spots worth your bucket list.`;
+                  })()}
               </p>
             </div>
           </div>

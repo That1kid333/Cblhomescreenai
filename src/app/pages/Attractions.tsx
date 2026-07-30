@@ -3,6 +3,7 @@ import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
 import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 
 /**
  * Attractions — location-aware live listings.
@@ -167,6 +168,8 @@ type SeedItem = {
   img: string;
   desc: string;
   featured: boolean;
+  rating?: number;  // override the id-derived placeholder (for landmark spots)
+  reviews?: number;
 };
 
 const SEED: SeedItem[] = [
@@ -178,6 +181,17 @@ const SEED: SeedItem[] = [
     img: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&h=900&fit=crop',
     desc: 'Free outdoor arts festival featuring 70+ visual artists, three concert stages, and food vendors along the rivers.',
     featured: true,
+  },
+  {
+    id: 16,
+    name: 'Mount Washington',
+    venue: 'Grandview Overlook · Mount Washington',
+    cat: 'OUTDOORS',
+    img: '/blog/mount-washington/pgh-dusk.jpg',
+    desc: 'The city’s signature view — downtown and the three rivers laid out below Grandview Avenue, reached by the historic Duquesne and Monongahela inclines.',
+    featured: false,
+    rating: 4.8,
+    reviews: 6803,
   },
   {
     id: 2,
@@ -315,8 +329,8 @@ function seedToAttraction(s: SeedItem): Attraction {
     name: s.name,
     cat: s.cat,
     address: s.venue,
-    rating: Math.round((4.3 + (s.id % 6) * 0.08) * 10) / 10,
-    reviews: 240 + s.id * 137,
+    rating: s.rating ?? Math.round((4.3 + (s.id % 6) * 0.08) * 10) / 10,
+    reviews: s.reviews ?? 240 + s.id * 137,
     open: null,
     coord: [0, 0],
     photo: s.img,
@@ -952,7 +966,10 @@ function HeroAttractionsSvg() {
   );
 }
 
-function CarMini({ size = 14, color = '#000' }: { size?: number; color?: string }) {
+// The full CBL car mark (same line-art car used in the Transportation hero), so
+// the "Book a Ride There" buttons carry our recognizable car — not the partial
+// fender-only shape that read as a little box at this size.
+function CarMini({ size = 16, color = '#000' }: { size?: number; color?: string }) {
   return (
     <svg
       width={size}
@@ -960,14 +977,24 @@ function CarMini({ size = 14, color = '#000' }: { size?: number; color?: string 
       viewBox="0 0 288 227.01"
       fill="none"
       stroke={color}
-      strokeWidth="14"
+      strokeWidth="12"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M65.43,90.76l-13.2,21.57c-2.58,4.17-3.66,8.95-3.11,13.68l5.26,45.23h89.57" />
-      <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
+      <path d="M65.43,90.76s-5.61-4.85-14.17-6.07c-8.56-1.23-14.41-.33-15.46,2.94-1.27,3.97-6.98,12.74,7.38,13.23" />
+      <path d="M145.89,57.11s-49.54-.65-59.55,4.11c-8.76,4.17-18.6,24.53-20.91,29.54" />
+      <path d="M110.99,134.64s-12.2-.65-28.8-1.3c-16.6-.65-13.42-11.26-13.42-11.26" />
+      <path d="M110.99,152.62h69.8" />
       <path d="M64.93,91.59s3.11,4.94,14.34,4.94h66.01" />
+      <path d="M77.35,171.24h5.29c7.19,0,13.02,5.83,13.02,13.02v4.3h-31.33v-4.3c0-7.19,5.83-13.02,13.02-13.02Z" transform="translate(160 359.81) rotate(180)" />
+      <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
+      <path d="M222.56,90.76s5.61-4.85,14.17-6.07c8.56-1.23,14.41-.33,15.46,2.94,1.27,3.97,6.98,12.74-7.38,13.23" />
+      <path d="M142.11,57.11s49.54-.65,59.55,4.11c8.76,4.17,18.6,24.53,20.91,29.54" />
+      <path d="M177,134.64s12.2-.65,28.8-1.3c16.6-.65,13.42-11.26,13.42-11.26" />
+      <path d="M177,152.62h-69.8" />
       <path d="M223.07,91.59s-3.11,4.94-14.34,4.94h-66.01" />
+      <path d="M192.33,171.24h31.33v4.3c0,7.19-5.83,13.02-13.02,13.02h-5.29c-7.19,0-13.02-5.83-13.02-13.02v-4.3h0Z" />
     </svg>
   );
 }
@@ -1189,7 +1216,7 @@ function EventCard({ a }: { a: Attraction }) {
         <RatingLine a={a} />
         <div className="cta-row">
           <button className="cta" onClick={openBook}>
-            <CarMini size={14} color="#000" />
+            <CarMini size={17} color="#000" />
             Book a Ride There
           </button>
           <button className="cta ghost" onClick={() => openModal(a)}>
@@ -1242,7 +1269,7 @@ function Spotlight({ a }: { a: Attraction }) {
         </div>
         <div className="actions">
           <button className="cta" onClick={openBook}>
-            <CarMini size={14} color="#000" />
+            <CarMini size={17} color="#000" />
             Book a Ride There
           </button>
           <button className="cta ghost" onClick={() => openModal(a)}>
@@ -1255,7 +1282,9 @@ function Spotlight({ a }: { a: Attraction }) {
 }
 
 function TopRated({ items, startRank = 1 }: { items: Attraction[]; startRank?: number }) {
-  const top = items.slice(0, 11 - startRank);
+  // Show up to 8 ranked rows. As the "rest of the list" extension under Top Picks
+  // (startRank 8), this continues the ranking without an arbitrary top-10 cutoff.
+  const top = items.slice(0, 8);
   return (
     <section className="band tight top10-band">
       <div className="band-inner">
@@ -1604,6 +1633,12 @@ export function Attractions() {
 
   const featured = list[0];
   const rest = list.slice(1);
+  // Top Picks shows the top spots as photo cards; "The list" below continues the
+  // SAME ranking as a compact numbered index (no images), so no attraction appears
+  // twice. (Previously both rendered `rest`, duplicating every spot on the page.)
+  const PICKS_N = 6;
+  const cardItems = rest.slice(0, PICKS_N);
+  const listItems = rest.slice(PICKS_N);
   const activeLabel = CATS.find((c) => c.key === cat)?.label ?? 'Top Picks';
 
   return (
@@ -1631,8 +1666,6 @@ export function Attractions() {
         </section>
       )}
 
-      {rest.length > 0 && <TopRated items={rest} startRank={2} />}
-
       <section className="band">
         <div className="band-inner">
           <div className="section-head">
@@ -1649,8 +1682,8 @@ export function Attractions() {
           </div>
 
           <div className="events-grid">
-            {rest.length > 0 ? (
-              rest.map((a) => <EventCard key={a.id} a={a} />)
+            {cardItems.length > 0 ? (
+              cardItems.map((a) => <EventCard key={a.id} a={a} />)
             ) : !featured ? (
               <div className="empty">
                 <h4>
@@ -1666,6 +1699,16 @@ export function Attractions() {
           </div>
         </div>
       </section>
+
+      {/* "The list" continues the same ranking below Top Picks as a compact
+          numbered index (no images) — an extension of Top Picks, not a duplicate. */}
+      {listItems.length > 0 && <TopRated items={listItems} startRank={PICKS_N + 2} />}
+
+      {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
+          plus a "Where to next?" destinations band shown everywhere. Self-hides
+          on production until the Travelpayouts links are wired (see affiliates.ts). */}
+      <AttractionsAffiliate activeCity={activeCity} coords={coords} />
+
       <SuggestBand />
       <PlatformNotice variant="marketplace" />
       <AttractionModal a={modalA} onClose={() => setModalA(null)} />

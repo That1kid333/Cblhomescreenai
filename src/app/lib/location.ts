@@ -133,6 +133,35 @@ const SEED_PLACES: Record<string, Coords> = {
   wilkinsburg: { lat: 40.44, lng: -79.88 },
   'south hills': { lat: 40.36, lng: -80.02 },
   'east liberty': { lat: 40.46, lng: -79.925 },
+  // Alle-Kiski Valley (Allegheny/Kiskiminetas rivers, NE of the city — Brian's
+  // market). The regional nickname + its towns, so the area is recognized for
+  // proximity search and driver ads instead of falling back to a bare state
+  // match. All within the 45-mile metro radius of downtown. Note: IP geolocation
+  // often tags this area "Indiana" (Indiana Township, below) — a real place, not
+  // the state — which is why it's mapped near Pittsburgh, not to Indiana, PA.
+  'alle-kiski valley': { lat: 40.5695, lng: -79.7648 },
+  'alle-kiski': { lat: 40.5695, lng: -79.7648 },
+  'alle kiski valley': { lat: 40.5695, lng: -79.7648 },
+  'alle kiski': { lat: 40.5695, lng: -79.7648 },
+  allekiski: { lat: 40.5695, lng: -79.7648 },
+  'new kensington': { lat: 40.5695, lng: -79.7648 },
+  arnold: { lat: 40.5795, lng: -79.7659 },
+  'lower burrell': { lat: 40.5834, lng: -79.7548 },
+  'upper burrell': { lat: 40.585, lng: -79.71 },
+  tarentum: { lat: 40.6023, lng: -79.7589 },
+  brackenridge: { lat: 40.6087, lng: -79.7434 },
+  'natrona heights': { lat: 40.6318, lng: -79.7192 },
+  natrona: { lat: 40.617, lng: -79.72 },
+  'harrison township': { lat: 40.63, lng: -79.72 },
+  harrison: { lat: 40.63, lng: -79.72 },
+  vandergrift: { lat: 40.6012, lng: -79.5659 },
+  apollo: { lat: 40.5834, lng: -79.567 },
+  leechburg: { lat: 40.629, lng: -79.6053 },
+  springdale: { lat: 40.5395, lng: -79.7834 },
+  cheswick: { lat: 40.5423, lng: -79.7987 },
+  oakmont: { lat: 40.5223, lng: -79.837 },
+  plum: { lat: 40.5015, lng: -79.748 },
+  'indiana township': { lat: 40.5527, lng: -79.8617 },
   // A few major markets so proximity works outside the home metro too.
   'new orleans': { lat: 29.95, lng: -90.07 },
   atlanta: { lat: 33.749, lng: -84.388 },

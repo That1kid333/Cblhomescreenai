@@ -234,7 +234,7 @@ type Restaurant = {
   /** Optional real links for a sponsored/curated partner's action buttons. */
   website?: string;
   phone?: string;
-  reservable?: boolean; // false → walk-in only (hide Reserve). undefined → reservable unless cuisine is only coffee/bakery/dessert
+  reservable?: boolean; // legacy/no longer read — the OpenTable button now shows only when `reserveUrl` is set
   reserveUrl?: string; // direct OpenTable/Resy page; else we search OpenTable by name+location
 };
 
@@ -1302,9 +1302,9 @@ function cuisinesForMeal(m: string): Set<string> {
 }
 
 // External actions for the cards. "More Info" and "View on Map" work for every
-// card straight from name+address+coords (no backend). "Reserve a Table" routes
-// to OpenTable (searching the spot by name near its coords); a per-partner
-// `reserveUrl` (direct OpenTable/Resy page) overrides. "View Menu" → the
+// card straight from name+address+coords (no backend). "Book on OpenTable" shows
+// ONLY when a card carries a curated, verified `reserveUrl` (direct OpenTable/Resy
+// page); cards without one just show "More Info". "View Menu" → the
 // partner's site, else a Google menu search. (Rich per-card website/reservable
 // for the LIVE Google listings would need a Google Place Details call — a small
 // backend add; see SAAS/EATS handoff notes.)
@@ -1317,12 +1317,12 @@ const placeIdOf = (r: Restaurant) => {
 const reserveUrlFor = (r: Restaurant) =>
   r.reserveUrl || `https://www.opentable.com/s?term=${encodeURIComponent(r.name)}&latitude=${r.coord[0]}&longitude=${r.coord[1]}`;
 
-// Show "Reserve a Table" (→ OpenTable) on sit-down spots. Hidden for explicit
-// walk-ins (reservable:false) and counter-service-only cuisines (coffee/bakery/
-// dessert). A direct reserveUrl always wins. Live Google listings default in.
-const NON_RESERVABLE = new Set(['COFFEE', 'BAKERY', 'DESSERT']);
-const canReserve = (r: Restaurant) =>
-  !!r.reserveUrl || (r.reservable !== false && !r.cuisine.every((c) => NON_RESERVABLE.has(c)));
+// Show "Book on OpenTable" ONLY when a card carries a verified, direct reservation
+// link (curated OpenTable/Resy `reserveUrl`). Cards without one just show "More Info"
+// — we don't fire people at a generic OpenTable search that dead-ends on spots that
+// aren't listed. When the OpenTable partnership lands, populate `reserveUrl` (per-spot
+// or from their feed) and every eligible card lights back up — honest AND tracked.
+const canReserve = (r: Restaurant) => !!r.reserveUrl;
 // Keyless interactive Google map embed (no API key needed / exposed).
 const mapEmbed = (r: Restaurant) => `https://maps.google.com/maps?q=${encodeURIComponent(`${r.name}, ${r.address}`)}&z=15&output=embed`;
 // Lets any card open the on-site detail panel instead of leaving for Google.

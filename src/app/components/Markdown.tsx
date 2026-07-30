@@ -7,6 +7,19 @@ import type { ReactNode } from 'react';
  * (auto-escaped), so no dangerouslySetInnerHTML and no sanitizer needed.
  */
 
+// Affiliate hosts get rel="sponsored nofollow" (FTC + SEO compliance); everyone
+// else keeps the safe default. Matches the exact host or a subdomain of it.
+const AFFILIATE_HOST = /(^|\.)(tp\.media|awin1\.com)$/i;
+function relFor(href: string): string {
+  try {
+    return AFFILIATE_HOST.test(new URL(href).hostname)
+      ? 'sponsored nofollow noopener noreferrer'
+      : 'noopener noreferrer';
+  } catch {
+    return 'noopener noreferrer';
+  }
+}
+
 function inline(text: string, key: string): ReactNode[] {
   const out: ReactNode[] = [];
   const re = /(\[([^\]]+)\]\(([^)]+)\))|(\*\*([^*]+)\*\*)|(\*([^*]+)\*)/;
@@ -21,7 +34,7 @@ function inline(text: string, key: string): ReactNode[] {
     if (m.index > 0) out.push(rest.slice(0, m.index));
     if (m[1]) {
       out.push(
-        <a key={`${key}-${i}`} href={m[3]} target="_blank" rel="noopener noreferrer">
+        <a key={`${key}-${i}`} href={m[3]} target="_blank" rel={relFor(m[3])}>
           {m[2]}
         </a>,
       );
@@ -75,6 +88,20 @@ export function Markdown({ source }: { source: string }) {
       k++;
       continue;
     }
+    // Standalone image on its own line: ![caption](url) or ![caption](url "class")
+    const img = /^!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)\s*$/.exec(line);
+    if (img) {
+      const [, alt, url, cls] = img;
+      blocks.push(
+        <figure key={k} className={`mdfig${cls ? ` ${cls}` : ''}`}>
+          <img src={url} alt={alt.replace(/[*_]/g, '')} loading="lazy" />
+          {alt.trim() && <figcaption>{inline(alt, `f${k}`)}</figcaption>}
+        </figure>,
+      );
+      i++;
+      k++;
+      continue;
+    }
     if (line.startsWith('- ')) {
       const items: string[] = [];
       while (i < lines.length && lines[i].startsWith('- ')) {
@@ -91,8 +118,25 @@ export function Markdown({ source }: { source: string }) {
       k++;
       continue;
     }
+    // Ordered list: consecutive lines beginning "1. ", "2. ", …
+    if (/^\d+\.\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^\d+\.\s/, ''));
+        i++;
+      }
+      blocks.push(
+        <ol key={k}>
+          {items.map((it, ii) => (
+            <li key={ii}>{inline(it, `o${k}-${ii}`)}</li>
+          ))}
+        </ol>,
+      );
+      k++;
+      continue;
+    }
     const para: string[] = [];
-    while (i < lines.length && lines[i].trim() && !/^(## |### |> |- )/.test(lines[i])) {
+    while (i < lines.length && lines[i].trim() && !/^(## |### |> |- |\d+\.\s)/.test(lines[i])) {
       para.push(lines[i]);
       i++;
     }
