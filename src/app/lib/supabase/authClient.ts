@@ -1,12 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
 import { screenListing } from '../moderation';
 import { forwardGeocode } from '../location';
+import { cookieStorage } from './cookieStorage';
 
 // Member sign-in against the main app's Supabase (CBL-Rides) — the SAME
 // accounts as app.citybucketlist.com. Unlike ridesClient/directoryClient
 // (read-only, persistSession:false), this client keeps a session so the site
-// can greet returning members. A distinct storageKey avoids colliding with
-// any other GoTrue instance on this origin. Access is governed by RLS.
+// can greet returning members. Access is governed by RLS.
+//
+// SSO: the session is stored in a cookie scoped to the shared parent domain
+// `.citybucketlist.com` under the SAME key the app uses (`cbl-shared-auth`),
+// so a member logged into app.citybucketlist.com is recognized here and vice
+// versa. The cookie adapter MUST stay byte-identical to the app's (domain,
+// key, chunking) or the two sides can't read each other's session.
+// (The demo/preview session in ../auth.tsx never touches this client's
+// storage — it lives only in React state + sessionStorage — so it can't leak
+// a fake session into the shared cookie.)
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jgbaqzgkdqqvxmqytgsx.supabase.co';
 const SUPABASE_ANON_KEY =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
@@ -15,7 +24,8 @@ const SUPABASE_ANON_KEY =
 export const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
-    storageKey: 'cbl-site-auth',
+    storage: cookieStorage,
+    storageKey: 'cbl-shared-auth',
     autoRefreshToken: true,
     detectSessionInUrl: false,
   },
