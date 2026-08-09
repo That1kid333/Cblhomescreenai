@@ -162,6 +162,32 @@ const SEED_PLACES: Record<string, Coords> = {
   oakmont: { lat: 40.5223, lng: -79.837 },
   plum: { lat: 40.5015, lng: -79.748 },
   'indiana township': { lat: 40.5527, lng: -79.8617 },
+  // Harmar/O'Hara river towns — the stretch IP geolocation keeps reporting for
+  // North Hills visitors (Keith reads as "Harmar", ~10mi off). Seeded so the
+  // names at least resolve instantly when typed, even though we no longer LABEL
+  // anyone with them (see displayCity).
+  harmar: { lat: 40.5245, lng: -79.842 },
+  harmarville: { lat: 40.5262, lng: -79.8395 },
+  blawnox: { lat: 40.4934, lng: -79.8595 },
+  aspinwall: { lat: 40.4917, lng: -79.9048 },
+  sharpsburg: { lat: 40.4923, lng: -79.9256 },
+  "o'hara": { lat: 40.505, lng: -79.89 },
+  ohara: { lat: 40.505, lng: -79.89 },
+  verona: { lat: 40.5062, lng: -79.8467 },
+  // North Hills constellation (Keith's own area) — the suburbs riders and
+  // drivers actually name when they post or search.
+  etna: { lat: 40.5023, lng: -79.9484 },
+  millvale: { lat: 40.4812, lng: -79.9784 },
+  shaler: { lat: 40.517, lng: -79.972 },
+  glenshaw: { lat: 40.5384, lng: -79.9631 },
+  hampton: { lat: 40.5865, lng: -79.947 },
+  'allison park': { lat: 40.572, lng: -79.952 },
+  gibsonia: { lat: 40.63, lng: -79.97 },
+  bellevue: { lat: 40.4939, lng: -80.0517 },
+  avalon: { lat: 40.5006, lng: -80.0662 },
+  'franklin park': { lat: 40.5773, lng: -80.0839 },
+  pine: { lat: 40.64, lng: -80.03 },
+  marshall: { lat: 40.63, lng: -80.09 },
   // A few major markets so proximity works outside the home metro too.
   'new orleans': { lat: 29.95, lng: -90.07 },
   atlanta: { lat: 33.749, lng: -84.388 },
@@ -189,6 +215,179 @@ export function milesBetween(a: Coords, b: Coords): number {
   const h =
     Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+// ── Metro snapping (display labels) ──────────────────────────────────────────
+// IP geolocation resolves to ISP routing, not to the visitor, so the town it
+// reports is unreliable at suburb level: Keith in the North Hills reads as
+// "Harmar" (~10mi off, a township), Brian reads as "Indiana" (Indiana Township,
+// which also collides with the state name). Labeling a page "near Harmar" is
+// therefore both odd-sounding AND frequently wrong.
+//
+// So every USER-FACING label snaps the detected point to its metro, while the
+// raw coordinates are kept for distance sorting and proximity search. The
+// visitor's real position still drives WHAT they see; the metro only drives
+// what we CALL it. Anyone wanting street-level accuracy uses the "Near me"
+// GPS upgrade (requestPrecise), which is exact.
+const MAJOR_METROS: { name: string; lat: number; lng: number }[] = [
+  { name: 'New York', lat: 40.71, lng: -74.01 }, { name: 'Los Angeles', lat: 34.05, lng: -118.24 },
+  { name: 'Chicago', lat: 41.88, lng: -87.63 }, { name: 'Houston', lat: 29.76, lng: -95.37 },
+  { name: 'Phoenix', lat: 33.45, lng: -112.07 }, { name: 'Philadelphia', lat: 39.95, lng: -75.16 },
+  { name: 'San Antonio', lat: 29.42, lng: -98.49 }, { name: 'San Diego', lat: 32.72, lng: -117.16 },
+  { name: 'Dallas', lat: 32.78, lng: -96.80 }, { name: 'Austin', lat: 30.27, lng: -97.74 },
+  { name: 'San Jose', lat: 37.34, lng: -121.89 }, { name: 'San Francisco', lat: 37.77, lng: -122.42 },
+  { name: 'Seattle', lat: 47.61, lng: -122.33 }, { name: 'Denver', lat: 39.74, lng: -104.99 },
+  { name: 'Washington', lat: 38.91, lng: -77.04 }, { name: 'Boston', lat: 42.36, lng: -71.06 },
+  { name: 'Nashville', lat: 36.16, lng: -86.78 }, { name: 'Las Vegas', lat: 36.17, lng: -115.14 },
+  { name: 'Portland', lat: 45.51, lng: -122.68 }, { name: 'Detroit', lat: 42.33, lng: -83.05 },
+  { name: 'Memphis', lat: 35.15, lng: -90.05 }, { name: 'Louisville', lat: 38.25, lng: -85.76 },
+  { name: 'Milwaukee', lat: 43.04, lng: -87.91 }, { name: 'Baltimore', lat: 39.29, lng: -76.61 },
+  { name: 'Atlanta', lat: 33.75, lng: -84.39 }, { name: 'Miami', lat: 25.76, lng: -80.19 },
+  { name: 'Orlando', lat: 28.54, lng: -81.38 }, { name: 'Tampa', lat: 27.95, lng: -82.46 },
+  { name: 'New Orleans', lat: 29.95, lng: -90.07 }, { name: 'Minneapolis', lat: 44.98, lng: -93.27 },
+  { name: 'Cleveland', lat: 41.50, lng: -81.69 }, { name: 'Columbus', lat: 39.96, lng: -82.99 },
+  { name: 'Cincinnati', lat: 39.10, lng: -84.51 }, { name: 'Kansas City', lat: 39.10, lng: -94.58 },
+  { name: 'Indianapolis', lat: 39.77, lng: -86.16 }, { name: 'Pittsburgh', lat: 40.44, lng: -79.996 },
+  { name: 'St. Louis', lat: 38.63, lng: -90.20 }, { name: 'Charlotte', lat: 35.23, lng: -80.84 },
+  { name: 'Raleigh', lat: 35.78, lng: -78.64 }, { name: 'Salt Lake City', lat: 40.76, lng: -111.89 },
+  { name: 'Sacramento', lat: 38.58, lng: -121.49 }, { name: 'Buffalo', lat: 42.89, lng: -78.88 },
+  { name: 'Richmond', lat: 37.54, lng: -77.44 }, { name: 'Jacksonville', lat: 30.33, lng: -81.66 },
+  { name: 'Oklahoma City', lat: 35.47, lng: -97.52 },
+];
+
+/** Snap coordinates to the nearest major metro within `maxMi`; null if none/no coords. */
+export function nearestMetro(coords: Coords | null | undefined, maxMi = 80): string | null {
+  if (!coords) return null;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const m of MAJOR_METROS) {
+    const d = milesBetween(coords, { lat: m.lat, lng: m.lng });
+    if (d < bestD) { bestD = d; best = m.name; }
+  }
+  return best && bestD <= maxMi ? best : null;
+}
+
+// How close the visitor must be for us to CALL their location by the metro's
+// name. Deliberately tighter than the 80mi affiliate-inventory radius: at 30mi
+// you're genuinely "in Pittsburgh" (Harmar is 11mi, the North Hills 10mi), but
+// a real city an hour out keeps its own name instead of being swallowed — we
+// don't want to tell someone in Ann Arbor they're in Detroit.
+export const METRO_LABEL_RADIUS_MI = 30;
+
+// ── Local areas (precise-location labels) ────────────────────────────────────
+// The neighborhood-level names our members actually use for themselves: Keith
+// says "the North Hills", Brian says "New Kensington" (and the Alle-Kiski
+// Valley more broadly). We only ever apply these when we have PRECISE
+// coordinates from GPS. IP geolocation is ~10mi off around here, which is wider
+// than the suburbs themselves, so naming a suburb from an IP would just be a
+// different wrong answer stated more confidently.
+//
+// `key` indexes SEED_PLACES so the coordinates stay in one place, `label` is the
+// display name, and `region` adds the local nickname a resident would recognize.
+const LOCAL_AREA_RADIUS_MI = 6;
+const LOCAL_AREAS: { key: string; label: string; region?: string }[] = [
+  // North Hills (Keith's area) — the townships read as one place locally.
+  { key: 'north hills', label: 'North Hills' },
+  { key: 'mccandless', label: 'North Hills' },
+  { key: 'ross', label: 'North Hills' },
+  { key: 'west view', label: 'North Hills' },
+  { key: 'hampton', label: 'North Hills' },
+  { key: 'allison park', label: 'North Hills' },
+  { key: 'glenshaw', label: 'North Hills' },
+  { key: 'shaler', label: 'North Hills' },
+  { key: 'franklin park', label: 'North Hills' },
+  { key: 'wexford', label: 'Wexford' },
+  { key: 'cranberry', label: 'Cranberry' },
+  { key: 'gibsonia', label: 'Gibsonia' },
+  // Alle-Kiski Valley (Brian's market) — town name plus the regional nickname.
+  { key: 'new kensington', label: 'New Kensington', region: 'Alle-Kiski' },
+  { key: 'lower burrell', label: 'Lower Burrell', region: 'Alle-Kiski' },
+  { key: 'upper burrell', label: 'Upper Burrell', region: 'Alle-Kiski' },
+  { key: 'arnold', label: 'Arnold', region: 'Alle-Kiski' },
+  { key: 'tarentum', label: 'Tarentum', region: 'Alle-Kiski' },
+  { key: 'brackenridge', label: 'Brackenridge', region: 'Alle-Kiski' },
+  { key: 'natrona heights', label: 'Natrona Heights', region: 'Alle-Kiski' },
+  { key: 'vandergrift', label: 'Vandergrift', region: 'Alle-Kiski' },
+  { key: 'leechburg', label: 'Leechburg', region: 'Alle-Kiski' },
+  { key: 'apollo', label: 'Apollo', region: 'Alle-Kiski' },
+  { key: 'springdale', label: 'Springdale', region: 'Alle-Kiski' },
+  { key: 'cheswick', label: 'Cheswick', region: 'Alle-Kiski' },
+  { key: 'harmarville', label: 'Harmarville' },
+  { key: 'oakmont', label: 'Oakmont' },
+  { key: 'plum', label: 'Plum' },
+  { key: 'verona', label: 'Verona' },
+  { key: 'fox chapel', label: 'Fox Chapel' },
+  { key: 'aspinwall', label: 'Aspinwall' },
+  { key: 'sharpsburg', label: 'Sharpsburg' },
+  { key: 'etna', label: 'Etna' },
+  { key: 'millvale', label: 'Millvale' },
+  { key: 'bellevue', label: 'Bellevue' },
+  { key: 'avalon', label: 'Avalon' },
+  { key: 'sewickley', label: 'Sewickley' },
+  { key: 'moon', label: 'Moon' },
+  { key: 'coraopolis', label: 'Coraopolis' },
+  { key: 'robinson', label: 'Robinson' },
+  { key: 'monroeville', label: 'Monroeville' },
+  { key: 'penn hills', label: 'Penn Hills' },
+  { key: 'wilkinsburg', label: 'Wilkinsburg' },
+  { key: 'south hills', label: 'South Hills' },
+  { key: 'mount lebanon', label: 'Mt. Lebanon' },
+  { key: 'bethel park', label: 'Bethel Park' },
+  { key: 'dormont', label: 'Dormont' },
+  { key: 'green tree', label: 'Green Tree' },
+  // City neighborhoods — a resident says these, not "Pittsburgh".
+  { key: 'shadyside', label: 'Shadyside' },
+  { key: 'squirrel hill', label: 'Squirrel Hill' },
+  { key: 'lawrenceville', label: 'Lawrenceville' },
+  { key: 'bloomfield', label: 'Bloomfield' },
+  { key: 'east liberty', label: 'East Liberty' },
+  { key: 'oakland', label: 'Oakland' },
+  { key: 'south side', label: 'South Side' },
+  { key: 'mount washington', label: 'Mount Washington' },
+];
+
+/**
+ * The neighborhood-level name for a PRECISE position, e.g. "North Hills" or
+ * "New Kensington (Alle-Kiski)". Null when nothing is close enough — the caller
+ * then falls back to the metro. Never call this with IP-derived coordinates.
+ */
+export function localAreaLabel(
+  coords: Coords | null | undefined,
+  maxMi = LOCAL_AREA_RADIUS_MI,
+): string | null {
+  if (!coords) return null;
+  let best: { label: string; region?: string } | null = null;
+  let bestD = Infinity;
+  for (const area of LOCAL_AREAS) {
+    const c = SEED_PLACES[area.key];
+    if (!c) continue;
+    const d = milesBetween(coords, c);
+    if (d < bestD) { bestD = d; best = area; }
+  }
+  if (!best || bestD > maxMi) return null;
+  return best.region ? `${best.label} (${best.region})` : best.label;
+}
+
+/**
+ * The city name to SHOW for an auto-detected location.
+ *
+ *   precise (GPS) → the local area they'd actually name for themselves
+ *   IP only       → the metro, because the reported suburb is unreliable
+ *   neither       → whatever was detected, unchanged
+ *
+ * A city the visitor typed themselves never comes through here — an explicit
+ * choice is never second-guessed.
+ */
+export function displayCity(
+  detected: string | null | undefined,
+  coords: Coords | null | undefined,
+  precise = false,
+): string | null {
+  if (precise) {
+    const area = localAreaLabel(coords);
+    if (area) return area;
+  }
+  return nearestMetro(coords, METRO_LABEL_RADIUS_MI) ?? detected ?? null;
 }
 
 const GEO_CACHE_KEY = 'cbl_geocode_v1';
@@ -311,7 +510,11 @@ export function useVisitorLocation() {
   // Ref mirror of `precise` so the (mount-time) IP callback checks the CURRENT
   // value — otherwise its stale closure would overwrite precise GPS coords.
   const preciseRef = useRef(false);
-  const [status, setStatus] = useState<VisitorLocationStatus>(location ? 'resolved' : 'idle');
+  // A STORED city can only have come from setManualCity (IP results are
+  // deliberately never persisted), so restoring one means the visitor picked it
+  // themselves — report that as 'manual' so callers know not to re-snap it to a
+  // metro on the next visit.
+  const [status, setStatus] = useState<VisitorLocationStatus>(location ? 'manual' : 'idle');
 
   useEffect(() => {
     let cancelled = false;

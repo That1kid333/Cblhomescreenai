@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link } from 'react-router';
-import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
+import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { useAuth } from '../lib/auth';
 
@@ -2682,7 +2682,11 @@ export function EatsAndDrinks() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const activeCity = searched?.city || loc.city || MARKET_CITY;
+  // A typed city wins as-is. Otherwise: GPS gives us the visitor's own area
+  // name, IP alone gives the metro (see displayCity — IP suburb names are
+  // unreliable). Coordinates below are untouched, so results still sort from
+  // the visitor's real spot.
+  const activeCity = searched?.city || displayCity(loc.city, loc.coords, loc.precise) || MARKET_CITY;
   // Use the visitor's real coordinates (GPS/IP) so THEIR neighborhood sorts
   // first; a searched city overrides with that city's coordinates.
   const searchCoords: Coords | null = searched?.coords || loc.coords;
