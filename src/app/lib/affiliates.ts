@@ -50,7 +50,28 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
 export type Program =
   | 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking'
   // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
-  | 'turbopass' | 'usaguidedtours' | 'extranomical';
+  | 'turbopass' | 'usaguidedtours' | 'extranomical'
+  // Impact network — see IMPACT_BASE below.
+  | 'ticketmaster';
+
+// ── Impact network ───────────────────────────────────────────────────────────
+// Our THIRD network (approved 2026-08-07: Ticketmaster US plus ~24 countries and
+// the Quicket/Moshtix sub-brands, all under one publisher account, 7504721).
+//
+// Impact links look like
+//   https://ticketmaster.evyy.net/c/<publisherId>/<adId>/<campaignId>?u=<dest>&subId1=<placement>
+// where the numeric path segments identify the publisher, ad and campaign, and
+// `subId1` is Impact's per-placement attribution (our sub_id / clickref).
+//
+// Those ids CANNOT be derived — they come from "Create a link" in the Impact
+// dashboard. So, exactly like PROGRAM_BASE above, we store the real base link and
+// only re-target `u` + stamp `subId1`. An empty string means "not wired yet":
+// buildAffiliateLink returns null, production hides the placement, and preview
+// shows the plain un-monetized link for design review. Paste the base link here
+// and every Ticketmaster surface goes live at once.
+const IMPACT_BASE: Partial<Record<Program, string>> = {
+  ticketmaster: '',
+};
 
 // ── Awin network ─────────────────────────────────────────────────────────────
 // Turbopass (city passes) is our first Awin merchant — a SECOND affiliate network
@@ -80,9 +101,9 @@ function isPreviewHost(): boolean {
   return h === 'localhost' || h === '127.0.0.1' || h.endsWith('.netlify.app');
 }
 
-/** True once a program can earn — a Travelpayouts base link is pasted, or it's an Awin merchant. */
+/** True once a program can earn — an Awin merchant, or a pasted TP/Impact base link. */
 export function isProgramReady(program: Program): boolean {
-  return !!AWIN_MID[program] || !!PROGRAM_BASE[program];
+  return !!AWIN_MID[program] || !!PROGRAM_BASE[program] || !!IMPACT_BASE[program];
 }
 
 /**
@@ -112,6 +133,19 @@ export function buildAffiliateLink(
     url.searchParams.set('awinaffid', AWIN_AFFID);
     url.searchParams.set('ued', target); // URL handles the encoding
     url.searchParams.set('clickref', placement);
+    return url.toString();
+  }
+
+  // Impact network (per-advertiser click host, e.g. ticketmaster.evyy.net).
+  // Checked with `in` rather than truthiness so a program that is DECLARED but
+  // not yet wired (empty base) resolves to null instead of falling through to
+  // the Travelpayouts branch and building a link on the wrong network.
+  if (program in IMPACT_BASE) {
+    const impactBase = IMPACT_BASE[program];
+    if (!impactBase) return null;
+    const url = new URL(impactBase);
+    url.searchParams.set('u', target);
+    url.searchParams.set('subId1', placement); // Impact's sub_id / clickref
     return url.toString();
   }
 
