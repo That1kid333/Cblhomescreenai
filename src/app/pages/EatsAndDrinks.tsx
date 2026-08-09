@@ -1675,9 +1675,6 @@ function EatsTitleBlock() {
         position: 'relative',
         overflow: 'hidden',
         padding: '10px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
         background: `url(${IMG}cbl-map-backdrop.jpg) center/cover no-repeat`,
       }}
     >
@@ -1689,6 +1686,41 @@ function EatsTitleBlock() {
           background: 'linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.85))',
         }}
       />
+      {/* Eyebrow. The phone hero is a SEPARATE component from the desktop one
+          (.cbl-eats-mobile vs .cbl-eats-desktop), and it never carried the
+          eyebrow — so on phones the line just vanished. Centred to match the
+          home page's mobile treatment. */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          marginBottom: 8,
+          fontFamily: MONO,
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '.08em',
+          color: '#fff',
+          textTransform: 'lowercase',
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            background: GOLD,
+            flexShrink: 0,
+            animation: 'cbl-pulse 2.4s ease-in-out infinite',
+          }}
+        />
+        what&rsquo;s on your list tonight?
+      </div>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 6 }}>
       <img
         src="/eats/mascot/buckee-with-burger.png"
         alt="Buckee"
@@ -1754,6 +1786,7 @@ function EatsTitleBlock() {
           marginLeft: 4,
         }}
       />
+      </div>
     </div>
   );
 }

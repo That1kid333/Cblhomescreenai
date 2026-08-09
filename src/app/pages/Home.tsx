@@ -444,24 +444,47 @@ const HOME_CSS = `
   .cbl-home .talk-band.talk-in .talk-buckee { animation:none !important; }
 }
 @media (max-width:1000px) {
-  /* Same one block, stacked for phones: Buckee on top, then the card holding a
-     centered [mic · languages] row with the greeting + CTA full-width beneath. */
+  /* Phones: Buckee moves INSIDE the card instead of floating above it (Keith's
+     mockup). Rather than re-nesting the DOM — which would change the desktop
+     layout, where he deliberately stands OUTSIDE the card and walks in — the ROW
+     itself takes the card's border and background on mobile, and .talk-card goes
+     transparent inside it. Same markup, one bordered unit on phones, desktop
+     untouched. Also reclaims ~90px of height, which is what keeps the greeting
+     and the CTA above the fold. */
   .cbl-home section.band.talk-band { padding:2px 20px 16px; } /* beat the generic section.band 48px */
   .cbl-home .talk-wrap { display:flex; flex-direction:column; }
-  .cbl-home .talk-row { order:1; display:flex; flex-direction:column; align-items:center; gap:10px; width:100%; }
-  .cbl-home .talk-buckee { width:76px; height:76px; }
-  .cbl-home .talk-buckee-wrap { align-self:center; }
-  .cbl-home .talk-card {
-    flex:none; width:100%; padding:16px;
-    display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px;
+  /* Proportions read off Keith's mockup (iPhone @3x, so /3 for CSS px):
+     Buckee ~92, mic ~64, chips 2x2 at ~44 wide, greeting ~17px centered, and a
+     full-width pill CTA. The top line is spread rather than centered — Buckee
+     hard left, chips hard right, mic between them. */
+  .cbl-home .talk-row {
+    order:1; display:flex; flex-direction:row; flex-wrap:wrap; align-items:center;
+    /* Centred as ONE tight cluster. space-between pushed Buckee, the mic and the
+       chips to opposite edges and they read as three unrelated things. */
+    justify-content:center; gap:14px 16px; width:100%;
+    background:linear-gradient(180deg, rgba(201,151,66,.10) 0%, #141414 100%);
+    border:1px solid rgba(201,151,66,.35); border-radius:18px 0 18px 0; padding:16px;
   }
-  .cbl-home .talk-card .mic-btn { order:1; width:60px; height:60px; }
-  .cbl-home .talk-card .mic-btn svg { width:26px; height:26px; }
-  .cbl-home .talk-card .lang-chips { order:2; display:flex; gap:6px; }
-  .cbl-home .talk-card .lang-chip { flex:none; min-width:0; padding:6px 10px; font-size:12px; letter-spacing:.04em; border-radius:8px; }
-  .cbl-home .talk-card .talk-promo { order:3; flex-basis:100%; align-items:center; gap:12px; }
-  .cbl-home .talk-card .promo-text { text-align:center; }
-  .cbl-home .talk-card .buckee-cta { width:100%; justify-content:center; }
+  .cbl-home .talk-buckee { width:92px; height:92px; }
+  .cbl-home .talk-buckee-wrap { order:0; align-self:center; flex-shrink:0; }
+  /* display:contents dissolves the inner card so the mic, chips and greeting
+     become direct flex children of the row, sitting in ONE wrapping context
+     alongside Buckee. That is what puts him on the mic's line and lets the
+     greeting span the full width UNDERNEATH him, as in the mockup — without
+     re-nesting the DOM and disturbing the desktop layout, where Buckee stands
+     outside the card and walks in. */
+  .cbl-home .talk-card { display:contents; }
+  .cbl-home .talk-card .mic-btn { order:1; width:64px; height:64px; }
+  .cbl-home .talk-card .mic-btn svg { width:28px; height:28px; }
+  /* Capped width is what forces the 2x2 chip grid in the mockup instead of a
+     single cramped row of four. */
+  .cbl-home .talk-card .lang-chips { order:2; display:flex; flex-wrap:wrap; justify-content:flex-end; gap:6px; max-width:98px; }
+  .cbl-home .talk-card .lang-chip { flex:none; min-width:46px; padding:7px 0; font-size:13px; letter-spacing:.04em; border-radius:8px; text-align:center; }
+  .cbl-home .talk-card .talk-promo { order:3; flex-basis:100%; align-items:center; gap:14px; }
+  /* 15px + the trimmed copy is what holds every language to TWO lines at 390px.
+     Raising either one pushes English back onto a third line. */
+  .cbl-home .talk-card .promo-text { text-align:center; font-size:15px; line-height:1.45; }
+  .cbl-home .talk-card .buckee-cta { width:100%; justify-content:center; padding:14px 20px; font-size:14px; }
 }
 
 /* ── Meet the Buckee Family teaser ── */
@@ -612,6 +635,10 @@ const HOME_CSS = `
   .cbl-home .hero-media { order:1; aspect-ratio:auto; height:clamp(56px,10vh,78px); }
   .cbl-home .mobile-icon-row { order:2; }
   .cbl-home .hero-copy { order:3; text-align:center; } /* center title, lede, CTAs on mobile */
+  /* The eyebrow lives OUTSIDE .hero-copy, so it kept hugging the left edge while
+     everything under it was already centred. It's inline-flex (dot + text), so
+     centring needs flex on the element itself, not text-align on a parent. */
+  .cbl-home .eyebrow { display:flex; justify-content:center; }
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
   .cbl-home h1.hero-title { font-size:clamp(29px,6.7vw,42px); margin-bottom:4px; text-align:center; line-height:1.02; }
@@ -678,16 +705,23 @@ export function Home() {
   // endpoint would be an abuse/cost vector. Buckee greets and invites a free signup;
   // the real, ongoing chat lives inside the app, behind auth.
   const BUCKEE_GREETING: Record<string, string> = {
-    EN: "Hi, I'm Buckee, your AI Concierge 👋 The full me — trip planning, rides, reservations — lives in the app. Meet me there!",
-    ES: 'Hola, soy Buckee, tu concierge de IA 👋 El Buckee completo —planes de viaje, traslados, reservas— vive en la app. ¡Nos vemos ahí!',
-    FR: 'Salut, je suis Buckee, votre concierge IA 👋 Le vrai moi — voyages, trajets, réservations — vit dans l’appli. Retrouvez-moi là-bas !',
-    PT: 'Oi, eu sou o Buckee, seu concierge de IA 👋 O Buckee completo — viagens, corridas, reservas — mora no app. Encontre-me lá!',
+    // Trimmed to land on TWO lines on a phone. "Meet me there" was doing the
+    // CTA's job (the button right below says "Join free to meet Buckee"), and
+    // the em-dash pairs went with it — they read as filler here and Keith wants
+    // fewer of them in outward copy.
+    EN: "Hi, I'm Buckee, your AI Concierge 👋 Trip planning, rides and reservations in the app.",
+    ES: 'Hola, soy Buckee, tu concierge de IA 👋 Viajes, traslados y reservas en la app.',
+    FR: 'Salut, je suis Buckee, votre concierge IA 👋 Voyages, trajets et réservations dans l’appli.',
+    PT: 'Oi, sou o Buckee, seu concierge de IA 👋 Viagens, corridas e reservas no app.',
   };
+  // Names the DESTINATION rather than repeating the signup. The hero button
+  // right above this card is already "Join Now — Free", and having both shout
+  // "free/join" made the pair read as one message said twice (Keith's call).
   const BUCKEE_CTA: Record<string, string> = {
-    EN: 'Join free to meet Buckee',
-    ES: 'Únete gratis y conoce a Buckee',
-    FR: 'Inscrivez-vous — c’est gratuit',
-    PT: 'Cadastre-se grátis',
+    EN: 'Meet Buckee in the app',
+    ES: 'Conoce a Buckee en la app',
+    FR: 'Rencontrez Buckee dans l’appli',
+    PT: 'Conheça o Buckee no app',
   };
 
 
@@ -742,11 +776,13 @@ export function Home() {
                   </Link>
                 )}
               </p>
-              {session ? (
-                <Link className="btn-primary" to="/directory">
-                  Explore Directory
-                </Link>
-              ) : (
+              {/* Signed-in members get NO hero button. "Explore Directory" was
+                  redundant for someone already in (the nav, the avatar menu and
+                  the category rail all reach it) and it cost a button's worth of
+                  height on phones, pushing Buckee below the fold. Signed-out
+                  visitors still get the join/sign-in pair, which is the whole
+                  job of the hero for them. */}
+              {!session && (
                 <>
                   <button className="btn-primary" onClick={() => setJoinOpen(true)}>
                     Join Now — Free
