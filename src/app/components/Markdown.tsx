@@ -9,10 +9,20 @@ import type { ReactNode } from 'react';
 
 // Affiliate hosts get rel="sponsored nofollow" (FTC + SEO compliance); everyone
 // else keeps the safe default. Matches the exact host or a subdomain of it.
-const AFFILIATE_HOST = /(^|\.)(tp\.media|awin1\.com)$/i;
+//
+// Networks, in the order we joined them: Travelpayouts (tp.media), Awin
+// (awin1.com), and Impact — which does NOT use one click domain. Impact issues a
+// branded tracking host per advertiser drawn from a shared pool, so Ticketmaster
+// links land on ticketmaster.evyy.net while other advertisers use pxf.io, sjv.io,
+// 7eer.net or ojrq.net. All of them are listed, or a blog post's Ticketmaster
+// link would silently ship without the sponsored/nofollow the media kit requires.
+const AFFILIATE_HOST = /(^|\.)(tp\.media|awin1\.com|evyy\.net|pxf\.io|sjv\.io|7eer\.net|ojrq\.net)$/i;
+// Impact also issues numeric per-advertiser hosts of the form imp.i0123456.net.
+const IMPACT_NUMERIC_HOST = /^imp\.i\d+\.net$/i;
 function relFor(href: string): string {
   try {
-    return AFFILIATE_HOST.test(new URL(href).hostname)
+    const { hostname } = new URL(href);
+    return AFFILIATE_HOST.test(hostname) || IMPACT_NUMERIC_HOST.test(hostname)
       ? 'sponsored nofollow noopener noreferrer'
       : 'noopener noreferrer';
   } catch {
