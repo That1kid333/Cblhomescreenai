@@ -11,7 +11,7 @@ import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boo
 import {
   getOwnListing, uploadListingPhoto, uploadDriverAdPhoto, saveListingPhotos, maxPhotosForTier, type OwnListing,
 } from "../lib/listingPhotos";
-import { useVisitorLocation, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
+import { useVisitorLocation, displayCity, seedCoords, forwardGeocode, milesBetween, type Coords } from "../lib/location";
 import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
@@ -2896,7 +2896,24 @@ export function Directory() {
     };
   }, []);
   const [cat, setCat] = useState("ALL");
-  const { city, state, coords, setManualCity } = useVisitorLocation();
+  const {
+    city: detectedCity, state, coords, precise, status: locStatus, setManualCity, requestPrecise,
+  } = useVisitorLocation();
+  // Ask for GPS like Attractions and Eats already do. Geolocation permission is
+  // per-origin, so anyone who allowed it on those pages is not prompted again —
+  // and this is the page where precision matters most, since the detected city
+  // is what gets stamped onto a driver's ad.
+  useEffect(() => {
+    requestPrecise();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  // Everything downstream uses this name: the search prefill, the "Just {city}"
+  // scope, the empty state, AND the city prefilled into the post/driver-ad
+  // forms. With GPS it's the member's own area ("North Hills"); on IP alone it's
+  // the metro, because IP lands on the wrong suburb often enough that stamping
+  // it onto a driver's ad would misplace that ad in proximity search. A city the
+  // visitor typed is used exactly as typed.
+  const city = locStatus === "manual" ? detectedCity : displayCity(detectedCity, coords, precise);
   // Scope choice (Keith): "metro" = the whole area (e.g. all of Pittsburgh), the
   // default so the view isn't empty; "local" = just the visitor's own town/suburb
   // (e.g. the North Hills). Only meaningful for the auto-detected home location —

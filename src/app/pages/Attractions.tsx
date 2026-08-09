@@ -1,7 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
-import { useVisitorLocation, type Coords, type VisitorLocationStatus } from '../lib/location';
+import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 
@@ -1617,7 +1617,10 @@ export function Attractions() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const activeCity = searched?.city || loc.city || 'your city';
+  // A typed city wins as-is. Otherwise: with GPS we can name the visitor's own
+  // area ("North Hills"), and without it we fall back to the metro, because the
+  // township an IP reports is often ~10mi wrong. Coordinates stay untouched.
+  const activeCity = searched?.city || displayCity(loc.city, loc.coords, loc.precise) || 'your city';
   // Use the visitor's real coordinates (GPS/IP) so THEIR area sorts first; a
   // searched city overrides with that city's coordinates.
   const coords: Coords | null = searched?.coords || loc.coords;
