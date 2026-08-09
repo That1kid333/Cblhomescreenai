@@ -78,6 +78,11 @@ function normalizePlace(s: string): string {
     .toLowerCase()
     .replace(/[.,]/g, ' ')
     .replace(/\b(township|twp|borough|boro|city|county|neighborhood)\b/g, ' ')
+    // Handles the INVERTED form too. Mapbox reverse-geocoding (which the CBL app
+    // uses) returns "Township of North Fayette, PA" rather than "North Fayette
+    // Township", and stripping the keyword alone would leave a dangling "of
+    // north fayette" that matches nothing. Drop the orphaned leading "of".
+    .replace(/^\s*of\b/, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
