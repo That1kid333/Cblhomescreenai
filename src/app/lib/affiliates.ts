@@ -665,6 +665,36 @@ export function ticketNetworkOffer(cityName: string, placement: string): Affilia
 export function ticketmasterUrl(cityName: string): string {
   return `https://www.ticketmaster.com/search?q=${encodeURIComponent(cityName)}`;
 }
+// Impact click hosts (mirrors the rel matcher in components/Markdown.tsx).
+const IMPACT_HOST = /(^|\.)(evyy\.net|pxf\.io|sjv\.io|7eer\.net|ojrq\.net)$/i;
+const IMPACT_NUMERIC_HOST = /^imp\.i\d+\.net$/i;
+
+/**
+ * Href for a SPECIFIC Ticketmaster event (as opposed to a city search page).
+ *
+ * The Discovery API hands back event URLs ALREADY wrapped in our Impact link —
+ * same publisher/ad/campaign ids — because the API key is tied to the affiliate
+ * account. Running those through buildAffiliateLink() nests one Impact redirect
+ * inside another, which is a second hop that can only cost us attribution.
+ *
+ * So: if the URL is already an Impact click, leave it alone and just stamp the
+ * per-event subId1 on it. Only a bare ticketmaster.com URL gets wrapped. Written
+ * to handle both, so nothing breaks if Ticketmaster stops pre-wrapping.
+ */
+export function ticketmasterEventHref(eventUrl: string, placement: string): AffiliateHref {
+  if (!eventUrl) return null;
+  try {
+    const u = new URL(eventUrl);
+    if (IMPACT_HOST.test(u.hostname) || IMPACT_NUMERIC_HOST.test(u.hostname)) {
+      u.searchParams.set('subId1', placement);
+      return { href: u.toString(), tracked: true };
+    }
+  } catch {
+    return null; // unparseable → caller hides the card rather than linking somewhere odd
+  }
+  return affiliateHref('ticketmaster', eventUrl, placement);
+}
+
 export function ticketmasterOffer(cityName: string, placement: string): AffiliateOffer | null {
   const meta = PARTNER_META.ticketmaster!;
   const link = affiliateHref('ticketmaster', ticketmasterUrl(cityName), placement);
