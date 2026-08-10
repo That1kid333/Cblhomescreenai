@@ -4,6 +4,7 @@ import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
+import { LocalEvents } from '../components/LocalEvents';
 
 /**
  * Attractions — location-aware live listings.
