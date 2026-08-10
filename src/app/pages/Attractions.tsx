@@ -4,7 +4,9 @@ import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
-import { LocalEvents } from '../components/LocalEvents';
+import { useLocalEvents, ticketSegmentFor, EventTicketCard } from '../components/LocalEvents';
+import { PARTNER_META } from '../lib/affiliates';
+import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
 /**
  * Attractions — location-aware live listings.
@@ -1687,7 +1689,17 @@ export function Attractions() {
 
           <div className="events-grid">
             {cardItems.length > 0 ? (
-              cardItems.map((a) => <EventCard key={a.id} a={a} />)
+              mixedItems.map((it) =>
+                it.kind === 'event' ? (
+                  <EventTicketCard
+                    key={`ev-${it.event.id}`}
+                    e={it.event}
+                    placement={`attractions_events_${it.event.id}`}
+                  />
+                ) : (
+                  <EventCard key={it.attraction.id} a={it.attraction} />
+                ),
+              )
             ) : !featured ? (
               <div className="empty">
                 <h4>
