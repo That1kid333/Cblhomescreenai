@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { affiliateHref, AFFILIATE_REL, PARTNER_META } from '../lib/affiliates';
+import { ticketmasterEventHref, AFFILIATE_REL, PARTNER_META } from '../lib/affiliates';
 import { AffiliateDisclosure } from './AffiliateDisclosure';
 import type { Coords } from '../lib/location';
 
@@ -160,8 +160,10 @@ export function LocalEvents({
           <div className="ev-grid">
             {sellable.map((e) => {
               // Per-EVENT sub_id, so Impact reports the individual game or show
-              // that earned rather than one lumped "attractions" bucket.
-              const link = affiliateHref('ticketmaster', e.url!, `${placement}_${e.id}`);
+              // that earned rather than one lumped "attractions" bucket. Discovery
+              // already hands us an Impact-wrapped URL, so this stamps subId1 on
+              // it rather than nesting a second redirect inside the first.
+              const link = ticketmasterEventHref(e.url!, `${placement}_${e.id}`);
               if (!link) return null;
               const when = [formatDate(e.date), formatTime(e.time)].filter(Boolean).join(' · ');
               return (
