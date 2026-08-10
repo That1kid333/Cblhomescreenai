@@ -345,6 +345,26 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Instant mobile ticket delivery',
     ],
   },
+  ticketmaster: {
+    partner: 'Ticketmaster',
+    // Ticketmaster's OFFICIAL white asset, from the partner pack Keith received
+    // 2026-08-10. Served untouched — do NOT run it through the
+    // brightness(0) invert(1) filter the other partner logos use. That filter
+    // exists to force assorted logos to white-on-black; applying it to a brand's
+    // own correct artwork is the kind of thing their brand team objects to.
+    // The colour (blue-background) version is for light surfaces only; every
+    // placement we have is black or near-black.
+    logo: '/attractions/ticketmaster-logo.png',
+    cta: 'Get tickets',
+    briefing:
+      'Tickets powered by Ticketmaster — the official box office for concerts, sports and live theater, with verified tickets straight from the venue.',
+    highlights: [
+      'Official tickets, straight from the box office',
+      'Concerts, sports & live theater',
+      'Big arenas and small local venues',
+      'Verified seats with mobile entry',
+    ],
+  },
   bikesbooking: {
     partner: 'BikesBooking',
     logo: '/attractions/bikesbooking-logo.png',
@@ -727,5 +747,5 @@ export function minPrice(offers: AffiliateOffer[]): string {
 
 // Short option word per program, for the card's "Tickets · Pass · Tours" line.
 export const OPTION_WORD: Partial<Record<Program, string>> = {
-  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', extranomical: 'Guided tours', ticketnetwork: 'Events', viator: 'Experiences', bikesbooking: 'Rentals',
+  tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', extranomical: 'Guided tours', ticketnetwork: 'Events', ticketmaster: 'Event tickets', viator: 'Experiences', bikesbooking: 'Rentals',
 };
