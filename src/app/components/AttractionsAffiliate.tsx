@@ -192,7 +192,7 @@ export function AttractionsAffiliate({
               {PARTNER_ORDER.filter((p) => livePrograms.has(p)).map((p) => {
                 const meta = PARTNER_META[p];
                 return meta ? (
-                  <span className="logo-chip" key={p}><img src={meta.logo} alt={meta.partner} /></span>
+                  <span className={'logo-chip' + (p === 'ticketmaster' ? ' wide' : '')} key={p}><img src={meta.logo} alt={meta.partner} /></span>
                 ) : null;
               })}
             </span>
@@ -227,6 +227,13 @@ const CSS = `
 .cbl-aff .logo-row { flex:1 1 auto; min-width:0; display:flex; align-items:center; justify-content:space-between; gap:16px 22px; flex-wrap:wrap; }
 .cbl-aff .logo-chip { flex:0 0 auto; display:flex; align-items:center; justify-content:center; height:26px; }
 .cbl-aff .logo-chip img { max-height:22px; max-width:106px; width:auto; height:auto; display:block; filter:brightness(0) invert(1); opacity:.82; }
+/* Long wordmarks hit the shared max-width long before max-height, so they land
+   optically smaller than squarer marks even at the same cap. Ticketmaster is the
+   longest of the set AND our most prominent partner, so it gets a wider one.
+   Held at 120 rather than higher: the mark is a heavy italic slab, so it carries
+   more visual weight than the lighter wordmarks beside it and reads larger than
+   its measurements suggest. This keeps it the widest in the row without shouting. */
+.cbl-aff .logo-chip.wide img { max-width:120px; }
 
 /* U.S. / International section groups */
 .cbl-aff .aff-group + .aff-group { margin-top:30px; }
