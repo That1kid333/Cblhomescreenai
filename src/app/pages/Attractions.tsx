@@ -1707,6 +1707,12 @@ export function Attractions() {
           numbered index (no images) — an extension of Top Picks, not a duplicate. */}
       {listItems.length > 0 && <TopRated items={listItems} startRank={PICKS_N + 2} />}
 
+      {/* Real dated events near the visitor (Ticketmaster Discovery). Sits ABOVE
+          the city/destination affiliate bands because it's the most specific,
+          most local thing on the page: tonight's game beats "browse a city".
+          Self-hides when there's no key, no coords or nothing on sale. */}
+      <LocalEvents activeCity={activeCity} coords={coords} />
+
       {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
           plus a "Where to next?" destinations band shown everywhere. Self-hides
           on production until the Travelpayouts links are wired (see affiliates.ts). */}
