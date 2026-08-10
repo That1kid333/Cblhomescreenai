@@ -685,14 +685,27 @@ export function ticketmasterEventHref(eventUrl: string, placement: string): Affi
   if (!eventUrl) return null;
   try {
     const u = new URL(eventUrl);
+    // Already an Impact click (Discovery pre-wraps US events) → just tag it.
     if (IMPACT_HOST.test(u.hostname) || IMPACT_NUMERIC_HOST.test(u.hostname)) {
       u.searchParams.set('subId1', placement);
       return { href: u.toString(), tracked: true };
     }
+    // Bare US Ticketmaster → wrap in our US campaign.
+    if (/(^|\.)ticketmaster\.com$/i.test(u.hostname)) {
+      return affiliateHref('ticketmaster', eventUrl, placement);
+    }
+    // ANY other host — ticketmaster.it, ticketweb.uk, ticketmaster.co.uk and the
+    // rest — is a DIFFERENT market. Verified 2026-08-10: Discovery only
+    // auto-wraps US events, and each international Ticketmaster program is a
+    // separate Impact brand with its own campaign id. Pushing these through the
+    // US link would route a click for an Italian venue into the US campaign:
+    // it won't convert, and it misattributes. So link out plain and untracked
+    // until that market's own deeplink is wired into IMPACT_BASE. The listing is
+    // still useful to the visitor; it just doesn't earn yet.
+    return { href: eventUrl, tracked: false };
   } catch {
     return null; // unparseable → caller hides the card rather than linking somewhere odd
   }
-  return affiliateHref('ticketmaster', eventUrl, placement);
 }
 
 export function ticketmasterOffer(cityName: string, placement: string): AffiliateOffer | null {

@@ -161,7 +161,9 @@ export function EventTicketCard({ e, placement }: { e: TMEvent; placement: strin
           <img src={meta.logo} alt="Ticketmaster" />
         </div>
         <div className="cta-row">
-          <a className="cta" href={link.href} target="_blank" rel={AFFILIATE_REL}>
+          {/* rel="sponsored" only when the link is genuinely an affiliate link.
+              An untracked international listing is an ordinary outbound link. */}
+          <a className="cta" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
             {meta.cta}
             {typeof e.priceFrom === 'number' ? ` · from $${Math.round(e.priceFrom)}` : ''}
           </a>
@@ -190,7 +192,7 @@ export function VenueNextEvent({ event, placement }: { event: TMEvent; placement
       <span className="ne-k">Next here</span>
       <span className="ne-name">{event.name}</span>
       {when && <span className="ne-when">{when}</span>}
-      <a className="ne-cta" href={link.href} target="_blank" rel={AFFILIATE_REL}>
+      <a className="ne-cta" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
         {meta.cta} <span aria-hidden="true">→</span>
       </a>
       <img className="ne-logo" src={meta.logo} alt="Ticketmaster" />
