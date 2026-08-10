@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
@@ -779,6 +779,16 @@ const ATTRACTIONS_CSS = `
 
 /* ── Attraction cards ── */
 .cbl-attractions .events-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+.cbl-attractions .tm-lockup {
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  margin:-4px 0 20px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.07);
+}
+.cbl-attractions .tm-lockup .tm-k {
+  font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#8A8A8A;
+}
+.cbl-attractions .tm-lockup img { height:26px; width:auto; display:block; filter:brightness(0) invert(1); opacity:.95; }
+@media (max-width:640px){ .cbl-attractions .tm-lockup img { height:22px; } }
 .cbl-attractions .event-card {
   background:#141414; border:1px solid rgba(255,255,255,.08);
   border-radius:18px 0 18px 0; overflow:hidden;
@@ -1647,6 +1657,28 @@ export function Attractions() {
   const listItems = rest.slice(PICKS_N);
   const activeLabel = CATS.find((c) => c.key === cat)?.label ?? 'Top Picks';
 
+  // Ticketed events follow the PAGE's category rail (Keith: a second set of
+  // Sports/Music/Arts buttons asked the same question twice).
+  const ticketEvents = useLocalEvents(coords, ticketSegmentFor(cat));
+
+  // Weave tickets through the photo grid instead of parking them in their own
+  // band: a game tonight belongs beside the museums, not below a fold. Every
+  // third slot is a ticket so the grid still reads as attractions-first, and any
+  // remainder is appended rather than dropped.
+  const mixedItems = useMemo(() => {
+    type Slot =
+      | { kind: 'attraction'; attraction: Attraction }
+      | { kind: 'event'; event: (typeof ticketEvents)[number] };
+    const out: Slot[] = [];
+    const queue = [...ticketEvents];
+    cardItems.forEach((a, i) => {
+      out.push({ kind: 'attraction', attraction: a });
+      if ((i + 1) % 3 === 0 && queue.length) out.push({ kind: 'event', event: queue.shift()! });
+    });
+    queue.slice(0, 2).forEach((event) => out.push({ kind: 'event', event }));
+    return out;
+  }, [cardItems, ticketEvents]);
+
   return (
     <AttractionModalCtx.Provider value={setModalA}>
     <main className="cbl-attractions">
@@ -1687,6 +1719,19 @@ export function Attractions() {
             </div>
           </div>
 
+          {/* Ticketmaster gets a real lockup here rather than a small chip further
+              down. It's the most recognisable brand on the page, and it's what
+              tells a visitor the ticketed cards below are the genuine box office
+              rather than a resale listing. Also carries the FTC disclosure, since
+              the monetized cards now sit inside the editorial grid. */}
+          {ticketEvents.length > 0 && (
+            <div className="tm-lockup">
+              <span className="tm-k">Live events &amp; tickets by</span>
+              <img src={PARTNER_META.ticketmaster!.logo} alt="Ticketmaster" />
+              <AffiliateDisclosure inline />
+            </div>
+          )}
+
           <div className="events-grid">
             {cardItems.length > 0 ? (
               mixedItems.map((it) =>
@@ -1719,12 +1764,6 @@ export function Attractions() {
       {/* "The list" continues the same ranking below Top Picks as a compact
           numbered index (no images) — an extension of Top Picks, not a duplicate. */}
       {listItems.length > 0 && <TopRated items={listItems} startRank={PICKS_N + 2} />}
-
-      {/* Real dated events near the visitor (Ticketmaster Discovery). Sits ABOVE
-          the city/destination affiliate bands because it's the most specific,
-          most local thing on the page: tonight's game beats "browse a city".
-          Self-hides when there's no key, no coords or nothing on sale. */}
-      <LocalEvents activeCity={activeCity} coords={coords} />
 
       {/* Affiliate bands (Phase 1 — Tiqets): a coverage-gated "In {city}" band
           plus a "Where to next?" destinations band shown everywhere. Self-hides
