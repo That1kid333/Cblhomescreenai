@@ -65,7 +65,10 @@ export function useLocalEvents(coords: Coords | null | undefined, segment: strin
     const qs = new URLSearchParams({
       lat: String(coords.lat),
       lng: String(coords.lng),
-      size: '8',
+      // 12 rather than 8: only a few are woven into the grid, but the extra
+      // headroom is what lets nextEventAtVenue() find the spotlight venue's own
+      // next event without a second API call.
+      size: '12',
       radius: '50',
     });
     if (segment) qs.set('segment', segment);
@@ -79,6 +82,32 @@ export function useLocalEvents(coords: Coords | null | undefined, segment: strin
   // Only events we can actually sell — no URL means no tracked link, which would
   // be a dead end on a card that promises tickets.
   return events.filter((e) => e.url);
+}
+
+/**
+ * The soonest event happening AT a given venue, or null.
+ *
+ * Powers the spotlight line: the top-rated pick stays an editorial choice (PNC
+ * Park because it's rated 4.8), and the ticketed event rides along as "what's
+ * actually on there" rather than replacing it. That keeps the page's most
+ * prominent slot honest while still being bookable.
+ *
+ * Matching is name-based and forgiving in both directions: Google says "PNC
+ * Park", Ticketmaster may say "PNC Park - Pittsburgh". Events already arrive
+ * sorted soonest-first, so the first hit is the next one.
+ */
+export function nextEventAtVenue(events: TMEvent[], venueName: string | null | undefined): TMEvent | null {
+  if (!venueName) return null;
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const target = norm(venueName);
+  if (target.length < 4) return null; // too short to match safely
+  return (
+    events.find((e) => {
+      if (!e.venue) return false;
+      const v = norm(e.venue);
+      return v === target || v.includes(target) || target.includes(v);
+    }) ?? null
+  );
 }
 
 /** "Wed, Aug 13" built from local parts — new Date("2026-08-13") parses as UTC
@@ -142,7 +171,51 @@ export function EventTicketCard({ e, placement }: { e: TMEvent; placement: strin
   );
 }
 
+/**
+ * "Next here: Pirates vs Red Sox · Fri, Aug 14 · 6:40 PM — Get tickets"
+ *
+ * Sits inside the spotlight card, under the venue's own details. Deliberately a
+ * line rather than a button: the card's primary action stays CBL's ("Book a Ride
+ * There"), and the ticket link is the supporting move.
+ */
+export function VenueNextEvent({ event, placement }: { event: TMEvent; placement: string }) {
+  const link = ticketmasterEventHref(event.url!, placement);
+  if (!link) return null;
+  const meta = PARTNER_META.ticketmaster!;
+  const when = [formatDate(event.date), formatTime(event.time)].filter(Boolean).join(' · ');
+
+  return (
+    <div className="next-ev">
+      <style>{CARD_CSS}</style>
+      <span className="ne-k">Next here</span>
+      <span className="ne-name">{event.name}</span>
+      {when && <span className="ne-when">{when}</span>}
+      <a className="ne-cta" href={link.href} target="_blank" rel={AFFILIATE_REL}>
+        {meta.cta} <span aria-hidden="true">→</span>
+      </a>
+      <img className="ne-logo" src={meta.logo} alt="Ticketmaster" />
+    </div>
+  );
+}
+
 const CARD_CSS = `
+.cbl-attractions .next-ev {
+  display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  margin:10px 0 2px; padding:10px 12px;
+  background:rgba(201,151,66,.08); border:1px solid rgba(201,151,66,.28); border-radius:12px 0 12px 0;
+}
+.cbl-attractions .next-ev .ne-k {
+  font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD};
+}
+.cbl-attractions .next-ev .ne-name { color:#EDEDED; font-size:14px; font-weight:600; }
+.cbl-attractions .next-ev .ne-when { font-family:${MONO}; font-size:11px; color:#9A9A9A; letter-spacing:.05em; }
+.cbl-attractions .next-ev .ne-cta {
+  font-family:${MONO}; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  color:#000; background:${GOLD}; padding:6px 12px; border-radius:999px; text-decoration:none; font-weight:700;
+}
+.cbl-attractions .next-ev .ne-cta:hover { background:#DDB15F; }
+.cbl-attractions .next-ev .ne-logo { height:12px; width:auto; filter:brightness(0) invert(1); opacity:.6; margin-left:auto; }
+@media (max-width:640px){ .cbl-attractions .next-ev .ne-logo { display:none; } }
 .cbl-attractions .ticket-card .tag.tk { background:${GOLD}; color:#000; font-weight:800; }
 .cbl-attractions .ticket-card .when-pill {
   position:absolute; left:0; bottom:0; z-index:2;

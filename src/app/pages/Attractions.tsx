@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
-import { useLocalEvents, ticketSegmentFor, EventTicketCard } from '../components/LocalEvents';
+import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, VenueNextEvent, type TMEvent } from '../components/LocalEvents';
 import { PARTNER_META } from '../lib/affiliates';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
@@ -1241,7 +1241,7 @@ function EventCard({ a }: { a: Attraction }) {
   );
 }
 
-function Spotlight({ a }: { a: Attraction }) {
+function Spotlight({ a, nextEvent }: { a: Attraction; nextEvent?: TMEvent | null }) {
   const openModal = useContext(AttractionModalCtx);
   return (
     <div className="spotlight">
@@ -1280,6 +1280,11 @@ function Spotlight({ a }: { a: Attraction }) {
             {a.address}
           </span>
         </div>
+        {/* What's actually on at the venue we just recommended. The pick above
+            stays editorial (top-rated); this rides along as the bookable part. */}
+        {nextEvent && (
+          <VenueNextEvent event={nextEvent} placement={`attractions_spotlight_${nextEvent.id}`} />
+        )}
         <div className="actions">
           <button className="cta" onClick={openBook}>
             <CarMini size={17} color="#000" />
@@ -1665,19 +1670,26 @@ export function Attractions() {
   // band: a game tonight belongs beside the museums, not below a fold. Every
   // third slot is a ticket so the grid still reads as attractions-first, and any
   // remainder is appended rather than dropped.
+  // The spotlight venue's own next event, if it has one (PNC Park → the next
+  // Pirates game). Excluded from the woven grid below so it never appears twice.
+  const featuredNextEvent = useMemo(
+    () => nextEventAtVenue(ticketEvents, featured?.name),
+    [ticketEvents, featured?.name],
+  );
+
   const mixedItems = useMemo(() => {
     type Slot =
       | { kind: 'attraction'; attraction: Attraction }
       | { kind: 'event'; event: (typeof ticketEvents)[number] };
     const out: Slot[] = [];
-    const queue = [...ticketEvents];
+    const queue = ticketEvents.filter((e) => e.id !== featuredNextEvent?.id);
     cardItems.forEach((a, i) => {
       out.push({ kind: 'attraction', attraction: a });
       if ((i + 1) % 3 === 0 && queue.length) out.push({ kind: 'event', event: queue.shift()! });
     });
     queue.slice(0, 2).forEach((event) => out.push({ kind: 'event', event }));
     return out;
-  }, [cardItems, ticketEvents]);
+  }, [cardItems, ticketEvents, featuredNextEvent]);
 
   return (
     <AttractionModalCtx.Provider value={setModalA}>
@@ -1699,7 +1711,7 @@ export function Attractions() {
       {featured && (
         <section className="band tight spotlight-lead">
           <div className="band-inner">
-            <Spotlight a={featured} />
+            <Spotlight a={featured} nextEvent={featuredNextEvent} />
           </div>
         </section>
       )}
