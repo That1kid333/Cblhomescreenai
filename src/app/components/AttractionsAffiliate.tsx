@@ -37,7 +37,12 @@ const PHOTO_SCRIM = 'linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.30)
 const MAP_FALLBACK = "linear-gradient(150deg, rgba(201,151,66,.5), rgba(10,10,10,.9)), url('/eats/imagery/cbl-map-backdrop.jpg')";
 const cardBg = (photo: string) => (photo ? `${PHOTO_SCRIM}, url('${photo}')` : MAP_FALLBACK);
 const GROUP_CAP = 12; // cards shown per section (U.S. / International) — enough to show every covered city
-const PARTNER_ORDER = ['tiqets', 'gocity', 'turbopass', 'wegotrip', 'usaguidedtours', 'extranomical', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
+// Whitelist AND display order. A program missing from this list still builds a
+// valid, tracked offer — it just never shows its label on the card or its logo in
+// the strip, which looks like "the partner isn't live" rather than a wiring bug.
+// Add every new program here. ticketmaster sits ahead of ticketnetwork: it's the
+// primary seller, and where both resolve, only one events partner is shown.
+const PARTNER_ORDER = ['tiqets', 'gocity', 'turbopass', 'wegotrip', 'usaguidedtours', 'extranomical', 'ticketmaster', 'ticketnetwork', 'viator', 'bikesbooking'] as const;
 const typesOf = (offers: AffiliateOffer[]) =>
   PARTNER_ORDER.filter((p) => offers.some((o) => o.program === p)).map((p) => OPTION_WORD[p] as string);
 

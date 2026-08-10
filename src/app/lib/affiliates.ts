@@ -70,7 +70,9 @@ export type Program =
 // shows the plain un-monetized link for design review. Paste the base link here
 // and every Ticketmaster surface goes live at once.
 const IMPACT_BASE: Partial<Record<Program, string>> = {
-  ticketmaster: '',
+  // LIVE 2026-08-10. Publisher 7504721 / ad 264167 / campaign 4272.
+  ticketmaster:
+    'https://ticketmaster.evyy.net/c/7504721/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com%3Firgwc%3D1%26clickid%3D%7Bclickid%7D%26camefrom%3DCFC_BUYAT_%7Birpid%7D%26impradid%3D%7Birpid%7D%26REFERRAL_ID%3Dtmfeedbuyat%7Birpid%7D%26wt.mc_id%3Daff_BUYAT_%7Birpid%7D%26utm_source%3D%7Birpid%7D-%7Birmpname%7D%26impradname%3D%7Birmpname%7D%26utm_medium%3Daffiliate%26ircid%3D%7Bircid%7D',
 };
 
 // ── Awin network ─────────────────────────────────────────────────────────────
@@ -144,7 +146,19 @@ export function buildAffiliateLink(
     const impactBase = IMPACT_BASE[program];
     if (!impactBase) return null;
     const url = new URL(impactBase);
-    url.searchParams.set('u', target);
+    // The base link's `u` is NOT a bare destination — it carries the
+    // advertiser's own landing-page macros ({clickid}, {irpid}, {irmpname},
+    // {ircid}) that Impact substitutes at click time, plus Ticketmaster's
+    // REFERRAL_ID/camefrom/utm tagging. Overwriting `u` with a bare event URL
+    // would throw all of that away: the Impact redirect would still set the
+    // cookie, but the advertiser would lose its own referral tagging, which is
+    // exactly what gets a commission questioned. So MERGE the base query onto
+    // the specific destination instead of replacing it.
+    const baseDest = url.searchParams.get('u') || '';
+    const qi = baseDest.indexOf('?');
+    const macros = qi >= 0 ? baseDest.slice(qi + 1) : '';
+    const dest = macros ? `${target}${target.includes('?') ? '&' : '?'}${macros}` : target;
+    url.searchParams.set('u', dest);
     url.searchParams.set('subId1', placement); // Impact's sub_id / clickref
     return url.toString();
   }
@@ -643,6 +657,27 @@ export function ticketNetworkOffer(cityName: string, placement: string): Affilia
   };
 }
 
+// ── Ticketmaster: the PRIMARY-SELLER events layer, driven by the visitor's
+// detected city. A box office rather than a resale marketplace, so it outranks
+// ticketnetwork wherever it operates — see the one-events-partner-per-city rule
+// in cityOffers(). One approval also covers TicketWeb, Universe and Front Gate,
+// which is where the smaller local venues live.
+export function ticketmasterUrl(cityName: string): string {
+  return `https://www.ticketmaster.com/search?q=${encodeURIComponent(cityName)}`;
+}
+export function ticketmasterOffer(cityName: string, placement: string): AffiliateOffer | null {
+  const meta = PARTNER_META.ticketmaster!;
+  const link = affiliateHref('ticketmaster', ticketmasterUrl(cityName), placement);
+  if (!link) return null;
+  const key = slugify(cityName);
+  return {
+    program: 'ticketmaster', partner: meta.partner, cityKey: key, name: cityName, country: '',
+    photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT, kicker: 'Events & tickets',
+    title: `Events in ${cityName}`, price: 'See prices', meta: 'Concerts · sports · theater',
+    highlights: meta.highlights, cta: meta.cta, logo: meta.logo, href: link.href, tracked: link.tracked,
+  };
+}
+
 // ── BikesBooking: bike/scooter/motorcycle rentals, location-driven (search by
 // city). Nationwide via search?location={city}. Dark-launched until unlocked.
 export function bikesBookingUrl(cityName: string): string {
@@ -670,7 +705,12 @@ export function bikesBookingOffer(cityName: string, placement: string): Affiliat
  */
 export function localCityOffers(cityName: string, placement: string): AffiliateOffer[] {
   const out: AffiliateOffer[] = [];
-  const tn = ticketNetworkOffer(cityName, `${placement}_ticketnetwork_local`);
+  // ONE events partner per city: Ticketmaster (primary seller) wins wherever
+  // it's wired, and TicketNetwork (resale) is the fallback. Showing both would
+  // put two near-identical "events" cards side by side.
+  const tm = ticketmasterOffer(cityName, `${placement}_ticketmaster_local`);
+  const tn = tm ? null : ticketNetworkOffer(cityName, `${placement}_ticketnetwork_local`);
+  if (tm) out.push(tm);
   if (tn) out.push(tn);
   const v = viatorOffer(cityName, `${placement}_viator_local`);
   if (v) out.push(v);
@@ -729,9 +769,18 @@ export function cityOffers(cityKey: string, placement: string): AffiliateOffer[]
   if (ug) { const o = usaGuidedToursOffer(ug, `${placement}_usaguidedtours_${cityKey}`); if (o) out.push(o); }
   const ex = EXTRANOMICAL_CITIES.find((c) => c.key === cityKey);
   if (ex) { const o = extranomicalOffer(ex, `${placement}_extranomical_${cityKey}`); if (o) out.push(o); }
-  // US cities also get TicketNetwork events (it's US-focused).
+  // ONE events partner per city. Ticketmaster is a primary seller and covers our
+  // international cities too, so it wins wherever it's wired; TicketNetwork
+  // (US-only resale) stays as the fallback for cities Ticketmaster can't serve.
   const cityMeta = AFFILIATE_CITIES.find((c) => c.key === cityKey);
-  if (cityMeta?.country === 'USA') { const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`); if (o) out.push(o); }
+  if (cityMeta) {
+    const tm = ticketmasterOffer(cityMeta.name, `${placement}_ticketmaster_${cityKey}`);
+    if (tm) out.push(tm);
+    else if (cityMeta.country === 'USA') {
+      const o = ticketNetworkOffer(cityMeta.name, `${placement}_ticketnetwork_${cityKey}`);
+      if (o) out.push(o);
+    }
+  }
   // Viator covers ~everywhere — add local experiences to every known city too.
   if (cityMeta?.name) { const o = viatorOffer(cityMeta.name, `${placement}_viator_${cityKey}`); if (o) out.push(o); }
   // BikesBooking rentals (dark-launched) — offered per city where wired.
