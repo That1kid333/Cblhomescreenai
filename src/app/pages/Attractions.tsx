@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
-import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, type TMEvent } from '../components/LocalEvents';
+import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, venueKey, type TMEvent } from '../components/LocalEvents';
 import { PARTNER_META, ticketmasterEventHref, AFFILIATE_REL } from '../lib/affiliates';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
@@ -1802,7 +1802,7 @@ export function Attractions() {
     const seenVenue = new Set<string>();
     const fresh = ticketEvents.filter((e) => {
       if (claimed.has(e.id)) return false;
-      const v = (e.venue || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const v = venueKey(e.venue);
       if (v && seenVenue.has(v)) return false;
       if (v) seenVenue.add(v);
       return true;
