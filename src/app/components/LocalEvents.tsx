@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
+import { Car, Ticket } from 'lucide-react';
 import { ticketmasterEventHref, AFFILIATE_REL, PARTNER_META } from '../lib/affiliates';
+import { RIDER_BOOK_URL } from '../lib/constants';
 import type { Coords } from '../lib/location';
+
+/** Same ride action the venue cards use. Duplicated as a one-liner rather than
+ *  imported from Attractions.tsx, which would make the import cycle. */
+function openRide() {
+  window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer');
+}
 
 /**
  * Real upcoming events near the visitor, from the Ticketmaster Discovery API
@@ -159,13 +167,25 @@ export function EventTicketCard({ e, placement }: { e: TMEvent; placement: strin
         <div className="tk-by">
           <span>on</span>
           <img src={meta.logo} alt="Ticketmaster" />
+          {/* Price moved out of the button label: the pill is one nowrap line at
+              12.5px, and "TICKETS · FROM $99" cannot fit beside SCHEDULE at 375px. */}
+          {typeof e.priceFrom === 'number' && (
+            <span className="tk-from">· from ${Math.round(e.priceFrom)}</span>
+          )}
         </div>
-        <div className="cta-row">
+        {/* Same approved pill system as the venue cards (Keith, 2026-08-12). No
+            info circle here — a Ticketmaster event has no on-site detail panel to
+            open, so SCHEDULE and TICKETS split the row evenly. */}
+        <div className="venue-actions has-tix">
+          <button className="va gold" onClick={openRide}>
+            <Car size={17} color="#000" strokeWidth={2} aria-hidden="true" />
+            Schedule
+          </button>
           {/* rel="sponsored" only when the link is genuinely an affiliate link.
               An untracked international listing is an ordinary outbound link. */}
-          <a className="cta" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
-            {meta.cta}
-            {typeof e.priceFrom === 'number' ? ` · from $${Math.round(e.priceFrom)}` : ''}
+          <a className="va tix" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
+            <Ticket size={17} color="#fff" strokeWidth={2} aria-hidden="true" />
+            Tickets
           </a>
         </div>
       </div>
@@ -227,6 +247,12 @@ const CARD_CSS = `
 }
 .cbl-attractions .ticket-card .tk-by { display:flex; align-items:center; gap:7px; margin:2px 0 4px; color:#777; font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; }
 .cbl-attractions .ticket-card .tk-by img { height:13px; width:auto; display:block; filter:brightness(0) invert(1); opacity:.8; }
-.cbl-attractions .ticket-card .cta-row { margin-top:auto; }
-.cbl-attractions .ticket-card a.cta { text-decoration:none; justify-content:center; }
+.cbl-attractions .ticket-card .tk-by .tk-from { color:${GOLD}; }
+/* The .venue-actions / .va pill system itself is defined once in Attractions.tsx
+   (ATTRACTIONS_CSS) and inherited here — this card only ever renders inside
+   .cbl-attractions. Only the push-to-bottom is card-specific, so the row lines
+   up across a mixed grid of tall and short cards. Don't delete the .va rules in
+   Attractions.tsx without checking this file: they style this card too, and
+   removing them once already left "Get tickets" as unstyled plain text. */
+.cbl-attractions .ticket-card .venue-actions { margin-top:auto; padding-top:14px; }
 `;
