@@ -4,8 +4,8 @@ import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
-import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, VenueNextEvent, type TMEvent } from '../components/LocalEvents';
-import { PARTNER_META } from '../lib/affiliates';
+import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, type TMEvent } from '../components/LocalEvents';
+import { PARTNER_META, ticketmasterEventHref, AFFILIATE_REL } from '../lib/affiliates';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
 /**
@@ -843,21 +843,46 @@ const ATTRACTIONS_CSS = `
 }
 .cbl-attractions .event-card .rating-row b { color:#fff; font-weight:700; }
 .cbl-attractions .event-card .rating-row .rev { color:#888; font-size:12px; }
-.cbl-attractions .event-card .cta-row { display:flex; gap:8px; margin-top:12px; }
-.cbl-attractions .event-card .cta {
-  flex:1; background:#C99742; border:0; color:#000;
-  padding:12px 0; border-radius:999px;
-  font-family:${DISPLAY}; font-weight:800;
-  font-size:12px; letter-spacing:.12em; text-transform:uppercase;
-  transition:background .2s; display:flex; align-items:center;
-  justify-content:center; gap:6px;
+/* ── Approved venue-card action system (spec: app repo
+   design-assets/CBL-venue-card-buttons-FINAL.html). Same metrics at EVERY
+   width — it was designed mobile-first but Keith wants it on desktop too, so
+   there is deliberately no breakpoint that changes the button sizes. The 375px
+   guarantee is that all three fit one line: 2 flex pills + a fixed 48px circle
+   + 2 gaps of 10px inside a card that is ~343px wide there. ── */
+.cbl-attractions .venue-actions { display:flex; gap:10px; align-items:center; margin-top:14px; }
+.cbl-attractions .va {
+  flex:1; min-width:0; height:48px; border:0; border-radius:9999px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  font-family:${DISPLAY}; font-weight:800; font-size:12.5px;
+  letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;
+  text-decoration:none; transition:background .2s, border-color .2s, color .2s;
 }
-.cbl-attractions .event-card .cta:hover { background:#DDB15F; }
-.cbl-attractions .event-card .cta.ghost {
-  background:transparent; color:#fff;
-  border:1px solid rgba(255,255,255,.18);
+.cbl-attractions .va.gold { background:#C99742; color:#000; }
+.cbl-attractions .va.gold:hover { background:#DDB15F; }
+/* Ticketmaster azure — their brand colour, so it is not themed to CBL gold. */
+.cbl-attractions .va.tix { background:#026CDF; color:#fff; }
+.cbl-attractions .va.tix:hover { background:#0A7BF0; }
+.cbl-attractions .va.ghost { background:transparent; color:#fff; border:1.5px solid #4A4A4A; }
+.cbl-attractions .va.ghost:hover { border-color:#C99742; color:#C99742; }
+.cbl-attractions .va.circle {
+  flex:0 0 48px; width:48px; height:48px; border-radius:50%;
+  background:transparent; border:1.5px solid #4A4A4A; gap:0; padding:0;
 }
-.cbl-attractions .event-card .cta.ghost:hover { border-color:#C99742; color:#C99742; }
+.cbl-attractions .va.circle:hover { border-color:#C99742; }
+.cbl-attractions .va.circle:hover svg { stroke:#C99742; }
+
+/* Azure Ticketmaster chip, bottom-left of the photo. State 1 only. */
+.cbl-attractions .tm-chip {
+  position:absolute; left:12px; bottom:12px; z-index:2;
+  display:flex; align-items:center; gap:7px;
+  background:#026CDF; border-radius:9999px; padding:7px 13px;
+  box-shadow:0 2px 10px rgba(0,0,0,.45);
+}
+.cbl-attractions .tm-chip em {
+  font-style:normal; font-family:${MONO}; font-size:9px; font-weight:700;
+  letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,.85);
+}
+.cbl-attractions .tm-chip img { height:11px; width:auto; display:block; }
 
 /* ── Featured spotlight ── */
 .cbl-attractions .spotlight {
@@ -900,20 +925,9 @@ const ATTRACTIONS_CSS = `
 .cbl-attractions .spotlight .row { display:flex; align-items:center; gap:14px; margin-top:4px; flex-wrap:wrap; }
 .cbl-attractions .spotlight .row b { color:#fff; font-weight:700; }
 .cbl-attractions .spotlight .row .addr { color:#888; font-size:13px; }
-.cbl-attractions .spotlight .actions { display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; }
-.cbl-attractions .spotlight .actions .cta {
-  background:#C99742; border:0; color:#000;
-  padding:14px 24px; border-radius:999px;
-  font-family:${DISPLAY}; font-weight:800;
-  font-size:13px; letter-spacing:.12em; text-transform:uppercase;
-  display:inline-flex; align-items:center; gap:8px;
-}
-.cbl-attractions .spotlight .actions .cta:hover { background:#DDB15F; }
-.cbl-attractions .spotlight .actions .cta.ghost {
-  background:transparent; color:#fff;
-  border:1px solid rgba(255,255,255,.18);
-}
-.cbl-attractions .spotlight .actions .cta.ghost:hover { border-color:#C99742; color:#C99742; }
+/* Spotlight runs the same action row as the grid cards, capped so three pills
+   don't stretch the full width of the wide spotlight column. */
+.cbl-attractions .spotlight .venue-actions { max-width:430px; margin-top:18px; }
 
 /* ── Empty / loading state ── */
 .cbl-attractions .empty {
@@ -1201,6 +1215,84 @@ function Filters({ cat, setCat }: { cat: Category; setCat: (c: Category) => void
   );
 }
 
+/**
+ * Approved venue-card action system (Keith signed off 2026-08-12; spec +
+ * visual live in the app repo at design-assets/CBL-venue-card-buttons-FINAL.html).
+ *
+ * State 1 — Ticketmaster has inventory for this venue: SCHEDULE (gold) ·
+ * round info · TICKETS (Ticketmaster azure). State 2 — no inventory: the
+ * Tickets pill and the photo chip drop, and SCHEDULE + MORE INFO split the row.
+ * One flag drives it, `nextEventAtVenue()`, which already existed for the
+ * spotlight's "next here" strip.
+ *
+ * The label is SCHEDULE rather than Book because CBL is a private scheduled
+ * service, never on-demand. The car stays CarMini (CBL's own line-art mark) —
+ * the spec names lucide's Car, but its parenthetical is "the same car icon we
+ * use across the site", and that is this one. Swapping it would undo the fix
+ * noted above CarMini.
+ */
+function InfoGlyph({ size = 17, color = '#fff' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+    </svg>
+  );
+}
+
+function TicketGlyph({ size = 17, color = '#fff' }: { size?: number; color?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color}
+      strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+      <path d="M13 5v2" /><path d="M13 17v2" /><path d="M13 11v2" />
+    </svg>
+  );
+}
+
+/** Azure "TICKETS · Ticketmaster" chip, bottom-left of the photo. State 1 only. */
+function TicketmasterChip() {
+  return (
+    <span className="tm-chip">
+      <em>Tickets</em>
+      <img src="/attractions/ticketmaster-wordmark-white.svg" alt="Ticketmaster" />
+    </span>
+  );
+}
+
+function VenueActions({ a, event, placement }: { a: Attraction; event?: TMEvent | null; placement: string }) {
+  const openModal = useContext(AttractionModalCtx);
+  const link = event?.url ? ticketmasterEventHref(event.url, placement) : null;
+
+  return (
+    <div className={link ? 'venue-actions has-tix' : 'venue-actions'}>
+      <button className="va gold" onClick={openBook}>
+        <CarMini size={17} color="#000" />
+        Schedule
+      </button>
+
+      {link ? (
+        <>
+          {/* Label drops to a fixed circle so all three fit one line at 375px. */}
+          <button className="va circle" onClick={() => openModal(a)} aria-label={`More info about ${a.name}`}>
+            <InfoGlyph size={20} />
+          </button>
+          <a className="va tix" href={link.href} target="_blank"
+            rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
+            <TicketGlyph size={17} />
+            Tickets
+          </a>
+        </>
+      ) : (
+        <button className="va ghost" onClick={() => openModal(a)}>
+          <InfoGlyph size={17} />
+          More Info
+        </button>
+      )}
+    </div>
+  );
+}
+
 function RatingLine({ a }: { a: Attraction }) {
   if (a.rating == null && !a.reviews) return null;
   return (
@@ -1212,8 +1304,8 @@ function RatingLine({ a }: { a: Attraction }) {
   );
 }
 
-function EventCard({ a }: { a: Attraction }) {
-  const openModal = useContext(AttractionModalCtx);
+function EventCard({ a, event }: { a: Attraction; event?: TMEvent | null }) {
+  const hasTix = Boolean(event?.url);
   return (
     <article className="event-card">
       <div className="img" style={{ backgroundImage: `url(${a.photo})` }}>
@@ -1221,28 +1313,20 @@ function EventCard({ a }: { a: Attraction }) {
           <span className="tag">{CAT_TAG[a.cat]}</span>
         </div>
         {a.open && <span className="open-pill">Open now</span>}
+        {hasTix && <TicketmasterChip />}
       </div>
       <div className="body">
         <h3>{a.name}</h3>
         <div className="venue">{a.address}</div>
         <p className="desc">{a.desc}</p>
         <RatingLine a={a} />
-        <div className="cta-row">
-          <button className="cta" onClick={openBook}>
-            <CarMini size={17} color="#000" />
-            Book a Ride There
-          </button>
-          <button className="cta ghost" onClick={() => openModal(a)}>
-            More Info
-          </button>
-        </div>
+        <VenueActions a={a} event={event} placement={`attractions_venue_${a.id}`} />
       </div>
     </article>
   );
 }
 
 function Spotlight({ a, nextEvent }: { a: Attraction; nextEvent?: TMEvent | null }) {
-  const openModal = useContext(AttractionModalCtx);
   return (
     <div className="spotlight">
       <div className="shot">
@@ -1253,6 +1337,7 @@ function Spotlight({ a, nextEvent }: { a: Attraction; nextEvent?: TMEvent | null
           }}
         />
         {a.open && <span className="open-pill">Open now</span>}
+        {nextEvent?.url && <TicketmasterChip />}
       </div>
       <div className="text">
         <div className="kicker">Top rated · {CAT_TAG[a.cat]}</div>
@@ -1280,20 +1365,12 @@ function Spotlight({ a, nextEvent }: { a: Attraction; nextEvent?: TMEvent | null
             {a.address}
           </span>
         </div>
-        {/* What's actually on at the venue we just recommended. The pick above
-            stays editorial (top-rated); this rides along as the bookable part. */}
-        {nextEvent && (
-          <VenueNextEvent event={nextEvent} placement={`attractions_spotlight_${nextEvent.id}`} />
-        )}
-        <div className="actions">
-          <button className="cta" onClick={openBook}>
-            <CarMini size={17} color="#000" />
-            Book a Ride There
-          </button>
-          <button className="cta ghost" onClick={() => openModal(a)}>
-            More Info
-          </button>
-        </div>
+        {/* Spotlight runs the same action system as the grid cards (Keith,
+            2026-08-12). The old "next here" strip carried a second Get-tickets
+            link, so the card had two ticket CTAs; the TICKETS pill is the one
+            that stays. Row is width-capped so three pills don't stretch across
+            the full spotlight column. */}
+        <VenueActions a={a} event={nextEvent} placement={`attractions_spotlight_${a.id}`} />
       </div>
     </div>
   );
@@ -1679,12 +1756,23 @@ export function Attractions() {
 
   const mixedItems = useMemo(() => {
     type Slot =
-      | { kind: 'attraction'; attraction: Attraction }
+      | { kind: 'attraction'; attraction: Attraction; event: TMEvent | null }
       | { kind: 'event'; event: (typeof ticketEvents)[number] };
+
+    // Pair each venue with its own next event first, so a card that can sell
+    // tickets renders the TICKETS pill. Those events are then held OUT of the
+    // standalone queue — otherwise tonight's game shows up twice in one grid,
+    // once as the venue's ticket button and again as its own card.
+    const paired = cardItems.map((a) => ({ a, event: nextEventAtVenue(ticketEvents, a.name) }));
+    const claimed = new Set<string>(
+      paired.map((p) => p.event?.id).filter((id): id is string => Boolean(id)),
+    );
+    if (featuredNextEvent) claimed.add(featuredNextEvent.id);
+
     const out: Slot[] = [];
-    const queue = ticketEvents.filter((e) => e.id !== featuredNextEvent?.id);
-    cardItems.forEach((a, i) => {
-      out.push({ kind: 'attraction', attraction: a });
+    const queue = ticketEvents.filter((e) => !claimed.has(e.id));
+    paired.forEach(({ a, event }, i) => {
+      out.push({ kind: 'attraction', attraction: a, event });
       if ((i + 1) % 3 === 0 && queue.length) out.push({ kind: 'event', event: queue.shift()! });
     });
     queue.slice(0, 2).forEach((event) => out.push({ kind: 'event', event }));
@@ -1712,6 +1800,11 @@ export function Attractions() {
         <section className="band tight spotlight-lead">
           <div className="band-inner">
             <Spotlight a={featured} nextEvent={featuredNextEvent} />
+            {/* FTC: the spotlight can render a TICKETS pill of its own, and it
+                sits ABOVE the grid's Ticketmaster lockup — so the disclosure
+                has to be attached here too, or the first affiliate link on the
+                page would be unlabeled before the click. */}
+            {featuredNextEvent?.url && <AffiliateDisclosure inline />}
           </div>
         </section>
       )}
@@ -1754,7 +1847,7 @@ export function Attractions() {
                     placement={`attractions_events_${it.event.id}`}
                   />
                 ) : (
-                  <EventCard key={it.attraction.id} a={it.attraction} />
+                  <EventCard key={it.attraction.id} a={it.attraction} event={it.event} />
                 ),
               )
             ) : !featured ? (
