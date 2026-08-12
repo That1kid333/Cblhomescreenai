@@ -1286,6 +1286,16 @@ function VenueActions({ a, event, placement }: { a: Attraction; event?: TMEvent 
   );
 }
 
+/**
+ * "Major" venue by name, since Discovery gives us no capacity field. Matched
+ * against real Pittsburgh inventory 2026-08-12: catches PPG Paints Arena,
+ * Acrisure Stadium, The Pavilion at Star Lake, Timber Rock Amphitheater and
+ * Petersen Events Center. Deliberately does NOT catch mid-size rooms like Stage
+ * AE, Roxian Theatre or Mr Smalls — "theatre" alone is too loose, it would
+ * promote 400-capacity clubs into the guaranteed slots and defeat the point.
+ */
+const IS_MAJOR_VENUE = /\b(arena|stadium|amphitheat(er|re)|pavilion|coliseum|dome|ballpark|events? cent(er|re))\b/i;
+
 function RatingLine({ a }: { a: Attraction }) {
   if (a.rating == null && !a.reviews) return null;
   return (
@@ -1790,13 +1800,27 @@ export function Attractions() {
     // added card is a different place to go, and promotes more distinct
     // Ticketmaster inventory rather than the same show repeatedly.
     const seenVenue = new Set<string>();
-    const queue = ticketEvents.filter((e) => {
+    const fresh = ticketEvents.filter((e) => {
       if (claimed.has(e.id)) return false;
       const v = (e.venue || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
       if (v && seenVenue.has(v)) return false;
       if (v) seenVenue.add(v);
       return true;
     });
+
+    // Guarantee the big rooms make the page (Keith, 2026-08-12: "any major
+    // Ticketmaster music event should be in there"). The feed arrives date-asc,
+    // so an arena show three weeks out loses its slot to whatever small club
+    // gigs happen to be on tonight. Interleaving major venues with local ones
+    // means an arena headliner is always near the front AND the neighbourhood
+    // rooms still feature, which is the whole point of the page.
+    const majors = fresh.filter((e) => IS_MAJOR_VENUE.test(e.venue || ''));
+    const locals = fresh.filter((e) => !IS_MAJOR_VENUE.test(e.venue || ''));
+    const queue: typeof fresh = [];
+    for (let i = 0; i < Math.max(majors.length, locals.length); i++) {
+      if (majors[i]) queue.push(majors[i]);
+      if (locals[i]) queue.push(locals[i]);
+    }
 
     // Every 2nd slot + 4 appended (Keith, 2026-08-12). The old every-3rd + 2 was
     // tuned when the feed only returned 12 events; at 80 it surfaced 3 of ~81
