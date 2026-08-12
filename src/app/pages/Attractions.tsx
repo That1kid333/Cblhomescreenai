@@ -971,6 +971,32 @@ const ATTRACTIONS_CSS = `
      making it pin to .filters' bottom and overlap the weather row instead of the
      screen bottom. The .cat-row keeps its own backdrop-filter, so no visual loss. */
   .cbl-attractions .filters { position:static; padding:12px 16px 0; backdrop-filter:none; -webkit-backdrop-filter:none; }
+
+  /* The spotlight's 38px editorial padding is right on desktop but eats 76px of
+     a 375px phone, which left the action row only ~251px: the two pills fell to
+     ~91px each while SCHEDULE + its icon needs ~95px, so the labels overflowed
+     and the row read as cramped. Match the grid cards' 20px instead — same
+     rhythm, and the pills get ~110px each. */
+  .cbl-attractions .spotlight .text { padding:26px 20px 28px; gap:12px; }
+  .cbl-attractions .spotlight .venue-actions { margin-top:14px; }
+}
+
+/* Small phones: trim the label metrics so the text sits comfortably inside the
+   pill rather than running to its edges. Applies to every card, not just the
+   spotlight, so the whole system stays consistent at this width. */
+@media (max-width:420px){
+  .cbl-attractions .venue-actions { gap:9px; }
+  .cbl-attractions .va { font-size:11.5px; letter-spacing:.10em; gap:7px; }
+}
+
+/* Below ~360px (iPhone SE 1st gen, and any phone at a large accessibility text
+   size) three across cannot fit without clipping SCHEDULE. Rather than shrink
+   the type until it's unreadable, let the row wrap: SCHEDULE + the info circle
+   hold the first line, TICKETS takes the second at full width. Both actions stay
+   equally reachable and nothing is ever cut off. */
+@media (max-width:360px){
+  .cbl-attractions .venue-actions { flex-wrap:wrap; }
+  .cbl-attractions .venue-actions.has-tix .va.tix { flex:1 0 100%; order:3; }
 }
 `;
 
