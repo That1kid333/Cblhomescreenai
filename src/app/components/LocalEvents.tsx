@@ -116,9 +116,32 @@ export function useLocalEvents(coords: Coords | null | undefined, segment: strin
  * Park", Ticketmaster may say "PNC Park - Pittsburgh". Events already arrive
  * sorted soonest-first, so the first hit is the next one.
  */
+/**
+ * Canonical key for a venue name, used both to match a venue card to its event
+ * and to dedupe the event queue.
+ *
+ * Ticketmaster lists the SAME room under spelling variants — "Mr Smalls Theatre"
+ * and "Mr Smalls Theater" both appear in the live Pittsburgh Music feed (Keith
+ * confirmed 2026-08-12 it is one venue), which made the dedupe treat it as two
+ * places and would also stop a venue card from finding its own event. Folding the
+ * -re/-er pair and a leading "the" is enough to catch that class without fuzzy
+ * matching, which risks collapsing genuinely different rooms. Note this keeps
+ * "The Funhouse at Mr. Smalls" separate from "Mr Smalls Theatre" — correctly, as
+ * those are two different rooms at the same complex.
+ */
+export function venueKey(s: string | null | undefined): string {
+  return (s || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .replace(/\btheatre\b/g, 'theater')
+    .replace(/\bcentre\b/g, 'center')
+    .replace(/^the\s+/, '')
+    .trim();
+}
+
 export function nextEventAtVenue(events: TMEvent[], venueName: string | null | undefined): TMEvent | null {
   if (!venueName) return null;
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const norm = venueKey;
   const target = norm(venueName);
   if (target.length < 4) return null; // too short to match safely
   return (
