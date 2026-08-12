@@ -1,13 +1,16 @@
 /**
  * PartnerAttractions — dedicated "Partner Attractions" page, split out of the
- * combined Affiliates page. Carries the attractions value props, how earnings /
- * commission work (folded in), how-it-works, and a CTA.
+ * combined Affiliates page. Carries the attractions value props, what a flat-rate
+ * partnership includes, how-it-works, and a CTA.
  *
  * Matches the Affiliates.tsx editorial system (scoped under .cbl-partner-attr).
  * Shared Layout provides nav + footer. Hero reuses /eats/imagery/cbl-map-backdrop.jpg.
  */
 
 import { APP_URL } from '../lib/constants';
+import { PARTNER_META } from '../lib/affiliates';
+
+const TICKETMASTER_LOGO = PARTNER_META.ticketmaster!.logo;
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -16,23 +19,57 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 
-const BENEFITS = [
+/** `logo` swaps the mono sub-line for a partner lockup ("tickets by <brand>"). */
+type Benefit = { rev: string; name: string; sub: string; note: string; logo?: string; logoAlt?: string };
+
+const BENEFITS: Benefit[] = [
   { rev: 'Featured', name: 'Top Placement', sub: 'Attractions page', note: 'Get featured on the Attractions page in front of members planning their week.' },
-  { rev: 'Tickets', name: 'Ticketed Bookings', sub: 'Sold through CBL', note: 'Sell tickets and experiences directly to members and hotel guests.' },
+  // Ticketing is Ticketmaster's, not ours — the official white wordmark says so
+  // up front. Served untouched (it's already white-on-transparent), the same way
+  // the Attractions lockup does it.
+  {
+    rev: 'Tickets', name: 'Ticketed Bookings', sub: 'Tickets by',
+    logo: TICKETMASTER_LOGO, logoAlt: 'Ticketmaster',
+    note: 'Sell tickets and experiences to members and hotel guests, with live events ticketed by Ticketmaster.',
+  },
   { rev: 'Reach', name: 'Planners & Guests', sub: 'Members + concierge', note: 'Reach travelers and locals building their itineraries — and concierge partners booking for guests.' },
 ];
 
-const EARN = [
-  { rev: 'Featured', name: 'Sponsored Listing', sub: 'Attractions category', note: 'Top placement and a partner badge on your category page.' },
-  { rev: 'Per booking', name: 'Ticketed Sales', sub: 'Through CBL', note: 'Earn on experiences booked through the platform — tracked in your dashboard.' },
-  { rev: 'No markup', name: 'Member-Friendly', sub: 'Commission built in', note: 'Commission is built into bookings — never added to the member’s price.' },
+/**
+ * What a partner GETS for a flat rate — not what they "earn". CBL takes no cut
+ * of a partner's ticket sales (same model the Restaurants page states outright),
+ * so this page must not promise commission, tracked payouts, or a partner
+ * earnings dashboard. Commission language belongs on Become An Affiliate.
+ */
+const INCLUDED = [
+  { rev: 'Featured', name: 'Sponsored Listing', sub: 'Attractions page', note: 'Top placement and a partner badge in your category, where members are planning their week.' },
+  { rev: 'Direct', name: 'Booking Links', sub: 'Straight to you', note: 'Your tickets and experiences link straight to your own booking page. We never sit in the middle of the sale.' },
+  { rev: 'Flat rate', name: 'No Commission', sub: 'Keep your revenue', note: 'One flat rate for the listing. We never take a cut of your ticket sales, and nothing is added to the member’s price.' },
+];
+
+/**
+ * The concrete line items, so "what's included" isn't three adjectives. Kept to
+ * things CBL actually ships today: the same deliverable menu the Restaurants
+ * tiers sell (placement, coupons, social posts, fundraising) plus what the
+ * Attractions page itself renders for a partner. Nothing here promises a
+ * partner earnings dashboard or a payout rail.
+ */
+const INCLUDES = [
+  'Featured placement on the Attractions page in your city',
+  'Sponsored partner badge on your listing',
+  'Full profile with photos, description, hours, and location',
+  'Booking links pointed straight at your own ticket page',
+  'Coupon opportunities and member-only offers',
+  'Social media posts across CBL channels',
+  'Fundraising solutions for member and community events',
+  'Reach across CBL members and hotel concierge partners',
 ];
 
 const STEPS = [
   { t: 'Apply', d: 'Tell us about your attraction or experience and how you’d like to partner.' },
   { t: 'Onboard', d: 'Quick verification and setup. We build your profile, listing, and booking links.' },
   { t: 'Go live', d: 'Your featured listing and ticketed bookings go live across the CBL platform.' },
-  { t: 'Earn', d: 'Track bookings and commission from your dashboard. Payouts via Stripe.' },
+  { t: 'Grow', d: 'More people find you at the moment they’re deciding what to do that day.' },
 ];
 
 const CSS = `
@@ -103,7 +140,27 @@ const CSS = `
 .cbl-partner-attr .tier .rev { font-family:${DISPLAY}; font-weight:900; font-size:32px; line-height:1; color:${GOLD}; letter-spacing:-.01em; }
 .cbl-partner-attr .tier .name { font-family:${DISPLAY}; font-weight:900; font-size:19px; text-transform:uppercase; letter-spacing:-.005em; }
 .cbl-partner-attr .tier .sub { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:${GOLD}; }
+/* Partner lockup: gold "tickets by" + the brand's own white wordmark, served
+   untouched (no invert filter — the asset is already white-on-transparent). */
+.cbl-partner-attr .tier .sub-brand { display:flex; align-items:center; gap:9px; flex-wrap:wrap; margin-top:2px; }
+.cbl-partner-attr .tier .sub-brand img { height:16px; width:auto; display:block; opacity:.95; }
 .cbl-partner-attr .tier .note { color:#A8A8A8; font-size:13px; line-height:1.5; margin-top:2px; }
+
+/* "Everything included" checklist under the three cards. Gold ticks, two columns
+   on desktop, one on phones. Pure CSS mark — no asset to keep in sync. */
+.cbl-partner-attr .incl { margin-top:30px; padding-top:26px; border-top:1px solid rgba(201,151,66,.18); }
+.cbl-partner-attr .incl-k {
+  font-family:${MONO}; font-size:11px; letter-spacing:.18em;
+  text-transform:uppercase; color:${GOLD}; margin-bottom:18px;
+}
+.cbl-partner-attr .incl-list { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(2,1fr); gap:13px 40px; }
+.cbl-partner-attr .incl-list li { display:flex; align-items:flex-start; gap:12px; color:#C4C4C4; font-size:14.5px; line-height:1.5; }
+.cbl-partner-attr .incl-list li::before {
+  content:'✓'; flex:0 0 auto; width:18px; height:18px; margin-top:1px;
+  display:flex; align-items:center; justify-content:center;
+  border-radius:50%; border:1px solid rgba(201,151,66,.55);
+  background:rgba(201,151,66,.12); color:${GOLD}; font-size:10px; font-weight:700;
+}
 
 .cbl-partner-attr .steps { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
 .cbl-partner-attr .step { display:flex; flex-direction:column; gap:10px; }
@@ -172,7 +229,10 @@ export function PartnerAttractions() {
               <div className="tier" key={b.name}>
                 <div className="rev">{b.rev}</div>
                 <div className="name">{b.name}</div>
-                <div className="sub">{b.sub}</div>
+                <div className={b.logo ? 'sub sub-brand' : 'sub'}>
+                  <span>{b.sub}</span>
+                  {b.logo && <img src={b.logo} alt={b.logoAlt} />}
+                </div>
                 <div className="note">{b.note}</div>
               </div>
             ))}
@@ -182,14 +242,14 @@ export function PartnerAttractions() {
 
       <section className="band comm-band">
         <div className="band-inner">
-          <div className="section-eyebrow">what you earn</div>
-          <h2 className="section-h2">How it <span className="it">pays</span></h2>
+          <div className="section-eyebrow">what you get</div>
+          <h2 className="section-h2">What’s <span className="it">included</span></h2>
           <p className="section-lede">
-            Get featured for visibility and earn on every ticketed booking made through CBL.
-            Commission is built into bookings and tracked from your dashboard with Stripe payouts.
+            One flat rate puts your attraction in front of people already deciding what to do that
+            day. We never take a cut of your ticket sales.
           </p>
           <div className="tier-grid">
-            {EARN.map((t) => (
+            {INCLUDED.map((t) => (
               <div className="tier" key={t.name}>
                 <div className="rev">{t.rev}</div>
                 <div className="name">{t.name}</div>
@@ -204,7 +264,7 @@ export function PartnerAttractions() {
       <section className="band tight">
         <div className="band-inner">
           <div className="section-eyebrow">how it works</div>
-          <h2 className="section-h2" style={{ marginBottom: 28 }}>From apply <span className="it">to earning</span></h2>
+          <h2 className="section-h2" style={{ marginBottom: 28 }}>From apply <span className="it">to booked</span></h2>
           <div className="steps">
             {STEPS.map((s, i) => (
               <div className="step" key={s.t}>
