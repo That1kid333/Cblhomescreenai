@@ -1783,12 +1783,29 @@ export function Attractions() {
     if (featuredNextEvent) claimed.add(featuredNextEvent.id);
 
     const out: Slot[] = [];
-    const queue = ticketEvents.filter((e) => !claimed.has(e.id));
+
+    // ONE event per venue in the standalone queue. Discovery returns a row per
+    // date, so an unfiltered queue spends the extra slots on the same venue three
+    // times (Club Cafe filled 3 of the Music feed's rows). Deduping means every
+    // added card is a different place to go, and promotes more distinct
+    // Ticketmaster inventory rather than the same show repeatedly.
+    const seenVenue = new Set<string>();
+    const queue = ticketEvents.filter((e) => {
+      if (claimed.has(e.id)) return false;
+      const v = (e.venue || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      if (v && seenVenue.has(v)) return false;
+      if (v) seenVenue.add(v);
+      return true;
+    });
+
+    // Every 2nd slot + 4 appended (Keith, 2026-08-12). The old every-3rd + 2 was
+    // tuned when the feed only returned 12 events; at 80 it surfaced 3 of ~81
+    // sellable events, which left most of the Ticketmaster inventory invisible.
     paired.forEach(({ a, event }, i) => {
       out.push({ kind: 'attraction', attraction: a, event });
-      if ((i + 1) % 3 === 0 && queue.length) out.push({ kind: 'event', event: queue.shift()! });
+      if ((i + 1) % 2 === 0 && queue.length) out.push({ kind: 'event', event: queue.shift()! });
     });
-    queue.slice(0, 2).forEach((event) => out.push({ kind: 'event', event }));
+    queue.slice(0, 4).forEach((event) => out.push({ kind: 'event', event }));
     return out;
   }, [cardItems, ticketEvents, venueEvents, featuredNextEvent]);
 
