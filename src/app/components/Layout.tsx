@@ -400,6 +400,11 @@ export function Layout() {
               <Link to="/contact" className="hover:text-[#FDB913] transition-colors">Contact</Link>
               <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
             </div>
+            <div className="flex items-center gap-6 text-[10px] uppercase">
+              <a href="https://app.citybucketlist.com/privacy" className="hover:text-[#FDB913] transition-colors">Privacy</a>
+              <a href="https://app.citybucketlist.com/terms" className="hover:text-[#FDB913] transition-colors">Terms</a>
+              <a href="https://app.citybucketlist.com/membership" className="hover:text-[#FDB913] transition-colors">Membership</a>
+            </div>
           </div>
         </div>
       </footer>
