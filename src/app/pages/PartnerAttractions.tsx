@@ -181,6 +181,9 @@ const CSS = `
   .cbl-partner-attr .tier-grid { grid-template-columns:1fr; }
   .cbl-partner-attr .steps { grid-template-columns:repeat(2,1fr); }
 }
+@media (max-width:860px){
+  .cbl-partner-attr .incl-list { grid-template-columns:1fr; gap:12px; }
+}
 @media (max-width:720px){
   /* Section/CTA header italic accent drops to its own line (no orphan first word). */
   .cbl-partner-attr .section-h2 .it,
@@ -257,6 +260,13 @@ export function PartnerAttractions() {
                 <div className="note">{t.note}</div>
               </div>
             ))}
+          </div>
+
+          <div className="incl">
+            <div className="incl-k">Every partnership includes</div>
+            <ul className="incl-list">
+              {INCLUDES.map((item) => <li key={item}>{item}</li>)}
+            </ul>
           </div>
         </div>
       </section>
