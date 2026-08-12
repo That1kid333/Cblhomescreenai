@@ -1734,7 +1734,27 @@ export function Attractions() {
 
   // Ticketed events follow the PAGE's category rail (Keith: a second set of
   // Sports/Music/Arts buttons asked the same question twice).
-  const ticketEvents = useLocalEvents(coords, ticketSegmentFor(cat));
+  const seg = ticketSegmentFor(cat);
+  const ticketEvents = useLocalEvents(coords, seg);
+
+  // Venue chips look across EVERY segment, not just the open tab (Keith,
+  // 2026-08-12). PPG Paints Arena sells concerts all through the NHL offseason,
+  // so scoping its card to Sports made a major arena read "no tickets" while Zac
+  // Brown Band was on sale there for the next night. A venue card's TICKETS means
+  // "what's on at this venue", so it should reflect any inventory.
+  // The woven standalone event cards stay on the SEGMENTED feed, so a Sports
+  // browser still gets sports events in the grid.
+  // Match against the UNION of both feeds, not the cross-segment one alone.
+  // Measured: swapping to the unsegmented feed on its own won PPG Paints Arena a
+  // chip but LOST F.N.B. Stadium, whose Riverhounds match is in the Sports feed
+  // and outside the unsegmented top 20. Segmented feed goes first so an
+  // in-category event wins the lookup — a Sports browser gets PNC Park's Pirates
+  // game rather than a concert there, and PPG falls through to its concert.
+  const anySegEvents = useLocalEvents(coords, '', seg !== '');
+  const venueEvents = useMemo(
+    () => (seg === '' ? ticketEvents : [...ticketEvents, ...anySegEvents]),
+    [seg, ticketEvents, anySegEvents],
+  );
 
   // Weave tickets through the photo grid instead of parking them in their own
   // band: a game tonight belongs beside the museums, not below a fold. Every
@@ -1743,8 +1763,8 @@ export function Attractions() {
   // The spotlight venue's own next event, if it has one (PNC Park → the next
   // Pirates game). Excluded from the woven grid below so it never appears twice.
   const featuredNextEvent = useMemo(
-    () => nextEventAtVenue(ticketEvents, featured?.name),
-    [ticketEvents, featured?.name],
+    () => nextEventAtVenue(venueEvents, featured?.name),
+    [venueEvents, featured?.name],
   );
 
   const mixedItems = useMemo(() => {
@@ -1756,7 +1776,7 @@ export function Attractions() {
     // tickets renders the TICKETS pill. Those events are then held OUT of the
     // standalone queue — otherwise tonight's game shows up twice in one grid,
     // once as the venue's ticket button and again as its own card.
-    const paired = cardItems.map((a) => ({ a, event: nextEventAtVenue(ticketEvents, a.name) }));
+    const paired = cardItems.map((a) => ({ a, event: nextEventAtVenue(venueEvents, a.name) }));
     const claimed = new Set<string>(
       paired.map((p) => p.event?.id).filter((id): id is string => Boolean(id)),
     );
@@ -1770,7 +1790,7 @@ export function Attractions() {
     });
     queue.slice(0, 2).forEach((event) => out.push({ kind: 'event', event }));
     return out;
-  }, [cardItems, ticketEvents, featuredNextEvent]);
+  }, [cardItems, ticketEvents, venueEvents, featuredNextEvent]);
 
   return (
     <AttractionModalCtx.Provider value={setModalA}>

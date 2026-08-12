@@ -73,10 +73,22 @@ export function useLocalEvents(coords: Coords | null | undefined, segment: strin
     const qs = new URLSearchParams({
       lat: String(coords.lat),
       lng: String(coords.lng),
-      // 12 rather than 8: only a few are woven into the grid, but the extra
-      // headroom is what lets nextEventAtVenue() find the spotlight venue's own
-      // next event without a second API call.
-      size: '12',
+      // 20 (Discovery's cap in our proxy) rather than 12. Only a few rows are
+      // woven into the grid; the headroom is what lets nextEventAtVenue() find a
+      // venue's own next event. Measured 2026-08-12: Discovery returns one row
+      // PER DATE, so a 3-game Pirates series eats 3 slots — 12 rows collapsed to
+      // just 5 distinct venues on the Sports tab, which is why venues that
+      // genuinely sell tickets were rendering with no chip.
+      // 80, with the proxy capped at 100 so there's headroom. Measured 2026-08-12
+      // against the live proxy: Discovery returns one row PER DATE, so long-running
+      // shows hog a shallow page. New York yielded just 6 distinct venues at
+      // size=20 (a few Broadway runs filling every slot) vs 40 at 80; Pittsburgh
+      // went 14 → 20 and is identical at 80 and 100. Distinct venues is what drives
+      // how many cards can carry a TICKETS button, so depth here is directly how
+      // much Ticketmaster inventory we can promote. 80 costs 4.5KB gzipped, one
+      // upstream request, hour-cached at the CDN, and showed no latency penalty
+      // over 20 across repeated uncached samples.
+      size: '80',
       radius: '50',
     });
     if (segment) qs.set('segment', segment);

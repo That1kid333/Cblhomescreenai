@@ -58,7 +58,14 @@ export const handler = async (event) => {
   }
 
   const radius = Math.min(Math.max(Number(q.radius) || 40, 1), 150); // miles
-  const size = Math.min(Math.max(Number(q.size) || 8, 1), 20);
+  // Cap raised 20 → 100 on 2026-08-12. Now that Ticketmaster is live we want to
+  // surface as many sellable events as we can, and the binding constraint was
+  // never rate limit: this is ONE upstream request whatever the size, the
+  // response is hour-cached at the CDN, and each row is trimmed to ~15 fields.
+  // Discovery itself allows size up to 200. The real reason to fetch deep is
+  // venue matching — Discovery returns one row PER DATE, so a 3-game series eats
+  // 3 slots and a shallow page left venues that genuinely sell showing no chip.
+  const size = Math.min(Math.max(Number(q.size) || 8, 1), 100);
   const keyword = String(q.keyword || '').slice(0, 60);
   const segment = SEGMENTS.has(q.segment) ? q.segment : '';
 
