@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, createContext, useContext } from 'react';
+import { Car } from 'lucide-react';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
@@ -993,39 +994,6 @@ function HeroAttractionsSvg() {
   );
 }
 
-// The full CBL car mark (same line-art car used in the Transportation hero), so
-// the "Book a Ride There" buttons carry our recognizable car — not the partial
-// fender-only shape that read as a little box at this size.
-function CarMini({ size = 16, color = '#000' }: { size?: number; color?: string }) {
-  return (
-    <svg
-      width={size}
-      height={size * 0.79}
-      viewBox="0 0 288 227.01"
-      fill="none"
-      stroke={color}
-      strokeWidth="12"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M65.43,90.76l-13.2,21.57c-2.58,4.17-3.66,8.95-3.11,13.68l5.26,45.23h89.57" />
-      <path d="M65.43,90.76s-5.61-4.85-14.17-6.07c-8.56-1.23-14.41-.33-15.46,2.94-1.27,3.97-6.98,12.74,7.38,13.23" />
-      <path d="M145.89,57.11s-49.54-.65-59.55,4.11c-8.76,4.17-18.6,24.53-20.91,29.54" />
-      <path d="M110.99,134.64s-12.2-.65-28.8-1.3c-16.6-.65-13.42-11.26-13.42-11.26" />
-      <path d="M110.99,152.62h69.8" />
-      <path d="M64.93,91.59s3.11,4.94,14.34,4.94h66.01" />
-      <path d="M77.35,171.24h5.29c7.19,0,13.02,5.83,13.02,13.02v4.3h-31.33v-4.3c0-7.19,5.83-13.02,13.02-13.02Z" transform="translate(160 359.81) rotate(180)" />
-      <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
-      <path d="M222.56,90.76s5.61-4.85,14.17-6.07c8.56-1.23,14.41-.33,15.46,2.94,1.27,3.97,6.98,12.74-7.38,13.23" />
-      <path d="M142.11,57.11s49.54-.65,59.55,4.11c8.76,4.17,18.6,24.53,20.91,29.54" />
-      <path d="M177,134.64s12.2-.65,28.8-1.3c16.6-.65,13.42-11.26,13.42-11.26" />
-      <path d="M177,152.62h-69.8" />
-      <path d="M223.07,91.59s-3.11,4.94-14.34,4.94h-66.01" />
-      <path d="M192.33,171.24h31.33v4.3c0,7.19-5.83,13.02-13.02,13.02h-5.29c-7.19,0-13.02-5.83-13.02-13.02v-4.3h0Z" />
-    </svg>
-  );
-}
-
 // On-brand bucket-list rating glyph (mirrors Eats' BucketGlyph).
 function BucketGlyph({ value = 5, size = 14 }: { value?: number; size?: number }) {
   return (
@@ -1226,10 +1194,9 @@ function Filters({ cat, setCat }: { cat: Category; setCat: (c: Category) => void
  * spotlight's "next here" strip.
  *
  * The label is SCHEDULE rather than Book because CBL is a private scheduled
- * service, never on-demand. The car stays CarMini (CBL's own line-art mark) —
- * the spec names lucide's Car, but its parenthetical is "the same car icon we
- * use across the site", and that is this one. Swapping it would undo the fix
- * noted above CarMini.
+ * service, never on-demand. Car icon is lucide's `Car`, per the spec and Keith's
+ * call on 2026-08-12 (he chose it over the older CarMini line-art mark, which
+ * is why that component is gone from this file).
  */
 function InfoGlyph({ size = 17, color = '#fff' }: { size?: number; color?: string }) {
   return (
@@ -1267,7 +1234,7 @@ function VenueActions({ a, event, placement }: { a: Attraction; event?: TMEvent 
   return (
     <div className={link ? 'venue-actions has-tix' : 'venue-actions'}>
       <button className="va gold" onClick={openBook}>
-        <CarMini size={17} color="#000" />
+        <Car size={17} color="#000" strokeWidth={2} aria-hidden="true" />
         Schedule
       </button>
 
