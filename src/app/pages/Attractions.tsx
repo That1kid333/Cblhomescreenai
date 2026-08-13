@@ -1563,7 +1563,7 @@ function AttractionModal({ a, onClose }: { a: Attraction | null; onClose: () => 
           )}
           <div className="macts">
             <a className="primary" href={RIDER_BOOK_URL} target="_blank" rel="noopener noreferrer">
-              Book a Ride There →
+              Schedule a Ride →
             </a>
             <a className="ghost" href={gMaps(a)} target="_blank" rel="noreferrer">
               Directions
@@ -1848,7 +1848,7 @@ export function Attractions() {
       <WeatherStrip weather={weather} city={activeCity} />
       <Filters cat={cat} setCat={setCat} />
 
-      {/* Lead with the featured photo pick (Book a Ride front and center),
+      {/* Lead with the featured photo pick (SCHEDULE front and center),
           then the ranked list of the rest, then the browsable photo grid. */}
       {featured && (
         <section className="band tight spotlight-lead">
