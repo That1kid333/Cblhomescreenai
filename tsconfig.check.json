@@ -1,4 +1,11 @@
 {
+  // NAMED tsconfig.check.json, NOT tsconfig.json, ON PURPOSE. A root
+  // tsconfig.json is picked up implicitly by other tooling — Netlify bundles
+  // functions with esbuild, and handing it a config carrying noEmit:true and
+  // allowImportingTsExtensions is asking for trouble. Production deploys stopped
+  // the moment a root tsconfig.json appeared (2026-08-13), so this file is
+  // reachable only via `npm run typecheck -p`.
+  //
   // Type-checking config for CI. The build does NOT use this — Vite strips types
   // without checking them, which is exactly how a ReferenceError shipped to
   // production on 2026-08-13 (JoinModal used two refs it never declared, the
