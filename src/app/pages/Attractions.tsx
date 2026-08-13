@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { Car } from 'lucide-react';
-import { RIDER_BOOK_URL } from '../lib/constants';
+import { scheduleRideUrl } from '../lib/scheduleRide';
 import { Link } from 'react-router';
 import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
@@ -1039,8 +1039,27 @@ function BucketGlyph({ value = 5, size = 14 }: { value?: number; size?: number }
   );
 }
 
-function openBook() {
-  window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer');
+/**
+ * "Name, Address" reads best in the app's drop-off field — the name alone is
+ * ambiguous to geocode, the address alone is unrecognisable to the member.
+ */
+function rideDestination(name: string, address?: string | null) {
+  const addr = (address || '').trim();
+  return addr && !addr.toLowerCase().startsWith(name.toLowerCase()) ? `${name}, ${addr}` : name;
+}
+
+/**
+ * Send the member to the app's scheduler with the drop-off already filled in.
+ * When the venue has a next event we pass its start too, and scheduleRideUrl
+ * decides whether that's far enough out to prefill a pickup time.
+ */
+function openScheduleFor(a: Attraction, event?: TMEvent | null) {
+  const href = scheduleRideUrl({
+    destination: rideDestination(a.name, a.address),
+    date: event?.date,
+    time: event?.time,
+  });
+  window.open(href, '_blank', 'noopener,noreferrer');
 }
 function openDirections(a: Attraction) {
   window.open(gMaps(a), '_blank', 'noopener,noreferrer');
@@ -1259,7 +1278,7 @@ function VenueActions({ a, event, placement }: { a: Attraction; event?: TMEvent 
 
   return (
     <div className={link ? 'venue-actions has-tix' : 'venue-actions'}>
-      <button className="va gold" onClick={openBook}>
+      <button className="va gold" onClick={() => openScheduleFor(a, event)}>
         <Car size={17} color="#000" strokeWidth={2} aria-hidden="true" />
         Schedule
       </button>
@@ -1562,7 +1581,12 @@ function AttractionModal({ a, onClose }: { a: Attraction | null; onClose: () => 
             </div>
           )}
           <div className="macts">
-            <a className="primary" href={RIDER_BOOK_URL} target="_blank" rel="noopener noreferrer">
+            <a
+              className="primary"
+              href={scheduleRideUrl({ destination: rideDestination(a.name, a.address) })}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               Schedule a Ride →
             </a>
             <a className="ghost" href={gMaps(a)} target="_blank" rel="noreferrer">

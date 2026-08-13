@@ -1,13 +1,26 @@
 import { useEffect, useState } from 'react';
 import { Car, Ticket } from 'lucide-react';
 import { ticketmasterEventHref, AFFILIATE_REL, PARTNER_META } from '../lib/affiliates';
-import { RIDER_BOOK_URL } from '../lib/constants';
+import { scheduleRideUrl } from '../lib/scheduleRide';
 import type { Coords } from '../lib/location';
 
-/** Same ride action the venue cards use. Duplicated as a one-liner rather than
- *  imported from Attractions.tsx, which would make the import cycle. */
-function openRide() {
-  window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer');
+/**
+ * Same ride action the venue cards use, prefilled with this event's venue and
+ * start. Lives here rather than being imported from Attractions.tsx, which would
+ * make an import cycle.
+ *
+ * Drop-off is built from whatever Discovery gave us, best first: a street address
+ * geocodes cleanly, city/state is the fallback when the venue has no address on
+ * file. scheduleRideUrl decides whether the start is far enough out to prefill a
+ * pickup time.
+ */
+function openRideTo(e: TMEvent) {
+  const parts = [e.venue, e.venueAddress, [e.city, e.state].filter(Boolean).join(', ')];
+  window.open(
+    scheduleRideUrl({ destination: parts.filter(Boolean).join(', '), date: e.date, time: e.time }),
+    '_blank',
+    'noopener,noreferrer',
+  );
 }
 
 /**
@@ -37,6 +50,8 @@ export type TMEvent = {
   segment: string | null;
   genre: string | null;
   venue: string | null;
+  /** Street address from Discovery, for prefilling a ride drop-off. May be null. */
+  venueAddress: string | null;
   city: string | null;
   state: string | null;
   priceFrom: number | null;
@@ -73,12 +88,6 @@ export function useLocalEvents(coords: Coords | null | undefined, segment: strin
     const qs = new URLSearchParams({
       lat: String(coords.lat),
       lng: String(coords.lng),
-      // 20 (Discovery's cap in our proxy) rather than 12. Only a few rows are
-      // woven into the grid; the headroom is what lets nextEventAtVenue() find a
-      // venue's own next event. Measured 2026-08-12: Discovery returns one row
-      // PER DATE, so a 3-game Pirates series eats 3 slots — 12 rows collapsed to
-      // just 5 distinct venues on the Sports tab, which is why venues that
-      // genuinely sell tickets were rendering with no chip.
       // 80, with the proxy capped at 100 so there's headroom. Measured 2026-08-12
       // against the live proxy: Discovery returns one row PER DATE, so long-running
       // shows hog a shallow page. New York yielded just 6 distinct venues at
@@ -212,7 +221,7 @@ export function EventTicketCard({ e, placement }: { e: TMEvent; placement: strin
             info circle here — a Ticketmaster event has no on-site detail panel to
             open, so SCHEDULE and TICKETS split the row evenly. */}
         <div className="venue-actions has-tix">
-          <button className="va gold" onClick={openRide}>
+          <button className="va gold" onClick={() => openRideTo(e)}>
             <Car size={17} color="#000" strokeWidth={2} aria-hidden="true" />
             Schedule
           </button>

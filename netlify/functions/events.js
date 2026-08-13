@@ -102,6 +102,9 @@ export const handler = async (event) => {
         segment: cls?.segment?.name || null,
         genre: cls?.genre?.name || null,
         venue: venue?.name || null,
+        // Street address, so a "Schedule a Ride" handoff can prefill a real
+        // drop-off rather than just a venue name the rider has to disambiguate.
+        venueAddress: venue?.address?.line1 || null,
         city: venue?.city?.name || null,
         state: venue?.state?.stateCode || null,
         coord: venue?.location ? [Number(venue.location.latitude), Number(venue.location.longitude)] : null,
