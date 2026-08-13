@@ -6,6 +6,11 @@
  * JetBrains Mono eyebrow) and deliberately quiet so it reads as a disclosure,
  * not a promo.
  *
+ * 13px is a floor, not a preference: the Expedia Group Travel Creator terms
+ * (2026-08-13) require the disclosure at 13px minimum, in the same viewport as
+ * the links and never behind a tap. Raising it here keeps ONE component that
+ * satisfies the strictest partner we have, so no placement can drift below it.
+ *
  * `inline` renders a compact one-liner (for tucking under a single affiliate
  * row, e.g. in the Directory); the default is the bordered band used beneath
  * an affiliate section on Attractions.
@@ -28,7 +33,7 @@ export function AffiliateDisclosure({
       <p
         style={{
           fontFamily: MONO,
-          fontSize: 10.5,
+          fontSize: 13,
           lineHeight: 1.5,
           letterSpacing: '.02em',
           color: '#6f6f6f',
@@ -60,7 +65,7 @@ export function AffiliateDisclosure({
           <circle cx="12" cy="12" r="10" />
           <path d="M12 16v-4M12 8h.01" />
         </svg>
-        <p style={{ margin: 0, fontSize: 12, lineHeight: 1.6, color: '#9A9A9A' }}>
+        <p style={{ margin: 0, fontSize: 13, lineHeight: 1.6, color: '#9A9A9A' }}>
           <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: '.14em', textTransform: 'uppercase', color: GOLD, marginRight: 8 }}>
             Affiliate disclosure
           </span>

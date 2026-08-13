@@ -2,15 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
-import { kayakHotel, kayakHotelSearch } from '../lib/kayak';
+import { expediaStay, expediaStaySearch } from '../lib/expedia';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
+import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
-// Travel booking (search + Book Now) is gated OFF until a booking-partner contract
-// is live (KAYAK still in case-by-case review; Travelpayouts' Booking.com/Expedia
-// tier pending a project re-review). The KAYAK links in lib/kayak.ts are wired and
-// ready behind this ONE flag — flip to true (and swap KAYAK_AFFILIATE_ID) to go live.
-const BOOKING_LIVE: boolean = false;
+// Stay booking went LIVE 2026-08-13: the Expedia Group Travel Creator Program was
+// approved, so every gate below now opens a TRACKED Expedia link (lib/expedia.ts,
+// Partnerize camref 1110lLrVp, 4% on hotels).
+//
+// Everything this flag gates is STAYS. Flights stay dark on purpose — Expedia pays
+// nothing on flights or cruises, and KAYAK is still in case-by-case review, so
+// there is no approved partner to send that traffic to yet.
+const BOOKING_LIVE: boolean = true;
 
 /**
  * Travels — ported from the CBL "New Website" handoff bundle
@@ -782,7 +786,7 @@ function SearchBar() {
   const search = () => {
     const n = parseInt(guests, 10);
     window.open(
-      kayakHotelSearch({ destination: dest, guests: Number.isFinite(n) ? n : undefined }),
+      expediaStaySearch({ destination: dest, guests: Number.isFinite(n) ? n : undefined }, 'travels_searchbar'),
       '_blank',
       'noopener,noreferrer',
     );
@@ -830,10 +834,15 @@ function SearchBar() {
           </button>
         </div>
       </div>
+      {/* Stays went live 2026-08-13 with the Expedia partnership, so this strip can
+          no longer say "Launching Soon" — the Book Now buttons below it work. Flights
+          genuinely ARE still coming (Expedia pays nothing on them and KAYAK is in
+          review), so the two are called out separately rather than lumped together. */}
       <div className="providers">
-        <span className="prov-chip cbl">Launching Soon</span>
+        <span className="prov-chip cbl">Stays Live</span>
         <span className="pl">
-          Full hotel &amp; flight booking is being finalized — curated by CBL, with Buckee planning the rest.
+          Hotel &amp; stay booking is live, powered by Expedia. Flights are still being
+          finalized — curated by CBL, with Buckee planning the rest.
         </span>
       </div>
     </>
@@ -935,7 +944,7 @@ function StayCard({ s }: { s: Stay }) {
         <div className="cta-row">
           <button
             className="cta"
-            onClick={BOOKING_LIVE ? () => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer') : undefined}
+            onClick={BOOKING_LIVE ? () => window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer') : undefined}
             disabled={!BOOKING_LIVE}
             title={BOOKING_LIVE ? undefined : 'Booking launching soon'}
             style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
@@ -944,7 +953,7 @@ function StayCard({ s }: { s: Stay }) {
           </button>
           <button
             className="cta ghost"
-            onClick={BOOKING_LIVE ? () => window.open(kayakHotel(s.name, s.loc), '_blank', 'noopener,noreferrer') : undefined}
+            onClick={BOOKING_LIVE ? () => window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer') : undefined}
             disabled={!BOOKING_LIVE}
             title={BOOKING_LIVE ? undefined : 'Coming soon'}
             style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
@@ -1151,6 +1160,10 @@ export function Travels() {
       <style>{TRAVELS_CSS}</style>
       <Hero />
       <SearchBar />
+      {/* Sits directly under the search bar, ABOVE every bookable control on the
+          page — the Expedia terms require the disclosure in the same viewport as
+          the links and before the click, never behind a tap. */}
+      <AffiliateDisclosure />
       <CatTabs tab={tab} setTab={setTab} />
 
       {tab === 'FLIGHTS' && (
