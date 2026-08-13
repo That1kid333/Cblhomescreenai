@@ -1,0 +1,52 @@
+# First CI for this repo.
+#
+# Why it exists: on 2026-08-13 a commit deleted two `useRef` declarations from
+# JoinModal while leaving every use in place. `npm run build` passed clean —
+# Vite strips types without checking them — so it shipped, and "Join Now — Free"
+# crashed the whole home page with `ReferenceError: panelRef is not defined` for
+# real visitors. `tsc` catches exactly that as `TS2304: Cannot find name`.
+#
+# Build alone would NOT have caught it. Typecheck is the point of this workflow.
+#
+# NOTE: pushing to `main` deploys production automatically, so on a direct push
+# this reports AFTER the deploy has already gone out. It is a safety net, not a
+# gate. The gate is branch protection with these as required checks, which needs
+# repo-admin rights (Justin) — until then, treat a red X on main as "roll back".
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push supersedes an in-flight run for the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Typecheck & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # `npm ci` over `npm install` so a run can't quietly drift from the lockfile.
+      - name: Install dependencies
+        run: npm ci
+
+      # Runs BEFORE the build: it's the check that would have caught the crash,
+      # and a failure here should be the first thing you see.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build

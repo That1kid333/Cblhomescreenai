@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
-import { type DirectoryListing } from "../lib/supabase/directoryClient";
+import { type DirectoryListing, type DirectoryBusiness } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
