@@ -45,6 +45,8 @@ jobs:
 
       # Runs BEFORE the build: it's the check that would have caught the crash,
       # and a failure here should be the first thing you see.
+      # Uses tsconfig.check.json, not a root tsconfig.json — a root one gets read
+      # implicitly by other tooling (Netlify's esbuild function bundler among it).
       - name: Typecheck
         run: npm run typecheck
 
