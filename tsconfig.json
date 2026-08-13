@@ -1,0 +1,41 @@
+{
+  // Type-checking config for CI. The build does NOT use this — Vite strips types
+  // without checking them, which is exactly how a ReferenceError shipped to
+  // production on 2026-08-13 (JoinModal used two refs it never declared, the
+  // build passed clean, and "Join Now" crashed the home page for real visitors).
+  //
+  // Deliberately NOT `strict`. The goal here is to catch code that cannot
+  // possibly run — undeclared names, bad imports, wrong argument counts — on a
+  // codebase that was never written against a type-checker. Turning on full
+  // strictness would bury that signal under hundreds of pre-existing nullability
+  // complaints and the check would just get ignored. Strictness can be raised
+  // later, one flag at a time, once the baseline is clean.
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+
+    "noEmit": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    // main.tsx imports "./app/App.tsx" with the extension, which Vite resolves
+    // fine. Allowed here because this config never emits.
+    "allowImportingTsExtensions": true,
+    "forceConsistentCasingInFileNames": true,
+
+    // Third-party .d.ts files are not our bugs and would add noise we can't fix.
+    "skipLibCheck": true,
+
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.old.tsx", "**/*.old.ts"]
+}

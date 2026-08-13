@@ -174,8 +174,7 @@ export async function signUpMember(input: MemberSignUpInput): Promise<{ error: s
         phone: input.phone,
         notes: 'Added via referral signup on website',
       })
-      .then(() => {})
-      .catch(() => {});
+      .then(() => {}, () => {});
   }
 
   // Create referral reward entry
@@ -193,8 +192,7 @@ export async function signUpMember(input: MemberSignUpInput): Promise<{ error: s
           points_awarded: 10,
           created_at: new Date().toISOString(),
         })
-        .then(() => {})
-        .catch(() => {});
+        .then(() => {}, () => {});
     }
   }
 
