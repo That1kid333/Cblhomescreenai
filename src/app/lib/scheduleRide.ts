@@ -59,21 +59,21 @@ export function clearsNoticeWindow(date?: string | null, time?: string | null, n
  * can't take.
  */
 /**
- * ⚠️ FLIP TO `true` ONCE APP PR `feat/login-redirect-param` IS MERGED.
+ * Route through /rider/login?redirect=… rather than straight at the scheduler.
  *
- * Routing through /rider/login?redirect=… is what makes this work for a member
- * who ISN'T signed in: login honours the redirect and lands them on the prefilled
- * form. It also stays correct for signed-in members, because that PR applies the
- * redirect in the already-signed-in effect too.
+ * ON since 2026-08-13, once both app PRs landed on main and deployed:
+ *  - #35 `feat/login-redirect-param` — login honours a same-origin ?redirect,
+ *    in the already-signed-in effect as well as after sign-in, so BOTH a signed-in
+ *    member and a signed-out one end up on the prefilled form.
+ *  - #36 `fix(rider-login): don't decode the redirect twice` — without it, a venue
+ *    whose name contains "&" arrived truncated. "Pittsburgh Zoo & Aquarium" became
+ *    "Pittsburgh Zoo ", and two of the first 21 Pittsburgh attractions hit it.
  *
- * Until it merges, login ignores ?redirect and hard-navigates to the dashboard —
- * which would throw away the venue they picked for EVERY member, including the
- * signed-in ones this already works for. So we link straight at /rider/schedule
- * for now: correct for signed-in members, and a signed-out member hits the app's
- * "Authentication Required" toast, which is no worse than the bare login page
- * they got before this existed.
+ * Both verified present on app main before flipping. If this ever needs to go back
+ * to false, the fallback is a direct /rider/schedule link: still right for signed-in
+ * members, and signed-out ones get the app's "Authentication Required" toast.
  */
-const LOGIN_HONOURS_REDIRECT = false;
+const LOGIN_HONOURS_REDIRECT = true;
 
 export function scheduleRideUrl(target: RideTarget, now = new Date()): string {
   const url = new URL(`${APP_URL}/rider/schedule`);
