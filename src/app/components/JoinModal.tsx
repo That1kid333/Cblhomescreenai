@@ -133,6 +133,16 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
 
   const [referrer, setReferrer] = useState<{ name: string; photo: string | null; type: 'driver' | 'rider' } | null>(null);
 
+  // Wraps the dialog panel. Read by the Tab handler below to cycle focus inside
+  // the modal, and attached via ref= on .panel. Dropped by cae9785 while its
+  // three uses stayed, which crashed the whole page the moment "Join Now" opened
+  // the modal — a ReferenceError during render escapes to the router's error
+  // boundary rather than failing quietly.
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Same story: used to autofocus the first input when the modal opens, and
+  // attached on both the signup and signin first fields.
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (!open) return;
     const refCode = captureRefFromUrl();
