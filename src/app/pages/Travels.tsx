@@ -336,6 +336,18 @@ const TRAVELS_CSS = `
   background:#4DBF66; box-shadow:0 0 6px #4DBF66;
 }
 .cbl-travels .prov-chip.cbl { background:rgba(201,151,66,.12); border-color:#C99742; color:#fff; }
+/* Partner lockup. NO brightness(0) invert(1) here — that filter exists to force
+   assorted logos to white-on-black, and running it over Expedia's own artwork
+   would flatten the yellow #fddb32 tile to white and destroy the brand mark.
+   This is the file the Creator Hub serves for its own banners; it already has a
+   white wordmark and reads correctly on our black. Same rule as Ticketmaster. */
+.cbl-travels .providers .partner-by {
+  display:inline-flex; align-items:center; gap:9px;
+  font-family:${MONO}; font-size:10px; color:#888;
+  letter-spacing:.14em; text-transform:uppercase;
+}
+.cbl-travels .providers .partner-by img { height:19px; width:auto; display:block; }
+@media (max-width:640px){ .cbl-travels .providers .partner-by img { height:17px; } }
 .cbl-travels .prov-chip.cbl::before { background:#C99742; box-shadow:0 0 6px #C99742; }
 
 /* ── Section frame ── */
@@ -840,9 +852,12 @@ function SearchBar() {
           review), so the two are called out separately rather than lumped together. */}
       <div className="providers">
         <span className="prov-chip cbl">Stays Live</span>
+        <span className="partner-by">
+          Powered by
+          <img src="/travels/expedia-logo.svg" alt="Expedia" />
+        </span>
         <span className="pl">
-          Hotel &amp; stay booking is live, powered by Expedia. Flights are still being
-          finalized — curated by CBL, with Buckee planning the rest.
+          Flights are still being finalized — curated by CBL, with Buckee planning the rest.
         </span>
       </div>
     </>
