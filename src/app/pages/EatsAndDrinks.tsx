@@ -1189,6 +1189,37 @@ const DESKTOP_CSS = `
 
 .cbl-eats .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
 .cbl-eats .grid .sponsored-card { grid-column:span 3; }
+
+/* Compact "Become a CBL Partner" strip (Keith + Brian, 2026-08-14). Sits right
+   under the sponsored spotlight, where a restaurant owner scrolling their own
+   category is most likely to wonder how that top slot works. Deliberately ONE
+   short line — the full pitch already lives in PartnerBand at the foot of the
+   page, and this is a nudge toward it, not a second sales section. */
+.cbl-eats .grid .partner-strip {
+  grid-column:span 3;
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  background:linear-gradient(90deg, rgba(201,151,66,.10), rgba(201,151,66,.02));
+  border:1px solid rgba(201,151,66,.30);
+  border-radius:14px 0 14px 0;
+  padding:14px 20px;
+}
+.cbl-eats .grid .partner-strip .tag {
+  font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase;
+  color:#0A0A0A; background:${GOLD}; border-radius:999px; padding:4px 10px; white-space:nowrap;
+}
+.cbl-eats .grid .partner-strip .msg { flex:1; min-width:200px; font-size:14px; line-height:1.5; color:#C8C8C8; }
+.cbl-eats .grid .partner-strip .msg b { color:#fff; font-weight:800; }
+.cbl-eats .grid .partner-strip .cta {
+  flex-shrink:0; background:${GOLD}; color:#000; border:0;
+  padding:11px 22px; border-radius:999px; text-decoration:none;
+  font-family:${DISPLAY}; font-weight:900; font-size:12px;
+  letter-spacing:.14em; text-transform:uppercase; transition:background .2s; white-space:nowrap;
+}
+.cbl-eats .grid .partner-strip .cta:hover { background:#DDB15F; }
+@media (max-width:640px){
+  .cbl-eats .grid .partner-strip { padding:14px 16px; gap:12px; }
+  .cbl-eats .grid .partner-strip .cta { width:100%; text-align:center; }
+}
 .cbl-eats .card {
   background:#141414; border:1px solid rgba(255,255,255,.08);
   border-radius:18px 0 18px 0; overflow:hidden; display:flex; flex-direction:column;
@@ -1273,6 +1304,7 @@ const DESKTOP_CSS = `
 @media (max-width:1100px){
   .cbl-eats .grid { grid-template-columns:repeat(2,1fr); }
   .cbl-eats .grid .sponsored-card { grid-column:span 2; }
+  .cbl-eats .grid .partner-strip { grid-column:span 2; }
   .cbl-eats .spotlight { grid-template-columns:1fr; }
   .cbl-eats .spotlight .shot { aspect-ratio:16/9; min-height:0; }
   .cbl-eats .empty { grid-column:span 2; }
@@ -1369,6 +1401,27 @@ function RestaurantCard({ r }: { r: Restaurant }) {
         </div>
       </div>
     </article>
+  );
+}
+
+/**
+ * One-line partner nudge under the spotlight. Keith + Brian, 2026-08-14: a
+ * restaurant owner looking at their own category is the warmest possible
+ * audience for the top slot, but the ask shouldn't eat the page — the real pitch
+ * is PartnerBand at the foot, and this just points there.
+ */
+function PartnerStrip() {
+  return (
+    <aside className="partner-strip">
+      <span className="tag">For restaurants</span>
+      <span className="msg">
+        <b>Become a CBL Partner</b> — move to the top of the page and get full access to the
+        website and app.
+      </span>
+      <Link to="/partner-restaurants" className="cta">
+        Learn More →
+      </Link>
+    </aside>
   );
 }
 
@@ -1647,6 +1700,7 @@ function DesktopEats({
 
         <div className="grid">
           {featuredShown && featured && <Spotlight r={featured} />}
+          <PartnerStrip />
           {rest.length > 0 ? (
             rest.map((r) => <RestaurantCard key={r.id} r={r} />)
           ) : !featuredShown ? (
