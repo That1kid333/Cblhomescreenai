@@ -106,7 +106,15 @@ export async function getActiveBusinesses(opts: { city?: string; category?: stri
 export async function getActiveListings(opts: { city?: string; category?: string } = {}): Promise<DirectoryListing[]> {
   let query = directoryClient
     .from('directory_listings_public')
-    .select('id, title, description, category, neighborhood, price, price_type, city, state, photos, featured, urgent');
+    // driver_ad / driver_referral_code / user_id / tier are NOT optional extras:
+    // listingToCard() reads all four, and filterByLocation() uses the presence of
+    // driver_ad to give a driver post its 100mi reach instead of the 45mi metro
+    // radius. Omitting them (until 2026-08-14) meant driver ads were quietly
+    // range-limited to 45mi AND rendered with no photo, car or plate.
+    .select(
+      'id, title, description, category, neighborhood, price, price_type, city, state, ' +
+      'photos, featured, verified, urgent, tier, driver_ad, driver_referral_code, user_id',
+    );
 
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('category', opts.category);
