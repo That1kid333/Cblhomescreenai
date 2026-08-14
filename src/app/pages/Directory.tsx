@@ -3037,12 +3037,24 @@ export function Directory() {
     return items.filter((i) => {
       const ic = (i.city ?? "").trim().toLowerCase();
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
-      if (scope !== "metro") return false;
+
       const lc = listingCoords(i);
-      // Driver ads reach as far as the driver set (default 100mi); other
-      // listings use the metro radius (45mi).
-      const radius = i.driver_ad ? (Number(i.driver_ad.radius) || DEFAULT_DRIVER_RADIUS_MI) : METRO_RADIUS_MI;
-      if (searchCoords && lc && milesBetween(searchCoords, lc) <= radius) return true;
+
+      // A DRIVER AD IS A SERVICE AREA, NOT A PLACE — so it ignores the scope gate.
+      // "Just North Hills" correctly hides a sofa two towns over, because the sofa
+      // is *in* that town. A driver isn't: they set a radius (default 100mi)
+      // precisely to say how far they'll travel, so a Pittsburgh-based driver
+      // covering North Hills belongs in a North Hills view no matter which scope
+      // chip is picked. Before this, "Just {city}" returned false before the radius
+      // was ever consulted and Driver Posts read "No listings near North Hills yet"
+      // while two drivers actively served it (Keith, 2026-08-14).
+      if (i.driver_ad) {
+        const driverRadius = Number(i.driver_ad.radius) || DEFAULT_DRIVER_RADIUS_MI;
+        return !!(searchCoords && lc && milesBetween(searchCoords, lc) <= driverRadius);
+      }
+
+      if (scope !== "metro") return false;
+      if (searchCoords && lc && milesBetween(searchCoords, lc) <= METRO_RADIUS_MI) return true;
       const is = (i.state ?? "").trim().toLowerCase();
       return !!s && !!is && is === s;
     });
