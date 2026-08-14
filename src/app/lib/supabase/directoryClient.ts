@@ -1,40 +1,22 @@
-import { createClient } from '@supabase/supabase-js';
-
-// cbl-directory backs Justin's standalone classifieds/business directory app
-// (directory.citybucketlist.com). The marketing site only ever reads from it
-// (posting/payment/sign-in stays on that app) — anon key is safe to fall back
-// to, access is governed by RLS.
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://jgbaqzgkdqqvxmqytgsx.supabase.co';
-const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_ftx_EkI4-nj0vfUqbP0FzQ_XRGsXZJ9';
-
-export const directoryClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: false },
-});
-
-export type DirectoryCategory = {
-  name: string;
-  slug: string;
-  icon: string | null;
-  applies_to: 'listings' | 'businesses' | 'both';
-  sort_order: number;
-};
-
-export type DirectoryBusiness = {
-  id: string;
-  business_name: string;
-  description: string | null;
-  city: string | null;
-  state: string | null;
-  business_type: string | null;
-  directory_category: string | null;
-  logo_url: string | null;
-  photos: string[] | null;
-  rating: number | null;
-  review_count: number | null;
-  featured: boolean | null;
-  plan: string | null;
-};
+/**
+ * Directory listing shape — TYPES ONLY.
+ *
+ * This file used to also hold a second Supabase client plus getActiveListings(),
+ * getActiveBusinesses() and getDirectoryCategories(). All three were deleted on
+ * 2026-08-14: nothing imported them, and they were pointed at the wrong project.
+ * They queried `directory_listings_public`, `directory_businesses_public` and
+ * `directory_categories` against VITE_SUPABASE_URL, which on this site resolves to
+ * CBL-Rides (jgbaqzgkdqqvxmqytgsx) — where the latter two do not exist at all and
+ * return 404. The real cbl-directory project (kcmygfvxjncjyopvblhx) holds only four
+ * Atlanta demo rows and no driver schema, so that path was doubly dead.
+ *
+ * The live path is `ridesClient.getDirectoryListings()`, which reads
+ * `directory_listings` in CBL-Rides directly and lets RLS decide visibility.
+ *
+ * Keeping the dead copy around cost real time: it was edited while chasing a
+ * missing driver ad before anyone noticed the Directory page never called it.
+ * If you are looking for the query, it is in ridesClient.ts.
+ */
 
 export type DirectoryListing = {
   id: string;
@@ -56,86 +38,3 @@ export type DirectoryListing = {
   latitude?: number | null;
   longitude?: number | null;
 };
-
-export async function getDirectoryCategories(): Promise<DirectoryCategory[]> {
-  const { data, error } = await directoryClient
-    .from('categories')
-    .select('name, slug, icon, applies_to, sort_order')
-    .eq('is_active', true)
-    .order('sort_order');
-
-  if (error) {
-    console.error('[directoryClient] getDirectoryCategories failed:', error.message);
-    return [];
-  }
-  return data ?? [];
-}
-
-export async function getActiveBusinesses(opts: { city?: string; category?: string } = {}): Promise<DirectoryBusiness[]> {
-  let query = directoryClient
-    .from('partners_directory')
-    .select(
-      'id, business_name, description, city, state, business_type, directory_category, logo_url, show_in_directory'
-    );
-
-  if (opts.city) query = query.ilike('city', opts.city);
-  if (opts.category) query = query.eq('directory_category', opts.category);
-
-  const { data, error } = await query;
-  if (error) {
-    console.error('[directoryClient] getActiveBusinesses failed:', error.message);
-    return [];
-  }
-  return (data ?? []).map((p: any) => ({
-    id: String(p.id),
-    business_name: p.business_name,
-    description: p.description,
-    city: p.city,
-    state: p.state,
-    business_type: p.business_type,
-    directory_category: p.directory_category,
-    logo_url: p.logo_url,
-    photos: p.logo_url ? [p.logo_url] : [],
-    rating: null,
-    review_count: null,
-    featured: false,
-    plan: null,
-  }));
-}
-
-export async function getActiveListings(opts: { city?: string; category?: string } = {}): Promise<DirectoryListing[]> {
-  let query = directoryClient
-    .from('directory_listings_public')
-    // driver_ad / driver_referral_code / user_id / tier are NOT optional extras:
-    // listingToCard() reads all four, and filterByLocation() uses the presence of
-    // driver_ad to give a driver post its 100mi reach instead of the 45mi metro
-    // radius. Omitting them (until 2026-08-14) meant driver ads were quietly
-    // range-limited to 45mi AND rendered with no photo, car or plate.
-    .select(
-      'id, title, description, category, neighborhood, price, price_type, city, state, ' +
-      'photos, featured, verified, urgent, tier, driver_ad, driver_referral_code, user_id',
-    );
-
-  if (opts.city) query = query.ilike('city', opts.city);
-  if (opts.category) query = query.eq('category', opts.category);
-
-  const { data, error } = await query.order('featured', { ascending: false });
-  if (error) {
-    console.error('[directoryClient] getActiveListings failed:', error.message);
-    return [];
-  }
-  return (data ?? []).map((l: any) => ({
-    id: String(l.id),
-    title: l.title,
-    description: l.description,
-    category: l.category,
-    subcategory: l.neighborhood ?? null,
-    price: l.price,
-    price_type: l.price_type,
-    city: l.city,
-    state: l.state,
-    photos: l.photos,
-    featured: l.featured,
-    urgent: l.urgent,
-  }));
-}

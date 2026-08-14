@@ -4,7 +4,7 @@ import QRCode from "qrcode";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
-import { type DirectoryListing, type DirectoryBusiness } from "../lib/supabase/directoryClient";
+import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
@@ -789,20 +789,6 @@ function listingToCard(l: DirectoryListing): Listing {
   };
 }
 
-function businessToCard(b: DirectoryBusiness): Listing {
-  return {
-    id: b.id,
-    name: b.business_name,
-    loc: [b.city, b.directory_category || b.business_type].filter(Boolean).join(" · "),
-    desc: b.description || "",
-    price: b.rating ? `★ ${b.rating.toFixed(1)} (${b.review_count ?? 0})` : "New listing",
-    photos: b.photos?.length,
-    img: b.photos?.[0] || b.logo_url || undefined,
-    badges: b.featured ? [{ t: "★ Featured", k: "feat" }] : [],
-    featured: !!b.featured,
-    placeholder: !b.photos?.length && !b.logo_url,
-  };
-}
 
 function partnerToCard(p: Partner): Listing {
   return {
