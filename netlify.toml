@@ -2,6 +2,16 @@
   command = "npm run build"
   publish = "dist"
 
+# Pinned 2026-08-14. Production builds began failing at "Install dependencies"
+# from b12bd6f onward, while the SAME commit installs cleanly everywhere else:
+# `npm ci` and `npm install` both succeed from a fresh clone of the exact GitHub
+# HEAD locally (Node 24) and in GitHub Actions (Node 20). Build minutes, lockfile
+# integrity and the build cache were all ruled out, which left the unpinned Node
+# version as the only remaining difference. Pinning to the version CI proves good
+# also makes prod reproducible instead of tracking Netlify's rolling default.
+[build.environment]
+  NODE_VERSION = "20"
+
 [functions]
   node_bundler = "esbuild"
 
