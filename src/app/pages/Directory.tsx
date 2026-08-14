@@ -1301,7 +1301,12 @@ type DriverAd = {
 
 // Default driver service radius (miles). Justin's call: drivers serve a wide
 // area by default, and can narrow/widen it in the builder.
-const DEFAULT_DRIVER_RADIUS_MI = 100;
+// 40mi, lowered from 100 (Keith, 2026-08-14). 100 reached Morgantown WV and
+// Youngstown OH — not a real service area for a scheduled local driver. 40 covers
+// an entire metro: from Pittsburgh that's Butler, Beaver Falls, Greensburg and
+// Washington all inside. Drivers can still set their own radius; this is only the
+// fallback for an ad that never picked one.
+const DEFAULT_DRIVER_RADIUS_MI = 40;
 const RADIUS_OPTIONS = [15, 25, 50, 100, 150, 250];
 
 function DriverAdCard({ d }: { d: DriverAd }) {
