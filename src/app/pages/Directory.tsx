@@ -1296,18 +1296,22 @@ type DriverAd = {
   plate?: string | null; plateState?: string | null; code: string;
   phone?: string | null; email?: string | null; since?: string | null;
   availability?: string | null; // e.g. "Scheduled rides only · Book 12+ hrs ahead"
-  radius?: number | null; // miles the driver serves — controls how far a search surfaces this ad (default 100)
+  radius?: number | null; // PICKUP radius in miles — how far from their city a rider's
+                          // search still surfaces this ad. Not trip length; trips can end anywhere.
 };
 
-// Default driver service radius (miles). Justin's call: drivers serve a wide
-// area by default, and can narrow/widen it in the builder.
-// 40mi, lowered from 100 (Keith, 2026-08-14). 100 reached Morgantown WV and
+// Default driver PICKUP radius (miles), 40 — lowered from 100 (Keith, 2026-08-14). 100 reached Morgantown WV and
 // Youngstown OH — not a real service area for a scheduled local driver. 40 covers
 // an entire metro: from Pittsburgh that's Butler, Beaver Falls, Greensburg and
 // Washington all inside. Drivers can still set their own radius; this is only the
 // fallback for an ad that never picked one.
 const DEFAULT_DRIVER_RADIUS_MI = 40;
-const RADIUS_OPTIONS = [15, 25, 50, 100, 150, 250];
+// Pickup ranges. 40 is the default and MUST be present — a value missing from
+// this list leaves the <select> with nothing matching and can silently overwrite
+// the driver's saved choice on the next save. 150/250 were dropped: they made
+// sense when the label read "how far you'll go", but as a PICKUP radius they
+// describe an offer no scheduled driver is making.
+const RADIUS_OPTIONS = [10, 15, 25, 40, 50, 75, 100];
 
 function DriverAdCard({ d }: { d: DriverAd }) {
   const link = `${APP_URL}/r/${d.code}`;
@@ -1960,13 +1964,13 @@ function DriverAdModal({
                       <input id="da-city" type="text" value={cityField} onChange={(e) => setCityField(e.target.value)} placeholder="Pittsburgh" />
                     </div>
                     <div className="field" style={{ maxWidth: 150 }}>
-                      <label htmlFor="da-radius">How far you&rsquo;ll go</label>
+                      <label htmlFor="da-radius">How far you&rsquo;ll travel for pickup</label>
                       <select id="da-radius" value={radius} onChange={(e) => setRadius(Number(e.target.value))}>
                         {RADIUS_OPTIONS.map((r) => <option key={r} value={r}>{r} mi</option>)}
                       </select>
                     </div>
                   </div>
-                  <p className="hint">Your ad shows to riders searching anywhere within this range of your city.</p>
+                  <p className="hint">Your ad shows to riders searching anywhere within this range of your city. This is your PICKUP range — where you’ll collect a rider, not how far you’ll drive them. Trips can end anywhere.</p>
 
                   <div className="row">
                     <div className="field">
