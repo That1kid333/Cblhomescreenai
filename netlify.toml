@@ -2,13 +2,16 @@
   command = "npm run build"
   publish = "dist"
 
-# Pinned 2026-08-14. Production builds began failing at "Install dependencies"
-# from b12bd6f onward, while the SAME commit installs cleanly everywhere else:
-# `npm ci` and `npm install` both succeed from a fresh clone of the exact GitHub
-# HEAD locally (Node 24) and in GitHub Actions (Node 20). Build minutes, lockfile
-# integrity and the build cache were all ruled out, which left the unpinned Node
-# version as the only remaining difference. Pinning to the version CI proves good
-# also makes prod reproducible instead of tracking Netlify's rolling default.
+# Pinned for reproducibility. NOTE: the Aug 13-14 production build failures were
+# NOT a Node version problem — Netlify was already on v20.20.2. A stray
+# pnpm-workspace.yaml in the repo root made Netlify detect a pnpm workspace and
+# install with pnpm (which defaults to --frozen-lockfile in CI), while pnpm-lock.yaml
+# had gone stale against package.json since b12bd6f added typescript and
+# @types/react-dom via npm. Every local and CI test passed because they all ran
+# npm; Netlify was the only environment running pnpm. Both pnpm files were deleted
+# so Netlify installs with npm and package-lock.json, matching CI, the build
+# command, and local dev. Do NOT reintroduce a pnpm lockfile — regenerating it was
+# the previous fix (see 2022829) and it broke again on the next npm-only change.
 [build.environment]
   NODE_VERSION = "20"
 
