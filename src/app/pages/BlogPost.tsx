@@ -67,11 +67,11 @@ const CSS = `
 .cbl-post .back:hover { color:${GOLD}; }
 
 .cbl-post .kick { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin:22px 0 12px; }
-.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; text-wrap:pretty; }
+.cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; text-wrap:balance; }
 /* Author marks the accent with *asterisks*. Matches the .it treatment on the
    Travels / Attractions / Partner heroes — the blog was the one page without it. */
 .cbl-post h1.title .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:${GOLD}; font-size:.95em; letter-spacing:0; }
-.cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; }
+.cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; text-wrap:pretty; }
 /* Partner lockup. Reusable for any partnership announcement: put the logos in
    media[] with slot:'partner' and they render here, in the brand's own artwork.
    NO invert filter — Ticketmaster and Expedia both supply correct white/colour
@@ -100,24 +100,24 @@ const CSS = `
 
 /* article body */
 .cbl-post .body { font-size:18px; line-height:1.72; color:#DcDcDc; }
-.cbl-post .body p { margin:0 0 20px; }
-.cbl-post .body h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.15; letter-spacing:-.01em; color:#fff; margin:36px 0 14px; }
-.cbl-post .body h3 { font-family:${DISPLAY}; font-weight:800; font-size:20px; color:#fff; margin:28px 0 10px; }
+.cbl-post .body p { margin:0 0 20px; text-wrap:pretty; }
+.cbl-post .body h2 { font-family:${DISPLAY}; font-weight:900; font-size:26px; line-height:1.15; letter-spacing:-.01em; color:#fff; margin:36px 0 14px; text-wrap:balance; }
+.cbl-post .body h3 { font-family:${DISPLAY}; font-weight:800; font-size:20px; color:#fff; margin:28px 0 10px; text-wrap:balance; }
 .cbl-post .body ul { margin:0 0 20px; padding-left:0; list-style:none; }
-.cbl-post .body li { position:relative; padding-left:22px; margin-bottom:11px; }
+.cbl-post .body li { position:relative; padding-left:22px; margin-bottom:11px; text-wrap:pretty; }
 .cbl-post .body li::before { content:''; position:absolute; left:0; top:11px; width:8px; height:8px; border-radius:50%; background:${GOLD}; }
 .cbl-post .body ol { margin:4px 0 22px; padding-left:0; list-style:none; counter-reset:bl; }
 .cbl-post .body ol li { padding-left:42px; margin-bottom:14px; }
 .cbl-post .body ol li::before { counter-increment:bl; content:counter(bl,decimal-leading-zero); width:auto; height:auto; background:none; border-radius:0; top:1px; font-family:${MONO}; font-size:15px; font-weight:700; color:${GOLD}; }
 .cbl-post .body strong { color:#fff; font-weight:700; }
 .cbl-post .body blockquote { margin:30px 0; padding:20px 26px; border-left:3px solid ${GOLD}; background:rgba(201,151,66,.07); border-radius:0 10px 10px 0; }
-.cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; }
+.cbl-post .body blockquote p { margin:0 0 6px; font-family:${ITALIC}; font-style:italic; font-size:20px; line-height:1.5; color:#F0E6D2; text-wrap:pretty; }
 .cbl-post .body blockquote p:last-child { margin:0; }
 
 /* Inline images in the body (markdown ![caption](url)) */
 .cbl-post .body figure.mdfig { margin:26px 0 30px; }
 .cbl-post .body figure.mdfig img { width:100%; border-radius:14px 0 14px 0; display:block; border:1px solid rgba(255,255,255,.08); box-shadow:0 12px 34px rgba(0,0,0,.5); }
-.cbl-post .body figure.mdfig figcaption { margin-top:9px; font-family:${MONO}; font-size:10.5px; letter-spacing:.04em; color:#888; }
+.cbl-post .body figure.mdfig figcaption { margin-top:9px; font-family:${MONO}; font-size:10.5px; letter-spacing:.04em; color:#888; text-wrap:pretty; }
 .cbl-post .body figure.mdfig figcaption b, .cbl-post .body figure.mdfig figcaption strong { color:${GOLD}; }
 /* Portrait card image — constrained so a tall card isn't full-bleed */
 .cbl-post .body figure.mdfig.card { max-width:320px; }
