@@ -371,3 +371,35 @@ export async function getSubscriberCount(): Promise<number> {
     .eq('status', 'active');
   return count ?? 0;
 }
+
+/**
+ * Gold-italic accent inside a post title.
+ *
+ * Authors mark the accent with asterisks — "Ticketmaster and Expedia Just Joined
+ * *the Bucket List*" — and the post header renders that span in Playfair italic
+ * gold, the same treatment the Travels / Attractions / Partner heroes already use.
+ * The blog was the one place on the site missing it.
+ *
+ * ⚠️ A title reaches TEN render sites: the h1, blog index cards, related-post
+ * cards, ShareBar, document.title, and in the prerender edge function the
+ * og:title, twitter:title, <title>, <h1> and JSON-LD headline. Only the h1 wants
+ * the markup. EVERYWHERE ELSE MUST USE plainTitle(), or readers get literal
+ * asterisks in their browser tab and in every social share card.
+ * (netlify/edge-functions/prerender.ts carries its own copy of the strip, since
+ * edge functions can't import from src/.)
+ */
+export function plainTitle(title: string): string {
+  return title.replace(/\*/g, '');
+}
+
+/** Split a title into runs for the h1. `accent` runs render gold + italic. */
+export function titleParts(title: string): Array<{ text: string; accent: boolean }> {
+  return title
+    .split(/(\*[^*]+\*)/g)
+    .filter(Boolean)
+    .map((chunk) =>
+      chunk.startsWith('*') && chunk.endsWith('*') && chunk.length > 2
+        ? { text: chunk.slice(1, -1), accent: true }
+        : { text: chunk, accent: false },
+    );
+}
