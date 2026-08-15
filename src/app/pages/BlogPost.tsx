@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { getPostBySlug, getPublishedPosts, plainTitle, titleParts, type BlogPost as Post, type BlogCard } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
@@ -72,6 +72,18 @@ const CSS = `
    Travels / Attractions / Partner heroes — the blog was the one page without it. */
 .cbl-post h1.title .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:${GOLD}; font-size:.95em; letter-spacing:0; }
 .cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; }
+/* Partner lockup. Reusable for any partnership announcement: put the logos in
+   media[] with slot:'partner' and they render here, in the brand's own artwork.
+   NO invert filter — Ticketmaster and Expedia both supply correct white/colour
+   assets and filtering a brand's own logo is what their brand teams object to. */
+.cbl-post .partners { margin:0 0 22px; }
+.cbl-post .partners .plabel { font-family:${MONO}; font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:#7a7a7a; margin-bottom:11px; }
+.cbl-post .partners .plogos { display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
+.cbl-post .partners .plogos img { height:26px; width:auto; display:block; }
+.cbl-post .partners .psep { width:1px; height:26px; background:rgba(255,255,255,.18); }
+.cbl-post .partners .plive { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#7a7a7a; margin-top:11px; }
+.cbl-post .partners .plive b { color:${GOLD}; font-weight:700; }
+@media (max-width:640px){ .cbl-post .partners .plogos img { height:22px; } .cbl-post .partners .psep { display:none; } }
 .cbl-post .by { font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; margin-bottom:24px; }
 .cbl-post .by b { color:${GOLD}; font-weight:700; }
 
@@ -205,7 +217,9 @@ export function BlogPost() {
 
   const hero = post.hero_image;
   const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || plainTitle(post.title);
-  const gallery = post.media.filter((m) => m.url !== hero); // everything except the hero already shown
+  // slot:'partner' entries are header furniture, not gallery photos.
+  const partners = post.media.filter((m) => m.slot === 'partner' && m.url);
+  const gallery = post.media.filter((m) => m.url !== hero && m.slot !== 'partner');
   const mins = readMinutes(post.body_md);
   const bodyParts = splitBody(post.body_md);
   // author_photo / author_bio aren't in the schema yet — use them if Justin adds them,
@@ -234,6 +248,20 @@ export function BlogPost() {
               )}
             </h1>
             {post.subtitle && <p className="dek">{post.subtitle}</p>}
+            {partners.length > 0 && (
+              <div className="partners">
+                <div className="plabel">Official affiliate partners</div>
+                <div className="plogos">
+                  {partners.map((m, i) => (
+                    <Fragment key={m.url}>
+                      {i > 0 && <span className="psep" aria-hidden="true" />}
+                      <img src={m.url} alt={m.alt || ''} />
+                    </Fragment>
+                  ))}
+                </div>
+                <div className="plive">Now live on <b>CityBucketList.com</b></div>
+              </div>
+            )}
             {(post.author_name || mins > 0) && (
               <div className="by">
                 {post.author_name && <>By <b>{post.author_name}</b></>}
