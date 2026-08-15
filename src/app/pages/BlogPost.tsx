@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
-import { getPostBySlug, getPublishedPosts, type BlogPost as Post, type BlogCard } from '../lib/blog';
+import { getPostBySlug, getPublishedPosts, plainTitle, titleParts, type BlogPost as Post, type BlogCard } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
 import { LikeButton } from '../components/LikeButton';
 import { ShareBar } from '../components/ShareBar';
@@ -68,6 +68,9 @@ const CSS = `
 
 .cbl-post .kick { font-family:${MONO}; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:${GOLD}; margin:22px 0 12px; }
 .cbl-post h1.title { font-family:${DISPLAY}; font-weight:900; font-size:clamp(32px,5.2vw,52px); line-height:1.02; letter-spacing:-.015em; color:#fff; margin:0 0 14px; text-wrap:pretty; }
+/* Author marks the accent with *asterisks*. Matches the .it treatment on the
+   Travels / Attractions / Partner heroes — the blog was the one page without it. */
+.cbl-post h1.title .it { font-family:${ITALIC}; font-style:italic; font-weight:600; color:${GOLD}; font-size:.95em; letter-spacing:0; }
 .cbl-post .dek { font-family:${ITALIC}; font-style:italic; font-size:clamp(17px,2.4vw,21px); line-height:1.45; color:#C7C7C7; margin:0 0 18px; }
 .cbl-post .by { font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; margin-bottom:24px; }
 .cbl-post .by b { color:${GOLD}; font-weight:700; }
@@ -183,7 +186,7 @@ export function BlogPost() {
   }, [slug]);
 
   useEffect(() => {
-    if (post) document.title = `${post.seo_title || post.title} — CBL Blog`;
+    if (post) document.title = `${post.seo_title || plainTitle(post.title)} — CBL Blog`;
   }, [post]);
 
   if (post === undefined) return <main className="cbl-post"><style>{CSS}</style><div className="state">Loading…</div></main>;
@@ -201,7 +204,7 @@ export function BlogPost() {
     );
 
   const hero = post.hero_image;
-  const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || post.title;
+  const heroAlt = post.media.find((m) => m.slot === 'hero')?.alt || plainTitle(post.title);
   const gallery = post.media.filter((m) => m.url !== hero); // everything except the hero already shown
   const mins = readMinutes(post.body_md);
   const bodyParts = splitBody(post.body_md);
@@ -225,7 +228,11 @@ export function BlogPost() {
           <div className="head-text">
             <Link to="/blog" className="back">← The CBL Blog</Link>
             {post.kicker && <div className="kick">{post.kicker}</div>}
-            <h1 className="title">{post.title}</h1>
+            <h1 className="title">
+              {titleParts(post.title).map((part, i) =>
+                part.accent ? <span className="it" key={i}>{part.text}</span> : <span key={i}>{part.text}</span>,
+              )}
+            </h1>
             {post.subtitle && <p className="dek">{post.subtitle}</p>}
             {(post.author_name || mins > 0) && (
               <div className="by">
@@ -234,7 +241,7 @@ export function BlogPost() {
                 {mins > 0 && <>{post.author_name || post.city ? ' · ' : ''}{mins} min read</>}
               </div>
             )}
-            <ShareBar title={post.title} />
+            <ShareBar title={plainTitle(post.title)} />
           </div>
           {hero && (
             <div className="head-media">
@@ -329,7 +336,7 @@ export function BlogPost() {
               {related.map((r) => (
                 <Link key={r.slug} to={`/blog/${r.slug}`} className="rel-card">
                   <div className="rel-img">
-                    {r.hero_image ? <img src={r.hero_image} alt={r.title} loading="lazy" /> : <div className="rel-ph" />}
+                    {r.hero_image ? <img src={r.hero_image} alt={plainTitle(r.title)} loading="lazy" /> : <div className="rel-ph" />}
                   </div>
                   <div className="rel-body">
                     {(r.vertical || r.city) && (
@@ -346,7 +353,7 @@ export function BlogPost() {
         <div className="foot">
           <div className="foot-share">
             <div className="foot-share-label">Know someone who’d love this?</div>
-            <ShareBar title={post.title} />
+            <ShareBar title={plainTitle(post.title)} />
           </div>
           <Link to="/blog" className="more">← More from the CBL Blog</Link>
         </div>

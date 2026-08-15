@@ -4,7 +4,7 @@ title: "Ticketmaster and Expedia Just Joined the Bucket List"
 subtitle: "Two of the biggest names in live events and travel are now built into CityBucketList.com. See the show, book the room, schedule the ride, all in one place."
 kicker: "WHAT'S NEW · THE PARTNERS"
 vertical: news
-city: Pittsburgh
+city:
 author_name: "Keith Schmiedlin, Brian Uhler & Justin Barber"
 tags: [whats new, ticketmaster, expedia, partners, travel, tickets]
 featured: true
@@ -26,11 +26,11 @@ All three of us have something to say about it, so we are splitting this one thr
 
 ![](/attractions/ticketmaster-logo.png "logo")
 
-Open the Attractions page and you no longer get a static list of landmarks. You get what is actually happening around you this week, pulled live: the Pirates at PNC Park, a Steelers preseason game at Acrisure, whoever is playing PPG Paints Arena on Thursday.
+Open the Attractions page in any city and you no longer get a static list of landmarks. You get what is actually happening around you this week, pulled live. Denver, Nashville, Austin, Chicago, Pittsburgh: the page fills with that city's week.
 
-These come straight from [Ticketmaster](https://ticketmaster.evyy.net/c/7504721/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com&subId1=blog_partners_ticketmaster), the official box office. Not resale, not a marketplace guessing at inventory. Verified tickets from the venue, with the seat map and the real price.
+These come straight from [Ticketmaster](https://ticketmaster.evyy.net/c/7504721/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com&subId1=blog_partners_ticketmaster), the official box office. Not resale, not a marketplace guessing at inventory. Verified tickets from the venue, with the seat map and the real price. That is the whole United States plus around two dozen countries.
 
-The part I care about as a designer is what it did to the page. A venue card used to be a photograph and a paragraph. Now, if that venue has something on sale, the card tells you and hands you the ticket. Arenas, ballparks, theaters, and the small rooms too. Club Cafe and the Funhouse at Mr. Smalls sit in the same grid as the big buildings, which is exactly right for a city like ours.
+The part I care about as a designer is what it did to the page. A venue card used to be a photograph and a paragraph. Now, if that venue has something on sale, the card tells you and hands you the ticket. Arenas and ballparks, and the small rooms too. In New York the page runs more than forty venues deep. In Pittsburgh, Club Cafe and the Funhouse at Mr. Smalls sit in the same grid as PPG Paints Arena. Every city gets its own version, which is the whole idea.
 
 ## Expedia: somewhere to sleep after the show
 
