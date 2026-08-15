@@ -1,7 +1,7 @@
 ---
 slug: ticketmaster-expedia-join-the-bucket-list
 title: "Ticketmaster and Expedia Just Joined the Bucket List"
-subtitle: "Two of the biggest names in live events and travel are now built into CityBucketList. See the show, book the room, schedule the ride, all in one place."
+subtitle: "Two of the biggest names in live events and travel are now built into CityBucketList.com. See the show, book the room, schedule the ride, all in one place."
 kicker: "WHAT'S NEW · THE PARTNERS"
 vertical: news
 city: Pittsburgh
@@ -10,7 +10,7 @@ tags: [whats new, ticketmaster, expedia, partners, travel, tickets]
 featured: true
 status: draft
 seo_title: "Ticketmaster and Expedia Are Now on CityBucketList"
-seo_description: "CityBucketList adds Ticketmaster for live events and Expedia for hotels and stays. Find it, book it, and schedule your ride, all from one place."
+seo_description: "CityBucketList.com adds Ticketmaster for live events and Expedia for hotels and stays. Find it, book it, and schedule your ride, all from one place."
 excerpt: "Two big names, one bucket list. Ticketmaster brings real local events with official box-office tickets. Expedia brings the room for the night. Here is what changed and why it matters."
 ---
 
@@ -18,7 +18,7 @@ excerpt: "Two big names, one bucket list. Ticketmaster brings real local events 
 
 A while back I wrote about the bench of booking partners behind our guides, and I ended it with a line about closing the gap between "that sounds amazing" and "it's booked."
 
-Two names just closed most of what was left. **Ticketmaster** and **Expedia** are now built into CityBucketList.
+Two names just closed most of what was left. **Ticketmaster** and **Expedia** are now built into CityBucketList.com.
 
 All three of us have something to say about it, so we are splitting this one three ways.
 
