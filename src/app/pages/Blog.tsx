@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission } from '../lib/blog';
+import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission , plainTitle } from '../lib/blog';
 import { useAuth } from '../lib/auth';
 import keithPhoto from '../../assets/cbl-keith.png';
 
@@ -415,7 +415,7 @@ function toCard(p: BlogCard, likes: number): Card {
     cat,
     cats,
     catLabel,
-    title: p.title,
+    title: plainTitle(p.title),
     excerpt: p.excerpt || '',
     author: p.author_name || 'City Bucket List',
     avatar: (p.author_name || '').toLowerCase().includes('keith') ? keithPhoto : '',
@@ -525,7 +525,7 @@ function Spotlight({ p }: { p: Card }) {
       </div>
       <div className="text">
         <div className="kicker">CBL Featured{p.city ? ` · ${p.city}` : ''}</div>
-        <h3>{p.title}</h3>
+        <h3>{plainTitle(p.title)}</h3>
         <p>{p.excerpt}</p>
         <div className="byline">
           {p.avatar && <div className="avatar" style={{ backgroundImage: `url(${p.avatar})` }} />}
@@ -551,7 +551,7 @@ function PostCard({ p }: { p: Card }) {
         {p.city && <span className="read-time">{p.city}</span>}
       </div>
       <div className="body">
-        <h3>{p.title}</h3>
+        <h3>{plainTitle(p.title)}</h3>
         <p className="excerpt">{p.excerpt}</p>
         <div className="byline">
           {p.avatar && <div className="avatar" style={{ backgroundImage: `url(${p.avatar})` }} />}
