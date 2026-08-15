@@ -1,0 +1,28 @@
+[
+  {
+    "key": "tm-expedia-show",
+    "file": "public/blog/ticketmaster-expedia/show.jpg",
+    "title": "Concert Show",
+    "creator": "Nainoa Shizuru",
+    "license": "cc0",
+    "license_version": "1.0",
+    "provider": "stocksnap",
+    "landing": "https://stocksnap.io/photo/concert-show-5FGWJW4Z5D",
+    "src": "https://cdn.stocksnap.io/img-thumbs/960w/5FGWJW4Z5D.jpg",
+    "original_size": "5184x3456",
+    "used_for": "Ticketmaster section image, ticketmaster-expedia-join-the-bucket-list"
+  },
+  {
+    "key": "tm-expedia-stay",
+    "file": "public/blog/ticketmaster-expedia/stay.jpg",
+    "title": "Hotel Room",
+    "creator": "Travel Adventures",
+    "license": "cc0",
+    "license_version": "1.0",
+    "provider": "stocksnap",
+    "landing": "https://stocksnap.io/photo/hotel-room-DGBAEIS339",
+    "src": "https://cdn.stocksnap.io/img-thumbs/960w/DGBAEIS339.jpg",
+    "original_size": "4804x3207",
+    "used_for": "Expedia section image, ticketmaster-expedia-join-the-bucket-list"
+  }
+]
