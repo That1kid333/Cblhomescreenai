@@ -81,8 +81,6 @@ const CSS = `
 .cbl-post .partners .plogos { display:flex; align-items:center; gap:22px; flex-wrap:wrap; }
 .cbl-post .partners .plogos img { height:26px; width:auto; display:block; }
 .cbl-post .partners .psep { width:1px; height:26px; background:rgba(255,255,255,.18); }
-.cbl-post .partners .plive { font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#7a7a7a; margin-top:11px; }
-.cbl-post .partners .plive b { color:${GOLD}; font-weight:700; }
 @media (max-width:640px){ .cbl-post .partners .plogos img { height:22px; } .cbl-post .partners .psep { display:none; } }
 .cbl-post .by { font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; margin-bottom:24px; }
 .cbl-post .by b { color:${GOLD}; font-weight:700; }
@@ -259,7 +257,6 @@ export function BlogPost() {
                     </Fragment>
                   ))}
                 </div>
-                <div className="plive">Now live on <b>CityBucketList.com</b></div>
               </div>
             )}
             {(post.author_name || mins > 0) && (
