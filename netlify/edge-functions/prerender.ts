@@ -64,6 +64,11 @@ type Post = {
   updated_at?: string | null;
 };
 
+/** Strip the *gold accent* markers a post title may carry. Mirrors plainTitle()
+ *  in src/app/lib/blog.ts — edge functions can't import from src/. Without this,
+ *  literal asterisks leak into og:title, twitter:title, <title> and JSON-LD. */
+const plainTitle = (t: string) => (t || '').replace(/\*/g, '');
+
 const esc = (s: string): string =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
@@ -299,11 +304,11 @@ function injectRoot(html: string, content: string): string {
 }
 
 function renderPost(origin: string, p: Post): string {
-  const heroAlt = (Array.isArray(p.media) ? p.media.find((m) => m.slot === 'hero')?.alt : '') || p.title;
+  const heroAlt = (Array.isArray(p.media) ? p.media.find((m) => m.slot === 'hero')?.alt : '') || plainTitle(p.title);
   const gallery = (Array.isArray(p.media) ? p.media : []).filter((m) => m.url && m.url !== p.hero_image);
   const parts: string[] = ['<article>'];
   if (p.kicker) parts.push(`<p class="kicker">${esc(p.kicker)}</p>`);
-  parts.push(`<h1>${esc(p.title)}</h1>`);
+  parts.push(`<h1>${esc(plainTitle(p.title))}</h1>`);
   if (p.subtitle) parts.push(`<p class="dek">${esc(p.subtitle)}</p>`);
   if (p.author_name) parts.push(`<p class="byline">By ${esc(p.author_name)}${p.city ? ` · ${esc(p.city)}` : ''}</p>`);
   if (p.hero_image) parts.push(`<img src="${esc(absUrl(origin, p.hero_image))}" alt="${esc(heroAlt)}" width="1200" height="740" />`);
@@ -325,7 +330,7 @@ function articleJsonLd(origin: string, p: Post) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    headline: p.title,
+    headline: plainTitle(p.title),
     description: p.seo_description || p.excerpt || p.subtitle || '',
     image: [absUrl(origin, p.hero_image)],
     datePublished: p.published_at || undefined,
@@ -424,7 +429,7 @@ export default async function handler(req: Request, context: Context): Promise<R
       const cards = posts
         .map(
           (p) =>
-            `<article><a href="/blog/${esc(p.slug)}"><h2>${esc(p.title)}</h2></a>${p.subtitle ? `<p>${esc(p.subtitle)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}<p>${esc(p.author_name || '')}${p.city ? ` · ${esc(p.city)}` : ''}</p></article>`,
+            `<article><a href="/blog/${esc(p.slug)}"><h2>${esc(plainTitle(p.title))}</h2></a>${p.subtitle ? `<p>${esc(p.subtitle)}</p>` : ''}${p.excerpt ? `<p>${esc(p.excerpt)}</p>` : ''}<p>${esc(p.author_name || '')}${p.city ? ` · ${esc(p.city)}` : ''}</p></article>`,
         )
         .join('\n');
       html = injectRoot(html, `<main><p>where the locals go</p><h1>CBL Blog</h1><p>${esc(description)}</p>${cards}</main>`);
@@ -518,7 +523,7 @@ export default async function handler(req: Request, context: Context): Promise<R
       const rows: Post[] = r.ok ? await r.json() : [];
       const post = rows[0];
       if (!post) return finish(); // unknown/unpublished — let the SPA render its "not found"
-      const title = `${post.seo_title || post.title} — CBL Blog`;
+      const title = `${post.seo_title || plainTitle(post.title)} — CBL Blog`;
       const description = post.seo_description || post.excerpt || post.subtitle || '';
       html = injectHead(html, {
         title,
