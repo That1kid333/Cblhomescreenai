@@ -305,7 +305,7 @@ function injectRoot(html: string, content: string): string {
 
 function renderPost(origin: string, p: Post): string {
   const heroAlt = (Array.isArray(p.media) ? p.media.find((m) => m.slot === 'hero')?.alt : '') || plainTitle(p.title);
-  const gallery = (Array.isArray(p.media) ? p.media : []).filter((m) => m.url && m.url !== p.hero_image);
+  const gallery = (Array.isArray(p.media) ? p.media : []).filter((m) => m.url && m.url !== p.hero_image && m.slot !== 'partner');
   const parts: string[] = ['<article>'];
   if (p.kicker) parts.push(`<p class="kicker">${esc(p.kicker)}</p>`);
   parts.push(`<h1>${esc(plainTitle(p.title))}</h1>`);
