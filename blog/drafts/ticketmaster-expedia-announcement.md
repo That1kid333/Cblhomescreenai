@@ -28,6 +28,8 @@ All three of us have something to say about it, so we are splitting this one thr
 
 Open the Attractions page in any city and you no longer get a static list of landmarks. You get what is actually happening around you this week, pulled live. Denver, Nashville, Austin, Chicago, Pittsburgh: the page fills with that city's week.
 
+![A crowd with their hands up at a night concert](/blog/ticketmaster-expedia/show.jpg "Photo: Nainoa Shizuru / StockSnap, CC0")
+
 These come straight from [Ticketmaster](https://ticketmaster.evyy.net/c/7504721/264167/4272?u=https%3A%2F%2Fwww.ticketmaster.com&subId1=blog_partners_ticketmaster), the official box office. Not resale, not a marketplace guessing at inventory. Verified tickets from the venue, with the seat map and the real price. That is the whole United States plus around two dozen countries.
 
 The part I care about as a designer is what it did to the page. A venue card used to be a photograph and a paragraph. Now, if that venue has something on sale, the card tells you and hands you the ticket. Arenas and ballparks, and the small rooms too. In New York the page runs more than forty venues deep. In Pittsburgh, Club Cafe and the Funhouse at Mr. Smalls sit in the same grid as PPG Paints Arena. Every city gets its own version, which is the whole idea.
@@ -37,6 +39,8 @@ The part I care about as a designer is what it did to the page. A venue card use
 ![](/travels/expedia-logo.svg "logo")
 
 The other half of a trip is the bed. Our Travels page has been sitting there with a booking layout finished and a "Coming Soon" label on every button, waiting for a partner worth switching it on for.
+
+![A hotel room made up and waiting](/blog/ticketmaster-expedia/stay.jpg "Photo: Travel Adventures / StockSnap, CC0")
 
 [Expedia](https://prf.hn/click/camref:1110lLrVp/pubref:blog_partners_expedia/destination:https%3A%2F%2Fwww.expedia.com%2FHotel-Search) is that partner. Hotels, resorts, inns, and Vrbo rentals, all searchable and bookable from the page, with real availability and real prices.
 
