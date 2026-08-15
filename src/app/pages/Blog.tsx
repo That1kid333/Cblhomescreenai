@@ -147,9 +147,9 @@ const BLOG_CSS = `
 .cbl-blog .spotlight .text { padding:32px 38px; display:flex; flex-direction:column; gap:14px; }
 .cbl-blog .spotlight .kicker { display:inline-flex; align-items:center; gap:10px; font-family:${MONO}; font-size:11px; color:#C99742; letter-spacing:.18em; text-transform:uppercase; }
 .cbl-blog .spotlight .kicker::before { content:''; width:22px; height:1px; background:#C99742; }
-.cbl-blog .spotlight h3 { font-family:${DISPLAY}; font-weight:900; font-size:48px; line-height:.95; letter-spacing:-.01em; text-transform:uppercase; }
+.cbl-blog .spotlight h3 { font-family:${DISPLAY}; font-weight:900; font-size:48px; line-height:.95; letter-spacing:-.01em; text-transform:uppercase; text-wrap:balance; }
 .cbl-blog .spotlight h3 .it { font-family:${ITALIC}; font-style:italic; color:#C99742; font-weight:600; text-transform:none; font-size:.55em; display:block; margin-top:4px; }
-.cbl-blog .spotlight p { color:#B8B8B8; font-size:15px; line-height:1.6; max-width:58ch; }
+.cbl-blog .spotlight p { color:#B8B8B8; font-size:15px; line-height:1.6; max-width:58ch; text-wrap:pretty; }
 .cbl-blog .spotlight .byline { display:flex; align-items:center; gap:12px; margin-top:4px; flex-wrap:wrap; }
 .cbl-blog .spotlight .byline .avatar { width:36px; height:36px; border-radius:50%; background-size:cover; background-position:center; border:1.5px solid #C99742; flex-shrink:0; }
 .cbl-blog .spotlight .byline .author { font-family:${DISPLAY}; font-weight:900; font-size:15px; text-transform:uppercase; letter-spacing:.04em; }
@@ -168,7 +168,7 @@ const BLOG_CSS = `
 .cbl-blog .post .cat-pill { position:absolute; top:14px; left:14px; font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; background:rgba(0,0,0,.65); padding:5px 10px; border-radius:4px; border:1px solid rgba(201,151,66,.4); backdrop-filter:blur(6px); z-index:2; }
 .cbl-blog .post .read-time { position:absolute; top:14px; right:14px; font-family:${MONO}; font-size:10px; letter-spacing:.12em; color:#fff; background:rgba(0,0,0,.6); padding:5px 8px; border-radius:4px; border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(6px); z-index:2; }
 .cbl-blog .post .body { padding:20px 22px; display:flex; flex-direction:column; gap:8px; flex:1; }
-.cbl-blog .post h3 { font-family:${DISPLAY}; font-weight:900; font-size:24px; line-height:1.05; letter-spacing:-.005em; text-transform:uppercase; }
+.cbl-blog .post h3 { font-family:${DISPLAY}; font-weight:900; font-size:24px; line-height:1.05; letter-spacing:-.005em; text-transform:uppercase; text-wrap:balance; }
 .cbl-blog .post .excerpt { font-size:13.5px; line-height:1.55; color:#A8A8A8; flex:1; }
 .cbl-blog .post .byline { display:flex; align-items:center; gap:10px; padding-top:12px; margin-top:auto; border-top:1px solid rgba(255,255,255,.06); }
 .cbl-blog .post .byline .avatar { width:28px; height:28px; border-radius:50%; background-size:cover; background-position:center; border:1.5px solid rgba(201,151,66,.5); flex-shrink:0; }
@@ -194,7 +194,7 @@ const BLOG_CSS = `
 /* Share your story band */
 .cbl-blog .share-band { background:radial-gradient(ellipse at top left, rgba(201,151,66,.10), transparent 55%), linear-gradient(180deg,#0A0A0A,#0d0d0d); border-top:1px solid rgba(255,255,255,.06); }
 .cbl-blog .share-grid { display:grid; grid-template-columns:1fr 1.05fr; gap:48px; align-items:start; }
-.cbl-blog .share-copy p { color:#B0B0B0; font-size:15px; line-height:1.6; max-width:46ch; margin-top:10px; }
+.cbl-blog .share-copy p { color:#B0B0B0; font-size:15px; line-height:1.6; max-width:46ch; margin-top:10px; text-wrap:pretty; }
 .cbl-blog .share-form { display:flex; flex-direction:column; gap:12px; background:#141414; border:1px solid rgba(201,151,66,.28); border-radius:24px 0 24px 0; padding:24px; position:relative; }
 .cbl-blog .share-form .sf-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .cbl-blog .share-form input, .cbl-blog .share-form select, .cbl-blog .share-form textarea { width:100%; background:#0A0A0A; border:1px solid rgba(255,255,255,.10); border-radius:12px; padding:12px 14px; color:#fff; font-family:${DISPLAY}; font-size:15px; outline:0; transition:border-color .15s; }
