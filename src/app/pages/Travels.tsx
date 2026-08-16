@@ -306,6 +306,13 @@ const TRAVELS_CSS = `
   background:transparent; border:0; outline:0; color:#fff;
   font-family:${BODY}; font-size:14px; flex:1; min-width:0;
 }
+/* Native date inputs on a black field: color-scheme flips the picker itself to
+   dark, and the calendar indicator is inverted so it isn't dark-on-dark. */
+.cbl-travels .search-field input[type="date"] { color-scheme:dark; cursor:pointer; }
+.cbl-travels .search-field input[type="date"]::-webkit-calendar-picker-indicator {
+  filter:invert(1); opacity:.5; cursor:pointer;
+}
+.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:.85; }
 .cbl-travels .search-btn {
   background:#C99742; color:#000; border:0;
   padding:12px 22px; border-radius:12px; height:44px;
@@ -692,7 +699,14 @@ const TRAVELS_CSS = `
   .cbl-travels .cat-tabs { padding:14px 24px 0; }
   .cbl-travels section.band { padding:36px 24px 48px; }
   .cbl-travels .search-inner { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
-  .cbl-travels .search-btn { grid-column:span 2; width:100%; }
+  /* Native date inputs on a black field: color-scheme flips the picker itself to
+   dark, and the calendar indicator is inverted so it isn't dark-on-dark. */
+.cbl-travels .search-field input[type="date"] { color-scheme:dark; cursor:pointer; }
+.cbl-travels .search-field input[type="date"]::-webkit-calendar-picker-indicator {
+  filter:invert(1); opacity:.5; cursor:pointer;
+}
+.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:.85; }
+.cbl-travels .search-btn { grid-column:span 2; width:100%; }
   .cbl-travels .stays-grid { grid-template-columns:repeat(2,1fr); }
   .cbl-travels .trips-grid { grid-template-columns:1fr; }
   .cbl-travels .trip-card { grid-template-columns:1fr; }
@@ -792,13 +806,33 @@ function Hero() {
   );
 }
 
+/** YYYY-MM-DD, `days` from today — what <input type="date"> and Expedia both want. */
+function isoDaysOut(days: number): string {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function SearchBar() {
   const [dest, setDest] = useState('Pittsburgh, PA');
   const [guests, setGuests] = useState('2 adults');
+  // Were hardcoded `defaultValue="Fri May 23"` strings: uncontrolled, never read,
+  // and stale on the page. A visitor could set dates and search anyway sent none.
+  const [checkIn, setCheckIn] = useState(() => isoDaysOut(7));
+  const [checkOut, setCheckOut] = useState(() => isoDaysOut(9));
   const search = () => {
     const n = parseInt(guests, 10);
     window.open(
-      expediaStaySearch({ destination: dest, guests: Number.isFinite(n) ? n : undefined }, 'travels_searchbar'),
+      expediaStaySearch(
+        {
+          destination: dest,
+          guests: Number.isFinite(n) ? n : undefined,
+          // Only send a range that makes sense; Expedia ignores a bad one anyway,
+          // but sending checkout-before-checkin would just look broken.
+          ...(checkIn && checkOut && checkOut > checkIn ? { checkIn, checkOut } : {}),
+        },
+        'travels_searchbar',
+      ),
       '_blank',
       'noopener,noreferrer',
     );
@@ -823,11 +857,29 @@ function SearchBar() {
           </div>
           <div className="search-field">
             <div className="lbl">Check in</div>
-            <div className="ctl"><input defaultValue="Fri May 23" /></div>
+            <div className="ctl">
+              <input
+                type="date"
+                value={checkIn}
+                min={isoDaysOut(0)}
+                onChange={(e) => setCheckIn(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && search()}
+                aria-label="Check in date"
+              />
+            </div>
           </div>
           <div className="search-field">
             <div className="lbl">Check out</div>
-            <div className="ctl"><input defaultValue="Sun May 25" /></div>
+            <div className="ctl">
+              <input
+                type="date"
+                value={checkOut}
+                min={checkIn || isoDaysOut(0)}
+                onChange={(e) => setCheckOut(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && search()}
+                aria-label="Check out date"
+              />
+            </div>
           </div>
           <div className="search-field">
             <div className="lbl">Guests</div>
@@ -1165,10 +1217,10 @@ export function Travels() {
   const [tab, setTab] = useState<TabKey>('HOTELS');
 
   const isLodging = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR';
-  // Lodging (KAYAK) is still "Coming Soon" — show a tight top-3 sample so the page
-  // leads with the live money-makers (the Tiqets experiences band) instead of a
-  // long list of not-yet-bookable rooms.
-  const stays = isLodging ? STAYS[tab].slice(0, 3) : null;
+  // Was slice(0, 3) while lodging was "Coming Soon" — a short teaser made sense
+  // when none of the rooms could be booked. Expedia went live 2026-08-13, so the
+  // whole curated set is shown: 8 hotels, 5 B&Bs, 4 short-term.
+  const stays = isLodging ? STAYS[tab] : null;
 
   return (
     <main className="cbl-travels">
