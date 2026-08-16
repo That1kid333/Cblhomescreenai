@@ -137,12 +137,12 @@ type Flight = {
 };
 
 const FLIGHTS: Flight[] = [
-  { airline: 'Delta', flight: 'DL 1245', from: 'PIT', to: 'JFK', dep: '7:15 AM', arr: '8:48 AM', duration: '1h 33m', stops: 'Nonstop', price: '$189', src: 'Kayak', tag: 'Best Value' },
-  { airline: 'United', flight: 'UA 4218', from: 'PIT', to: 'LAX', dep: '6:20 AM', arr: '11:55 AM', duration: '8h 35m', stops: '1 stop · ORD', price: '$312', src: 'Booking.com', tag: 'Cheapest' },
-  { airline: 'American', flight: 'AA 887', from: 'PIT', to: 'MIA', dep: '9:40 AM', arr: '12:48 PM', duration: '3h 8m', stops: 'Nonstop', price: '$248', src: 'Kayak', tag: 'Nonstop' },
-  { airline: 'JetBlue', flight: 'B6 1132', from: 'PIT', to: 'LAS', dep: '11:10 AM', arr: '2:35 PM', duration: '5h 25m', stops: 'Nonstop', price: '$278', src: 'Kayak', tag: 'Nonstop' },
-  { airline: 'Southwest', flight: 'WN 2104', from: 'PIT', to: 'BNA', dep: '5:50 PM', arr: '7:25 PM', duration: '1h 35m', stops: 'Nonstop', price: '$142', src: 'Booking.com', tag: 'Quick' },
-  { airline: 'Air France', flight: 'AF 8607', from: 'PIT', to: 'CDG', dep: '6:30 PM', arr: '8:55 AM+1', duration: '8h 25m', stops: 'Nonstop · via DTW', price: '$612', src: 'Kayak', tag: 'International' },
+  { airline: 'Delta', flight: 'DL 1245', from: 'PIT', to: 'JFK', dep: '7:15 AM', arr: '8:48 AM', duration: '1h 33m', stops: 'Nonstop', price: '$189', tag: 'Best Value' },
+  { airline: 'United', flight: 'UA 4218', from: 'PIT', to: 'LAX', dep: '6:20 AM', arr: '11:55 AM', duration: '8h 35m', stops: '1 stop · ORD', price: '$312', tag: 'Cheapest' },
+  { airline: 'American', flight: 'AA 887', from: 'PIT', to: 'MIA', dep: '9:40 AM', arr: '12:48 PM', duration: '3h 8m', stops: 'Nonstop', price: '$248', tag: 'Nonstop' },
+  { airline: 'JetBlue', flight: 'B6 1132', from: 'PIT', to: 'LAS', dep: '11:10 AM', arr: '2:35 PM', duration: '5h 25m', stops: 'Nonstop', price: '$278', tag: 'Nonstop' },
+  { airline: 'Southwest', flight: 'WN 2104', from: 'PIT', to: 'BNA', dep: '5:50 PM', arr: '7:25 PM', duration: '1h 35m', stops: 'Nonstop', price: '$142', tag: 'Quick' },
+  { airline: 'Air France', flight: 'AF 8607', from: 'PIT', to: 'CDG', dep: '6:30 PM', arr: '8:55 AM+1', duration: '8h 25m', stops: 'Nonstop · via DTW', price: '$612', tag: 'International' },
 ];
 
 type Stay = {
@@ -151,36 +151,39 @@ type Stay = {
   stars: number;
   rating: number;
   reviews: string;
+  /** Google's price BAND ($ to $$$$) when known. Never a nightly rate — we don't
+   *  have one, and Expedia shows the real price on the other side of Book Now. */
   price: string;
-  src: string;
   tag: string;
   desc: string;
   img: string;
+  /** true for the hand-picked seed; live Google results are not "CBL Picks". */
+  curated?: boolean;
 };
 
 const STAYS: Record<'HOTELS' | 'BNB' | 'STR', Stay[]> = {
   HOTELS: [
-    { name: 'The Ritz-Carlton, Key Biscayne', loc: 'Miami, FL', stars: 5, rating: 4.8, reviews: '2.4k', price: '$589', src: 'Booking.com', tag: 'Resort', desc: 'Oceanfront resort with two-mile private beach, full-service spa and three pools.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
-    { name: 'Fairmont Banff Springs', loc: 'Banff, AB · Canada', stars: 5, rating: 4.9, reviews: '5.1k', price: '$425', src: 'Kayak', tag: 'Mountain Resort', desc: 'Historic castle in the Canadian Rockies with golf, spa and Bow Valley views.', img: 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=900&h=600&fit=crop' },
-    { name: 'Ace Hotel Brooklyn', loc: 'Brooklyn, NY', stars: 4, rating: 4.6, reviews: '1.8k', price: '$289', src: 'Booking.com', tag: 'Boutique', desc: 'Modernist tower in Downtown Brooklyn with rooftop pool and Stumptown coffee in the lobby.', img: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&h=600&fit=crop' },
-    { name: 'Hotel Monaco Pittsburgh', loc: 'Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '932', price: '$245', src: 'Kayak', tag: 'Boutique', desc: 'Kimpton-run boutique in the Cultural District. Walk to PNC Park and Heinz Hall.', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&h=600&fit=crop' },
-    { name: 'Hôtel Plaza Athénée', loc: 'Paris, France', stars: 5, rating: 4.9, reviews: '3.2k', price: '$1,240', src: 'Booking.com', tag: 'Luxury', desc: 'Avenue Montaigne legend with Dior spa, Alain Ducasse dining, and Eiffel Tower views.', img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=900&h=600&fit=crop' },
-    { name: 'The NoMad London', loc: 'Covent Garden, UK', stars: 5, rating: 4.7, reviews: '1.1k', price: '$695', src: 'Kayak', tag: 'Boutique', desc: 'Inside the former Bow Street Magistrates Court. Atrium restaurant by Daniel Humm.', img: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=900&h=600&fit=crop' },
-    { name: 'The Priory Hotel', loc: 'Deutschtown · Pittsburgh, PA', stars: 4, rating: 4.8, reviews: '610', price: '$190', src: 'Booking.com', tag: 'Boutique', desc: 'A romantic boutique stay inside a restored 19th-century Benedictine monastery with a quiet courtyard garden.', img: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&h=600&fit=crop' },
-    { name: 'Sunnyledge Boutique Hotel', loc: 'Shadyside · Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '243', price: '$205', src: 'Kayak', tag: 'Historic', desc: 'Eight eclectic rooms in an 1886 Shadyside mansion — intimate, historic, on one of the city’s grandest streets.', img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=900&h=600&fit=crop' },
+    { name: 'The Ritz-Carlton, Key Biscayne', loc: 'Miami, FL', stars: 5, rating: 4.8, reviews: '2.4k', price: '$589', tag: 'Resort', desc: 'Oceanfront resort with two-mile private beach, full-service spa and three pools.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
+    { name: 'Fairmont Banff Springs', loc: 'Banff, AB · Canada', stars: 5, rating: 4.9, reviews: '5.1k', price: '$425', tag: 'Mountain Resort', desc: 'Historic castle in the Canadian Rockies with golf, spa and Bow Valley views.', img: 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=900&h=600&fit=crop' },
+    { name: 'Ace Hotel Brooklyn', loc: 'Brooklyn, NY', stars: 4, rating: 4.6, reviews: '1.8k', price: '$289', tag: 'Boutique', desc: 'Modernist tower in Downtown Brooklyn with rooftop pool and Stumptown coffee in the lobby.', img: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&h=600&fit=crop' },
+    { name: 'Hotel Monaco Pittsburgh', loc: 'Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '932', price: '$245', tag: 'Boutique', desc: 'Kimpton-run boutique in the Cultural District. Walk to PNC Park and Heinz Hall.', img: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=900&h=600&fit=crop' },
+    { name: 'Hôtel Plaza Athénée', loc: 'Paris, France', stars: 5, rating: 4.9, reviews: '3.2k', price: '$1,240', tag: 'Luxury', desc: 'Avenue Montaigne legend with Dior spa, Alain Ducasse dining, and Eiffel Tower views.', img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=900&h=600&fit=crop' },
+    { name: 'The NoMad London', loc: 'Covent Garden, UK', stars: 5, rating: 4.7, reviews: '1.1k', price: '$695', tag: 'Boutique', desc: 'Inside the former Bow Street Magistrates Court. Atrium restaurant by Daniel Humm.', img: 'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=900&h=600&fit=crop' },
+    { name: 'The Priory Hotel', loc: 'Deutschtown · Pittsburgh, PA', stars: 4, rating: 4.8, reviews: '610', price: '$190', tag: 'Boutique', desc: 'A romantic boutique stay inside a restored 19th-century Benedictine monastery with a quiet courtyard garden.', img: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&h=600&fit=crop' },
+    { name: 'Sunnyledge Boutique Hotel', loc: 'Shadyside · Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '243', price: '$205', tag: 'Historic', desc: 'Eight eclectic rooms in an 1886 Shadyside mansion — intimate, historic, on one of the city’s grandest streets.', img: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=900&h=600&fit=crop' },
   ],
   BNB: [
-    { name: 'The Inn at Negley', loc: 'Shadyside · Pittsburgh, PA', stars: 5, rating: 4.9, reviews: '184', price: '$220', src: 'Booking.com', tag: 'B&B', desc: 'Victorian mansion B&B with 8 themed rooms, garden patio, and full breakfast included.', img: 'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=900&h=600&fit=crop' },
-    { name: 'Mercersburg Inn', loc: 'Mercersburg, PA', stars: 4, rating: 4.7, reviews: '276', price: '$185', src: 'Kayak', tag: 'Country Inn', desc: '1909 Georgian Revival inn near the Tuscarora State Forest. Multi-course dinners on Saturdays.', img: 'https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=900&h=600&fit=crop' },
-    { name: 'Sunburst Cottages', loc: 'Lake Placid, NY', stars: 4, rating: 4.8, reviews: '412', price: '$295', src: 'Booking.com', tag: 'Cottage', desc: 'Adirondack waterfront cottages with private docks, kayaks and fire pits.', img: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=900&h=600&fit=crop' },
-    { name: 'Inn on the Mexican War Streets', loc: 'North Side · Pittsburgh, PA', stars: 4, rating: 4.8, reviews: '156', price: '$170', src: 'Booking.com', tag: 'B&B', desc: 'A Victorian-mansion B&B across from Allegheny Commons, full of period charm and quiet.', img: 'https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=900&h=600&fit=crop' },
-    { name: 'The Parador Inn', loc: 'Allegheny West · Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '198', price: '$165', src: 'Kayak', tag: 'B&B', desc: 'A Caribbean-themed B&B in a restored 1870s mansion, walkable to PNC Park and the river.', img: 'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=900&h=600&fit=crop' },
+    { name: 'The Inn at Negley', loc: 'Shadyside · Pittsburgh, PA', stars: 5, rating: 4.9, reviews: '184', price: '$220', tag: 'B&B', desc: 'Victorian mansion B&B with 8 themed rooms, garden patio, and full breakfast included.', img: 'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=900&h=600&fit=crop' },
+    { name: 'Mercersburg Inn', loc: 'Mercersburg, PA', stars: 4, rating: 4.7, reviews: '276', price: '$185', tag: 'Country Inn', desc: '1909 Georgian Revival inn near the Tuscarora State Forest. Multi-course dinners on Saturdays.', img: 'https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=900&h=600&fit=crop' },
+    { name: 'Sunburst Cottages', loc: 'Lake Placid, NY', stars: 4, rating: 4.8, reviews: '412', price: '$295', tag: 'Cottage', desc: 'Adirondack waterfront cottages with private docks, kayaks and fire pits.', img: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=900&h=600&fit=crop' },
+    { name: 'Inn on the Mexican War Streets', loc: 'North Side · Pittsburgh, PA', stars: 4, rating: 4.8, reviews: '156', price: '$170', tag: 'B&B', desc: 'A Victorian-mansion B&B across from Allegheny Commons, full of period charm and quiet.', img: 'https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=900&h=600&fit=crop' },
+    { name: 'The Parador Inn', loc: 'Allegheny West · Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '198', price: '$165', tag: 'B&B', desc: 'A Caribbean-themed B&B in a restored 1870s mansion, walkable to PNC Park and the river.', img: 'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=900&h=600&fit=crop' },
   ],
   STR: [
-    { name: 'Strip District Loft', loc: 'Pittsburgh, PA', stars: 4, rating: 4.9, reviews: '218', price: '$165', src: 'Airbnb', tag: 'Whole Loft', desc: 'Open-plan brick loft with skyline views, walking distance to PPG Paints Arena.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
-    { name: 'Mountain A-Frame', loc: 'Asheville, NC', stars: 5, rating: 4.9, reviews: '341', price: '$245', src: 'VRBO', tag: 'A-Frame · 2 bed', desc: 'Forest cabin with wood-burning sauna, outdoor shower, and Blue Ridge mountain views.', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&h=600&fit=crop' },
-    { name: 'Hudson Valley Farmhouse', loc: 'Rhinebeck, NY', stars: 5, rating: 4.8, reviews: '527', price: '$385', src: 'Airbnb', tag: 'Farmhouse · 4 bed', desc: '1850s farmhouse on 12 acres with pool, sauna and hiking trails on-property.', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&h=600&fit=crop' },
-    { name: 'Kasa at the Maverick', loc: 'East Liberty · Pittsburgh, PA', stars: 4, rating: 4.6, reviews: '302', price: '$150', src: 'Airbnb', tag: 'Whole Suite', desc: 'Stylish self-check-in suites inside the historic former East Liberty YMCA, steps from East End shops.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
+    { name: 'Strip District Loft', loc: 'Pittsburgh, PA', stars: 4, rating: 4.9, reviews: '218', price: '$165', tag: 'Whole Loft', desc: 'Open-plan brick loft with skyline views, walking distance to PPG Paints Arena.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
+    { name: 'Mountain A-Frame', loc: 'Asheville, NC', stars: 5, rating: 4.9, reviews: '341', price: '$245', tag: 'A-Frame · 2 bed', desc: 'Forest cabin with wood-burning sauna, outdoor shower, and Blue Ridge mountain views.', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&h=600&fit=crop' },
+    { name: 'Hudson Valley Farmhouse', loc: 'Rhinebeck, NY', stars: 5, rating: 4.8, reviews: '527', price: '$385', tag: 'Farmhouse · 4 bed', desc: '1850s farmhouse on 12 acres with pool, sauna and hiking trails on-property.', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&h=600&fit=crop' },
+    { name: 'Kasa at the Maverick', loc: 'East Liberty · Pittsburgh, PA', stars: 4, rating: 4.6, reviews: '302', price: '$150', tag: 'Whole Suite', desc: 'Stylish self-check-in suites inside the historic former East Liberty YMCA, steps from East End shops.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
   ],
 };
 
@@ -991,7 +994,7 @@ function StayCard({ s }: { s: Stay }) {
     <article className="stay-card">
       <div className="img" style={{ backgroundImage: `url(${s.img})` }}>
         <span className="tag">{s.tag}</span>
-        <span className="src">CBL Pick</span>
+        {s.curated && <span className="src">CBL Pick</span>}
       </div>
       <div className="body">
         <h3>{s.name}</h3>
@@ -1004,8 +1007,11 @@ function StayCard({ s }: { s: Stay }) {
         </div>
         <div className="price-row">
           <div>
-            <div className="price">{s.price}</div>
-            <div className="per">per night · taxes incl.</div>
+            {/* A price BAND, not a rate. We don't have nightly pricing — Expedia
+                shows the real number after the click, so claiming one here (the
+                old "$295 per night · taxes incl.") was a promise we couldn't keep. */}
+            <div className="price">{s.price || '—'}</div>
+            <div className="per">typical price · live rates on Expedia</div>
           </div>
         </div>
         <div className="cta-row">
