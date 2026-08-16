@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type SyntheticEvent } from "react";
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
+import { CarMark } from "../components/CarMark";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
@@ -1560,16 +1561,12 @@ function PickupBanner() {
   return (
     <div className="pickup-banner">
       <div className="ic">
-        <svg width="30" height="24" viewBox="0 0 288 227.01" fill="none" stroke="currentColor" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M65.43,90.76l-13.2,21.57c-2.58,4.17-3.66,8.95-3.11,13.68l5.26,45.23h89.57" />
-          <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
-          <path d="M64.93,91.59s3.11,4.94,14.34,4.94h66.01" />
-          <path d="M223.07,91.59s-3.11,4.94-14.34,4.94h-66.01" />
-        </svg>
+        {/* The CBL car, complete. This banner previously drew 4 of its 16 paths. */}
+        <CarMark size={30} />
       </div>
       <div>
         <h3>Need a ride to pick up your purchase?</h3>
-        <p>CBL Private Drivers handle classified-transaction pickups — safe, tracked meetups with verified locals. 12+ hours in advance.</p>
+        <p>Independent drivers on CBL handle classified-transaction pickups — safe, tracked meetups with verified locals. Give them about 24 hours.</p>
       </div>
       <a className="cta" href={RIDER_BOOK_URL} target="_blank" rel="noopener noreferrer">Book a Pickup Ride →</a>
     </div>

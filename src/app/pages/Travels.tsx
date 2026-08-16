@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Car } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
@@ -8,6 +7,7 @@ import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
+import { CarMark } from '../components/CarMark';
 
 // Stay booking went LIVE 2026-08-13: the Expedia Group Travel Creator Program was
 // approved, so every gate below now opens a TRACKED Expedia link (lib/expedia.ts,
@@ -1537,9 +1537,8 @@ function AirportRideBanner() {
   return (
     <div className="airport-banner">
       <div className="ic">
-        {/* The site's car mark is lucide Car — same one on the venue cards. This
-            was four hand-drawn path fragments that never resolved into a car. */}
-        <Car size={28} strokeWidth={1.75} aria-hidden="true" />
+        {/* The CBL car, complete. This banner previously drew 4 of its 16 paths. */}
+        <CarMark size={30} />
       </div>
       <div>
         <h3>Need a ride to the airport?</h3>
