@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type F
 import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import { CarMark } from "../components/CarMark";
+import { expediaLink } from "../lib/expedia";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
@@ -311,6 +312,10 @@ const DIR_CSS = `
 .cbl-dir a.coupon.deal { text-decoration:none; color:inherit; }
 .cbl-dir .coupon .deal-cta { color:#C99742; font-weight:700; }
 .cbl-dir .coupon .partner-logo { height:21px; width:auto; max-width:150px; align-self:flex-start; display:block; margin-bottom:6px; filter:brightness(0) invert(1); opacity:.92; }
+/* Brands that supply their OWN correct artwork opt out of the whitening filter.
+   Expedia's mark is a yellow tile with a white wordmark — brightness(0) invert(1)
+   would flatten the tile to white and destroy it. Same rule as Ticketmaster. */
+.cbl-dir .coupon .partner-logo.as-is { filter:none; opacity:1; }
 .cbl-dir .deals-band { margin-top:4px; }
 .cbl-dir .deals-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin-bottom:16px; }
 .cbl-dir .deals-head-l { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 14px; }
@@ -581,7 +586,12 @@ const CHIPS: Record<string, Chip[]> = {
 // through affiliateHref() so it stays tracked (or a plain link off production).
 type TravelDeal = {
   id: string;
-  program: Program;
+  /** Travelpayouts / Awin / Impact deal. Omit for `expedia`, which is Partnerize. */
+  program?: Program;
+  /** Expedia runs on Partnerize and has its own link builder, not a Program. */
+  expedia?: boolean;
+  /** Logo already correct on black — skip the whitening filter. */
+  logoAsIs?: boolean;
   badge: string;        // big gold badge, e.g. "FREE" or "15%"
   badgeSmall: string;   // caption under it, e.g. "off pass"
   partner: string;
@@ -620,6 +630,19 @@ const TRAVEL_DEALS: TravelDeal[] = [
     code: "BLOG12", dest: "https://www.extranomical.com", placement: "directory_deal_extranomical_sf",
     expires: "2029-05-22", logoChip: "/attractions/extranomical-logo.svg",
   },
+  {
+    // Expedia Member Prices — a permanent, published Expedia benefit, not a
+    // promo we invented: a free One Key account unlocks 10%+ on 1.5M+ stays,
+    // applied automatically at sign-in with no code. Far-future expiry because
+    // it isn't a dated campaign.
+    id: "expedia-member-prices", expedia: true, badge: "10%", badgeSmall: "or more",
+    partner: "Expedia", title: "Member Prices on 1.5M+ stays",
+    terms: "Sign in to a free Expedia One Key account and Member Prices apply automatically — 10% or more off hotels, homes and car rentals. No code needed.",
+    dest: "https://www.expedia.com/lp/b/member-prices-education",
+    placement: "directory_deal_expedia_memberprices",
+    expires: "2029-12-31", featured: true,
+    logoChip: "/travels/expedia-logo.svg", logoAsIs: true,
+  },
 ];
 
 // Deals still within their window (compared to the visitor's local date).
@@ -655,14 +678,19 @@ function CouponCode({ code }: { code: string }) {
 }
 
 function TravelDealCard({ d }: { d: TravelDeal }) {
-  const link = affiliateHref(d.program, d.dest, d.placement);
-  if (!link) return null;
+  // Expedia is Partnerize and always resolves; the Program networks can be
+  // un-wired (empty base link), which gates the card off entirely.
+  const href = d.expedia
+    ? expediaLink(d.dest, d.placement)
+    : (d.program ? affiliateHref(d.program, d.dest, d.placement)?.href : null);
+  if (!href) return null;
+  const link = { href };
   return (
     <a className={"coupon deal" + (d.featured ? " featured" : "")} href={link.href} target="_blank" rel={AFFILIATE_REL}>
       <div className="disc">{d.badge}<small>{d.badgeSmall}</small></div>
       <div className="body">
         {d.logoChip
-          ? <img className="partner-logo" src={d.logoChip} alt={d.partner} loading="lazy" />
+          ? <img className={d.logoAsIs ? "partner-logo as-is" : "partner-logo"} src={d.logoChip} alt={d.partner} loading="lazy" />
           : <span className="partner">{d.partner}</span>}
         <h4>{d.title}</h4>
         <div className="terms">{d.terms}</div>
