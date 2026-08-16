@@ -300,6 +300,22 @@ const TRAVELS_CSS = `
    calendar indicator light — a filter:invert(1) on top flipped it back to black,
    which is exactly the bug Keith spotted. Set the scheme, leave the icon alone.
    The whole field opens the picker (see DateField), not just this 20px glyph. */
+/* Autocomplete dropdown */
+.cbl-travels .ac-wrap { position:relative; }
+.cbl-travels .ac-list {
+  position:absolute; z-index:40; top:calc(100% + 6px); left:0; right:0;
+  background:#141414; border:1px solid rgba(201,151,66,.30);
+  border-radius:12px; overflow:hidden; max-height:264px; overflow-y:auto;
+  box-shadow:0 18px 40px rgba(0,0,0,.55); list-style:none; margin:0; padding:4px;
+}
+.cbl-travels .ac-list li {
+  display:flex; align-items:baseline; gap:9px; padding:9px 12px;
+  border-radius:8px; cursor:pointer; color:#DcDcDc; font-size:14px;
+}
+.cbl-travels .ac-list li b { color:#fff; font-weight:700; }
+.cbl-travels .ac-list li span { font-family:${MONO}; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:#8A8A8A; }
+.cbl-travels .ac-list li.on { background:rgba(201,151,66,.16); }
+.cbl-travels .ac-list li.on span { color:#C99742; }
 .cbl-travels .search-field input[type="date"] { color-scheme:dark; cursor:pointer; }
 .cbl-travels .search-field input[type="date"]::-webkit-calendar-picker-indicator {
   opacity:.65; cursor:pointer;
@@ -1355,32 +1371,10 @@ function FlightSearchPanel() {
   return (
     <div className="flightsearch">
       <div className="fs-grid">
-        <div className="search-field">
-          <div className="lbl">From</div>
-          <div className="ctl">
-            <input value={from} onChange={(e) => setFrom(e.target.value)} onKeyDown={onKey} placeholder="PIT" aria-label="Departure airport or city" />
-          </div>
-        </div>
-        <div className="search-field">
-          <div className="lbl">To</div>
-          <div className="ctl">
-            <input value={to} onChange={(e) => setTo(e.target.value)} onKeyDown={onKey} placeholder="Where to?" aria-label="Destination airport or city" />
-          </div>
-        </div>
-        <div className="search-field">
-          <div className="lbl">Depart</div>
-          <div className="ctl">
-            <input type="date" value={depart} min={isoDaysOut(0)} onChange={(e) => setDepart(e.target.value)} onKeyDown={onKey} aria-label="Departure date" />
-          </div>
-        </div>
-        {!oneWay && (
-          <div className="search-field">
-            <div className="lbl">Return</div>
-            <div className="ctl">
-              <input type="date" value={ret} min={depart} onChange={(e) => setRet(e.target.value)} onKeyDown={onKey} aria-label="Return date" />
-            </div>
-          </div>
-        )}
+        <DestinationField label="From" value={from} onChange={setFrom} onSubmit={go} placeholder="PIT or city" />
+        <DestinationField label="To" value={to} onChange={setTo} onSubmit={go} placeholder="Where to?" />
+        <DateField label="Depart" value={depart} min={isoDaysOut(0)} onChange={setDepart} onSubmit={go} />
+        {!oneWay && <DateField label="Return" value={ret} min={depart} onChange={setRet} onSubmit={go} />}
         <div className="search-field">
           <div className="lbl">Travelers</div>
           <div className="ctl">
