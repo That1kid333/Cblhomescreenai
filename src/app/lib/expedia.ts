@@ -19,6 +19,8 @@
  * booking five days later still pays.
  */
 
+import { logAffiliateClick } from './clickLog';
+
 /** From the Creator Hub widget builder (data-camref). One account, all placements. */
 export const EXPEDIA_CAMREF = '1110lLrVp';
 
@@ -36,8 +38,15 @@ function pubref(placement: string): string {
   return placement.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 60);
 }
 
-/** Wrap any Expedia/Hotels.com/Vrbo URL in our tracked Partnerize click. */
+/**
+ * Wrap any Expedia/Hotels.com/Vrbo URL in our tracked Partnerize click.
+ *
+ * Also records the click in our own log so we can reconcile against Partnerize,
+ * which reports 1-2 business days late. Logging is fire-and-forget and can never
+ * block or break the returned link.
+ */
 export function expediaLink(destinationUrl: string, placement: string): string {
+  logAffiliateClick('expedia', placement);
   const segs = [`camref:${EXPEDIA_CAMREF}`];
   const ref = pubref(placement);
   if (ref) segs.push(`pubref:${ref}`);
