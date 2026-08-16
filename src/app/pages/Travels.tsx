@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
-import { expediaStay, expediaStaySearch } from '../lib/expedia';
+import { expediaStay, expediaStaySearch, expediaFlightSearch } from '../lib/expedia';
 import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
@@ -123,28 +123,6 @@ const TABS: { key: TabKey; label: string; Icon: (p: { s?: number }) => JSX.Eleme
 ];
 
 // ── Data (from Travels Desktop.html) ────────────────────────────────────────
-type Flight = {
-  airline: string;
-  flight: string;
-  from: string;
-  to: string;
-  dep: string;
-  arr: string;
-  duration: string;
-  stops: string;
-  price: string;
-  tag: string;
-};
-
-const FLIGHTS: Flight[] = [
-  { airline: 'Delta', flight: 'DL 1245', from: 'PIT', to: 'JFK', dep: '7:15 AM', arr: '8:48 AM', duration: '1h 33m', stops: 'Nonstop', price: '$189', tag: 'Best Value' },
-  { airline: 'United', flight: 'UA 4218', from: 'PIT', to: 'LAX', dep: '6:20 AM', arr: '11:55 AM', duration: '8h 35m', stops: '1 stop · ORD', price: '$312', tag: 'Cheapest' },
-  { airline: 'American', flight: 'AA 887', from: 'PIT', to: 'MIA', dep: '9:40 AM', arr: '12:48 PM', duration: '3h 8m', stops: 'Nonstop', price: '$248', tag: 'Nonstop' },
-  { airline: 'JetBlue', flight: 'B6 1132', from: 'PIT', to: 'LAS', dep: '11:10 AM', arr: '2:35 PM', duration: '5h 25m', stops: 'Nonstop', price: '$278', tag: 'Nonstop' },
-  { airline: 'Southwest', flight: 'WN 2104', from: 'PIT', to: 'BNA', dep: '5:50 PM', arr: '7:25 PM', duration: '1h 35m', stops: 'Nonstop', price: '$142', tag: 'Quick' },
-  { airline: 'Air France', flight: 'AF 8607', from: 'PIT', to: 'CDG', dep: '6:30 PM', arr: '8:55 AM+1', duration: '8h 25m', stops: 'Nonstop · via DTW', price: '$612', tag: 'International' },
-];
-
 type Stay = {
   name: string;
   loc: string;
@@ -456,6 +434,34 @@ const TRAVELS_CSS = `
 .cbl-travels .cat-tab.active .ic { opacity:1; }
 
 /* ── Flight rows ── */
+/* Flight search panel — replaces the invented flight rows. */
+.cbl-travels .flightsearch { max-width:1376px; margin:0 auto; }
+.cbl-travels .flightsearch .fs-grid {
+  display:grid; grid-template-columns:1fr 1fr 170px 170px 120px auto; gap:12px; align-items:end;
+}
+.cbl-travels .flightsearch .search-btn { height:44px; white-space:nowrap; }
+.cbl-travels .flightsearch .search-btn:disabled { opacity:.45; cursor:default; }
+.cbl-travels .flightsearch .fs-oneway {
+  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+  font-family:${MONO}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#B8B8B8; cursor:pointer;
+}
+.cbl-travels .flightsearch .fs-oneway input { accent-color:#C99742; width:15px; height:15px; cursor:pointer; }
+.cbl-travels .flightsearch .fs-note {
+  margin-top:26px; padding:20px 24px; max-width:70ch;
+  background:rgba(201,151,66,.06); border:1px solid rgba(201,151,66,.22);
+  border-radius:14px 0 14px 0;
+}
+.cbl-travels .flightsearch .fs-note h4 {
+  font-family:${DISPLAY}; font-weight:900; font-size:19px; color:#fff; margin-bottom:8px; letter-spacing:-.005em;
+}
+.cbl-travels .flightsearch .fs-note p { color:#B0B0B0; font-size:14.5px; line-height:1.65; text-wrap:pretty; }
+@media (max-width:1100px){
+  .cbl-travels .flightsearch .fs-grid { grid-template-columns:1fr 1fr; }
+  .cbl-travels .flightsearch .search-btn { grid-column:1 / -1; }
+}
+@media (max-width:560px){
+  .cbl-travels .flightsearch .fs-grid { grid-template-columns:1fr; }
+}
 .cbl-travels .flight-row {
   background:#141414; border:1px solid rgba(255,255,255,.08);
   border-radius:14px 0 14px 0; padding:18px 22px;
@@ -737,7 +743,35 @@ const TRAVELS_CSS = `
   /* Flight rows: the desktop 6-column grid (airline | route | stops | tag |
      price | actions) overflows 390px and clips the stops/price/book columns
      off-screen. Reflow into a stacked card with named areas. */
-  .cbl-travels .flight-row {
+  /* Flight search panel — replaces the invented flight rows. */
+.cbl-travels .flightsearch { max-width:1376px; margin:0 auto; }
+.cbl-travels .flightsearch .fs-grid {
+  display:grid; grid-template-columns:1fr 1fr 170px 170px 120px auto; gap:12px; align-items:end;
+}
+.cbl-travels .flightsearch .search-btn { height:44px; white-space:nowrap; }
+.cbl-travels .flightsearch .search-btn:disabled { opacity:.45; cursor:default; }
+.cbl-travels .flightsearch .fs-oneway {
+  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+  font-family:${MONO}; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#B8B8B8; cursor:pointer;
+}
+.cbl-travels .flightsearch .fs-oneway input { accent-color:#C99742; width:15px; height:15px; cursor:pointer; }
+.cbl-travels .flightsearch .fs-note {
+  margin-top:26px; padding:20px 24px; max-width:70ch;
+  background:rgba(201,151,66,.06); border:1px solid rgba(201,151,66,.22);
+  border-radius:14px 0 14px 0;
+}
+.cbl-travels .flightsearch .fs-note h4 {
+  font-family:${DISPLAY}; font-weight:900; font-size:19px; color:#fff; margin-bottom:8px; letter-spacing:-.005em;
+}
+.cbl-travels .flightsearch .fs-note p { color:#B0B0B0; font-size:14.5px; line-height:1.65; text-wrap:pretty; }
+@media (max-width:1100px){
+  .cbl-travels .flightsearch .fs-grid { grid-template-columns:1fr 1fr; }
+  .cbl-travels .flightsearch .search-btn { grid-column:1 / -1; }
+}
+@media (max-width:560px){
+  .cbl-travels .flightsearch .fs-grid { grid-template-columns:1fr; }
+}
+.cbl-travels .flight-row {
     grid-template-columns:1fr auto;
     grid-template-areas:
       "airline price"
@@ -1128,40 +1162,89 @@ function TripCard({ t }: { t: Trip }) {
   );
 }
 
-function FlightRow({ f }: { f: Flight }) {
+
+/**
+ * Flight search — a real handoff to Expedia, replacing six invented flight rows
+ * ("Delta DL 1245 · PIT→JFK · $189"). Same problem as the invented nightly rates
+ * on the stay cards: a fabricated fare beside a real booking button.
+ *
+ * We earn NOTHING on flights (Expedia's terms, and airlines generally). The tab
+ * says so outright. It's here because the affiliate cookie is 7-day and
+ * cross-product: whoever books a flight to a city needs a room in it, and that
+ * room pays 4% once this click has set the cookie.
+ */
+function FlightSearchPanel() {
+  const [from, setFrom] = useState('PIT');
+  const [to, setTo] = useState('');
+  const [depart, setDepart] = useState(() => isoDaysOut(14));
+  const [ret, setRet] = useState(() => isoDaysOut(18));
+  const [oneWay, setOneWay] = useState(false);
+  const [adults, setAdults] = useState(1);
+
+  const go = () => {
+    if (!from.trim() || !to.trim()) return;
+    window.open(
+      expediaFlightSearch(
+        { from, to, departISO: depart, returnISO: oneWay ? null : ret, adults },
+        'travels_flightsearch',
+      ),
+      '_blank',
+      'noopener,noreferrer',
+    );
+  };
+  const onKey = (e: React.KeyboardEvent) => { if (e.key === 'Enter') go(); };
+
   return (
-    <div className="flight-row">
-      <div>
-        <div className="airline">{f.airline}</div>
-        <div className="flight-no">{f.flight}</div>
-      </div>
-      <div className="route">
-        <div className="point">
-          <div className="code">{f.from}</div>
-          <div className="time">{f.dep}</div>
+    <div className="flightsearch">
+      <div className="fs-grid">
+        <div className="search-field">
+          <div className="lbl">From</div>
+          <div className="ctl">
+            <input value={from} onChange={(e) => setFrom(e.target.value)} onKeyDown={onKey} placeholder="PIT" aria-label="Departure airport or city" />
+          </div>
         </div>
-        <div className="arrow">
-          <div className="lbl">{f.duration}</div>
+        <div className="search-field">
+          <div className="lbl">To</div>
+          <div className="ctl">
+            <input value={to} onChange={(e) => setTo(e.target.value)} onKeyDown={onKey} placeholder="Where to?" aria-label="Destination airport or city" />
+          </div>
         </div>
-        <div className="point">
-          <div className="code">{f.to}</div>
-          <div className="time">{f.arr}</div>
+        <div className="search-field">
+          <div className="lbl">Depart</div>
+          <div className="ctl">
+            <input type="date" value={depart} min={isoDaysOut(0)} onChange={(e) => setDepart(e.target.value)} onKeyDown={onKey} aria-label="Departure date" />
+          </div>
         </div>
-      </div>
-      <div className="stops">
-        <b>{f.stops}</b>
-      </div>
-      <span className="f-tag">{f.tag}</span>
-      <div className="price-block">
-        <div className="price">{f.price}</div>
-        <div className="src">CBL Pick</div>
-      </div>
-      <div className="actions">
-        <button disabled title="Flight booking coming soon" style={{ opacity: 0.5, cursor: 'default' }}>Book Flight</button>
-        <button className="ride" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>
-          <RideGlyph size={12} color="#C99742" strokeWidth={14} />
-          Ride to Airport
+        {!oneWay && (
+          <div className="search-field">
+            <div className="lbl">Return</div>
+            <div className="ctl">
+              <input type="date" value={ret} min={depart} onChange={(e) => setRet(e.target.value)} onKeyDown={onKey} aria-label="Return date" />
+            </div>
+          </div>
+        )}
+        <div className="search-field">
+          <div className="lbl">Travelers</div>
+          <div className="ctl">
+            <input type="number" min={1} max={9} value={adults} onChange={(e) => setAdults(Math.max(1, Math.min(9, Number(e.target.value) || 1)))} onKeyDown={onKey} aria-label="Number of travelers" />
+          </div>
+        </div>
+        <button className="search-btn" onClick={go} disabled={!to.trim()} title={to.trim() ? undefined : 'Add a destination'}>
+          Search Flights
         </button>
+      </div>
+      <label className="fs-oneway">
+        <input type="checkbox" checked={oneWay} onChange={(e) => setOneWay(e.target.checked)} />
+        One way
+      </label>
+
+      <div className="fs-note">
+        <h4>We don&rsquo;t earn a cent on these.</h4>
+        <p>
+          Airlines don&rsquo;t pay commission on flights, and no booking site changes that. We show
+          them because you need a flight to get there, not because there&rsquo;s money in it.
+          Booking your stay through us is the part that supports the site. Flights are just flights.
+        </p>
       </div>
     </div>
   );
@@ -1325,18 +1408,11 @@ export function Travels() {
               <div>
                 <div className="section-eyebrow">flights · worldwide</div>
                 <h2 className="section-h2">
-                  Outbound flights <span className="it">from Pittsburgh</span>
+                  Find your flight <span className="it">anywhere</span>
                 </h2>
               </div>
-              <div className="count">
-                <b>{FLIGHTS.length}</b> results · prices in USD
-              </div>
             </div>
-            <div>
-              {FLIGHTS.map((f) => (
-                <FlightRow key={f.flight} f={f} />
-              ))}
-            </div>
+            <FlightSearchPanel />
           </div>
         </section>
       )}
