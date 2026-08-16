@@ -857,6 +857,195 @@ function Hero() {
   );
 }
 
+
+/**
+ * US destinations for the search autocomplete. Matching runs on city, state code
+ * AND full state name, so "florida" surfaces Orlando/Miami/Tampa the way Keith
+ * expects — a plain <datalist> only matches the option text, so typing a state
+ * name would find nothing.
+ *
+ * Deliberately a travel list, not a geography list: where CBL members actually
+ * go. The lib/location.ts gazetteer is Pittsburgh suburbs and no use here.
+ */
+type Destination = { city: string; st: string; state: string };
+const DESTINATIONS: Destination[] = [
+  { city: 'Orlando', st: 'FL', state: 'Florida' },
+  { city: 'Miami', st: 'FL', state: 'Florida' },
+  { city: 'Tampa', st: 'FL', state: 'Florida' },
+  { city: 'Fort Lauderdale', st: 'FL', state: 'Florida' },
+  { city: 'Key West', st: 'FL', state: 'Florida' },
+  { city: 'Naples', st: 'FL', state: 'Florida' },
+  { city: 'St. Petersburg', st: 'FL', state: 'Florida' },
+  { city: 'Jacksonville', st: 'FL', state: 'Florida' },
+  { city: 'New York', st: 'NY', state: 'New York' },
+  { city: 'Las Vegas', st: 'NV', state: 'Nevada' },
+  { city: 'Los Angeles', st: 'CA', state: 'California' },
+  { city: 'San Diego', st: 'CA', state: 'California' },
+  { city: 'San Francisco', st: 'CA', state: 'California' },
+  { city: 'Palm Springs', st: 'CA', state: 'California' },
+  { city: 'Chicago', st: 'IL', state: 'Illinois' },
+  { city: 'New Orleans', st: 'LA', state: 'Louisiana' },
+  { city: 'Nashville', st: 'TN', state: 'Tennessee' },
+  { city: 'Memphis', st: 'TN', state: 'Tennessee' },
+  { city: 'Gatlinburg', st: 'TN', state: 'Tennessee' },
+  { city: 'Charleston', st: 'SC', state: 'South Carolina' },
+  { city: 'Myrtle Beach', st: 'SC', state: 'South Carolina' },
+  { city: 'Savannah', st: 'GA', state: 'Georgia' },
+  { city: 'Atlanta', st: 'GA', state: 'Georgia' },
+  { city: 'Asheville', st: 'NC', state: 'North Carolina' },
+  { city: 'Outer Banks', st: 'NC', state: 'North Carolina' },
+  { city: 'Denver', st: 'CO', state: 'Colorado' },
+  { city: 'Aspen', st: 'CO', state: 'Colorado' },
+  { city: 'Austin', st: 'TX', state: 'Texas' },
+  { city: 'Dallas', st: 'TX', state: 'Texas' },
+  { city: 'San Antonio', st: 'TX', state: 'Texas' },
+  { city: 'Houston', st: 'TX', state: 'Texas' },
+  { city: 'Phoenix', st: 'AZ', state: 'Arizona' },
+  { city: 'Scottsdale', st: 'AZ', state: 'Arizona' },
+  { city: 'Sedona', st: 'AZ', state: 'Arizona' },
+  { city: 'Seattle', st: 'WA', state: 'Washington' },
+  { city: 'Portland', st: 'OR', state: 'Oregon' },
+  { city: 'Boston', st: 'MA', state: 'Massachusetts' },
+  { city: 'Cape Cod', st: 'MA', state: 'Massachusetts' },
+  { city: 'Washington', st: 'DC', state: 'District of Columbia' },
+  { city: 'Philadelphia', st: 'PA', state: 'Pennsylvania' },
+  { city: 'Pittsburgh', st: 'PA', state: 'Pennsylvania' },
+  { city: 'Baltimore', st: 'MD', state: 'Maryland' },
+  { city: 'Virginia Beach', st: 'VA', state: 'Virginia' },
+  { city: 'Honolulu', st: 'HI', state: 'Hawaii' },
+  { city: 'Maui', st: 'HI', state: 'Hawaii' },
+  { city: 'Anchorage', st: 'AK', state: 'Alaska' },
+  { city: 'Salt Lake City', st: 'UT', state: 'Utah' },
+  { city: 'Moab', st: 'UT', state: 'Utah' },
+  { city: 'Cleveland', st: 'OH', state: 'Ohio' },
+  { city: 'Columbus', st: 'OH', state: 'Ohio' },
+  { city: 'Detroit', st: 'MI', state: 'Michigan' },
+  { city: 'Minneapolis', st: 'MN', state: 'Minnesota' },
+  { city: 'Kansas City', st: 'MO', state: 'Missouri' },
+  { city: 'St. Louis', st: 'MO', state: 'Missouri' },
+  { city: 'Louisville', st: 'KY', state: 'Kentucky' },
+  { city: 'Indianapolis', st: 'IN', state: 'Indiana' },
+  { city: 'Milwaukee', st: 'WI', state: 'Wisconsin' },
+];
+
+function matchDestinations(q: string, limit = 7): Destination[] {
+  const t = q.trim().toLowerCase();
+  if (!t) return [];
+  const starts: Destination[] = [];
+  const contains: Destination[] = [];
+  for (const d of DESTINATIONS) {
+    const city = d.city.toLowerCase();
+    const state = d.state.toLowerCase();
+    const st = d.st.toLowerCase();
+    if (city.startsWith(t) || state.startsWith(t) || st === t) starts.push(d);
+    else if (city.includes(t) || state.includes(t)) contains.push(d);
+    if (starts.length >= limit) break;
+  }
+  return [...starts, ...contains].slice(0, limit);
+}
+
+/** Text field with a destination dropdown. Keyboard: arrows, Enter, Escape. */
+function DestinationField({
+  label, value, onChange, onSubmit, placeholder,
+}: {
+  label: string; value: string; onChange: (v: string) => void; onSubmit: () => void; placeholder?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(0);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const matches = open ? matchDestinations(value) : [];
+
+  useEffect(() => {
+    const away = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', away);
+    return () => document.removeEventListener('mousedown', away);
+  }, []);
+
+  const pick = (d: Destination) => {
+    onChange(`${d.city}, ${d.st}`);
+    setOpen(false);
+  };
+
+  return (
+    <div className="search-field ac-wrap" ref={wrapRef}>
+      <div className="lbl">{label}</div>
+      <div className="ctl">
+        <svg width="14" height="16" viewBox="0 0 14 16" fill="none" aria-hidden="true">
+          <path d="M7 1c3 0 5 2 5 5 0 4-5 9-5 9S2 10 2 6c0-3 2-5 5-5z" stroke="#C99742" strokeWidth="1.6" />
+        </svg>
+        <input
+          value={value}
+          placeholder={placeholder}
+          aria-label={label}
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={open && matches.length > 0}
+          onChange={(e) => { onChange(e.target.value); setOpen(true); setHi(0); }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (!open || !matches.length) { if (e.key === 'Enter') onSubmit(); return; }
+            if (e.key === 'ArrowDown') { e.preventDefault(); setHi((i) => (i + 1) % matches.length); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setHi((i) => (i - 1 + matches.length) % matches.length); }
+            else if (e.key === 'Enter') { e.preventDefault(); pick(matches[hi]); }
+            else if (e.key === 'Escape') setOpen(false);
+          }}
+        />
+      </div>
+      {open && matches.length > 0 && (
+        <ul className="ac-list" role="listbox">
+          {matches.map((d, i) => (
+            <li
+              key={`${d.city}-${d.st}`}
+              role="option"
+              aria-selected={i === hi}
+              className={i === hi ? 'on' : undefined}
+              onMouseEnter={() => setHi(i)}
+              onMouseDown={(e) => { e.preventDefault(); pick(d); }}
+            >
+              <b>{d.city}</b><span>{d.state}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+/** Date field where the WHOLE control opens the picker, not just the small glyph. */
+function DateField({
+  label, value, min, onChange, onSubmit,
+}: {
+  label: string; value: string; min?: string; onChange: (v: string) => void; onSubmit: () => void;
+}) {
+  const ref = useRef<HTMLInputElement | null>(null);
+  const openPicker = () => {
+    const el = ref.current;
+    if (!el) return;
+    // showPicker() is the supported way to open the native calendar from a click
+    // anywhere in the field. Older browsers just focus, which is the old behaviour.
+    if (typeof el.showPicker === 'function') { try { el.showPicker(); return; } catch { /* fall through */ } }
+    el.focus();
+  };
+  return (
+    <div className="search-field">
+      <div className="lbl">{label}</div>
+      <div className="ctl is-date" onClick={openPicker}>
+        <input
+          ref={ref}
+          type="date"
+          value={value}
+          min={min}
+          aria-label={label}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && onSubmit()}
+        />
+      </div>
+    </div>
+  );
+}
+
 /** YYYY-MM-DD, `days` from today — what <input type="date"> and Expedia both want. */
 function isoDaysOut(days: number): string {
   const d = new Date();
@@ -892,46 +1081,9 @@ function SearchBar() {
     <>
       <div className="search-band">
         <div className="search-inner">
-          <div className="search-field">
-            <div className="lbl">Destination</div>
-            <div className="ctl">
-              <svg width="14" height="16" viewBox="0 0 14 16" fill="none">
-                <path d="M7 1c3 0 5 2 5 5 0 4-5 9-5 9S2 10 2 6c0-3 2-5 5-5z" stroke="#C99742" strokeWidth="1.6" />
-              </svg>
-              <input
-                value={dest}
-                onChange={(e) => setDest(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && search()}
-                placeholder="Where to?"
-              />
-            </div>
-          </div>
-          <div className="search-field">
-            <div className="lbl">Check in</div>
-            <div className="ctl">
-              <input
-                type="date"
-                value={checkIn}
-                min={isoDaysOut(0)}
-                onChange={(e) => setCheckIn(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && search()}
-                aria-label="Check in date"
-              />
-            </div>
-          </div>
-          <div className="search-field">
-            <div className="lbl">Check out</div>
-            <div className="ctl">
-              <input
-                type="date"
-                value={checkOut}
-                min={checkIn || isoDaysOut(0)}
-                onChange={(e) => setCheckOut(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && search()}
-                aria-label="Check out date"
-              />
-            </div>
-          </div>
+          <DestinationField label="Destination" value={dest} onChange={setDest} onSubmit={search} placeholder="Where to?" />
+          <DateField label="Check in" value={checkIn} min={isoDaysOut(0)} onChange={setCheckIn} onSubmit={search} />
+          <DateField label="Check out" value={checkOut} min={checkIn || isoDaysOut(0)} onChange={setCheckOut} onSubmit={search} />
           <div className="search-field">
             <div className="lbl">Guests</div>
             <div className="ctl">
