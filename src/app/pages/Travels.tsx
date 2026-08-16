@@ -296,13 +296,16 @@ const TRAVELS_CSS = `
   background:transparent; border:0; outline:0; color:#fff;
   font-family:${BODY}; font-size:14px; flex:1; min-width:0;
 }
-/* Native date inputs on a black field: color-scheme flips the picker itself to
-   dark, and the calendar indicator is inverted so it isn't dark-on-dark. */
+/* Native date inputs on a black field. color-scheme:dark ALREADY renders the
+   calendar indicator light — a filter:invert(1) on top flipped it back to black,
+   which is exactly the bug Keith spotted. Set the scheme, leave the icon alone.
+   The whole field opens the picker (see DateField), not just this 20px glyph. */
 .cbl-travels .search-field input[type="date"] { color-scheme:dark; cursor:pointer; }
 .cbl-travels .search-field input[type="date"]::-webkit-calendar-picker-indicator {
-  filter:invert(1); opacity:.5; cursor:pointer;
+  opacity:.65; cursor:pointer;
 }
-.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:.85; }
+.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:1; }
+.cbl-travels .search-field .ctl.is-date { cursor:pointer; }
 .cbl-travels .search-btn {
   background:#C99742; color:#000; border:0;
   padding:12px 22px; border-radius:12px; height:44px;
@@ -716,13 +719,16 @@ const TRAVELS_CSS = `
   .cbl-travels .cat-tabs { padding:14px 24px 0; }
   .cbl-travels section.band { padding:36px 24px 48px; }
   .cbl-travels .search-inner { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
-  /* Native date inputs on a black field: color-scheme flips the picker itself to
-   dark, and the calendar indicator is inverted so it isn't dark-on-dark. */
+  /* Native date inputs on a black field. color-scheme:dark ALREADY renders the
+   calendar indicator light — a filter:invert(1) on top flipped it back to black,
+   which is exactly the bug Keith spotted. Set the scheme, leave the icon alone.
+   The whole field opens the picker (see DateField), not just this 20px glyph. */
 .cbl-travels .search-field input[type="date"] { color-scheme:dark; cursor:pointer; }
 .cbl-travels .search-field input[type="date"]::-webkit-calendar-picker-indicator {
-  filter:invert(1); opacity:.5; cursor:pointer;
+  opacity:.65; cursor:pointer;
 }
-.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:.85; }
+.cbl-travels .search-field input[type="date"]:hover::-webkit-calendar-picker-indicator { opacity:1; }
+.cbl-travels .search-field .ctl.is-date { cursor:pointer; }
 .cbl-travels .search-btn { grid-column:span 2; width:100%; }
   .cbl-travels .stays-grid { grid-template-columns:repeat(2,1fr); }
   .cbl-travels .trips-grid { grid-template-columns:1fr; }
