@@ -81,3 +81,47 @@ export function expediaStay(name: string, city: string, placement: string): stri
   const destination = [name, city].filter(Boolean).join(', ');
   return expediaLink(expediaStayUrl({ destination }), placement);
 }
+
+export type FlightSearch = {
+  /** Origin — IATA code or city name. Expedia resolves both. */
+  from: string;
+  to: string;
+  departISO?: string | null; // YYYY-MM-DD
+  returnISO?: string | null; // omit for one way
+  adults?: number;
+};
+
+/**
+ * Raw (untracked) Expedia flight-search URL.
+ *
+ * Expedia's flight search takes a colon-delimited `leg` per direction:
+ *   leg1=from:PIT,to:BNA,departure:2026-08-23TANYT
+ * `trip=oneway|roundtrip` and `passengers=adults:2` complete it.
+ */
+export function expediaFlightUrl({ from, to, departISO, returnISO, adults }: FlightSearch): string {
+  const u = new URL('https://www.expedia.com/Flights-Search');
+  const leg = (a: string, b: string, d?: string | null) =>
+    `from:${a.trim()},to:${b.trim()}${d ? `,departure:${d}TANYT` : ''}`;
+  u.searchParams.set('trip', returnISO ? 'roundtrip' : 'oneway');
+  u.searchParams.set('leg1', leg(from, to, departISO));
+  if (returnISO) u.searchParams.set('leg2', leg(to, from, returnISO));
+  u.searchParams.set('passengers', `adults:${adults && adults > 0 ? adults : 1}`);
+  u.searchParams.set('mode', 'search');
+  return u.toString();
+}
+
+/**
+ * Tracked Expedia flight search.
+ *
+ * ⚠️ EXPEDIA PAYS NOTHING ON FLIGHTS — that is stated in the commission terms and
+ * has not changed. This exists anyway for one reason: the affiliate cookie is
+ * 7-day and CROSS-PRODUCT. A visitor who clicks a flight is exactly the visitor
+ * who needs a room in the same city, and once this link has set the cookie their
+ * hotel booking within the week is attributed to us at 4%.
+ *
+ * So the flight link earns indirectly, and the page says plainly on the flights
+ * tab that we make nothing on the flight itself.
+ */
+export function expediaFlightSearch(search: FlightSearch, placement: string): string {
+  return expediaLink(expediaFlightUrl(search), placement);
+}
