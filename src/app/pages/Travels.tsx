@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { expediaStay, expediaStaySearch } from '../lib/expedia';
+import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
@@ -132,7 +133,6 @@ type Flight = {
   duration: string;
   stops: string;
   price: string;
-  src: string;
   tag: string;
 };
 
@@ -159,6 +159,15 @@ type Stay = {
   img: string;
   /** true for the hand-picked seed; live Google results are not "CBL Picks". */
   curated?: boolean;
+};
+
+// Fallback only — shown when Places is unavailable. `curated: true` is what
+// earns the "CBL Pick" badge; live Google results don't get it.
+/** Places keyword per lodging tab — 'lodging' is the Google type for all three. */
+const STAY_KEYWORD: Record<'HOTELS' | 'BNB' | 'STR', string> = {
+  HOTELS: 'hotel',
+  BNB: 'bed and breakfast inn',
+  STR: 'vacation rental apartment',
 };
 
 const STAYS: Record<'HOTELS' | 'BNB' | 'STR', Stay[]> = {
@@ -488,7 +497,6 @@ const TRAVELS_CSS = `
 }
 .cbl-travels .flight-row .price-block { text-align:right; }
 .cbl-travels .flight-row .price-block .price { font-family:${DISPLAY}; font-weight:900; font-size:28px; color:#C99742; line-height:1; letter-spacing:-.01em; }
-.cbl-travels .flight-row .price-block .src { font-family:${MONO}; font-size:9px; color:#888; letter-spacing:.12em; text-transform:uppercase; margin-top:4px; }
 .cbl-travels .flight-row .actions { display:flex; flex-direction:column; gap:6px; }
 .cbl-travels .flight-row .actions button {
   background:#C99742; color:#000; border:0;
@@ -989,6 +997,64 @@ function Stars({ value }: { value: number }) {
   );
 }
 
+
+/**
+ * Real hotels near the visitor, from the same Google Places proxy that powers the
+ * Eats grid and Attractions. Mirrors those pages exactly: live data when the API
+ * answers, the hand-curated seed when it doesn't.
+ *
+ * Why this matters here: the seed is 17 hand-written Pittsburgh-area records with
+ * invented prices. On a page that now takes real bookings, a visitor in Denver
+ * was being shown Pittsburgh inns. Places is location-aware and national, and
+ * each result still books through the same tracked Expedia link.
+ *
+ * Google gives a price BAND ($ to $$$$), never a nightly rate, so that is all we
+ * ever display. The real number lives on Expedia's side of the click.
+ */
+const stayCache = new Map<string, Stay[]>();
+
+function useLiveStays(coords: { lat: number; lng: number } | null | undefined, kw: string) {
+  const [live, setLive] = useState<Stay[] | null>(null);
+  useEffect(() => {
+    if (!coords) { setLive(null); return; }
+    const key = `${kw}@${coords.lat.toFixed(2)},${coords.lng.toFixed(2)}`;
+    const hit = stayCache.get(key);
+    if (hit) { setLive(hit); return; }
+    let cancelled = false;
+    fetch(`/api/places?lat=${coords.lat}&lng=${coords.lng}&type=lodging&keyword=${encodeURIComponent(kw)}&radius=20000`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        if (!d?.configured || !d.results?.length) { setLive(null); return; }
+        const mapped: Stay[] = d.results
+          .filter((p: { name?: string; coord?: [number, number] }) => p.name && p.coord)
+          .map((p: Record<string, unknown>) => {
+            const rating = Number(p.rating) || 0;
+            const reviews = Number(p.reviews) || 0;
+            return {
+              name: String(p.name),
+              loc: String(p.address || ''),
+              stars: Math.max(1, Math.round(rating)),
+              rating: Number(rating.toFixed(1)),
+              reviews: reviews ? reviews.toLocaleString() : '—',
+              price: String(p.price || ''),
+              tag: 'Hotel',
+              desc: reviews
+                ? `Rated ${rating.toFixed(1)} by ${reviews.toLocaleString()} guests.`
+                : 'Recently listed nearby.',
+              img: String(p.photo || ''),
+            } as Stay;
+          })
+          .filter((x: Stay) => x.img);
+        stayCache.set(key, mapped);
+        setLive(mapped.length ? mapped : null);
+      })
+      .catch(() => { if (!cancelled) setLive(null); });
+    return () => { cancelled = true; };
+  }, [coords?.lat, coords?.lng, kw]);
+  return live;
+}
+
 function StayCard({ s }: { s: Stay }) {
   return (
     <article className="stay-card">
@@ -1221,12 +1287,24 @@ function DealsBand() {
 
 export function Travels() {
   const [tab, setTab] = useState<TabKey>('HOTELS');
+  // Same keyless IP detection Eats and Attractions use — no permission prompt.
+  const { coords, city } = useVisitorLocation();
 
   const isLodging = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR';
-  // Was slice(0, 3) while lodging was "Coming Soon" — a short teaser made sense
-  // when none of the rooms could be booked. Expedia went live 2026-08-13, so the
-  // whole curated set is shown: 8 hotels, 5 B&Bs, 4 short-term.
-  const stays = isLodging ? STAYS[tab] : null;
+  // Live hotels near the visitor, curated seed as the fallback — the same shape
+  // Eats and Attractions use. Was slice(0, 3) of a Pittsburgh-only seed, which
+  // made sense while nothing could be booked and stopped making sense the day
+  // Expedia went live (2026-08-13).
+  const liveStays = useLiveStays(coords, STAY_KEYWORD[tab]);
+  // TODO (Keith, 2026-08-16): sponsored CBL partner stays sort to the TOP here,
+  // the same way the restaurant tiers work on Eats. When that lands, a partner
+  // flag from the partner tables wins over both the live Places order and the
+  // curated seed — do NOT hardcode a list. The site already promises this in
+  // copy ("sponsored spots appear first"), so the ordering is a commitment.
+  const stays = isLodging
+    ? (liveStays && liveStays.length ? liveStays : STAYS[tab].map((x) => ({ ...x, curated: true })))
+    : null;
+  const usingLiveStays = isLodging && !!(liveStays && liveStays.length);
 
   return (
     <main className="cbl-travels">
