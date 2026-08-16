@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { Car } from 'lucide-react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
@@ -300,6 +301,46 @@ const TRAVELS_CSS = `
    calendar indicator light — a filter:invert(1) on top flipped it back to black,
    which is exactly the bug Keith spotted. Set the scheme, leave the icon alone.
    The whole field opens the picker (see DateField), not just this 20px glyph. */
+/* Travelers picker */
+.cbl-travels .ctl.as-btn {
+  width:100%; text-align:left; cursor:pointer; flex-direction:column;
+  align-items:flex-start; gap:2px; justify-content:center; font-family:inherit;
+}
+.cbl-travels .ctl.as-btn .cnt { font-family:${MONO}; font-size:9.5px; letter-spacing:.1em; text-transform:uppercase; color:#8A8A8A; }
+.cbl-travels .trav-pop {
+  position:absolute; z-index:40; top:calc(100% + 6px); right:0; min-width:290px;
+  background:#141414; border:1px solid rgba(201,151,66,.30); border-radius:12px;
+  padding:14px; box-shadow:0 18px 40px rgba(0,0,0,.55);
+}
+.cbl-travels .trav-row { display:flex; align-items:center; justify-content:space-between; gap:16px; padding:9px 4px; }
+.cbl-travels .trav-row + .trav-row { border-top:1px solid rgba(255,255,255,.07); }
+.cbl-travels .trav-row b { display:block; color:#fff; font-size:14px; font-weight:700; }
+.cbl-travels .trav-row span { font-family:${MONO}; font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:#8A8A8A; }
+.cbl-travels .stepper { display:flex; align-items:center; gap:12px; }
+.cbl-travels .stepper button {
+  width:30px; height:30px; border-radius:50%; background:transparent;
+  border:1px solid rgba(201,151,66,.45); color:#C99742; font-size:17px; line-height:1;
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.cbl-travels .stepper button:hover:not(:disabled) { background:rgba(201,151,66,.16); }
+.cbl-travels .stepper button:disabled { opacity:.3; cursor:default; }
+.cbl-travels .stepper b { min-width:16px; text-align:center; color:#fff; font-size:15px; }
+.cbl-travels .trav-ages { border-top:1px solid rgba(255,255,255,.07); padding-top:11px; margin-top:4px; }
+.cbl-travels .trav-ages .ttl { font-family:${MONO}; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:#8A8A8A; margin-bottom:8px; }
+.cbl-travels .trav-ages .ages { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.cbl-travels .trav-ages label { display:flex; flex-direction:column; gap:3px; }
+.cbl-travels .trav-ages label span { font-size:11px; color:#B8B8B8; }
+.cbl-travels .trav-ages select {
+  background:#0F0F0F; color:#fff; border:1px solid rgba(255,255,255,.12);
+  border-radius:8px; padding:7px 8px; font-family:inherit; font-size:13px; cursor:pointer;
+}
+.cbl-travels .trav-done {
+  width:100%; margin-top:12px; background:#C99742; color:#000; border:0;
+  border-radius:10px; padding:10px; font-family:${DISPLAY}; font-weight:900;
+  font-size:12px; letter-spacing:.12em; text-transform:uppercase; cursor:pointer;
+}
+.cbl-travels .trav-done:hover { background:#DDB15F; }
+
 /* Autocomplete dropdown */
 .cbl-travels .ac-wrap { position:relative; }
 .cbl-travels .ac-list {
@@ -835,15 +876,6 @@ function HeroStaysSvg() {
   );
 }
 
-function RideGlyph({ size = 12, color = '#C99742', strokeWidth = 14 }: { size?: number; color?: string; strokeWidth?: number }) {
-  return (
-    <svg width={size} height={size * 0.79} viewBox="0 0 288 227.01" fill="none" stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M65.43,90.76l-13.2,21.57c-2.58,4.17-3.66,8.95-3.11,13.68l5.26,45.23h89.57" />
-      <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
-    </svg>
-  );
-}
-
 function Hero() {
   return (
     <section className="hero cbl-light-streams">
@@ -1029,6 +1061,109 @@ function DestinationField({
   );
 }
 
+
+/**
+ * Adults + children picker. Expedia prices children BY AGE — a 2-year-old is a
+ * cot, a 12-year-old is an extra bed — so it wants each age rather than a count,
+ * and asking here means the price on the other side is the real one.
+ * Replaces a free-text "2 adults" box that only ever yielded parseInt's first number.
+ */
+function TravelersField({
+  adults, setAdults, childAges, setChildAges, onSubmit,
+}: {
+  adults: number; setAdults: (n: number) => void;
+  childAges: number[]; setChildAges: (a: number[]) => void;
+  onSubmit: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const away = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', away);
+    return () => document.removeEventListener('mousedown', away);
+  }, []);
+
+  const total = adults + childAges.length;
+  const summary = `${total} ${total === 1 ? 'traveler' : 'travelers'}`;
+
+  return (
+    <div className="search-field ac-wrap" ref={wrapRef}>
+      <div className="lbl">Travelers</div>
+      <button
+        type="button"
+        className="ctl as-btn"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-label={`Travelers: ${adults} adults, ${childAges.length} children`}
+      >
+        <span>{summary}</span>
+        <span className="cnt">{adults} adult{adults === 1 ? '' : 's'}{childAges.length ? ` · ${childAges.length} child${childAges.length === 1 ? '' : 'ren'}` : ''}</span>
+      </button>
+
+      {open && (
+        <div className="trav-pop">
+          <div className="trav-row">
+            <div><b>Adults</b><span>Age 18+</span></div>
+            <div className="stepper">
+              <button type="button" onClick={() => setAdults(Math.max(1, adults - 1))} disabled={adults <= 1} aria-label="Fewer adults">−</button>
+              <b>{adults}</b>
+              <button type="button" onClick={() => setAdults(Math.min(9, adults + 1))} disabled={adults >= 9} aria-label="More adults">+</button>
+            </div>
+          </div>
+
+          <div className="trav-row">
+            <div><b>Children</b><span>Age 0&ndash;17</span></div>
+            <div className="stepper">
+              <button
+                type="button"
+                onClick={() => setChildAges(childAges.slice(0, -1))}
+                disabled={!childAges.length}
+                aria-label="Fewer children"
+              >−</button>
+              <b>{childAges.length}</b>
+              <button
+                type="button"
+                onClick={() => childAges.length < 6 && setChildAges([...childAges, 8])}
+                disabled={childAges.length >= 6}
+                aria-label="More children"
+              >+</button>
+            </div>
+          </div>
+
+          {childAges.length > 0 && (
+            <div className="trav-ages">
+              <div className="ttl">Age at check-out</div>
+              <div className="ages">
+                {childAges.map((age, i) => (
+                  <label key={i}>
+                    <span>Child {i + 1}</span>
+                    <select
+                      value={age}
+                      onChange={(e) => {
+                        const next = [...childAges];
+                        next[i] = Number(e.target.value);
+                        setChildAges(next);
+                      }}
+                    >
+                      {Array.from({ length: 18 }, (_, n) => (
+                        <option key={n} value={n}>{n === 0 ? 'Under 1' : n}</option>
+                      ))}
+                    </select>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <button type="button" className="trav-done" onClick={() => { setOpen(false); onSubmit(); }}>Done</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Date field where the WHOLE control opens the picker, not just the small glyph. */
 function DateField({
   label, value, min, onChange, onSubmit,
@@ -1071,18 +1206,19 @@ function isoDaysOut(days: number): string {
 
 function SearchBar() {
   const [dest, setDest] = useState('Pittsburgh, PA');
-  const [guests, setGuests] = useState('2 adults');
+  const [adults, setAdults] = useState(2);
+  const [childAges, setChildAges] = useState<number[]>([]);
   // Were hardcoded `defaultValue="Fri May 23"` strings: uncontrolled, never read,
   // and stale on the page. A visitor could set dates and search anyway sent none.
   const [checkIn, setCheckIn] = useState(() => isoDaysOut(7));
   const [checkOut, setCheckOut] = useState(() => isoDaysOut(9));
   const search = () => {
-    const n = parseInt(guests, 10);
     window.open(
       expediaStaySearch(
         {
           destination: dest,
-          guests: Number.isFinite(n) ? n : undefined,
+          guests: adults,
+          childAges,
           // Only send a range that makes sense; Expedia ignores a bad one anyway,
           // but sending checkout-before-checkin would just look broken.
           ...(checkIn && checkOut && checkOut > checkIn ? { checkIn, checkOut } : {}),
@@ -1100,12 +1236,7 @@ function SearchBar() {
           <DestinationField label="Destination" value={dest} onChange={setDest} onSubmit={search} placeholder="Where to?" />
           <DateField label="Check in" value={checkIn} min={isoDaysOut(0)} onChange={setCheckIn} onSubmit={search} />
           <DateField label="Check out" value={checkOut} min={checkIn || isoDaysOut(0)} onChange={setCheckOut} onSubmit={search} />
-          <div className="search-field">
-            <div className="lbl">Guests</div>
-            <div className="ctl">
-              <input value={guests} onChange={(e) => setGuests(e.target.value)} />
-            </div>
-          </div>
+          <TravelersField adults={adults} setAdults={setAdults} childAges={childAges} setChildAges={setChildAges} onSubmit={search} />
           <button
             className="search-btn"
             onClick={BOOKING_LIVE ? search : undefined}
@@ -1406,19 +1537,16 @@ function AirportRideBanner() {
   return (
     <div className="airport-banner">
       <div className="ic">
-        <svg width="30" height="24" viewBox="0 0 288 227.01" fill="none" stroke="currentColor" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M65.43,90.76l-13.2,21.57c-2.58,4.17-3.66,8.95-3.11,13.68l5.26,45.23h89.57" />
-          <path d="M222.56,90.76l13.2,21.57c2.58,4.17,3.66,8.95,3.11,13.68l-5.26,45.23h-89.57" />
-          <path d="M64.93,91.59s3.11,4.94,14.34,4.94h66.01" />
-          <path d="M223.07,91.59s-3.11,4.94-14.34,4.94h-66.01" />
-        </svg>
+        {/* The site's car mark is lucide Car — same one on the venue cards. This
+            was four hand-drawn path fragments that never resolved into a car. */}
+        <Car size={28} strokeWidth={1.75} aria-hidden="true" />
       </div>
       <div>
         <h3>Need a ride to the airport?</h3>
         <p>
-          CBL Private Drivers handle scheduled airport runs — 12+ hours in advance.
-          We track your flight, build in buffer time, and you already know who's
-          picking you up.
+          Independent drivers on CBL handle scheduled airport runs. Give them about
+          24 hours and they'll build in buffer time for your flight, so you always
+          know who's picking you up.
         </p>
       </div>
       <button className="cta" onClick={() => window.open(RIDER_BOOK_URL, '_blank', 'noopener,noreferrer')}>Schedule Airport Ride →</button>

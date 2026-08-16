@@ -50,10 +50,12 @@ export type StaySearch = {
   checkIn?: string;  // YYYY-MM-DD
   checkOut?: string;
   guests?: number;
+  /** Ages of children travelling. Expedia prices by age, so it needs each one. */
+  childAges?: number[];
 };
 
 /** Raw (untracked) Expedia hotel-search URL. Exported for tests/preview only. */
-export function expediaStayUrl({ destination, checkIn, checkOut, guests }: StaySearch): string {
+export function expediaStayUrl({ destination, checkIn, checkOut, guests, childAges }: StaySearch): string {
   const u = new URL('https://www.expedia.com/Hotel-Search');
   if (destination.trim()) u.searchParams.set('destination', destination.trim());
   if (checkIn && checkOut) {
@@ -61,6 +63,11 @@ export function expediaStayUrl({ destination, checkIn, checkOut, guests }: StayS
     u.searchParams.set('endDate', checkOut);
   }
   if (guests && guests > 0) u.searchParams.set('adults', String(guests));
+  // Expedia prices children by age (cot vs extra bed vs adult rate), so it wants
+  // each age, not a count: children=1_7,1_10 is "two kids, aged 7 and 10".
+  if (childAges && childAges.length) {
+    u.searchParams.set('children', childAges.map((a) => `1_${Math.max(0, Math.min(17, a))}`).join(','));
+  }
   return u.toString();
 }
 
