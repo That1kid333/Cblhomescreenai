@@ -23,6 +23,8 @@ import { nearestMetro, type Coords } from './location';
 
 // Our Travelpayouts affiliate marker / account id, and our traffic source.
 // Both are baked into every base link below; kept here for reference/config.
+import { logAffiliateClick, type ClickNetwork } from './clickLog';
+
 export const TP_MARKER = '704468';
 export const TP_TRS = '499800';
 
@@ -104,6 +106,13 @@ function isPreviewHost(): boolean {
 }
 
 /** True once a program can earn — an Awin merchant, or a pasted TP/Impact base link. */
+/** Which affiliate network a Program is billed through — used only for the log. */
+function networkOf(program: Program): ClickNetwork {
+  if (program === 'ticketmaster') return 'ticketmaster';
+  if (program in AWIN_MID) return 'awin';
+  return 'travelpayouts';
+}
+
 export function isProgramReady(program: Program): boolean {
   return !!AWIN_MID[program] || !!PROGRAM_BASE[program] || !!IMPACT_BASE[program];
 }
@@ -123,6 +132,10 @@ export function buildAffiliateLink(
   target: string,
   placement: string,
 ): string | null {
+  // Reconciliation log — the networks report days late and a zero there could
+  // mean nobody clicked OR that tracking broke. Fire-and-forget; cannot throw.
+  logAffiliateClick(networkOf(program), placement);
+
   if (!target) return null;
 
   // Awin network (awin1.com/cread) — different anatomy from tp.media. `awinmid` is
