@@ -189,7 +189,12 @@ const TRIPS: Trip[] = [
 type Deal = { disc: string; partner: string; title: string; body: string };
 
 const DEALS: Deal[] = [
-  { disc: '100+', partner: 'KAYAK', title: 'Every site, one search', body: 'KAYAK compares hundreds of travel sites at once to surface the lowest fare and room rate — no promo code needed, every search.' },
+  // Was a KAYAK card. KAYAK is NOT an approved partner — still in case-by-case
+  // review — so the page was promoting a service we have no agreement with and
+  // don't link to anywhere. Replaced with Expedia Member Prices, which is a real
+  // published Expedia benefit (free One Key account, 10%+ on 1.5M+ stays,
+  // applied at sign-in, no code) and the partner this page actually books through.
+  { disc: '10%', partner: 'Expedia', title: 'Member Prices, automatically', body: 'A free Expedia One Key account unlocks Member Prices on 1.5M+ hotels, homes and car rentals — 10% or more, applied when you sign in. No code to remember.' },
   { disc: 'AI', partner: 'Buckee', title: 'Buckee plans it for you', body: 'Tell Buckee your dates and budget; he builds the itinerary and schedules the CBL rides between every stop. Free with membership.' },
   { disc: 'QR', partner: 'CBL Members', title: 'Share your card, earn rewards', body: 'Every member gets a digital business card — refer friends, drivers and local spots, and earn rewards when they join under your code.' },
 ];
