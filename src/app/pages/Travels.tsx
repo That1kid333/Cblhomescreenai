@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { expediaStay, expediaStaySearch, expediaFlightSearch } from '../lib/expedia';
+import { logAffiliateClick } from '../lib/clickLog';
 import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
@@ -1218,6 +1219,7 @@ function SearchBar() {
   const [checkIn, setCheckIn] = useState(() => isoDaysOut(7));
   const [checkOut, setCheckOut] = useState(() => isoDaysOut(9));
   const search = () => {
+    logAffiliateClick('expedia', 'travels_searchbar');
     window.open(
       expediaStaySearch(
         {
@@ -1427,7 +1429,7 @@ function StayCard({ s }: { s: Stay }) {
         <div className="cta-row">
           <button
             className="cta"
-            onClick={BOOKING_LIVE ? () => window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer') : undefined}
+            onClick={BOOKING_LIVE ? () => { logAffiliateClick('expedia', `travels_stay_${s.name}`); window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer'); } : undefined}
             disabled={!BOOKING_LIVE}
             title={BOOKING_LIVE ? undefined : 'Booking launching soon'}
             style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
@@ -1436,7 +1438,7 @@ function StayCard({ s }: { s: Stay }) {
           </button>
           <button
             className="cta ghost"
-            onClick={BOOKING_LIVE ? () => window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer') : undefined}
+            onClick={BOOKING_LIVE ? () => { logAffiliateClick('expedia', `travels_stay_${s.name}`); window.open(expediaStay(s.name, s.loc, `travels_stay_${s.name}`), '_blank', 'noopener,noreferrer'); } : undefined}
             disabled={!BOOKING_LIVE}
             title={BOOKING_LIVE ? undefined : 'Coming soon'}
             style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
@@ -1493,6 +1495,7 @@ function FlightSearchPanel() {
 
   const go = () => {
     if (!from.trim() || !to.trim()) return;
+    logAffiliateClick('expedia', 'travels_flightsearch');
     window.open(
       expediaFlightSearch(
         { from, to, departISO: depart, returnISO: oneWay ? null : ret, adults },

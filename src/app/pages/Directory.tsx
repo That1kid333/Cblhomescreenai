@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router";
 import QRCode from "qrcode";
 import { CarMark } from "../components/CarMark";
 import { expediaLink } from "../lib/expedia";
+import { logAffiliateClick } from "../lib/clickLog";
 import wordmark from "../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png";
 import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
@@ -17,7 +18,7 @@ import { useVisitorLocation, displayCity, seedCoords, forwardGeocode, milesBetwe
 import { JoinModal } from "../components/JoinModal";
 import { PlatformNotice, CollapsibleLegal } from "../components/PlatformNotice";
 import { subscribeEmail } from "../lib/blog";
-import { affiliateHref, AFFILIATE_REL, type Program } from "../lib/affiliates";
+import { affiliateHref, AFFILIATE_REL, networkOf, type Program } from "../lib/affiliates";
 import { submitDeal, AFFILIATE_PARTNERS, type DealSubmission } from "../lib/deals";
 
 /**
@@ -686,7 +687,13 @@ function TravelDealCard({ d }: { d: TravelDeal }) {
   if (!href) return null;
   const link = { href };
   return (
-    <a className={"coupon deal" + (d.featured ? " featured" : "")} href={link.href} target="_blank" rel={AFFILIATE_REL}>
+    <a
+      className={"coupon deal" + (d.featured ? " featured" : "")}
+      href={link.href}
+      target="_blank"
+      rel={AFFILIATE_REL}
+      onClick={() => logAffiliateClick(d.expedia ? 'expedia' : networkOf(d.program!), d.placement)}
+    >
       <div className="disc">{d.badge}<small>{d.badgeSmall}</small></div>
       <div className="body">
         {d.logoChip
