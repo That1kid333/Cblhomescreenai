@@ -44,6 +44,20 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   // driven by the visitor's detected location). Empty until Keith pastes the base
   // link from the TP dashboard → dark-launched (preview shows the plain link).
   viator: '',
+  // ── Arrival transfers (Keith's spec, 2026-08-18) ──────────────────────────
+  // Both are available in the TP account NOW — the October traffic gate applies
+  // only to the "Unlock more" tier, not to these.
+  //
+  // EMPTY = dark. Paste the RAW tp.media/r?... deeplink here, NOT the tpx.li short
+  // link: buildAffiliateLink() re-targets `u` and stamps sub_id, and a shortened
+  // link can carry neither. Get it from Tools → Links → the row's ⋮ menu →
+  // "Full link". Never hand-build campaign_id / p values.
+  //
+  // ⚠️ GetTransfer is BANNED from CBL (Keith, 2026-07-25 — documented driver
+  // non-payment). A driver-first platform does not route travelers there. Do not
+  // add it here, and delete its saved link in Travelpayouts.
+  welcomepickups: '', // primary — 8-9%, 45-day cookie, TP program 627
+  kiwitaxi: '',       // backup  — 9-11%, 30-day cookie
   // BikesBooking — bike/scooter/motorcycle rentals, location-driven (search by city).
   // LIVE (unlocked 2026-07-26). 4% / 30-day cookie / MOBILE WEB ONLY (no app tracking).
   bikesbooking: 'https://tp.media/r?campaign_id=57&marker=704468&p=1767&trs=499800&u=https%3A%2F%2Fwww.bikesbooking.com',
@@ -51,6 +65,8 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
 
 export type Program =
   | 'tiqets' | 'klook' | 'gocity' | 'ticketnetwork' | 'wegotrip' | 'viator' | 'bikesbooking'
+  // Airport / arrival transfers — see ARRIVAL_ORDER below.
+  | 'welcomepickups' | 'kiwitaxi'
   // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
   | 'turbopass' | 'usaguidedtours' | 'extranomical'
   // Impact network — see IMPACT_BASE below.
@@ -386,6 +402,32 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Concerts, sports & live theater',
       'Big arenas and small local venues',
       'Verified seats with mobile entry',
+    ],
+  },
+  welcomepickups: {
+    partner: 'Welcome Pickups',
+    logo: '',
+    cta: 'Book your transfer',
+    briefing:
+      'Airport transfers with a vetted local driver who meets you at arrivals, tracks your flight, and takes you straight to your door for a price agreed up front.',
+    highlights: [
+      'Meets you inside arrivals',
+      'Tracks your flight for delays',
+      'Fixed price agreed up front',
+      'Vetted local drivers',
+    ],
+  },
+  kiwitaxi: {
+    partner: 'Kiwitaxi',
+    logo: '',
+    cta: 'Book your transfer',
+    briefing:
+      'Pre-booked airport and intercity transfers in 100+ countries, with the fare fixed when you book and a driver waiting on arrival.',
+    highlights: [
+      'Pre-booked, fixed fare',
+      'Airport and intercity routes',
+      'Driver waiting on arrival',
+      'Wide international coverage',
     ],
   },
   bikesbooking: {
