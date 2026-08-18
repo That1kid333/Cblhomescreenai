@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Car, Ticket } from 'lucide-react';
 import { ticketmasterEventHref, AFFILIATE_REL, PARTNER_META } from '../lib/affiliates';
+import { logAffiliateClick } from '../lib/clickLog';
 import { scheduleRideUrl } from '../lib/scheduleRide';
 import type { Coords } from '../lib/location';
 
@@ -227,7 +228,8 @@ export function EventTicketCard({ e, placement }: { e: TMEvent; placement: strin
           </button>
           {/* rel="sponsored" only when the link is genuinely an affiliate link.
               An untracked international listing is an ordinary outbound link. */}
-          <a className="va tix" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
+          <a className="va tix" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}
+            onClick={() => logAffiliateClick('ticketmaster', placement)}>
             <Ticket size={17} color="#fff" strokeWidth={2} aria-hidden="true" />
             Tickets
           </a>
@@ -256,7 +258,8 @@ export function VenueNextEvent({ event, placement }: { event: TMEvent; placement
       <span className="ne-k">Next here</span>
       <span className="ne-name">{event.name}</span>
       {when && <span className="ne-when">{when}</span>}
-      <a className="ne-cta" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
+      <a className="ne-cta" href={link.href} target="_blank" rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}
+        onClick={() => logAffiliateClick('ticketmaster', placement)}>
         {meta.cta} <span aria-hidden="true">→</span>
       </a>
       <img className="ne-logo" src={meta.logo} alt="Ticketmaster" />

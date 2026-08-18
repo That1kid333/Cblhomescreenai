@@ -7,6 +7,7 @@ import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, venueKey, type TMEvent } from '../components/LocalEvents';
 import { PARTNER_META, ticketmasterEventHref, AFFILIATE_REL } from '../lib/affiliates';
+import { logAffiliateClick } from '../lib/clickLog';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
 
 /**
@@ -1290,6 +1291,7 @@ function VenueActions({ a, event, placement }: { a: Attraction; event?: TMEvent 
             <InfoGlyph size={20} />
           </button>
           <a className="va tix" href={link.href} target="_blank"
+            onClick={() => logAffiliateClick('ticketmaster', placement)}
             rel={link.tracked ? AFFILIATE_REL : 'noopener noreferrer'}>
             <TicketGlyph size={17} />
             Tickets
