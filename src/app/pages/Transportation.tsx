@@ -79,30 +79,6 @@ const PROVIDERS: Provider[] = [
     price: '—',
     badges: [{ k: 'pending', t: 'Coming Soon' }],
   },
-  {
-    key: 'waymo',
-    name: 'Waymo',
-    logo: 'W',
-    blurb: 'Fully autonomous, no driver — an autonomous partner option coming soon.',
-    eta: 'Soon',
-    price: '—',
-    badges: [
-      { k: 'av', t: 'Autonomous' },
-      { k: 'pending', t: 'Coming Soon' },
-    ],
-  },
-  {
-    key: 'cybercab',
-    name: 'Tesla Cybercab',
-    logo: 'T',
-    blurb: 'Tesla autonomous fleet. Rolling out late 2026.',
-    eta: '—',
-    price: '—',
-    badges: [
-      { k: 'av', t: 'Autonomous' },
-      { k: 'pending', t: 'Pending Launch' },
-    ],
-  },
 ];
 
 type Audience = {
@@ -172,14 +148,12 @@ const PARTNERS = [
   { name: 'CBL Private', sub: 'Service Fee · $0.01–$0.99', rev: '100%', revLbl: 'to driver' },
   { name: 'Uber', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
   { name: 'Lyft', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
-  { name: 'Waymo', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
-  { name: 'Tesla Cybercab', sub: 'Pending · Q4 2026', rev: 'Soon', revLbl: '' },
 ];
 
 const FAQS = [
   {
     q: 'Is CityBucketList a rideshare company?',
-    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors they already know. Third-party partner options (Uber, Lyft, Waymo) are coming soon for trips an independent driver can not cover.',
+    a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors they already know. When no independent driver is free, we hand you off to Uber or Lyft with your pickup and dropoff carried over. We earn nothing on those — they exist so you still get where you are going.',
   },
   {
     q: 'Why offer Uber, Lyft and autonomous options?',
@@ -1184,7 +1158,7 @@ function AffiliateBand() {
               <div>
                 <h4>Autonomous-ready</h4>
                 <p>
-                  The same routing layer plugs into Waymo today and Tesla Cybercab when it launches.
+                  The same routing layer hands off to Uber or Lyft when no CBL driver is free.
                   As fleets expand, CBL participates in the upside without owning vehicles.
                 </p>
               </div>
