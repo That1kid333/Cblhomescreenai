@@ -626,9 +626,32 @@ export function nearestMajorCity(coords: Coords | null | undefined, maxMi = 80):
 // — not a fixed list. Known cities get a curated destination page; every other city
 // uses Viator search (valid anywhere), so "things to do in {your city}" works
 // nationwide with no per-city IDs to maintain.
+/**
+ * Viator destination pages, keyed by city slug. A /City/d<id> page converts better
+ * than a search results page, so it's worth filling in — but ONLY with IDs
+ * verified in a real browser.
+ *
+ * ⚠️ DO NOT GUESS THESE. Viator 403s every automated request (verified 2026-08-18,
+ * including the Pittsburgh URL below), so an ID cannot be checked from a script. A
+ * wrong id silently lands the visitor in the wrong city, which is strictly worse
+ * than the search fallback — the fallback is never wrong, just less targeted.
+ *
+ * To add one: open viator.com in a browser, search the city, copy the /City/dNNNN
+ * from the destination page URL, and confirm the page header names that city.
+ *
+ * Cities worth adding, matched to where our other partners already have coverage:
+ * new-york, las-vegas, orlando, los-angeles, san-francisco, miami, chicago,
+ * boston, new-orleans, washington, nashville, denver, austin, seattle, san-diego.
+ */
 const VIATOR_DEST: Record<string, string> = {
   pittsburgh: 'https://www.viator.com/Pittsburgh/d22639',
 };
+
+/**
+ * Destination page when we have a verified id, else Viator's own search.
+ * The fallback is correct for every city on earth — it just ranks by Viator's
+ * relevance rather than dropping onto a curated destination page.
+ */
 export function viatorUrl(cityName: string): string {
   return VIATOR_DEST[slugify(cityName)] ?? `https://www.viator.com/searchResults/all?text=${encodeURIComponent(cityName)}`;
 }
