@@ -915,3 +915,46 @@ export function minPrice(offers: AffiliateOffer[]): string {
 export const OPTION_WORD: Partial<Record<Program, string>> = {
   tiqets: 'Tickets', gocity: 'Pass', turbopass: 'City pass', wegotrip: 'Audio tours', usaguidedtours: 'Guided tours', extranomical: 'Guided tours', ticketnetwork: 'Events', ticketmaster: 'Event tickets', viator: 'Experiences', bikesbooking: 'Rentals',
 };
+
+// ── Arrival transfers ────────────────────────────────────────────────────────
+// Order is deliberate (Keith, 2026-08-18): Welcome Pickups first, Kiwitaxi as the
+// backup, and if neither is bookable the block does not render — no empty state,
+// no "no transfers found".
+//
+// This NEVER competes with a CBL driver. Per the same spec: "a CBL driver, when
+// one is available, is always first and never shown next to alternatives." The
+// caller is responsible for not rendering this when a CBL option exists.
+const ARRIVAL_ORDER: Program[] = ['welcomepickups', 'kiwitaxi'];
+
+/** Destination page for a transfer partner, by city. */
+function transferUrl(program: Program, cityName: string): string {
+  const q = encodeURIComponent(cityName);
+  return program === 'kiwitaxi'
+    ? `https://kiwitaxi.com/search?q=${q}`
+    : `https://welcomepickups.com/search/?query=${q}`;
+}
+
+/**
+ * The one arrival-transfer offer to show for a city, or null to render nothing.
+ * Falls Welcome Pickups → Kiwitaxi → null, skipping any program that isn't wired
+ * (empty base link) or is parked.
+ */
+export function arrivalTransferOffer(cityName: string, placement: string): AffiliateOffer | null {
+  if (!cityName?.trim()) return null;
+  for (const program of ARRIVAL_ORDER) {
+    const link = affiliateHref(program, transferUrl(program, cityName), placement);
+    if (!link) continue; // not wired, or parked → try the backup
+    const meta = PARTNER_META[program];
+    if (!meta) continue;
+    const key = slugify(cityName);
+    return {
+      program, partner: meta.partner, cityKey: key, name: cityName, country: '',
+      photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT,
+      kicker: 'Airport transfer', title: `Arrive in ${cityName}, sorted`,
+      price: 'Fixed fare', meta: 'Door to door · booked ahead',
+      highlights: meta.highlights, cta: meta.cta, logo: meta.logo,
+      href: link.href, tracked: link.tracked,
+    };
+  }
+  return null;
+}
