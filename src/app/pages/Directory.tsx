@@ -321,7 +321,12 @@ const DIR_CSS = `
 .cbl-dir .deals-head { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px 16px; margin-bottom:16px; }
 .cbl-dir .deals-head-l { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 14px; }
 .cbl-dir .deals-head .deals-label { font-family:${DISPLAY}; font-weight:900; font-size:16px; letter-spacing:.06em; text-transform:uppercase; color:#fff; }
-.cbl-dir .deals-head .deals-disc { font-family:${MONO}; font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:#8a8a8a; }
+/* 13px is a FLOOR, not a preference: the Expedia Group Travel Creator terms
+   require the affiliate disclosure at 13px minimum, in the same viewport as the
+   links, never behind a tap. This was 10.5px uppercase mono in #8a8a8a — present,
+   which satisfies the FTC, but under Expedia's bar and hard to read at that size.
+   Matches src/app/components/AffiliateDisclosure.tsx, raised for the same reason. */
+.cbl-dir .deals-head .deals-disc { font-family:${DISPLAY}; font-size:13px; line-height:1.5; letter-spacing:0; text-transform:none; color:#9A9A9A; }
 .cbl-dir .deals-note { margin:18px 0 0; font-size:12.5px; color:#8a8a8a; font-style:italic; }
 .cbl-dir .deal-submit-cta { flex-shrink:0; background:transparent; border:1px solid rgba(201,151,66,.5); color:#C99742; font-family:${MONO}; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; border-radius:999px; padding:9px 16px; cursor:pointer; transition:background .18s, color .18s; }
 .cbl-dir .deal-submit-cta:hover { background:#C99742; color:#0A0A0A; }
