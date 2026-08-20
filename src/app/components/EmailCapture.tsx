@@ -76,10 +76,10 @@ export function EmailCapture({ source = 'blog-post' }: { source?: string }) {
       ) : (
         <>
           <h3>
-            One good email a week — <span className="it">worth opening.</span>
+            One good email a month, <span className="it">worth opening.</span>
           </h3>
           <p>
-            Local picks, member-only deals, and the occasional note from Buckee — written by real people who
+            Local picks, member-only deals, and the occasional note from Buckee. Written by real people who
             know your city. No spam, unsubscribe anytime.
           </p>
           <form onSubmit={submit}>

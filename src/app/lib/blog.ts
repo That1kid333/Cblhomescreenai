@@ -282,12 +282,12 @@ export async function deleteStudioPost(id: string): Promise<{ error: string | nu
 /* ══════════════════════════════════════════════════════════════════════════
    Newsletter + community story submissions (the "boast about your city"
    flywheel). Public can INSERT via the anon key (RLS `*_public_insert`); the
-   list/submissions are admin-only. Feeds CBL Studio + the weekly digest agent.
+   list/submissions are admin-only. Feeds CBL Studio + the monthly digest agent.
    ═════════════════════════════════════════════════════════════════════════ */
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-/** Add an email to the weekly-dispatch list. Duplicate = already subscribed. */
+/** Add an email to the monthly-dispatch list. Duplicate = already subscribed. */
 export async function subscribeEmail(email: string, source = 'blog'): Promise<{ error: string | null; already?: boolean }> {
   const clean = email.trim().toLowerCase();
   if (!EMAIL_RE.test(clean)) return { error: 'Please enter a valid email address.' };
