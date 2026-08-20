@@ -594,13 +594,13 @@ function Newsletter() {
       <div className="band-inner">
         <div className="news-grid">
           <div>
-            <div className="section-eyebrow">weekly · the cbl dispatch</div>
+            <div className="section-eyebrow">monthly · the cbl dispatch</div>
             <h2 className="section-h2">
-              One email a week<br /><span className="it">that's worth opening</span>
+              One email a month<br /><span className="it">that's worth opening</span>
             </h2>
             <p style={{ color: '#B0B0B0', fontSize: 15, lineHeight: 1.55, maxWidth: '52ch', marginBottom: 20 }}>
-              Top picks for the week, member-only deals, and the occasional dispatch from Buckee. No spam,
-              no algorithm tricks — written by real people who actually know your city, wherever that is.
+              Top picks for the month, member-only deals, and the occasional dispatch from Buckee. No spam,
+              no algorithm tricks. Written by real people who actually know your city, wherever that is.
             </p>
           </div>
           <div>
