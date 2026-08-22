@@ -118,7 +118,11 @@ const TABS: { key: TabKey; label: string; Icon: (p: { s?: number }) => JSX.Eleme
   { key: 'FLIGHTS', label: 'Flights', Icon: IconFlight },
   { key: 'HOTELS', label: 'Hotels & Resorts', Icon: IconHotel },
   { key: 'BNB', label: 'B&Bs & Inns', Icon: IconBnB },
-  { key: 'STR', label: 'Short-Term', Icon: IconSTR },
+  // "Short-Term" was the only piece of industry jargon in a row of plain
+  // traveler language. It is short for "short-term rental", which is what
+  // operators call the category — nobody plans a trip thinking "I need a
+  // short-term". Matches the "X & Y" rhythm of the two tabs above it.
+  { key: 'STR', label: 'Homes & Cabins', Icon: IconSTR },
   { key: 'TRIPS', label: 'Day Trips', Icon: IconTrip },
   { key: 'BUCKEE', label: 'Curated by Buckee', Icon: IconScroll },
   { key: 'DEALS', label: 'Travel Deals', Icon: IconDeal },
@@ -190,6 +194,36 @@ const STAYS: Record<'HOTELS' | 'BNB', Stay[]> = {
 };
 
 type Trip = { name: string; loc: string; dist: string; time: string; img: string; p: string };
+
+// Day Trips was six hardcoded Pittsburgh destinations with a counter that read
+// "trips · from Pittsburgh". A visitor who searched Asheville, got real Asheville
+// hotels, then opened this tab was told to drive to Mill Run, PA. Same shape of
+// bug the stays grid had, and the last Pittsburgh-locked tab on the page.
+//
+// Fixed the way Eats already handles it: Pittsburgh keeps the hand-verified
+// curated list (it includes trips well beyond any API radius, like Niagara at
+// four hours), and every other city runs on live Google Places. Nothing is
+// invented for cities we have not visited.
+const PGH_CENTER = { lat: 40.4406, lng: -79.9959 };
+const MARKET_RADIUS_MI = 45;
+/** Below this, it is a walk rather than a drive — see the filter in useLiveTrips. */
+const MIN_TRIP_MI = 5;
+
+/** Great-circle miles. Mirrors location.ts rather than importing, to keep this file standalone. */
+function tripMiles(a: { lat: number; lng: number }, b: { lat: number; lng: number }): number {
+  const R = 3958.8;
+  const rad = (d: number) => (d * Math.PI) / 180;
+  const h =
+    Math.sin(rad(b.lat - a.lat) / 2) ** 2 +
+    Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(rad(b.lng - a.lng) / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+/** Conservative drive estimate: straight line + 25% for roads, at 45 mph, to the nearest 5 min. */
+function driveEstimate(miles: number): string {
+  const mins = ((miles * 1.25) / 45) * 60;
+  return `~${Math.max(10, Math.round(mins / 5) * 5)} min`;
+}
 
 const TRIPS: Trip[] = [
   { name: 'Fallingwater', loc: 'Mill Run, PA · 75 min', dist: '70 mi', time: '½ day', img: 'https://images.unsplash.com/photo-1564013799919-ab600027ffc6?w=600&h=400&fit=crop', p: "Frank Lloyd Wright's masterwork over Bear Run waterfall. Combine with Kentuck Knob for a full day." },
@@ -1463,6 +1497,60 @@ function useLiveStays(coords: { lat: number; lng: number } | null | undefined, k
   return live;
 }
 
+/**
+ * Real day-trip destinations near the visitor.
+ *
+ * Google's nearby search caps at 50km (~31 miles), which is shorter than a
+ * classic day trip but still returns genuinely good material — Asheville comes
+ * back with Pisgah National Forest, Chimney Rock and the NC Arboretum. Distance
+ * and drive time are computed from real coordinates, and the blurb is a plain
+ * statement of the rating rather than invented prose about a place we have not
+ * been to.
+ */
+function useLiveTrips(coords: { lat: number; lng: number } | null | undefined, enabled: boolean) {
+  const [live, setLive] = useState<Trip[] | null>(null);
+  useEffect(() => {
+    if (!coords || !enabled) { setLive(null); return; }
+    let cancelled = false;
+    fetch(`/api/places?lat=${coords.lat}&lng=${coords.lng}&type=tourist_attraction&keyword=${encodeURIComponent('things to do')}&radius=50000`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        if (!d?.configured || !d.results?.length) { setLive(null); return; }
+        const mapped: Trip[] = d.results
+          .filter((p: { name?: string; coord?: [number, number]; photo?: string }) => p.name && p.coord && p.photo)
+          .map((p: Record<string, unknown>) => {
+            const c = p.coord as [number, number];
+            const miles = tripMiles(coords, { lat: c[0], lng: c[1] });
+            const rating = Number(p.rating) || 0;
+            const reviews = Number(p.reviews) || 0;
+            return {
+              name: String(p.name),
+              loc: String(p.address || ''),
+              dist: `${miles < 10 ? miles.toFixed(1) : Math.round(miles)} mi`,
+              time: driveEstimate(miles),
+              img: String(p.photo || ''),
+              p: reviews
+                ? `Rated ${rating.toFixed(1)} by ${reviews.toLocaleString()} visitors.`
+                : 'A well-reviewed spot within driving range.',
+            } as Trip;
+          })
+          .sort((a: Trip, b: Trip) => parseFloat(b.dist) - parseFloat(a.dist));
+        // A "day trip" 0.2 miles away is a walk, not a trip. Charleston returns
+        // Rainbow Row at 0.2mi and Pineapple Fountain at 0.4mi, which are lovely
+        // and are not day trips. Prefer things far enough to be worth the drive,
+        // but never blank the section over it: if the floor leaves almost
+        // nothing, show what there is rather than an empty tab.
+        const worthDriving = mapped.filter((x: Trip) => parseFloat(x.dist) >= MIN_TRIP_MI);
+        const chosen = worthDriving.length >= 2 ? worthDriving : mapped;
+        setLive(chosen.length ? chosen : null);
+      })
+      .catch(() => { if (!cancelled) setLive(null); });
+    return () => { cancelled = true; };
+  }, [coords?.lat, coords?.lng, enabled]);
+  return live;
+}
+
 function StayCard({ s }: { s: Stay }) {
   return (
     <article className="stay-card">
@@ -1803,6 +1891,11 @@ export function Travels() {
   const city = searched?.city ?? ipCity;
   // Where the visitor is looking, in words — for the Vrbo cards and headings.
   const placeLabel = searched?.city || displayCity(ipCity, ipCoords) || 'your area';
+  // Pittsburgh (or anywhere in the metro) keeps the hand-verified trip list;
+  // every other city gets real attractions near it. Same gate Eats uses.
+  const inPittsburgh = !!coords && tripMiles(coords, PGH_CENTER) <= MARKET_RADIUS_MI;
+  const liveTrips = useLiveTrips(coords, tab === 'TRIPS' && !inPittsburgh);
+  const trips = inPittsburgh ? TRIPS : liveTrips;
 
   const isLodging = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR';
   // Short-term runs on Vrbo categories now, not the Places grid — see VRBO_CARDS.
@@ -1893,7 +1986,7 @@ export function Travels() {
                 </h2>
               </div>
               <div className="count">
-                <b>{TRIPS.length}</b> trips · from Pittsburgh
+                <b>{trips?.length ?? 0}</b> trips · from {inPittsburgh ? 'Pittsburgh' : placeLabel}
               </div>
             </div>
             <p className="section-lede">
@@ -1901,11 +1994,21 @@ export function Travels() {
               includes a CBL Private ride option to and from — perfect for groups
               who want to leave the driving to someone else.
             </p>
-            <div className="trips-grid">
-              {TRIPS.map((t) => (
-                <TripCard key={t.name} t={t} />
-              ))}
-            </div>
+            {trips && trips.length > 0 ? (
+              <div className="trips-grid">
+                {trips.map((t) => (
+                  <TripCard key={t.name} t={t} />
+                ))}
+              </div>
+            ) : (
+              // Never fall back to the Pittsburgh list for a visitor who is not
+              // near Pittsburgh — that is the bug this replaced.
+              <p className="section-lede" style={{ opacity: 0.7 }}>
+                {liveTrips === null && !inPittsburgh
+                  ? `Still finding day trips near ${placeLabel}. Search a destination above to look somewhere else.`
+                  : 'Looking for day trips near you…'}
+              </p>
+            )}
           </div>
         </section>
       )}
