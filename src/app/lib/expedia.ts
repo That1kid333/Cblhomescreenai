@@ -138,3 +138,48 @@ export function expediaFlightUrl({ from, to, departISO, returnISO, adults }: Fli
 export function expediaFlightSearch(search: FlightSearch, placement: string): string {
   return expediaLink(expediaFlightUrl(search), placement);
 }
+
+// ── Vrbo (whole homes, cabins, lofts) ───────────────────────────────────────
+// Vrbo is an Expedia Group brand, so it rides on the SAME Partnerize camref we
+// already use — no second program, no second approval. It pays the vacation
+// rental rate (2%), half the hotel rate, which is worth remembering before
+// giving it more real estate than hotels.
+//
+// ⚠️ We cannot render individual Vrbo listings. Google Places has no vacation
+// rental inventory (`type=lodging&keyword=vacation rental` returns zero, every
+// city, every time), and real listing data needs Expedia's Rapid API, which is
+// a separate commercial agreement. So these are honest SEARCHES by place and
+// property type, never invented properties with invented ratings.
+
+/** Property kinds we surface. The value is what Vrbo's search reads as a filter phrase. */
+export type VrboKind = 'whole homes' | 'cabins' | 'lofts' | 'houses with a pool';
+
+/**
+ * Untracked Vrbo search URL for a destination, optionally narrowed by kind.
+ *
+ * FAILS SAFE BY DESIGN. `destination` carries the place and nothing else, because
+ * that is the one parameter whose job is to resolve a location. The property kind
+ * rides in a separate `keywords` param, so if Vrbo ignores it the search still
+ * returns every rental in the right city rather than breaking.
+ *
+ * The first draft folded the kind into the destination string ("cabins in
+ * Asheville"). That was unverifiable — Vrbo returns 429 to any server-side
+ * request, so it cannot be checked from here — and if their geocoder had failed
+ * on the phrase, all four cards would have landed on an empty search. Unfiltered
+ * but correct beats filtered but broken.
+ *
+ * ⚠️ `keywords` is NOT a documented Vrbo parameter. It needs one real browser
+ * click to confirm whether it narrows the results or is simply ignored. Either
+ * outcome ships safely; only the filtering is in question.
+ */
+export function vrboSearchUrl(destination: string, kind?: VrboKind): string {
+  const u = new URL('https://www.vrbo.com/search');
+  u.searchParams.set('destination', destination);
+  if (kind) u.searchParams.set('keywords', kind);
+  return u.toString();
+}
+
+/** Tracked Vrbo search, wrapped in our Partnerize click. */
+export function vrboSearch(destination: string, kind: VrboKind | undefined, placement: string): string {
+  return expediaLink(vrboSearchUrl(destination, kind), placement);
+}
