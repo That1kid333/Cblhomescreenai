@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
-import { expediaStay, expediaStaySearch, expediaFlightSearch } from '../lib/expedia';
+import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch, type VrboKind } from '../lib/expedia';
 import { logAffiliateClick } from '../lib/clickLog';
 import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
@@ -144,13 +144,32 @@ type Stay = {
 // Fallback only — shown when Places is unavailable. `curated: true` is what
 // earns the "CBL Pick" badge; live Google results don't get it.
 /** Places keyword per lodging tab — 'lodging' is the Google type for all three. */
-const STAY_KEYWORD: Record<'HOTELS' | 'BNB' | 'STR', string> = {
+const STAY_KEYWORD: Record<'HOTELS' | 'BNB', string> = {
   HOTELS: 'hotel',
   BNB: 'bed and breakfast inn',
-  STR: 'vacation rental apartment',
 };
 
-const STAYS: Record<'HOTELS' | 'BNB' | 'STR', Stay[]> = {
+// ── Vrbo (short-term) ───────────────────────────────────────────────────────
+// The STR tab used to render four invented properties — "Strip District Loft",
+// "Mountain A-Frame" — with invented ratings and review counts, badged CBL Pick,
+// wired to a Book Now that searched Expedia for a listing that does not exist.
+// They were never going to be replaced by live data either: Google Places has no
+// vacation rental inventory, so `type=lodging&keyword=vacation rental apartment`
+// returns zero results in every city, every time, and the seed was permanent.
+//
+// These are categories, not listings. A generic photo under "Cabins & cottages
+// in Asheville" is honest illustration; the same photo under a named property
+// with a 4.9 rating was not. Each opens a real Vrbo search for the place the
+// visitor is actually looking at.
+type VrboCard = { kind: VrboKind; title: string; blurb: string; img: string };
+const VRBO_CARDS: VrboCard[] = [
+  { kind: 'whole homes', title: 'Whole homes', blurb: 'The run of the house, room for everyone, and a kitchen worth cooking in.', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&h=600&fit=crop' },
+  { kind: 'cabins', title: 'Cabins & cottages', blurb: 'Woods, water, or a porch worth sitting on. Best booked with the phone off.', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&h=600&fit=crop' },
+  { kind: 'lofts', title: 'Lofts & apartments', blurb: 'More room than a hotel, usually a short walk from the good part of town.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
+  { kind: 'houses with a pool', title: 'Houses with a pool', blurb: 'The one everyone actually wants in July. Narrowed to places with a pool on site.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
+];
+
+const STAYS: Record<'HOTELS' | 'BNB', Stay[]> = {
   HOTELS: [
     { name: 'The Ritz-Carlton, Key Biscayne', loc: 'Miami, FL', stars: 5, rating: 4.8, reviews: '2.4k', price: '$589', tag: 'Resort', desc: 'Oceanfront resort with two-mile private beach, full-service spa and three pools.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
     { name: 'Fairmont Banff Springs', loc: 'Banff, AB · Canada', stars: 5, rating: 4.9, reviews: '5.1k', price: '$425', tag: 'Mountain Resort', desc: 'Historic castle in the Canadian Rockies with golf, spa and Bow Valley views.', img: 'https://images.unsplash.com/photo-1455587734955-081b22074882?w=900&h=600&fit=crop' },
@@ -167,12 +186,6 @@ const STAYS: Record<'HOTELS' | 'BNB' | 'STR', Stay[]> = {
     { name: 'Sunburst Cottages', loc: 'Lake Placid, NY', stars: 4, rating: 4.8, reviews: '412', price: '$295', tag: 'Cottage', desc: 'Adirondack waterfront cottages with private docks, kayaks and fire pits.', img: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=900&h=600&fit=crop' },
     { name: 'Inn on the Mexican War Streets', loc: 'North Side · Pittsburgh, PA', stars: 4, rating: 4.8, reviews: '156', price: '$170', tag: 'B&B', desc: 'A Victorian-mansion B&B across from Allegheny Commons, full of period charm and quiet.', img: 'https://images.unsplash.com/photo-1444201983204-c43cbd584d93?w=900&h=600&fit=crop' },
     { name: 'The Parador Inn', loc: 'Allegheny West · Pittsburgh, PA', stars: 4, rating: 4.7, reviews: '198', price: '$165', tag: 'B&B', desc: 'A Caribbean-themed B&B in a restored 1870s mansion, walkable to PNC Park and the river.', img: 'https://images.unsplash.com/photo-1568084680786-a84f91d1153c?w=900&h=600&fit=crop' },
-  ],
-  STR: [
-    { name: 'Strip District Loft', loc: 'Pittsburgh, PA', stars: 4, rating: 4.9, reviews: '218', price: '$165', tag: 'Whole Loft', desc: 'Open-plan brick loft with skyline views, walking distance to PPG Paints Arena.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
-    { name: 'Mountain A-Frame', loc: 'Asheville, NC', stars: 5, rating: 4.9, reviews: '341', price: '$245', tag: 'A-Frame · 2 bed', desc: 'Forest cabin with wood-burning sauna, outdoor shower, and Blue Ridge mountain views.', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&h=600&fit=crop' },
-    { name: 'Hudson Valley Farmhouse', loc: 'Rhinebeck, NY', stars: 5, rating: 4.8, reviews: '527', price: '$385', tag: 'Farmhouse · 4 bed', desc: '1850s farmhouse on 12 acres with pool, sauna and hiking trails on-property.', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&h=600&fit=crop' },
-    { name: 'Kasa at the Maverick', loc: 'East Liberty · Pittsburgh, PA', stars: 4, rating: 4.6, reviews: '302', price: '$150', tag: 'Whole Suite', desc: 'Stylish self-check-in suites inside the historic former East Liberty YMCA, steps from East End shops.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
   ],
 };
 
@@ -864,6 +877,46 @@ const TRAVELS_CSS = `
   }
   .cbl-travels .airport-banner .cta { width:100%; justify-content:center; }
 }
+
+/* ── Vrbo short-term (categories, not listings) ── */
+.cbl-travels .vrbo-by {
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:${MONO}; font-size:10px; color:#888;
+  letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;
+}
+/* NO brightness(0) invert(1): this is Vrbo's own white-RGB artwork and the
+   filter exists to force assorted logos white, not to reprocess a mark that
+   already ships correct. Same rule as Expedia and Ticketmaster. */
+.cbl-travels .vrbo-by img { height:17px; width:auto; display:block; }
+.cbl-travels .vrbo-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:22px;
+}
+.cbl-travels .vrbo-card {
+  display:flex; flex-direction:column; text-decoration:none; color:inherit;
+  background:#0F0F0F; border:1px solid rgba(255,255,255,.10); border-radius:14px;
+  overflow:hidden; transition:border-color .18s ease, transform .18s ease;
+}
+.cbl-travels .vrbo-card:hover { border-color:rgba(201,151,66,.55); transform:translateY(-2px); }
+.cbl-travels .vrbo-card:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
+.cbl-travels .vrbo-card .img {
+  position:relative; aspect-ratio:3/2; background-size:cover; background-position:center;
+}
+.cbl-travels .vrbo-card .vrbo-chip {
+  position:absolute; left:12px; top:12px; height:14px; width:auto; display:block;
+  padding:6px 9px; background:rgba(0,0,0,.66); border-radius:6px; box-sizing:content-box;
+}
+.cbl-travels .vrbo-card .body { padding:16px 18px 18px; display:flex; flex-direction:column; gap:7px; flex:1; }
+.cbl-travels .vrbo-card .body h3 { margin:0; font-size:19px; font-weight:800; color:#fff; letter-spacing:-.01em; }
+.cbl-travels .vrbo-card .body p { margin:0; font-size:14px; line-height:1.55; color:#B9B9B4; text-wrap:pretty; }
+.cbl-travels .vrbo-card .go {
+  margin-top:auto; padding-top:6px; font-family:${MONO}; font-size:10.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:#C99742;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cbl-travels .vrbo-card { transition:none; }
+  .cbl-travels .vrbo-card:hover { transform:none; }
+}
+
 `;
 
 // ── Sub-components ──────────────────────────────────────────────────────────
@@ -1210,7 +1263,7 @@ function isoDaysOut(days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function SearchBar() {
+function SearchBar({ onSearch, searching }: { onSearch: (place: string) => void; searching: boolean }) {
   const [dest, setDest] = useState('Pittsburgh, PA');
   const [adults, setAdults] = useState(2);
   const [childAges, setChildAges] = useState<number[]>([]);
@@ -1218,7 +1271,16 @@ function SearchBar() {
   // and stale on the page. A visitor could set dates and search anyway sent none.
   const [checkIn, setCheckIn] = useState(() => isoDaysOut(7));
   const [checkOut, setCheckOut] = useState(() => isoDaysOut(9));
+  // Searching now MOVES THE PAGE rather than ejecting to Expedia. The grid below
+  // already renders real stays for a coordinate; it was just never told about the
+  // search box, so typing "Asheville" left you looking at your own city. Same
+  // pattern Attractions uses (geocode the typed place, hand the coords to the
+  // grid). The Expedia handoff is still available, but as a deliberate secondary
+  // link rather than the only thing the button does.
   const search = () => {
+    onSearch(dest);
+  };
+  const openOnExpedia = () => {
     logAffiliateClick('expedia', 'travels_searchbar');
     window.open(
       expediaStaySearch(
@@ -1251,7 +1313,7 @@ function SearchBar() {
             title={BOOKING_LIVE ? undefined : 'Hotel & flight booking launching soon'}
             style={BOOKING_LIVE ? undefined : { opacity: 0.5, cursor: 'default' }}
           >
-            Search →
+            {searching ? 'Searching…' : 'Search →'}
           </button>
         </div>
       </div>
@@ -1655,32 +1717,116 @@ function DealsBand() {
   );
 }
 
+/**
+ * Short-term stays, powered by Vrbo.
+ *
+ * Vrbo is an Expedia Group brand, so it runs on the SAME Partnerize camref as
+ * the hotel links — no second program to join. It pays the vacation rental rate
+ * (2%), half of hotels, which is why it gets one honest section rather than top
+ * billing.
+ *
+ * These are categories, not properties. We cannot list individual Vrbo homes:
+ * Places has no vacation rental inventory and real listing data needs Expedia's
+ * Rapid API, which is a separate commercial agreement. So each card opens a live
+ * Vrbo search for whatever place the visitor is looking at, and nothing on the
+ * card claims to be a specific home.
+ */
+function VrboSection({ place }: { place: string }) {
+  return (
+    <section className="band">
+      <div className="band-inner">
+        <div className="section-head">
+          <div>
+            <div className="section-eyebrow">whole homes · lofts · cabins</div>
+            <h2 className="section-h2">
+              Short-term in <span className="it">{place}</span>
+            </h2>
+          </div>
+          <div className="vrbo-by">
+            <span>Stays by</span>
+            <img src="/travels/vrbo-logo.svg" alt="Vrbo" />
+          </div>
+        </div>
+        <p className="section-lede">
+          Vrbo lists whole places rather than rooms. Each of these opens a live
+          search for {place}, so what you see is real availability and real
+          pricing on the day you look, not a fixed list that goes stale.
+        </p>
+        <div className="vrbo-grid">
+          {VRBO_CARDS.map((c) => (
+            <a
+              key={c.kind}
+              className="vrbo-card"
+              href={vrboSearch(place, c.kind, `travels_vrbo_${c.kind}`)}
+              target="_blank"
+              rel="sponsored nofollow noopener noreferrer"
+              onClick={() => logAffiliateClick('expedia', `travels_vrbo_${c.kind}`)}
+            >
+              <div className="img" style={{ backgroundImage: `url(${c.img})` }}>
+                <img className="vrbo-chip" src="/travels/vrbo-logo.svg" alt="Vrbo" />
+              </div>
+              <div className="body">
+                <h3>{c.title}</h3>
+                <p>{c.blurb}</p>
+                <span className="go">Search {place} →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function Travels() {
   const [tab, setTab] = useState<TabKey>('HOTELS');
   // Same keyless IP detection Eats and Attractions use — no permission prompt.
-  const { coords, city } = useVisitorLocation();
+  const { coords: ipCoords, city: ipCity } = useVisitorLocation();
+  // A typed destination beats the IP guess. Until 2026-08-22 the search box was
+  // wired to nothing but an Expedia handoff, so searching "Asheville" left the
+  // grid showing hotels near YOU. Same fix Attractions already had.
+  const [searched, setSearched] = useState<{ city: string; coords: { lat: number; lng: number } } | null>(null);
+  const [searching, setSearching] = useState(false);
+  const onSearch = async (place: string) => {
+    if (!place.trim()) return;
+    setSearching(true);
+    try {
+      const r = await fetch(`/api/geocode?q=${encodeURIComponent(place)}`).then((res) => res.json());
+      if (r?.coord) setSearched({ city: r.city || place, coords: { lat: r.coord[0], lng: r.coord[1] } });
+    } catch {
+      /* keep the current location rather than blanking the page */
+    } finally {
+      setSearching(false);
+    }
+  };
+  const coords = searched?.coords ?? ipCoords;
+  const city = searched?.city ?? ipCity;
+  // Where the visitor is looking, in words — for the Vrbo cards and headings.
+  const placeLabel = searched?.city || displayCity(ipCity, ipCoords) || 'your area';
 
   const isLodging = tab === 'HOTELS' || tab === 'BNB' || tab === 'STR';
+  // Short-term runs on Vrbo categories now, not the Places grid — see VRBO_CARDS.
+  const isPlacesGrid = tab === 'HOTELS' || tab === 'BNB';
   // Live hotels near the visitor, curated seed as the fallback — the same shape
   // Eats and Attractions use. Was slice(0, 3) of a Pittsburgh-only seed, which
   // made sense while nothing could be booked and stopped making sense the day
   // Expedia went live (2026-08-13).
-  const liveStays = useLiveStays(coords, STAY_KEYWORD[tab]);
+  const liveStays = useLiveStays(isPlacesGrid ? coords : null, isPlacesGrid ? STAY_KEYWORD[tab] : 'hotel');
   // TODO (Keith, 2026-08-16): sponsored CBL partner stays sort to the TOP here,
   // the same way the restaurant tiers work on Eats. When that lands, a partner
   // flag from the partner tables wins over both the live Places order and the
   // curated seed — do NOT hardcode a list. The site already promises this in
   // copy ("sponsored spots appear first"), so the ordering is a commitment.
-  const stays = isLodging
+  const stays = isPlacesGrid
     ? (liveStays && liveStays.length ? liveStays : STAYS[tab].map((x) => ({ ...x, curated: true })))
     : null;
-  const usingLiveStays = isLodging && !!(liveStays && liveStays.length);
+  const usingLiveStays = isPlacesGrid && !!(liveStays && liveStays.length);
 
   return (
     <main className="cbl-travels">
       <style>{TRAVELS_CSS}</style>
       <Hero />
-      <SearchBar />
+      <SearchBar onSearch={onSearch} searching={searching} />
       {/* Sits directly under the search bar, ABOVE every bookable control on the
           page — the Expedia terms require the disclosure in the same viewport as
           the links and before the click, never behind a tap. */}
@@ -1733,6 +1879,8 @@ export function Travels() {
           </div>
         </section>
       )}
+
+      {tab === 'STR' && <VrboSection place={placeLabel} />}
 
       {tab === 'TRIPS' && (
         <section className="band">
