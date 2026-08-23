@@ -166,6 +166,7 @@ const BLOG_CSS = `
 .cbl-blog .spot .left { font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; white-space:nowrap; padding-top:3px; }
 .cbl-blog .spot .biz { color:#A8A8A8; font-size:14px; line-height:1.6; text-wrap:pretty; }
 .cbl-blog .spot .biz b { color:#fff; }
+.cbl-blog .spot .dish { color:#C99742; font-style:italic; }
 
 .cbl-blog .slots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
 .cbl-blog .slot { border:1px dashed #2E2E2E; border-radius:14px 0 14px 0; padding:22px; background:rgba(255,255,255,.012); }
@@ -787,7 +788,8 @@ function TheRegulars() {
           <div className="right">
             <div className="biz">
               <b>Coughlin&rsquo;s Law Kitchen &amp; Brew Pub at Nebo Pointe</b> · 138 Green Valley Rd,
-              Pittsburgh. Fourteen house brews and a wood fired oven.
+              Pittsburgh. Fourteen house brews, a wood fired oven, and the{' '}
+              <span className="dish">Crab Rangoon Nachos</span> we are still thinking about.
             </div>
           </div>
         </div>
