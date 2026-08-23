@@ -747,7 +747,7 @@ function TheRegulars() {
             <img
               className="photo"
               src="/blog/regulars/brad-coughlins.jpg"
-              alt="A CityBucketList driver's car parked outside Coughlin's Law Kitchen &amp; Brew Pub"
+              alt="An independent driver&rsquo;s car parked outside Coughlin&rsquo;s Law Kitchen &amp; Brew Pub in Pittsburgh"
               loading="lazy"
             />
             <div className="whodat">
@@ -859,8 +859,8 @@ function ShareStory() {
               Boast about <span className="it">your city</span>
             </h2>
             <p>
-              The best restaurant nobody's writing about. A rideshare driver worth knowing. The hidden gem only
-              locals find. Got a story? We'll help you tell it — with your name on it. And if it's a spot or a
+              The best restaurant nobody's writing about. A driver worth knowing. The hidden gem only
+              locals find. Got a story? We'll help you tell it, with your name on it. And if it's a spot or a
               driver, you can turn it into rewards.
             </p>
           </div>
