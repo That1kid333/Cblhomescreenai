@@ -1009,7 +1009,7 @@ function Hero() {
       {/* first child = dedicated streak layer (hosts 2 of the 4 light streams), under the copy */}
       <div className="hero-streams" aria-hidden="true" />
       <div className="hero-inner">
-        <div className="eyebrow">cbl curated · booking launching soon</div>
+        <div className="eyebrow">cbl curated · booking live worldwide</div>
         <h1 className="hero-title">
           <span className="title-stack">
             <span className="h1-main">Travels</span>
@@ -1023,9 +1023,9 @@ function Hero() {
           </span>
         </h1>
         <p className="lede">
-          Hotels, B&amp;Bs, short-term rentals, weekend day trips, and full
-          multi-day itineraries — curated by CBL, with full hotel &amp; flight
-          booking launching soon. Buckee plans the rest.
+          Hotels, B&amp;Bs, homes and cabins, weekend day trips, and full
+          multi-day itineraries — bookable anywhere in the world through Expedia
+          and Vrbo. Buckee plans the rest.
         </p>
       </div>
     </section>
@@ -1436,18 +1436,21 @@ function SearchBar({ onSearch, searching }: { onSearch: (place: string) => void;
           </button>
         </div>
       </div>
-      {/* Stays went live 2026-08-13 with the Expedia partnership, so this strip can
-          no longer say "Launching Soon" — the Book Now buttons below it work. Flights
-          genuinely ARE still coming (Expedia pays nothing on them and KAYAK is in
-          review), so the two are called out separately rather than lumped together. */}
+      {/* Stays went live 2026-08-13 with the Expedia partnership; flights have been
+          bookable through expediaFlightSearch since then too. The strip claimed for
+          weeks afterwards that flights were "still being finalized", and the hero
+          said booking was "launching soon", while every button on the page worked.
+          Both corrected 2026-08-22. Expedia paying nothing on the flight itself is
+          OUR commercial problem, not a reason to tell a visitor the feature is
+          unfinished. */}
       <div className="providers">
-        <span className="prov-chip cbl">Stays Live</span>
+        <span className="prov-chip cbl">Stays &amp; Flights Live</span>
         <span className="partner-by">
           Powered by
           <img src="/travels/expedia-logo.svg" alt="Expedia" />
         </span>
         <span className="pl">
-          Flights are still being finalized — curated by CBL, with Buckee planning the rest.
+          Search any city in the world — Buckee plans the rest.
         </span>
       </div>
     </>
@@ -2146,7 +2149,7 @@ export function Travels() {
 
       {/* Money-maker up front: affiliate experiences (tickets, city passes, audio
           tours) render right after the tab content — above the Buckee/Deals promo
-          bands — since lodging is still Coming Soon. Complements the KAYAK flights/
+          bands. Complements the Expedia flights/
           hotels; self-hides until the TP links are wired. placement="travels" tags
           its clicks separately from the Attractions page in reports. */}
       <AttractionsAffiliate placement="travels" />
