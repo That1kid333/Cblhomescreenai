@@ -61,6 +61,21 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   // BikesBooking — bike/scooter/motorcycle rentals, location-driven (search by city).
   // LIVE (unlocked 2026-07-26). 4% / 30-day cookie / MOBILE WEB ONLY (no app tracking).
   bikesbooking: 'https://tp.media/r?campaign_id=57&marker=704468&p=1767&trs=499800&u=https%3A%2F%2Fwww.bikesbooking.com',
+  // ── Pre-flight ────────────────────────────────────────────────────────────
+  // EMPTY = dark, same as the arrival transfers above. Paste the RAW tp.media/r?...
+  // deeplink here, NOT the tpx.li short link: buildAffiliateLink() re-targets `u`
+  // and stamps sub_id, and a shortened link can carry neither. Get it from
+  // Tools → Links → the row's ⋮ menu → "Full link". Never hand-build campaign_id
+  // or p values.
+  airhelp: '',   // 15-16.6%, 45-day cookie — flight delay/cancellation compensation
+  // eSIM. Listed by commission, best first, but note the tradeoff: Airalo pays the
+  // least and is by far the best-known brand, so it may well out-earn the others on
+  // conversion. Whichever ONE you paste is the one that shows (see ESIM_ORDER), so
+  // pasting only Airalo is a perfectly good way to choose it.
+  gigsky: '',    // 20%
+  yesim: '',     // 18%
+  saily: '',     // 15%
+  airalo: '',    // 12% — strongest brand recognition
 };
 
 export type Program =
@@ -70,7 +85,15 @@ export type Program =
   // Awin network (not Travelpayouts) — see AWIN_AFFID / AWIN_MID below.
   | 'turbopass' | 'usaguidedtours' | 'extranomical'
   // Impact network — see IMPACT_BASE below.
-  | 'ticketmaster';
+  | 'ticketmaster'
+  // ── Pre-flight (Flights tab) ──────────────────────────────────────────────
+  // Deliberately NOT flight booking. Expedia pays nothing on the flight itself,
+  // but its cookie is 7-day and CROSS-PRODUCT, so a flight click that becomes a
+  // room booking that week pays at the 4% hotel rate — worth more than any flight
+  // affiliate (a $400 flight at ~1.5% is ~$6; a $600 room at 4% is ~$24). These
+  // ride ALONGSIDE the flight on different sites, so they take nothing from it.
+  | 'airhelp'
+  | 'gigsky' | 'yesim' | 'saily' | 'airalo';
 
 // ── Impact network ───────────────────────────────────────────────────────────
 // Our THIRD network (approved 2026-08-07: Ticketmaster US plus ~24 countries and
@@ -429,6 +452,39 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Driver waiting on arrival',
       'Wide international coverage',
     ],
+  },
+  airhelp: {
+    partner: 'AirHelp',
+    logo: '',
+    cta: 'Check your flight',
+    briefing:
+      'If your flight was delayed, cancelled or overbooked, you may be owed compensation by law. AirHelp checks the claim and handles the airline for you, and only takes a cut if it pays out.',
+    highlights: [
+      'Covers delays, cancellations and overbooking',
+      'Claims can reach back several years',
+      'No win, no fee',
+      'They deal with the airline, not you',
+    ],
+  },
+  gigsky: {
+    partner: 'GigSky', logo: '', cta: 'Get a data plan',
+    briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
+    highlights: ['Works in 190+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
+  },
+  yesim: {
+    partner: 'Yesim', logo: '', cta: 'Get a data plan',
+    briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
+    highlights: ['Works in 150+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
+  },
+  saily: {
+    partner: 'Saily', logo: '', cta: 'Get a data plan',
+    briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
+    highlights: ['Works in 150+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
+  },
+  airalo: {
+    partner: 'Airalo', logo: '', cta: 'Get a data plan',
+    briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
+    highlights: ['Works in 200+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
   bikesbooking: {
     partner: 'BikesBooking',
@@ -925,6 +981,8 @@ export const OPTION_WORD: Partial<Record<Program, string>> = {
 // one is available, is always first and never shown next to alternatives." The
 // caller is responsible for not rendering this when a CBL option exists.
 const ARRIVAL_ORDER: Program[] = ['welcomepickups', 'kiwitaxi'];
+/** First eSIM brand with a pasted base link wins. Ordered by commission. */
+const ESIM_ORDER: Program[] = ['gigsky', 'yesim', 'saily', 'airalo'];
 
 /** Destination page for a transfer partner, by city. */
 function transferUrl(program: Program, cityName: string): string {
@@ -939,6 +997,75 @@ function transferUrl(program: Program, cityName: string): string {
  * Falls Welcome Pickups → Kiwitaxi → null, skipping any program that isn't wired
  * (empty base link) or is parked.
  */
+/**
+ * What we show ALONGSIDE a flight, on the Flights tab.
+ *
+ * Returns whichever of these are actually wired, in order, and an empty array if
+ * none are — so the block self-hides rather than shipping placeholders. Same
+ * dark-launch discipline as the arrival transfers.
+ */
+export type PreflightOffer = {
+  program: Program;
+  partner: string;
+  kicker: string;
+  title: string;
+  briefing: string;
+  highlights: string[];
+  cta: string;
+  href: string;
+  tracked: boolean;
+};
+
+export function preflightOffers(placement: string): PreflightOffer[] {
+  const out: PreflightOffer[] = [];
+
+  const airhelp = affiliateHref('airhelp', 'https://www.airhelp.com', `${placement}_airhelp`);
+  const airhelpMeta = PARTNER_META.airhelp;
+  if (airhelp && airhelpMeta) {
+    out.push({
+      program: 'airhelp',
+      partner: airhelpMeta.partner,
+      kicker: 'Delayed or cancelled',
+      title: 'You may be owed money for a bad flight',
+      briefing: airhelpMeta.briefing,
+      highlights: airhelpMeta.highlights,
+      cta: airhelpMeta.cta,
+      href: airhelp.href,
+      tracked: airhelp.tracked,
+    });
+  }
+
+  for (const program of ESIM_ORDER) {
+    // Brand in the sub_id, not just "esim": if the brand is ever swapped, old
+    // reports still say which one earned the click.
+    const link = affiliateHref(program, ESIM_SITE[program] || '', `${placement}_esim_${program}`);
+    const meta = PARTNER_META[program];
+    if (!link || !meta) continue; // not wired → try the next brand
+    out.push({
+      program,
+      partner: meta.partner,
+      kicker: 'Flying abroad',
+      title: 'Land with your phone already working',
+      briefing: meta.briefing,
+      highlights: meta.highlights,
+      cta: meta.cta,
+      href: link.href,
+      tracked: link.tracked,
+    });
+    break; // one eSIM brand only
+  }
+
+  return out;
+}
+
+/** Destination sites for the eSIM brands, re-targeted into the tp.media `u` param. */
+const ESIM_SITE: Partial<Record<Program, string>> = {
+  gigsky: 'https://www.gigsky.com',
+  yesim: 'https://yesim.app',
+  saily: 'https://saily.com',
+  airalo: 'https://www.airalo.com',
+};
+
 export function arrivalTransferOffer(cityName: string, placement: string): AffiliateOffer | null {
   if (!cityName?.trim()) return null;
   for (const program of ARRIVAL_ORDER) {

@@ -4,6 +4,7 @@ import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch, type VrboKind } from '../lib/expedia';
 import { logAffiliateClick } from '../lib/clickLog';
+import { preflightOffers } from '../lib/affiliates';
 import { useVisitorLocation, displayCity } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
@@ -916,6 +917,33 @@ const TRAVELS_CSS = `
     grid-template-columns:1fr; gap:16px; padding:20px 20px;
   }
   .cbl-travels .airport-banner .cta { width:100%; justify-content:center; }
+}
+
+/* ── Pre-flight partners (Flights tab) ── */
+.cbl-travels .preflight { display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:20px; margin-top:26px; }
+.cbl-travels .pf-card {
+  display:flex; flex-direction:column; gap:11px; text-decoration:none; color:inherit;
+  background:#0F0F0F; border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:22px 24px 20px;
+  transition:border-color .18s ease, transform .18s ease;
+}
+.cbl-travels .pf-card:hover { border-color:rgba(201,151,66,.55); transform:translateY(-2px); }
+.cbl-travels .pf-card:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
+.cbl-travels .pf-kicker {
+  font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#C99742;
+}
+.cbl-travels .pf-card h3 { margin:0; font-size:20px; font-weight:800; color:#fff; letter-spacing:-.01em; text-wrap:balance; }
+.cbl-travels .pf-card p { margin:0; font-size:14.5px; line-height:1.6; color:#B9B9B4; text-wrap:pretty; }
+.cbl-travels .pf-list { list-style:none; margin:2px 0 0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.cbl-travels .pf-list li { font-size:13.5px; color:#D6D6D2; padding-left:16px; position:relative; }
+.cbl-travels .pf-list li::before { content:'·'; position:absolute; left:4px; color:#C99742; font-weight:700; }
+.cbl-travels .pf-go {
+  margin-top:auto; padding-top:12px; font-family:${MONO}; font-size:10.5px;
+  letter-spacing:.12em; text-transform:uppercase; color:#C99742;
+}
+.cbl-travels .pf-by { font-size:12px; color:#7E7E79; }
+@media (prefers-reduced-motion: reduce) {
+  .cbl-travels .pf-card { transition:none; }
+  .cbl-travels .pf-card:hover { transform:none; }
 }
 
 /* ── Vrbo short-term (categories, not listings) ── */
@@ -1876,6 +1904,46 @@ function DealsBand() {
  * Vrbo search for whatever place the visitor is looking at, and nothing on the
  * card claims to be a specific home.
  */
+/**
+ * The things that ride ALONGSIDE a flight.
+ *
+ * Not a flight affiliate — see the note on the Program union in lib/affiliates.
+ * Expedia keeps the flight click because its 7-day cross-product cookie pays at
+ * the 4% hotel rate, which beats any flight commission. These are different sites
+ * entirely, so they take nothing from it.
+ *
+ * Self-hides while the base links are unpasted, so nothing ships as a placeholder.
+ */
+function PreflightBand() {
+  const offers = preflightOffers('travels_flights');
+  if (!offers.length) return null;
+  return (
+    <div className="preflight">
+      {offers.map((o) => (
+        <a
+          key={o.program}
+          className="pf-card"
+          href={o.href}
+          target="_blank"
+          rel="sponsored nofollow noopener noreferrer"
+          onClick={() => logAffiliateClick('travelpayouts', `travels_flights_${o.program}`)}
+        >
+          <span className="pf-kicker">{o.kicker}</span>
+          <h3>{o.title}</h3>
+          <p>{o.briefing}</p>
+          <ul className="pf-list">
+            {o.highlights.map((h) => (
+              <li key={h}>{h}</li>
+            ))}
+          </ul>
+          <span className="pf-by">with {o.partner}</span>
+          <span className="pf-go">{o.cta} →</span>
+        </a>
+      ))}
+    </div>
+  );
+}
+
 function VrboSection({ place }: { place: string }) {
   return (
     <section className="band">
@@ -2001,6 +2069,7 @@ export function Travels() {
               </div>
             </div>
             <FlightSearchPanel />
+            <PreflightBand />
           </div>
         </section>
       )}
