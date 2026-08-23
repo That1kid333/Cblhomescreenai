@@ -130,6 +130,77 @@ const BLOG_CSS = `
 .cbl-blog section.band { padding:36px 48px 56px; }
 .cbl-blog section.band.tight { padding:28px 48px 36px; }
 .cbl-blog .band-inner { max-width:1280px; margin:0 auto; }
+/* ── The Regulars: rider + driver testimonials ─────────────────────────────
+   Real words, run unedited. Brad's quote is approved by him and must render
+   character for character — do not tighten, correct or "improve" it. The
+   attribution is first name only: he approved that wording and did not give a
+   surname, so one must never be added or inferred. */
+.cbl-blog .regulars .head-row { display:flex; align-items:flex-start; justify-content:space-between; gap:24px; flex-wrap:wrap; margin-bottom:28px; }
+.cbl-blog .regulars .count { font-family:${MONO}; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; border:1px solid rgba(201,151,66,.35); border-radius:999px; padding:6px 14px; white-space:nowrap; }
+.cbl-blog .regulars .sub { color:#A8A8A8; font-size:15px; line-height:1.6; max-width:66ch; text-wrap:pretty; }
+
+.cbl-blog .featured-story { display:grid; grid-template-columns:minmax(0,380px) minmax(0,1fr); gap:0; background:#0A0A0A; border:1px solid #232323; border-radius:18px 0 18px 0; overflow:hidden; }
+.cbl-blog .featured-story .shot { position:relative; background:#000; border-right:1px solid #232323; display:flex; flex-direction:column; }
+.cbl-blog .featured-story .shot .photo { aspect-ratio:4/5; width:100%; object-fit:cover; display:block; }
+.cbl-blog .featured-story .tag,
+.cbl-blog .featured-story .city-chip { position:absolute; top:14px; font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; padding:5px 10px; border-radius:999px; z-index:2; }
+.cbl-blog .featured-story .tag { left:14px; background:#C99742; color:#000; font-weight:700; }
+.cbl-blog .featured-story .city-chip { right:14px; background:rgba(0,0,0,.62); color:#fff; border:1px solid rgba(255,255,255,.22); }
+.cbl-blog .featured-story .whodat { padding:16px 20px 18px; border-top:1px solid #232323; }
+.cbl-blog .featured-story .whodat .name { font-family:${DISPLAY}; font-weight:900; font-size:22px; text-transform:uppercase; letter-spacing:-.022em; color:#fff; }
+.cbl-blog .featured-story .whodat .role { color:#A8A8A8; font-size:13px; line-height:1.4; margin-top:2px; }
+.cbl-blog .featured-story .whodat .meta { display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; }
+.cbl-blog .featured-story .whodat .meta span { font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#8A8A8A; border:1px solid #232323; border-radius:999px; padding:4px 9px; }
+
+.cbl-blog .featured-story .quote { padding:30px 32px 28px; display:flex; flex-direction:column; }
+.cbl-blog .featured-story .mark { font-family:${ITALIC}; font-style:italic; font-size:56px; line-height:.7; color:rgba(201,151,66,.42); }
+.cbl-blog .featured-story .pull { font-family:${ITALIC}; font-style:italic; font-weight:600; font-size:clamp(22px,2.6vw,30px); line-height:1.28; color:#C99742; margin:10px 0 18px; text-wrap:pretty; }
+.cbl-blog .featured-story .body-quote p { color:#E6E6E6; font-size:15px; line-height:1.68; margin-bottom:13px; text-wrap:pretty; }
+.cbl-blog .featured-story .attrib { margin-top:auto; padding-top:18px; border-top:1px solid #232323; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.cbl-blog .featured-story .attrib .who { color:#A8A8A8; font-size:13px; }
+.cbl-blog .featured-story .attrib .who b { color:#fff; }
+.cbl-blog .featured-story .verified { display:inline-flex; align-items:center; gap:6px; font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#4DBF66; white-space:nowrap; }
+.cbl-blog .featured-story .verified::before { content:''; width:6px; height:6px; border-radius:50%; background:#4DBF66; }
+
+/* The spot he runs — now INSIDE the story card, sitting under the attribution
+   and filling the space the quote leaves rather than forming a second card. */
+.cbl-blog .featured-story .spot { margin-top:20px; padding:16px 18px 15px; background:#0A0A0A; border:1px solid #232323; border-radius:12px 0 12px 0; display:flex; flex-direction:column; gap:9px; }
+.cbl-blog .featured-story .spot .spot-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.cbl-blog .featured-story .spot .spot-label { font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; white-space:nowrap; }
+.cbl-blog .featured-story .spot .spot-rating { font-family:${MONO}; font-size:10.5px; letter-spacing:.08em; color:#8A8A8A; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.cbl-blog .featured-story .spot .spot-rating b { color:#C99742; font-size:12px; }
+.cbl-blog .featured-story .spot .biz { color:#A8A8A8; font-size:14px; line-height:1.6; text-wrap:pretty; }
+.cbl-blog .featured-story .spot .biz b { color:#fff; }
+.cbl-blog .featured-story .spot .dish { color:#C99742; font-style:italic; }
+.cbl-blog .featured-story .spot .spot-more { align-self:flex-start; margin-top:2px; font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; text-decoration:none; padding:7px 13px; border:1px solid rgba(201,151,66,.42); border-radius:8px 0 8px 0; transition:background .18s ease, border-color .18s ease; }
+.cbl-blog .featured-story .spot .spot-more:hover { background:rgba(201,151,66,.12); border-color:#C99742; }
+.cbl-blog .featured-story .spot .spot-more:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) { .cbl-blog .featured-story .spot .spot-more { transition:none; } }
+
+.cbl-blog .slots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+.cbl-blog .slot { border:1px dashed #2E2E2E; border-radius:14px 0 14px 0; padding:22px; background:rgba(255,255,255,.012); }
+.cbl-blog .slot .kicker { font-family:${MONO}; font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:#6A6A6A; margin-bottom:10px; }
+.cbl-blog .slot h4 { font-family:${DISPLAY}; font-weight:900; font-size:20px; line-height:1.05; text-transform:uppercase; letter-spacing:-.022em; color:#3E3E3E; }
+.cbl-blog .slot .ghost { display:flex; flex-direction:column; gap:7px; margin:16px 0 18px; }
+.cbl-blog .slot .ghost i { display:block; height:7px; border-radius:4px; background:#1C1C1C; }
+.cbl-blog .slot .ghost i:nth-child(2) { width:88%; }
+.cbl-blog .slot .ghost i:nth-child(3) { width:62%; }
+.cbl-blog .slot .foot { font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#5A5A5A; }
+
+.cbl-blog .regulars-cta { display:flex; align-items:center; justify-content:space-between; gap:22px; flex-wrap:wrap; margin-top:18px; padding:22px 24px; background:#0A0A0A; border:1px solid #232323; border-radius:14px 0 14px 0; }
+.cbl-blog .regulars-cta .t { font-family:${DISPLAY}; font-weight:900; font-size:clamp(20px,2.4vw,26px); text-transform:uppercase; letter-spacing:-.022em; color:#fff; }
+.cbl-blog .regulars-cta .t span { font-family:${ITALIC}; font-style:italic; font-weight:600; color:#C99742; text-transform:none; letter-spacing:0; margin-left:9px; }
+.cbl-blog .regulars-cta .s { color:#A8A8A8; font-size:14px; line-height:1.6; max-width:60ch; margin-top:7px; text-wrap:pretty; }
+.cbl-blog .regulars-cta .btn { flex-shrink:0; background:#C99742; color:#000; border:0; padding:13px 26px; border-radius:999px; font-family:${DISPLAY}; font-weight:900; font-size:12px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap; }
+.cbl-blog .regulars-cta .btn:hover { background:#DDB15F; }
+
+@media (max-width:820px){
+  .cbl-blog .featured-story { grid-template-columns:1fr; }
+  .cbl-blog .featured-story .shot { border-right:0; border-bottom:1px solid #232323; }
+  .cbl-blog .slots { grid-template-columns:1fr; }
+  .cbl-blog .featured-story .quote { padding:24px 20px; }
+}
+
 .cbl-blog .section-eyebrow { font-family:${MONO}; font-size:12px; color:#C99742; letter-spacing:.18em; text-transform:uppercase; display:inline-flex; align-items:center; gap:10px; margin-bottom:12px; }
 .cbl-blog .section-eyebrow::before { content:''; width:28px; height:1px; background:#C99742; }
 .cbl-blog .section-h2 { font-family:${DISPLAY}; font-weight:900; font-size:clamp(40px,4.6vw,64px); line-height:.95; letter-spacing:-.01em; text-transform:uppercase; margin-bottom:8px; }
@@ -641,6 +712,143 @@ const REF_CHECK: Record<string, string> = {
   transportation: "I'd like to set my driver up on CBL's Private Membership.",
 };
 
+/**
+ * "The Regulars" — rider and driver testimonials, run unedited.
+ *
+ * ⚠️ BRAD'S WORDS ARE APPROVED VERBATIM. Do not rewrite, tighten, correct the
+ * grammar, or "improve" them. The attribution is FIRST NAME ONLY: he approved
+ * that exact wording and did not give a surname, so one must never be added or
+ * inferred from anywhere.
+ *
+ * The two open slots are intentional and must never read as real testimonials —
+ * dashed, greyed, and explicitly labelled as awaiting one.
+ *
+ * Photo: Keith's own shot of his car outside Coughlin's Law. The spec said to
+ * leave the slot empty rather than use the restaurant's own photography, which
+ * we have no written permission for. This is our photo, so it clears that bar
+ * rather than sidestepping it.
+ *
+ * No FTC disclosure here: this is not affiliate content.
+ */
+function TheRegulars() {
+  return (
+    <section className="band regulars">
+      <div className="band-inner">
+        <div className="head-row">
+          <div>
+            <div className="section-eyebrow">riders &amp; independent drivers · unedited</div>
+            <h2 className="section-h2">
+              The Regulars <span className="it">in their own words</span>
+            </h2>
+            <p className="sub">
+              Riders and independent drivers on what changes when the person behind the wheel is a
+              person you know. No scripts, no incentives, no five stars out of five. We ask, they
+              answer, we run it the way they wrote it.
+            </p>
+          </div>
+          <div className="count">1 Story</div>
+        </div>
+
+        <article className="featured-story">
+          <div className="shot">
+            <span className="tag">Story of the month</span>
+            <span className="city-chip">Pittsburgh</span>
+            <img
+              className="photo"
+              src="/blog/regulars/brad-coughlins.jpg"
+              alt="An independent driver&rsquo;s car parked outside Coughlin&rsquo;s Law Kitchen &amp; Brew Pub in Pittsburgh"
+              loading="lazy"
+            />
+            <div className="whodat">
+              <div className="name">Brad</div>
+              <div className="role">Manager at Coughlin's Law<br />Kitchen &amp; Brewpub</div>
+              <div className="meta"><span>Rider</span><span>Since 2026</span></div>
+            </div>
+          </div>
+
+          <div className="quote">
+            <div className="mark" aria-hidden="true">&ldquo;</div>
+            <p className="pull">It&rsquo;s the difference between ordering a ride and having a guy.</p>
+            <div className="body-quote">
+              <p>
+                I had no idea anything like this existed until a driver handed me his QR code and
+                walked me through joining. Took me less than 5 minutes to sign up through the app.
+                Now I&rsquo;ve got the same driver scheduled for my shifts. He knows my hours, and
+                having a set time for pickup without having to pay the extra fee is much easier than
+                rolling the dice on estimated wait times through the larger apps when I have to get
+                to work.
+              </p>
+              <p>I still use the big apps when I&rsquo;m traveling. But for my daily runs, this is it.</p>
+            </div>
+            <div className="attrib">
+              <div className="who">
+                <b>Brad</b>, Manager at Coughlin&rsquo;s Law Kitchen &amp; Brewpub · Pittsburgh, PA
+              </div>
+              <div className="verified">Verified rider</div>
+            </div>
+
+            {/* The spot he runs, inside the card rather than as a second one below
+                it — it is part of who Brad is, and it fills the space the quote
+                leaves. Rating and review count are REAL (Google Places, the Nebo
+                Pointe location specifically, not the Mt. Washington sister pub).
+                The "More info" link is the one unavoidable external jump: there is
+                no Coughlin's listing in our Directory to send the click to yet, so
+                it opens their Maps entry in a new tab. Replace it with the internal
+                link the day that listing exists. */}
+            <div className="spot">
+              <div className="spot-head">
+                <span className="spot-label">The spot he runs</span>
+                <span className="spot-rating">
+                  <b>4.1</b> · 406 reviews
+                </span>
+              </div>
+              <div className="biz">
+                <b>Coughlin&rsquo;s Law Kitchen &amp; Brew Pub at Nebo Pointe</b> · 138 Green Valley Rd,
+                Pittsburgh. Fourteen house brews, a wood fired oven, and the{' '}
+                <span className="dish">Crab Rangoon Nachos</span> we are still thinking about.
+              </div>
+              <a
+                className="spot-more"
+                href="https://www.google.com/maps/place/?q=place_id:ChIJUfLbH3KLNIgRHSOwWKqheDc"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                More info →
+              </a>
+            </div>
+          </div>
+        </article>
+
+        <div className="slots">
+          <div className="slot">
+            <div className="kicker">Open slot · Independent driver story</div>
+            <h4>Your driver&rsquo;s<br />side of it</h4>
+            <div className="ghost" aria-hidden="true"><i /><i /><i /></div>
+            <div className="foot">Awaiting first independent driver testimonial</div>
+          </div>
+          <div className="slot">
+            <div className="kicker">Open slot · Rider story</div>
+            <h4>The next<br />regular</h4>
+            <div className="ghost" aria-hidden="true"><i /><i /><i /></div>
+            <div className="foot">Awaiting next rider testimonial</div>
+          </div>
+        </div>
+
+        <div className="regulars-cta">
+          <div>
+            <div className="t">Got a driver worth bragging about?<span>tell us.</span></div>
+            <div className="s">
+              Two questions, five minutes, your name on it. The good ones run here and in the monthly
+              Dispatch, and if it is your business we will send people your way.
+            </div>
+          </div>
+          <a className="btn" href="#share-your-story">Share your story →</a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function ShareStory() {
   const { profile } = useAuth();
   const refCode = profile?.referral_code || '';
@@ -667,7 +875,7 @@ function ShareStory() {
   const referable = f.category === 'eats' || f.category === 'transportation';
 
   return (
-    <section className="band share-band">
+    <section className="band share-band" id="share-your-story">
       <div className="band-inner">
         <div className="share-grid">
           <div className="share-copy">
@@ -676,8 +884,8 @@ function ShareStory() {
               Boast about <span className="it">your city</span>
             </h2>
             <p>
-              The best restaurant nobody's writing about. A rideshare driver worth knowing. The hidden gem only
-              locals find. Got a story? We'll help you tell it — with your name on it. And if it's a spot or a
+              The best restaurant nobody's writing about. A driver worth knowing. The hidden gem only
+              locals find. Got a story? We'll help you tell it, with your name on it. And if it's a spot or a
               driver, you can turn it into rewards.
             </p>
           </div>
@@ -814,6 +1022,8 @@ export function Blog() {
         </div>
       </section>
 
+      {/* stories, then what people say about the service, then tell us yours */}
+      <TheRegulars />
       <ShareStory />
       <Newsletter />
     </main>
