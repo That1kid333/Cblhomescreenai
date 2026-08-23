@@ -162,11 +162,20 @@ const BLOG_CSS = `
 .cbl-blog .featured-story .verified { display:inline-flex; align-items:center; gap:6px; font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#4DBF66; white-space:nowrap; }
 .cbl-blog .featured-story .verified::before { content:''; width:6px; height:6px; border-radius:50%; background:#4DBF66; }
 
-.cbl-blog .spot { display:flex; gap:22px; align-items:flex-start; flex-wrap:wrap; margin-top:16px; padding:18px 22px; background:#0A0A0A; border:1px solid #232323; border-radius:14px 0 14px 0; }
-.cbl-blog .spot .left { font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; white-space:nowrap; padding-top:3px; }
-.cbl-blog .spot .biz { color:#A8A8A8; font-size:14px; line-height:1.6; text-wrap:pretty; }
-.cbl-blog .spot .biz b { color:#fff; }
-.cbl-blog .spot .dish { color:#C99742; font-style:italic; }
+/* The spot he runs — now INSIDE the story card, sitting under the attribution
+   and filling the space the quote leaves rather than forming a second card. */
+.cbl-blog .featured-story .spot { margin-top:20px; padding:16px 18px 15px; background:#0A0A0A; border:1px solid #232323; border-radius:12px 0 12px 0; display:flex; flex-direction:column; gap:9px; }
+.cbl-blog .featured-story .spot .spot-head { display:flex; align-items:baseline; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+.cbl-blog .featured-story .spot .spot-label { font-family:${MONO}; font-size:9.5px; letter-spacing:.16em; text-transform:uppercase; color:#C99742; white-space:nowrap; }
+.cbl-blog .featured-story .spot .spot-rating { font-family:${MONO}; font-size:10.5px; letter-spacing:.08em; color:#8A8A8A; white-space:nowrap; font-variant-numeric:tabular-nums; }
+.cbl-blog .featured-story .spot .spot-rating b { color:#C99742; font-size:12px; }
+.cbl-blog .featured-story .spot .biz { color:#A8A8A8; font-size:14px; line-height:1.6; text-wrap:pretty; }
+.cbl-blog .featured-story .spot .biz b { color:#fff; }
+.cbl-blog .featured-story .spot .dish { color:#C99742; font-style:italic; }
+.cbl-blog .featured-story .spot .spot-more { align-self:flex-start; margin-top:2px; font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; text-decoration:none; padding:7px 13px; border:1px solid rgba(201,151,66,.42); border-radius:8px 0 8px 0; transition:background .18s ease, border-color .18s ease; }
+.cbl-blog .featured-story .spot .spot-more:hover { background:rgba(201,151,66,.12); border-color:#C99742; }
+.cbl-blog .featured-story .spot .spot-more:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
+@media (prefers-reduced-motion: reduce) { .cbl-blog .featured-story .spot .spot-more { transition:none; } }
 
 .cbl-blog .slots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
 .cbl-blog .slot { border:1px dashed #2E2E2E; border-radius:14px 0 14px 0; padding:22px; background:rgba(255,255,255,.012); }
@@ -727,14 +736,14 @@ function TheRegulars() {
       <div className="band-inner">
         <div className="head-row">
           <div>
-            <div className="section-eyebrow">riders &amp; drivers · unedited</div>
+            <div className="section-eyebrow">riders &amp; independent drivers · unedited</div>
             <h2 className="section-h2">
               The Regulars <span className="it">in their own words</span>
             </h2>
             <p className="sub">
-              Riders and drivers on what changes when the person behind the wheel is a person you
-              know. No scripts, no incentives, no five stars out of five. We ask, they answer, we run
-              it the way they wrote it.
+              Riders and independent drivers on what changes when the person behind the wheel is a
+              person you know. No scripts, no incentives, no five stars out of five. We ask, they
+              answer, we run it the way they wrote it.
             </p>
           </div>
           <div className="count">1 Story</div>
@@ -777,29 +786,45 @@ function TheRegulars() {
               </div>
               <div className="verified">Verified rider</div>
             </div>
+
+            {/* The spot he runs, inside the card rather than as a second one below
+                it — it is part of who Brad is, and it fills the space the quote
+                leaves. Rating and review count are REAL (Google Places, the Nebo
+                Pointe location specifically, not the Mt. Washington sister pub).
+                The "More info" link is the one unavoidable external jump: there is
+                no Coughlin's listing in our Directory to send the click to yet, so
+                it opens their Maps entry in a new tab. Replace it with the internal
+                link the day that listing exists. */}
+            <div className="spot">
+              <div className="spot-head">
+                <span className="spot-label">The spot he runs</span>
+                <span className="spot-rating">
+                  <b>4.1</b> · 406 reviews
+                </span>
+              </div>
+              <div className="biz">
+                <b>Coughlin&rsquo;s Law Kitchen &amp; Brew Pub at Nebo Pointe</b> · 138 Green Valley Rd,
+                Pittsburgh. Fourteen house brews, a wood fired oven, and the{' '}
+                <span className="dish">Crab Rangoon Nachos</span> we are still thinking about.
+              </div>
+              <a
+                className="spot-more"
+                href="https://www.google.com/maps/place/?q=place_id:ChIJUfLbH3KLNIgRHSOwWKqheDc"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                More info →
+              </a>
+            </div>
           </div>
         </article>
 
-        {/* Credit for the spot he runs. The "See it on CBL" link is deliberately
-            absent until a Coughlin's listing exists in our Directory. The spec is
-            that the click stays on CBL, so no link beats an off-site one. */}
-        <div className="spot">
-          <div className="left">The spot he runs</div>
-          <div className="right">
-            <div className="biz">
-              <b>Coughlin&rsquo;s Law Kitchen &amp; Brew Pub at Nebo Pointe</b> · 138 Green Valley Rd,
-              Pittsburgh. Fourteen house brews, a wood fired oven, and the{' '}
-              <span className="dish">Crab Rangoon Nachos</span> we are still thinking about.
-            </div>
-          </div>
-        </div>
-
         <div className="slots">
           <div className="slot">
-            <div className="kicker">Open slot · Driver story</div>
+            <div className="kicker">Open slot · Independent driver story</div>
             <h4>Your driver&rsquo;s<br />side of it</h4>
             <div className="ghost" aria-hidden="true"><i /><i /><i /></div>
-            <div className="foot">Awaiting first driver testimonial</div>
+            <div className="foot">Awaiting first independent driver testimonial</div>
           </div>
           <div className="slot">
             <div className="kicker">Open slot · Rider story</div>
