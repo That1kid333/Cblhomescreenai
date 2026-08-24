@@ -2301,7 +2301,7 @@ function milesFromPgh(coords: { lat: number; lng: number } | null): number | nul
 }
 
 function LocationBar({
-  city, onChangeCity, scope, onScope, metroLabel, showScope,
+  city, onChangeCity, scope, onScope, metroLabel, showScope, onNearMe, isManual,
 }: {
   city: string | null;
   onChangeCity: (c: string) => void;
@@ -2309,6 +2309,8 @@ function LocationBar({
   onScope: (s: "metro" | "local" | "usa") => void;
   metroLabel: string;
   showScope: boolean;
+  onNearMe: () => void;
+  isManual: boolean;
 }) {
   // Auto-detected city prefills; type ANY city or town to look there (works
   // everywhere — listings are city-tagged, so they show for that city as they post).
@@ -2405,6 +2407,14 @@ function LocationBar({
           <button type="button" onClick={() => onScope("usa")} aria-pressed={scope === "usa"} style={pill(scope === "usa")}>
             Nationwide
           </button>
+          {/* Only shown once a city has actually been typed. A manual pick persists
+              across visits by design; without this there is no way back short of
+              knowing and retyping your own area's name. */}
+          {isManual && (
+            <button type="button" onClick={onNearMe} style={pill(false)} title="Back to your own area">
+              ⌖ Near me
+            </button>
+          )}
         </div>
         <div ref={wrapRef} style={{ position: "relative" }}>
           <input
@@ -3078,7 +3088,7 @@ export function Directory() {
   }, []);
   const [cat, setCat] = useState("ALL");
   const {
-    city: detectedCity, state, coords, precise, status: locStatus, setManualCity, requestPrecise,
+    city: detectedCity, state, coords, precise, status: locStatus, setManualCity, useMyLocation, requestPrecise,
   } = useVisitorLocation();
   // Ask for GPS like Attractions and Eats already do. Geolocation permission is
   // per-origin, so anyone who allowed it on those pages is not prompted again —
@@ -3357,6 +3367,8 @@ export function Directory() {
         onScope={setScope}
         metroLabel={metroLabel}
         showScope={!!state}
+        onNearMe={useMyLocation}
+        isManual={locStatus === "manual"}
       />
       {/* Sharing the Directory, which had none. Brian's whole reason for posting a
           free ad on 2026-08-23 was to share it and tell people CBL has free ads,

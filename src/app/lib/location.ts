@@ -575,6 +575,31 @@ export function useVisitorLocation() {
     setStatus('manual');
   };
 
+  /** Forget a manually picked city and go back to where the visitor actually is.
+   *
+   *  A manual pick persists across visits by design, which is right until there is
+   *  no way to undo it: search one other city and you are left there for good,
+   *  with the only way home being to know and retype your own area's name (Keith,
+   *  2026-08-24, stuck on New Kensington after checking Brian's ads). Clears the
+   *  stored city, re-runs the keyless IP lookup, and asks for GPS so the result is
+   *  the visitor's real area rather than the metro guess. */
+  const useMyLocation = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* private browsing — nothing stored to clear */
+    }
+    setLocation(null);
+    setStatus('locating');
+    ipLocate().then((r) => {
+      if (!r) { setStatus('unavailable'); return; }
+      setCoords((prev) => (preciseRef.current ? prev : r.coords));
+      setLocation({ city: r.city, state: r.state });
+      setStatus('resolved');
+    });
+    requestPrecise();
+  };
+
   return {
     city: location?.city ?? null,
     state: location?.state ?? null,
@@ -582,6 +607,7 @@ export function useVisitorLocation() {
     precise,
     status,
     setManualCity,
+    useMyLocation,
     requestPrecise,
     // Exposed for callers that want to reverse-geocode raw coordinates.
     reverseGeocode,
