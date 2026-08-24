@@ -9,6 +9,7 @@ import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
+import { studioIsAdmin } from "../lib/blog";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import {
@@ -235,6 +236,9 @@ const DIR_CSS = `
 .cbl-dir .listing .badge-row { position:absolute; top:10px; left:10px; display:flex; gap:6px; z-index:2; }
 .cbl-dir .listing .badge { font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; background:rgba(0,0,0,.7); padding:4px 8px; border-radius:4px; border:1px solid rgba(201,151,66,.4); backdrop-filter:blur(6px); }
 .cbl-dir .listing .badge.feat { color:#000; background:#C99742; border-color:#C99742; }
+/* Nationwide reads as a scope, not a promotion — outlined, not filled, so it
+   never competes with the gold Featured badge sitting next to it. */
+.cbl-dir .listing .badge.nation { color:#4DBF66; border-color:rgba(77,191,102,.55); background:rgba(77,191,102,.10); }
 .cbl-dir .listing .img-count { position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,.7); color:#fff; font-family:${MONO}; font-size:10px; letter-spacing:.1em; padding:3px 8px; border-radius:4px; backdrop-filter:blur(4px); z-index:2; }
 .cbl-dir .listing .body { padding:14px 18px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
 .cbl-dir .listing h3 { font-family:${DISPLAY}; font-weight:900; font-size:20px; line-height:1.1; text-transform:uppercase; letter-spacing:-.005em; }
@@ -820,7 +824,12 @@ function listingToCard(l: DirectoryListing): Listing {
     price: l.price_type === "free" ? "FREE" : l.price != null ? `$${l.price}` : "Contact for price",
     photos: l.photos?.length,
     img: l.photos?.[0],
-    badges: l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : [],
+    // A nationwide post shows WHY it is here, otherwise it reads as a local
+    // listing that wandered into the wrong city.
+    badges: [
+      ...(l.nationwide ? [{ t: "Nationwide", k: "nation" }] : []),
+      ...(l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : []),
+    ],
     featured: !!l.featured,
     placeholder: !l.photos?.length,
     ownerId: l.user_id ?? null,
@@ -2462,6 +2471,17 @@ function PostListingModal({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("general");
   const [free, setFree] = useState(false);
+  // Nationwide is admin/moderator only. The DB policy is the real guard; this just
+  // decides whether the control is worth showing. Checked server-side via the same
+  // blog_is_admin() RPC the Studio link uses, so the preview demo session (which
+  // has no real auth.uid()) never sees it.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [nationwide, setNationwide] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    studioIsAdmin().then((ok) => { if (!cancelled) setIsAdmin(ok); });
+    return () => { cancelled = true; };
+  }, []);
   const [price, setPrice] = useState("");
   const [cityField, setCityField] = useState("");
   const [description, setDescription] = useState("");
@@ -2541,6 +2561,7 @@ function PostListingModal({
       price: free ? null : price.trim() ? Number(price) : null,
       city: cityField.trim() || undefined,
       state: cityUnchanged ? (defaultState?.trim() || null) : null,
+      nationwide: isAdmin && nationwide,
     });
     if (error) {
       setStatus("error");
@@ -2659,6 +2680,19 @@ function PostListingModal({
                   />
                   <label htmlFor="cbl-post-free">This is free — no price</label>
                 </div>
+                {isAdmin && (
+                  <div className="check">
+                    <input
+                      id="cbl-post-nationwide"
+                      type="checkbox"
+                      checked={nationwide}
+                      onChange={(e) => setNationwide(e.target.checked)}
+                    />
+                    <label htmlFor="cbl-post-nationwide">
+                      Show nationwide — ignores the local radius and appears in every city
+                    </label>
+                  </div>
+                )}
                 {!free && (
                   <div className="field">
                     <label htmlFor="cbl-post-price">Price (USD)</label>
@@ -3076,11 +3110,19 @@ export function Directory() {
   //   3. In "metro" scope: same state as the auto-detected visitor (coarse
   //      fallback when neither side has resolvable coordinates).
   // No city set yet → show everything.
-  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null; driver_ad?: { radius?: number | null } | null }>(items: T[]) => {
+  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null; driver_ad?: { radius?: number | null } | null; nationwide?: boolean | null }>(items: T[]) => {
     if (!city) return items;
     const c = city.trim().toLowerCase();
     const s = (state ?? "").trim().toLowerCase();
     return items.filter((i) => {
+      // NATIONWIDE POSTS SKIP THE WHOLE GATE. A CBL promotion is for the country,
+      // not a place, so no city string, radius or state fallback should be able to
+      // hide it. Checked before anything else so a bad or missing location on the
+      // row cannot sink it — that is exactly how Brian's "FREE CLASSIFIED ADS"
+      // post went invisible on 2026-08-23 (typed "ANYWHERE, USA", geocoded to
+      // rural Colorado, 1,412mi from Pittsburgh, dropped for every visitor).
+      if (i.nationwide) return true;
+
       const ic = (i.city ?? "").trim().toLowerCase();
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
 
