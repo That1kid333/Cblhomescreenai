@@ -247,9 +247,19 @@ const DIR_CSS = `
    subtitle and CTA above the fold, a visitor scrolled past a full screen before
    reaching a single control. The second sentence is the first thing that can go —
    the CTA underneath already says "Sign in to post", so it was repeating itself. */
+/* The lede enumerated classifieds / driver posts / rider requests / coupons /
+   shopping — which is exactly what the tab row directly beneath it lists, in the
+   same order. On a phone that is four lines of prose restating the navigation, on
+   a page people arrive at to browse rather than to read (Keith + Cowork,
+   2026-08-24). Desktop keeps the full sentence, where it reads as positioning
+   rather than as an obstacle. */
+.cbl-dir .hero .lede .lede-short { display:none; }
 @media (max-width: 700px) {
-  .cbl-dir .hero .lede .lede-sm { display:none; }
+  .cbl-dir .hero .lede .lede-sm,
+  .cbl-dir .hero .lede .lede-full { display:none; }
+  .cbl-dir .hero .lede .lede-short { display:inline; }
   .cbl-dir .hero .lede { margin-bottom:14px; }
+  .cbl-dir .showing.showing-dupe { display:none; }
 }
 @media (max-width: 700px) {
   .cbl-dir .scope-pills {
@@ -1069,8 +1079,12 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
           </span>
         </h1>
         <p className="lede">
-          Local classifieds, driver schedules, rider requests, member-only coupons,
-          and curated shopping, all in one place.
+          <span className="lede-full">
+            Local classifieds, driver schedules, rider requests, member-only coupons,
+            and curated shopping,{' '}
+          </span>
+          <span className="lede-short">Everything local, </span>
+          all in one place.
           <span className="lede-sm"> Browse freely. Sign in to post.</span>
         </p>
         {/* One of these, never both. A signed-in member was being shown "Sign in
@@ -2361,7 +2375,11 @@ function LocationBar({
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-        <span style={{ color: "#999", fontSize: 13 }}>
+        {/* Redundant on mobile WHEN the scope pills are showing: the active pill is
+            already highlighted gold with the same words. Kept whenever the pills are
+            not there (a typed city has no state, so metro/local do not render), since
+            then this sentence is the only thing naming what you are looking at. */}
+        <span className={`showing${showScope ? " showing-dupe" : ""}`} style={{ color: "#999", fontSize: 13 }}>
           {city ? <>Showing partners &amp; listings in <b style={{ color: "#C99742" }}>{shownPlace}</b></> : "Search a city to see local partners & listings"}
         </span>
         {/* metro vs local only means something for an auto-detected home location
