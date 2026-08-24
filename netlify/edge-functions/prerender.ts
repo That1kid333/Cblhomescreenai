@@ -72,6 +72,14 @@ const plainTitle = (t: string) => (t || '').replace(/\*/g, '');
 const esc = (s: string): string =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+/** JSON-LD lives inside a <script> block, where the HTML parser hunts for a
+ *  literal "</script>" long before the JSON parser sees anything. Member-authored
+ *  listing titles can contain exactly that, so escape the three characters that
+ *  could close the tag early. \u003c and friends are ordinary JSON escapes, so
+ *  the data a crawler reads is byte-for-byte the same. */
+const jsonLdSafe = (v: unknown): string =>
+  JSON.stringify(v).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
 // Minimal, dependency-free Markdown -> HTML (mirrors the app's Markdown
 // component: h2/h3, bold, italic, links, unordered lists, blockquotes,
 // paragraphs). Content is escaped first, so output is XSS-safe.
@@ -127,7 +135,7 @@ function injectHead(html: string, meta: { title: string; description: string; ur
     `<meta name="twitter:description" content="${esc(meta.description)}" />`,
     `<meta name="twitter:image" content="${esc(meta.image)}" />`,
   ];
-  if (meta.jsonld) tags.push(`<script type="application/ld+json">${JSON.stringify(meta.jsonld)}</script>`);
+  if (meta.jsonld) tags.push(`<script type="application/ld+json">${jsonLdSafe(meta.jsonld)}</script>`);
   // Strip the default SEO tags baked into index.html so we don't duplicate them.
   let out = html
     .replace(/\s*<meta name="description"[^>]*>/gi, '')
@@ -346,6 +354,217 @@ function articleJsonLd(origin: string, p: Post) {
   };
 }
 
+// ── Directory listings: per-listing share cards ───────────────────────────────
+// /directory?listing=<id> deep-links to a single ad — it's exactly the URL the
+// detail modal's share bar hands out. Without per-listing metadata, Facebook, X
+// and LinkedIn all preview the generic directory card. Driver ads are the case
+// that matters: a $19.99/mo Driver Member sharing their "Need a Ride?" card
+// should see their own headline and photo in the preview, not the site logo.
+//
+// Read with the publishable (anon) key only — never the service role. The
+// public-read RLS policy already limits rows to active, non-expired listings,
+// and driver posts to drivers with an active membership. A row RLS hides comes
+// back empty here and we fall through to the generic directory card.
+
+type DriverAd = {
+  name?: string | null;
+  photo?: string | null;
+  carPhoto?: string | null;
+  car?: string | null;
+  color?: string | null;
+  plate?: string | null;
+  plateState?: string | null;
+  phone?: string | null;
+  since?: string | null;
+  availability?: string | null;
+};
+
+type Listing = {
+  id: number | string;
+  title: string;
+  description?: string | null;
+  category: string;
+  price?: number | string | null;
+  price_type?: string | null;
+  city?: string | null;
+  state?: string | null;
+  nationwide?: boolean | null;
+  photos?: string[] | null;
+  posted_by_name?: string | null;
+  driver_referral_code?: string | null;
+  driver_ad?: DriverAd | null;
+};
+
+// Mirrors CATEGORY_OPTIONS in src/app/pages/Directory.tsx.
+const LISTING_CATEGORY: Record<string, string> = {
+  general: 'Classified',
+  ride_request: 'Rider Request',
+  driver_post: 'Driver Available',
+  vehicles: 'Vehicles',
+  electronics: 'Electronics',
+  furniture: 'Furniture',
+  services: 'Services',
+  jobs: 'Jobs',
+  housing: 'Housing',
+  tickets: 'Tickets',
+  free: 'Free',
+};
+
+/** Collapse a member-written field to a single clean line, cut at a word
+ *  boundary. Listing copy is user-authored: line breaks, runs of spaces and
+ *  descriptions far past any preview limit all turn up in real posts. */
+function oneLine(raw: string | null | undefined, max: number): string {
+  const s = String(raw ?? '').replace(/\s+/g, ' ').trim();
+  if (s.length <= max) return s;
+  const cut = s.slice(0, max);
+  const sp = cut.lastIndexOf(' ');
+  return `${(sp > max * 0.6 ? cut.slice(0, sp) : cut).replace(/[\s,.;:—-]+$/, '')}…`;
+}
+
+/** Only real http(s) URLs and site-root paths are allowed to become og:image.
+ *  Photo URLs come from member uploads, so empty strings and anything odd fall
+ *  back to the CBL card instead of emitting a preview image that 404s. */
+const safeImage = (u: unknown): string | null => {
+  const s = typeof u === 'string' ? u.trim() : '';
+  return /^https?:\/\/\S+$/i.test(s) || /^\/[^/\s]\S*$/.test(s) ? s : null;
+};
+
+/** photos[0] first; then a driver's car photo, then their portrait; then the
+ *  CBL square card (absUrl's own fallback) so there is always an image. */
+function listingImage(origin: string, l: Listing): string {
+  const fromPhotos = (Array.isArray(l.photos) ? l.photos : []).map(safeImage).find(Boolean);
+  const ad = l.driver_ad || {};
+  return absUrl(origin, fromPhotos || safeImage(ad.carPhoto) || safeImage(ad.photo));
+}
+
+const listingPlace = (l: Listing): string =>
+  l.nationwide ? 'Nationwide' : [l.city, l.state].filter(Boolean).join(', ');
+
+// Mirrors the card price in Directory.tsx; "Contact for price" is left out of
+// the share text, where it only eats characters.
+const listingPrice = (l: Listing): string =>
+  l.price_type === 'free' ? 'Free' : l.price !== null && l.price !== undefined && l.price !== '' ? `$${l.price}` : '';
+
+type ListingCard = {
+  isDriver: boolean;
+  ad: DriverAd;
+  driverName: string;
+  place: string;
+  price: string;
+  label: string;
+  title: string;
+  description: string;
+};
+
+function listingCard(l: Listing): ListingCard {
+  const ad = l.driver_ad || {};
+  const isDriver = l.category === 'driver_post' || !!l.driver_referral_code;
+  const driverName = oneLine(ad.name || l.posted_by_name, 40);
+  const place = listingPlace(l);
+  const price = listingPrice(l);
+  const label = LISTING_CATEGORY[l.category] || 'Classified';
+
+  // Keep og:title inside what the networks actually show (~90 chars) — the ad's
+  // own headline first, then who/where it belongs to.
+  const title = isDriver
+    ? `${oneLine(l.title, 62)} — ${driverName || 'an independent driver'} on City Bucket List`
+    : `${oneLine(l.title, 72)} — City Bucket List Directory`;
+
+  const lead = [
+    ...new Set(
+      [
+        isDriver ? [driverName, 'independent CBL driver'].filter(Boolean).join(' · ') : label,
+        place,
+        price,
+      ].filter(Boolean),
+    ),
+  ].join(' · ');
+
+  // Networks render far less than they accept — keep it to one clean cut. A
+  // driver who wrote no ad copy falls back to how they run: scheduled only.
+  const body = oneLine(l.description, 180) || (isDriver ? oneLine(ad.availability, 90) : '');
+  const description =
+    oneLine([lead, body].filter(Boolean).join(' — '), 250) ||
+    `${label} on the City Bucket List local directory.`;
+
+  return { isDriver, ad, driverName, place, price, label, title, description };
+}
+
+function listingJsonLd(canonical: string, image: string, c: ListingCard, l: Listing) {
+  const priced = l.price !== null && l.price !== undefined && l.price !== '';
+  const portrait = safeImage(c.ad.photo);
+  const mainEntity = c.isDriver
+    ? {
+        '@type': 'Service',
+        name: oneLine(l.title, 110),
+        serviceType: 'Scheduled private ride',
+        provider: {
+          '@type': 'Person',
+          name: c.driverName || 'Independent CBL driver',
+          ...(portrait ? { image: portrait } : {}),
+        },
+        ...(c.place ? { areaServed: { '@type': 'Place', name: c.place } } : {}),
+      }
+    : priced
+      ? {
+          '@type': 'Product',
+          name: oneLine(l.title, 110),
+          description: c.description,
+          image: [image],
+          offers: {
+            '@type': 'Offer',
+            price: String(l.price),
+            priceCurrency: 'USD',
+            availability: 'https://schema.org/InStock',
+            url: canonical,
+          },
+        }
+      : null;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: c.title,
+    description: c.description,
+    url: canonical,
+    ...(mainEntity ? { mainEntity } : {}),
+  };
+}
+
+/** Crawlable body for one listing. Same non-cloaking deal as the blog: React
+ *  replaces #root for real visitors. The driver's email is deliberately left
+ *  out of the prerendered HTML (the SPA still shows it) — no reason to hand a
+ *  member's inbox to address harvesters; the phone is the point of the ad. */
+function renderListing(l: Listing, c: ListingCard, image: string): string {
+  const heading = oneLine(l.title, 140);
+  const parts: string[] = ['<main><article>'];
+  parts.push(`<p>${esc([c.isDriver ? 'Need a Ride?' : c.label, c.place].filter(Boolean).join(' · '))}</p>`);
+  parts.push(`<h1>${esc(heading)}</h1>`);
+  if (c.price) parts.push(`<p>${esc(c.price)}</p>`);
+  parts.push(`<img src="${esc(image)}" alt="${esc(heading)}" />`);
+  if (l.description) parts.push(`<p>${esc(oneLine(l.description, 1200))}</p>`);
+  if (c.isDriver) {
+    const rows = [
+      c.driverName ? `Driver: ${c.driverName}` : '',
+      [c.ad.color, c.ad.car].filter(Boolean).join(' ') ? `Vehicle: ${[c.ad.color, c.ad.car].filter(Boolean).join(' ')}` : '',
+      [c.ad.plate, c.ad.plateState].filter(Boolean).join(' · ') ? `Plate: ${[c.ad.plate, c.ad.plateState].filter(Boolean).join(' · ')}` : '',
+      c.ad.since ? `Driving with CBL since ${c.ad.since}` : '',
+      c.ad.availability ? String(c.ad.availability) : '',
+      c.place ? `Serving ${c.place}` : '',
+    ]
+      .filter(Boolean)
+      .map((r) => `<li>${esc(oneLine(r, 120))}</li>`)
+      .join('');
+    if (rows) parts.push(`<ul>${rows}</ul>`);
+    const phone = oneLine(c.ad.phone, 24);
+    const tel = phone.replace(/[^\d+]/g, '');
+    if (tel) parts.push(`<p><a href="tel:${esc(tel)}">${esc(phone)}</a></p>`);
+  }
+  parts.push('<p><a href="/directory">Back to the City Bucket List local directory</a></p>');
+  parts.push(`<p>${esc(SAAS_NOTE)}</p>`);
+  parts.push('</article></main>');
+  return parts.join('\n');
+}
+
 const sbHeaders = { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}` };
 
 export default async function handler(req: Request, context: Context): Promise<Response> {
@@ -437,6 +656,34 @@ export default async function handler(req: Request, context: Context): Promise<R
     }
 
     if (path === '/directory') {
+      // One shared listing: /directory?listing=<id>. Anything else — a bad id,
+      // an expired post, a driver whose membership lapsed — falls straight
+      // through to the generic directory card below rather than erroring.
+      const lid = (url.searchParams.get('listing') || '').trim();
+      if (/^[0-9]{1,18}$/.test(lid)) {
+        const r = await fetch(
+          `${SUPABASE_URL}/rest/v1/directory_listings?select=id,title,description,category,price,price_type,city,state,nationwide,photos,posted_by_name,driver_referral_code,driver_ad&id=eq.${lid}&limit=1`,
+          { headers: sbHeaders },
+        );
+        const rows: Listing[] = r.ok ? await r.json() : [];
+        const listing = rows[0];
+        if (listing) {
+          const canonical = `${origin}/directory?listing=${lid}`;
+          const card = listingCard(listing);
+          const image = listingImage(origin, listing);
+          html = injectHead(html, {
+            title: card.title,
+            description: card.description,
+            url: canonical,
+            image,
+            type: 'website',
+            jsonld: listingJsonLd(canonical, image, card, listing),
+          });
+          html = injectRoot(html, renderListing(listing, card, image));
+          return finish();
+        }
+      }
+
       const title = 'Local Directory — Classifieds, Shopping & Deals | City Bucket List';
       const description =
         'Browse local classifieds, driver posts, rider requests, shopping, and member coupons near you — free to browse, sign in to post. City Bucket List community directory.';

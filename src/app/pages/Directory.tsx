@@ -1423,9 +1423,10 @@ function DriverAdCard({ d }: { d: DriverAd }) {
  * paying $19.99 a month wants their own "Need a Ride?" card on their social, and
  * until now there was no way to send anyone to it.
  *
- * KNOWN GAP: no per-listing OG tags yet, so a shared link previews with the site
- * card rather than the ad's own title and photo. The blog already has a prerender
- * edge function; extending it to listing URLs is the fix.
+ * The share preview is real: netlify/edge-functions/prerender.ts has a branch for
+ * /directory?listing=<id> that injects the ad's own og:title, og:description and
+ * og:image (photos[0], else the driver's car photo or portrait, else the CBL
+ * card), so Facebook, X and LinkedIn show the listing instead of the site card.
  */
 function ListingShare({ l }: { l: Listing }) {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://citybucketlist.com";
