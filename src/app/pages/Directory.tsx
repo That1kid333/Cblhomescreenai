@@ -10,6 +10,7 @@ import { getActivePartners, getDirectoryListings, type Partner } from "../lib/su
 import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
 import { studioIsAdmin } from "../lib/blog";
+import { ShareBar } from "../components/ShareBar";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import {
@@ -1410,6 +1411,29 @@ function DriverAdCard({ d }: { d: DriverAd }) {
   );
 }
 
+/**
+ * Share ONE listing, not the page it happens to be on.
+ *
+ * /directory?listing=<id> already opens a listing's detail, so a shared link
+ * lands on the ad itself. Driver cards are the ones that matter here: a driver
+ * paying $19.99 a month wants their own "Need a Ride?" card on their social, and
+ * until now there was no way to send anyone to it.
+ *
+ * KNOWN GAP: no per-listing OG tags yet, so a shared link previews with the site
+ * card rather than the ad's own title and photo. The blog already has a prerender
+ * edge function; extending it to listing URLs is the fix.
+ */
+function ListingShare({ l }: { l: Listing }) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://citybucketlist.com";
+  const url = `${origin}/directory?listing=${encodeURIComponent(l.id)}`;
+  const title = l.driverCode ? `${l.name} — an independent driver on CityBucketList` : `${l.name} on CityBucketList`;
+  return (
+    <div style={{ padding: "4px 20px 18px" }}>
+      <ShareBar title={title} url={url} />
+    </div>
+  );
+}
+
 function DirListingModal({
   l, onClose, canEditPhotos, onEditPhotos, onCustomizeDriverAd,
 }: {
@@ -1478,6 +1502,7 @@ function DirListingModal({
                 </button>
               </div>
             )}
+            <ListingShare l={l} />
           </>
         ) : (
           <>
@@ -1494,7 +1519,7 @@ function DirListingModal({
               {l.badges && l.badges.length > 0 && (
                 <div className="badges">
                   {l.badges.map((b) => (
-                    <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>
+                    <span key={b.t} className={"badge" + (b.k ? " " + b.k : "")}>
                       {b.t}
                     </span>
                   ))}
@@ -1518,6 +1543,7 @@ function DirListingModal({
                   ＋ Add / edit photos
                 </button>
               )}
+              <ListingShare l={l} />
             </div>
           </>
         )}
@@ -1546,7 +1572,7 @@ function ClassifiedCard({ l }: { l: Listing }) {
         <div className="img" style={{ backgroundImage: `url(${l.img})` }}>
           <div className="badge-row">
             {l.badges?.map((b) => (
-              <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>{b.t}</span>
+              <span key={b.t} className={"badge" + (b.k ? " " + b.k : "")}>{b.t}</span>
             ))}
           </div>
           {l.photos && <span className="img-count">📷 {l.photos}</span>}
@@ -2229,8 +2255,8 @@ function LocationBar({
 }: {
   city: string | null;
   onChangeCity: (c: string) => void;
-  scope: "metro" | "local";
-  onScope: (s: "metro" | "local") => void;
+  scope: "metro" | "local" | "usa";
+  onScope: (s: "metro" | "local" | "usa") => void;
   metroLabel: string;
   showScope: boolean;
 }) {
@@ -2295,7 +2321,7 @@ function LocationBar({
     cursor: "pointer",
   });
   // What we're showing right now: the metro name when scoped wide, else the town.
-  const shownPlace = showScope && scope === "metro" ? metroLabel : city;
+  const shownPlace = showScope && scope === "usa" ? "the U.S." : showScope && scope === "metro" ? metroLabel : city;
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -2309,6 +2335,12 @@ function LocationBar({
             </button>
             <button type="button" onClick={() => onScope("local")} aria-pressed={scope === "local"} style={pill(scope === "local")}>
               Just {city}
+            </button>
+            {/* Nationwide is a VIEW, separate from the nationwide FLAG on a listing.
+                Picking it drops the distance test so the whole country is visible;
+                the flag is what lets one listing ignore distance for everybody. */}
+            <button type="button" onClick={() => onScope("usa")} aria-pressed={scope === "usa"} style={pill(scope === "usa")}>
+              Nationwide
             </button>
           </div>
         )}
@@ -2365,13 +2397,34 @@ function LocationBar({
   );
 }
 
-function EmptyState({ city, onPost, ctaLabel = "Post the First Listing" }: { city: string | null; onPost: () => void; ctaLabel?: string }) {
+function EmptyState({
+  city, onPost, ctaLabel = "Post the First Listing", onNationwide,
+}: { city: string | null; onPost: () => void; ctaLabel?: string; onNationwide?: () => void }) {
   return (
     <div className="cbl-dir-empty" style={{ textAlign: "center", padding: "48px 24px", color: "#999" }}>
       <p style={{ marginBottom: 16 }}>
         {city ? `No listings near ${city} yet — be the first.` : "No listings yet — be the first."}
       </p>
       <button type="button" className="post-btn" onClick={onPost}>{ctaLabel} →</button>
+      {/* An empty local view is exactly where someone gives up. Offer the way out
+          right here rather than only in the scope pills at the top of the page,
+          which is a long way from where the dead end actually happens. Hidden
+          once you are already browsing nationwide, since it would be a no-op. */}
+      {onNationwide && (
+        <div style={{ marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={onNationwide}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "#C99742", fontSize: 13, textDecoration: "underline",
+              textUnderlineOffset: 3, padding: 6,
+            }}
+          >
+            Or see listings from all over the U.S. →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -2984,7 +3037,7 @@ export function Directory() {
   // default so the view isn't empty; "local" = just the visitor's own town/suburb
   // (e.g. the North Hills). Only meaningful for the auto-detected home location —
   // a typed city search has no state, so both scopes behave the same (strict city).
-  const [scope, setScope] = useState<"metro" | "local">("metro");
+  const [scope, setScope] = useState<"metro" | "local" | "usa">("metro");
   const inPghMetro = (() => {
     const mi = milesFromPgh(coords);
     return mi != null && mi <= METRO_RADIUS_MI;
@@ -3115,6 +3168,9 @@ export function Directory() {
     const c = city.trim().toLowerCase();
     const s = (state ?? "").trim().toLowerCase();
     return items.filter((i) => {
+      // Browsing nationwide: show everything, no distance test at all.
+      if (scope === "usa") return true;
+
       // NATIONWIDE POSTS SKIP THE WHOLE GATE. A CBL promotion is for the country,
       // not a place, so no city string, radius or state fallback should be able to
       // hide it. Checked before anything else so a bad or missing location on the
@@ -3240,6 +3296,25 @@ export function Directory() {
         metroLabel={metroLabel}
         showScope={!!state}
       />
+      {/* Sharing the Directory, which had none. Brian's whole reason for posting a
+          free ad on 2026-08-23 was to share it and tell people CBL has free ads,
+          and there was no way to do that from this page. Same ShareBar the blog
+          uses, so the two surfaces behave identically. The title follows the view,
+          so sharing while scoped to a city says that city.
+          NOTE: individual listings still have no URL of their own, so this shares
+          the page rather than a listing. Per-listing URLs and OG cards are the
+          next step if we want a shared ad to preview properly. */}
+      <div className="band tight" style={{ paddingTop: 10, paddingBottom: 0 }}>
+        <div className="band-inner">
+          <ShareBar
+            title={
+              scope === "usa" || !city
+                ? "Free classified ads and local listings on CityBucketList"
+                : `Free classified ads and local listings in ${city} on CityBucketList`
+            }
+          />
+        </div>
+      </div>
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
@@ -3248,7 +3323,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="CLASSIFIEDS" onPost={openPost} />
               {classifiedsLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Listing" />
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Listing" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {classifiedsLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -3267,7 +3342,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="DRIVERS" onPost={openDriverAd} />
               {driversLive.length === 0 ? (
-                <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" />
+                <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {driversLive.map((l) => <DriverPreviewCard key={l.id} l={l} />)}
@@ -3285,7 +3360,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="RIDERS" onPost={openPost} />
               {ridersLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" />
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}

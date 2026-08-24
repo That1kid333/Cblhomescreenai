@@ -28,9 +28,14 @@ const CSS = `
 .cbl-share .copy.done { background:#4DBF66; border-color:#4DBF66; color:#000; }
 `;
 
-export function ShareBar({ title }: { title: string }) {
+/**
+ * `url` overrides the page URL — used by the Directory to share ONE listing via
+ * its /directory?listing=<id> deep link rather than whatever page you happen to
+ * be on. Defaults to the current page, so the blog keeps working unchanged.
+ */
+export function ShareBar({ title, url: urlProp }: { title: string; url?: string }) {
   const [copied, setCopied] = useState(false);
-  const url = typeof window !== 'undefined' ? window.location.href : '';
+  const url = urlProp ?? (typeof window !== 'undefined' ? window.location.href : '');
   const t = encodeURIComponent(title);
   const u = encodeURIComponent(url);
 
