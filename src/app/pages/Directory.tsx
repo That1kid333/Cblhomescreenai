@@ -411,13 +411,17 @@ const DIR_CSS = `
   .cbl-dir .compare-grid { grid-template-columns:1fr; }
 }
 @media (max-width:720px) {
-  /* Mobile legibility: hero is the biggest thing on the page — drop the
-     decorative icon so "CBL DIRECTORY" gets the full width at a size that
-     reads bigger than the section headers below it. */
+  /* Mobile legibility: the hero has to be the biggest thing on the page, so the
+     title needs the width. Dropping the icon outright achieved that but lost the
+     page's mark entirely (Keith, 2026-08-24). Travels already had the better
+     answer: shrink it and pin it top-right, out of the title's way. The stack
+     reserves room on the right so a long title can never run underneath it. */
   .cbl-dir h1.hero-title { display:flex; flex-wrap:nowrap; position:relative; gap:0; align-items:flex-start; font-size:clamp(36px,9.6vw,50px); }
   .cbl-dir h1.hero-title .title-stack { min-width:0; flex:1; }
   .cbl-dir h1.hero-title .title-stack > span:first-child { display:block; padding-right:0; }
-  .cbl-dir h1.hero-title .dir-icon { display:none; }
+  .cbl-dir h1.hero-title .title-stack { padding-right:68px; }
+  /* 62x49 keeps the mark's 288:227 ratio, so it is not letterboxed into a square. */
+  .cbl-dir h1.hero-title .dir-icon { display:flex; position:absolute; top:2px; right:0; width:62px; height:49px; opacity:.85; }
   .cbl-dir .hero-subtitle { flex-wrap:nowrap; white-space:nowrap; font-size:clamp(20px,5.4vw,27px); }
   .cbl-dir .eyebrow { display:block; white-space:nowrap; max-width:100%; font-size:11px; letter-spacing:.06em; }
   .cbl-dir .eb-sm { display:none; }
@@ -2353,29 +2357,37 @@ function LocationBar({
     cursor: "pointer",
   });
   // What we're showing right now: the metro name when scoped wide, else the town.
-  const shownPlace = showScope && scope === "usa" ? "the U.S." : showScope && scope === "metro" ? metroLabel : city;
+  const shownPlace = scope === "usa" ? "the U.S." : showScope && scope === "metro" ? metroLabel : city;
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <span style={{ color: "#999", fontSize: 13 }}>
           {city ? <>Showing partners &amp; listings in <b style={{ color: "#C99742" }}>{shownPlace}</b></> : "Search a city to see local partners & listings"}
         </span>
-        {showScope && (
-          <div className="scope-pills" role="group" aria-label="Choose area">
-            <button type="button" onClick={() => onScope("metro")} aria-pressed={scope === "metro"} style={pill(scope === "metro")}>
-              {metroLabel}
-            </button>
-            <button type="button" onClick={() => onScope("local")} aria-pressed={scope === "local"} style={pill(scope === "local")}>
-              Just {city}
-            </button>
-            {/* Nationwide is a VIEW, separate from the nationwide FLAG on a listing.
-                Picking it drops the distance test so the whole country is visible;
-                the flag is what lets one listing ignore distance for everybody. */}
-            <button type="button" onClick={() => onScope("usa")} aria-pressed={scope === "usa"} style={pill(scope === "usa")}>
-              Nationwide
-            </button>
-          </div>
-        )}
+        {/* metro vs local only means something for an auto-detected home location
+            (a typed city carries no state), so that PAIR stays gated on showScope.
+            Nationwide is not part of that distinction — it drops the distance test
+            entirely — so it renders always. It was nested inside the gate at first,
+            which meant searching any city made the only route to nationwide vanish
+            (Keith, 2026-08-24, searching New Kensington). */}
+        <div className="scope-pills" role="group" aria-label="Choose area">
+          {showScope && (
+            <>
+              <button type="button" onClick={() => onScope("metro")} aria-pressed={scope === "metro"} style={pill(scope === "metro")}>
+                {metroLabel}
+              </button>
+              <button type="button" onClick={() => onScope("local")} aria-pressed={scope === "local"} style={pill(scope === "local")}>
+                Just {city}
+              </button>
+            </>
+          )}
+          {/* Nationwide is a VIEW, separate from the nationwide FLAG on a listing.
+              Picking it drops the distance test so the whole country is visible;
+              the flag is what lets one listing ignore distance for everybody. */}
+          <button type="button" onClick={() => onScope("usa")} aria-pressed={scope === "usa"} style={pill(scope === "usa")}>
+            Nationwide
+          </button>
+        </div>
         <div ref={wrapRef} style={{ position: "relative" }}>
           <input
             value={q}
