@@ -237,6 +237,28 @@ const DIR_CSS = `
 .cbl-dir .listing .badge-row { position:absolute; top:10px; left:10px; display:flex; gap:6px; z-index:2; }
 .cbl-dir .listing .badge { font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; background:rgba(0,0,0,.7); padding:4px 8px; border-radius:4px; border:1px solid rgba(201,151,66,.4); backdrop-filter:blur(6px); }
 .cbl-dir .listing .badge.feat { color:#000; background:#C99742; border-color:#C99742; }
+/* Scope chooser. Three pills wrap onto two rows on a phone, and this sits above
+   the search box and (on the Directory) the share row — too many stacked controls
+   before any content. One swipeable row keeps full-size tap targets instead of
+   shrinking them, and keeps all three visible rather than hiding two behind a
+   dropdown. Scrollbar hidden because the pills themselves show there is more. */
+.cbl-dir .scope-pills { display:inline-flex; gap:6px; flex-wrap:wrap; }
+/* Hero on a phone: the lede ran to three lines and, with the eyebrow, title,
+   subtitle and CTA above the fold, a visitor scrolled past a full screen before
+   reaching a single control. The second sentence is the first thing that can go —
+   the CTA underneath already says "Sign in to post", so it was repeating itself. */
+@media (max-width: 700px) {
+  .cbl-dir .hero .lede .lede-sm { display:none; }
+  .cbl-dir .hero .lede { margin-bottom:14px; }
+}
+@media (max-width: 700px) {
+  .cbl-dir .scope-pills {
+    flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none; max-width:100%; padding-bottom:2px;
+  }
+  .cbl-dir .scope-pills::-webkit-scrollbar { display:none; }
+  .cbl-dir .scope-pills > button { flex:0 0 auto; }
+}
 /* Nationwide reads as a scope, not a promotion — outlined, not filled, so it
    never competes with the gold Featured badge sitting next to it. */
 .cbl-dir .listing .badge.nation { color:#4DBF66; border-color:rgba(77,191,102,.55); background:rgba(77,191,102,.10); }
@@ -1044,15 +1066,20 @@ function Hero({ onPost, signedIn }: { onPost: () => void; signedIn?: boolean }) 
         </h1>
         <p className="lede">
           Local classifieds, driver schedules, rider requests, member-only coupons,
-          and curated shopping — all in one place. Browse freely. Sign in to post.
+          and curated shopping, all in one place.
+          <span className="lede-sm"> Browse freely. Sign in to post.</span>
         </p>
-        <button type="button" className="signup-hint" onClick={onPost}>
-          Sign in to post · Free to join
-        </button>
-        {signedIn && (
+        {/* One of these, never both. A signed-in member was being shown "Sign in
+            to post" directly above "Manage my posts", which is two competing
+            instructions where only the second applies. */}
+        {signedIn ? (
           <a className="signup-hint manage-link" href="/studio">
             Manage my posts in CBL Studio
           </a>
+        ) : (
+          <button type="button" className="signup-hint" onClick={onPost}>
+            Sign in to post · Free to join
+          </button>
         )}
       </div>
     </section>
@@ -2334,7 +2361,7 @@ function LocationBar({
           {city ? <>Showing partners &amp; listings in <b style={{ color: "#C99742" }}>{shownPlace}</b></> : "Search a city to see local partners & listings"}
         </span>
         {showScope && (
-          <div role="group" aria-label="Choose area" style={{ display: "inline-flex", gap: 6, flexWrap: "wrap" }}>
+          <div className="scope-pills" role="group" aria-label="Choose area">
             <button type="button" onClick={() => onScope("metro")} aria-pressed={scope === "metro"} style={pill(scope === "metro")}>
               {metroLabel}
             </button>

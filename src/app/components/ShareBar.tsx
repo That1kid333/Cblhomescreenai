@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * CBL Blog share bar — X, Facebook, LinkedIn, Copy Link.
@@ -26,6 +26,31 @@ const CSS = `
 .cbl-share .copy { background:${GOLD}; border-color:${GOLD}; color:#000; font-weight:700; }
 .cbl-share .copy:hover { background:#DDB15F; border-color:#DDB15F; color:#000; }
 .cbl-share .copy.done { background:#4DBF66; border-color:#4DBF66; color:#000; }
+
+/* ── Mobile ──────────────────────────────────────────────────────────────────
+   Four pills plus a label wrap onto two rows on a phone, and on the Directory
+   they sat under three scope pills and a search box — five rows of controls
+   before any content (Keith, 2026-08-24).
+
+   A dropdown would save the space but still ends at the same four destinations.
+   The phone already has a better answer: navigator.share opens the OS sheet,
+   which is ONE tap and offers Messages, WhatsApp, Mail and everything else the
+   person actually uses. So on a narrow screen we show a single Share button and
+   hide the row; the full row stays on desktop, where there is room and no share
+   sheet worth calling. When navigator.share is missing, .cbl-share-native is
+   never rendered and the row shows as before — no capability is lost. */
+.cbl-share-native { display:none; }
+@media (max-width: 700px) {
+  .cbl-share.has-native { display:none; }
+  .cbl-share-native { display:flex; align-items:center; gap:8px; margin:0 0 18px; }
+  .cbl-share-native button {
+    display:inline-flex; align-items:center; gap:8px; cursor:pointer;
+    background:${GOLD}; border:1px solid ${GOLD}; color:#000; font-weight:700;
+    border-radius:999px; padding:9px 16px;
+    font-family:${MONO}; font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+  }
+  .cbl-share-native svg { width:15px; height:15px; display:block; }
+}
 `;
 
 /**
@@ -35,6 +60,13 @@ const CSS = `
  */
 export function ShareBar({ title, url: urlProp }: { title: string; url?: string }) {
   const [copied, setCopied] = useState(false);
+  // Runtime check, not a media query: navigator.share exists on phones and on
+  // some desktops, and is absent in prerender. Set after mount so the server-side
+  // shell and the first client render agree.
+  const [canNativeShare, setCanNativeShare] = useState(false);
+  useEffect(() => {
+    setCanNativeShare(typeof navigator !== 'undefined' && typeof navigator.share === 'function');
+  }, []);
   const url = urlProp ?? (typeof window !== 'undefined' ? window.location.href : '');
   const t = encodeURIComponent(title);
   const u = encodeURIComponent(url);
@@ -60,9 +92,29 @@ export function ShareBar({ title, url: urlProp }: { title: string; url?: string 
   };
 
   return (
-    <div className="cbl-share">
+    <>
       <style>{CSS}</style>
-      <span className="lbl">Share</span>
+      {canNativeShare && (
+        <div className="cbl-share-native">
+          <button
+            type="button"
+            onClick={() => {
+              // A dismissed share sheet rejects with AbortError. That is a normal
+              // user action, not a failure, so swallow it rather than logging.
+              navigator.share({ title, url }).catch(() => {});
+            }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            Share
+          </button>
+        </div>
+      )}
+      <div className={`cbl-share${canNativeShare ? ' has-native' : ''}`}>
+        <span className="lbl">Share</span>
       <button
         className={`copy${copied ? ' done' : ''}`}
         onClick={copy}
@@ -96,8 +148,9 @@ export function ShareBar({ title, url: urlProp }: { title: string; url?: string 
         <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M4.98 3.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5ZM3 9h4v12H3V9Zm7 0h3.83v1.64h.05c.53-1 1.84-2.06 3.79-2.06 4.05 0 4.8 2.67 4.8 6.14V21h-4v-5.44c0-1.3-.02-2.97-1.81-2.97-1.81 0-2.09 1.42-2.09 2.88V21h-4V9Z" />
         </svg>
-        LinkedIn
-      </button>
-    </div>
+          LinkedIn
+        </button>
+      </div>
+    </>
   );
 }
