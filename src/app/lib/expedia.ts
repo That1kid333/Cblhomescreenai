@@ -151,35 +151,50 @@ export function expediaFlightSearch(search: FlightSearch, placement: string): st
 // a separate commercial agreement. So these are honest SEARCHES by place and
 // property type, never invented properties with invented ratings.
 
-/** Property kinds we surface. The value is what Vrbo's search reads as a filter phrase. */
-export type VrboKind = 'whole homes' | 'cabins' | 'lofts' | 'houses with a pool';
-
 /**
- * Untracked Vrbo search URL for a destination, optionally narrowed by kind.
+ * A Vrbo search that carries what the visitor actually typed.
  *
- * FAILS SAFE BY DESIGN. `destination` carries the place and nothing else, because
- * that is the one parameter whose job is to resolve a location. The property kind
- * rides in a separate `keywords` param, so if Vrbo ignores it the search still
- * returns every rental in the right city rather than breaking.
+ * `keywords` is GONE. It was a guess, and a live check on 2026-08-24 confirmed it
+ * is inert: vrbo.com/search with and without `keywords=cabins` returns an
+ * identical list, same count, same first three results, no filter chip. Vrbo
+ * accepts the parameter in the URL and ignores it. So four tiles promising four
+ * property types all landed on the same unfiltered list, and a section headed
+ * WHOLE HOMES / LOFTS / CABINS returned an apartment-hotel and a hotel as its
+ * first two Pittsburgh results.
  *
- * The first draft folded the kind into the destination string ("cabins in
- * Asheville"). That was unverifiable — Vrbo returns 429 to any server-side
- * request, so it cannot be checked from here — and if their geocoder had failed
- * on the phrase, all four cards would have landed on an empty search. Unfiltered
- * but correct beats filtered but broken.
+ * What DOES work, and matters more: dates and guests. Without them the visitor
+ * lands on Vrbo facing a date picker modal, re-entering what they just typed on
+ * our page. With them, the same Pittsburgh search returns real whole homes with
+ * real totals instead of an apartment-hotel. That was the costlier bug of the two.
  *
- * ⚠️ `keywords` is NOT a documented Vrbo parameter. It needs one real browser
- * click to confirm whether it narrows the results or is simply ignored. Either
- * outcome ships safely; only the filtering is in question.
+ * Vrbo's own property-type filter works in their UI but writes no URL parameter,
+ * so there is no verified deep link for it. Do not add another guess here — that
+ * is exactly how `keywords` got shipped.
  */
-export function vrboSearchUrl(destination: string, kind?: VrboKind): string {
+export type VrboSearch = {
+  /** Full resolved place ("Pittsburgh, PA"), not the bare city: there are
+   *  Pittsburgs in California, Kansas and Texas, and Vrbo re-guesses from what we
+   *  send. */
+  destination: string;
+  checkIn?: string;   // YYYY-MM-DD
+  checkOut?: string;  // YYYY-MM-DD
+  adults?: number;
+};
+
+/** Untracked Vrbo search URL. */
+export function vrboSearchUrl({ destination, checkIn, checkOut, adults }: VrboSearch): string {
   const u = new URL('https://www.vrbo.com/search');
   u.searchParams.set('destination', destination);
-  if (kind) u.searchParams.set('keywords', kind);
+  // Only send a range that makes sense; a backwards one would just look broken.
+  if (checkIn && checkOut && checkOut > checkIn) {
+    u.searchParams.set('startDate', checkIn);
+    u.searchParams.set('endDate', checkOut);
+  }
+  if (adults && adults > 0) u.searchParams.set('adults', String(adults));
   return u.toString();
 }
 
 /** Tracked Vrbo search, wrapped in our Partnerize click. */
-export function vrboSearch(destination: string, kind: VrboKind | undefined, placement: string): string {
-  return expediaLink(vrboSearchUrl(destination, kind), placement);
+export function vrboSearch(search: VrboSearch, placement: string): string {
+  return expediaLink(vrboSearchUrl(search), placement);
 }

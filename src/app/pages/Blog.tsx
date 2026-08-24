@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { ShareBar } from '../components/ShareBar';
 import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission , plainTitle } from '../lib/blog';
 import { useAuth } from '../lib/auth';
 import keithPhoto from '../../assets/cbl-keith.png';
@@ -175,6 +176,10 @@ const BLOG_CSS = `
 .cbl-blog .featured-story .spot .spot-more { align-self:flex-start; margin-top:2px; font-family:${MONO}; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; text-decoration:none; padding:7px 13px; border:1px solid rgba(201,151,66,.42); border-radius:8px 0 8px 0; transition:background .18s ease, border-color .18s ease; }
 .cbl-blog .featured-story .spot .spot-more:hover { background:rgba(201,151,66,.12); border-color:#C99742; }
 .cbl-blog .featured-story .spot .spot-more:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
+/* The share row lives inside the quote column now, so it takes that column's
+   rhythm rather than ShareBar's own page-level bottom margin. */
+.cbl-blog .featured-story .quote .cbl-share { margin:18px 0 0; }
+.cbl-blog .featured-story .quote .cbl-share-native { margin:18px 0 0; }
 @media (prefers-reduced-motion: reduce) { .cbl-blog .featured-story .spot .spot-more { transition:none; } }
 
 .cbl-blog .slots { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
@@ -829,6 +834,19 @@ function TheRegulars() {
                 More info →
               </a>
             </div>
+
+            {/* Sits where the reader finishes reading, inside the card, so it
+                belongs to the STORY rather than to Brad's identity block. Was
+                under the whole card first, which read as attached to the photo
+                column (Keith, 2026-08-24).
+
+                Explicitly the ?story= URL, never window.location.href: the default
+                would share /blog, which previews as the generic blog card, and
+                carrying Brad's photo and quote is the entire point of the link. */}
+        <ShareBar
+          title="&ldquo;It&rsquo;s the difference between ordering a ride and having a guy.&rdquo; — Brad, Coughlin&rsquo;s Law"
+          url={`${typeof window !== 'undefined' ? window.location.origin : 'https://citybucketlist.com'}/blog?story=the-regulars`}
+        />
           </div>
         </article>
 

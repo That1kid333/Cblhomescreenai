@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
-import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch, type VrboKind } from '../lib/expedia';
+import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch } from '../lib/expedia';
 import { logAffiliateClick } from '../lib/clickLog';
 import { preflightOffers } from '../lib/affiliates';
 import { useVisitorLocation, displayCity } from '../lib/location';
@@ -172,13 +172,11 @@ const STAY_KEYWORD: Record<'HOTELS' | 'BNB', string> = {
 // in Asheville" is honest illustration; the same photo under a named property
 // with a 4.9 rating was not. Each opens a real Vrbo search for the place the
 // visitor is actually looking at.
-type VrboCard = { kind: VrboKind; title: string; blurb: string; img: string };
-const VRBO_CARDS: VrboCard[] = [
-  { kind: 'whole homes', title: 'Whole homes', blurb: 'The run of the house, room for everyone, and a kitchen worth cooking in.', img: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&h=600&fit=crop' },
-  { kind: 'cabins', title: 'Cabins & cottages', blurb: 'Woods, water, or a porch worth sitting on. Best booked with the phone off.', img: 'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=900&h=600&fit=crop' },
-  { kind: 'lofts', title: 'Lofts & apartments', blurb: 'More room than a hotel, usually a short walk from the good part of town.', img: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&h=600&fit=crop' },
-  { kind: 'houses with a pool', title: 'Houses with a pool', blurb: 'The one everyone actually wants in July. Narrowed to places with a pool on site.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
-];
+// Vrbo carries whole homes, cabins, lofts and condos. We say that in copy rather
+// than as four filter tiles: Vrbo has no property-type deep link we could verify
+// (see lib/expedia), so four tiles all led to the same unfiltered list — a promise
+// the link could not keep.
+const VRBO_IMG = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&fit=crop';
 
 const STAYS: Record<'HOTELS' | 'BNB', Stay[]> = {
   HOTELS: [
@@ -956,6 +954,8 @@ const TRAVELS_CSS = `
    filter exists to force assorted logos white, not to reprocess a mark that
    already ships correct. Same rule as Expedia and Ticketmaster. */
 .cbl-travels .vrbo-by img { height:17px; width:auto; display:block; }
+.cbl-travels .vrbo-single { max-width:560px; }
+.cbl-travels .vrbo-single .img { aspect-ratio:16/9; }
 .cbl-travels .vrbo-grid {
   display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:22px;
 }
@@ -1382,7 +1382,7 @@ function isoDaysOut(days: number): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-function SearchBar({ onSearch, searching }: { onSearch: (place: string) => void; searching: boolean }) {
+function SearchBar({ onSearch, searching }: { onSearch: (place: string, trip: { checkIn: string; checkOut: string; adults: number }) => void; searching: boolean }) {
   const [dest, setDest] = useState('Pittsburgh, PA');
   const [adults, setAdults] = useState(2);
   const [childAges, setChildAges] = useState<number[]>([]);
@@ -1397,7 +1397,10 @@ function SearchBar({ onSearch, searching }: { onSearch: (place: string) => void;
   // grid). The Expedia handoff is still available, but as a deliberate secondary
   // link rather than the only thing the button does.
   const search = () => {
-    onSearch(dest);
+    // Hand the WHOLE search up, not just the place. Vrbo was being sent the city
+    // alone, so the visitor landed on a date picker re-entering what they had
+    // just typed here (verified live 2026-08-24).
+    onSearch(dest, { checkIn, checkOut, adults });
   };
   const openOnExpedia = () => {
     logAffiliateClick('expedia', 'travels_searchbar');
@@ -1947,7 +1950,20 @@ function PreflightBand() {
   );
 }
 
-function VrboSection({ place }: { place: string }) {
+function VrboSection({
+  place,
+  destination,
+  trip,
+}: {
+  place: string;
+  destination: string;
+  trip: { checkIn: string; checkOut: string; adults: number } | null;
+}) {
+  const href = vrboSearch(
+    { destination, checkIn: trip?.checkIn, checkOut: trip?.checkOut, adults: trip?.adults },
+    'travels_vrbo',
+  );
+  const dated = !!(trip?.checkIn && trip?.checkOut && trip.checkOut > trip.checkIn);
   return (
     <section className="band">
       <div className="band-inner">
@@ -1964,31 +1980,31 @@ function VrboSection({ place }: { place: string }) {
           </div>
         </div>
         <p className="section-lede">
-          Vrbo lists whole places rather than rooms. Each of these opens a live
-          search for {place}, so what you see is real availability and real
-          pricing on the day you look, not a fixed list that goes stale.
+          Vrbo lists whole places rather than rooms: houses, cabins, lofts and
+          condos, with the run of the property.{' '}
+          {dated
+            ? 'Your dates and party size carry across, so you land on real availability and a real total rather than a date picker.'
+            : 'Add your dates above and they carry across, so you land on real availability and a real total rather than a date picker.'}
         </p>
-        <div className="vrbo-grid">
-          {VRBO_CARDS.map((c) => (
-            <a
-              key={c.kind}
-              className="vrbo-card"
-              href={vrboSearch(place, c.kind, `travels_vrbo_${c.kind}`)}
-              target="_blank"
-              rel="sponsored nofollow noopener noreferrer"
-              onClick={() => logAffiliateClick('expedia', `travels_vrbo_${c.kind}`)}
-            >
-              <div className="img" style={{ backgroundImage: `url(${c.img})` }}>
-                <img className="vrbo-chip" src="/travels/vrbo-logo.svg" alt="Vrbo" />
-              </div>
-              <div className="body">
-                <h3>{c.title}</h3>
-                <p>{c.blurb}</p>
-                <span className="go">Search {place} →</span>
-              </div>
-            </a>
-          ))}
-        </div>
+        <a
+          className="vrbo-card vrbo-single"
+          href={href}
+          target="_blank"
+          rel="sponsored nofollow noopener noreferrer"
+          onClick={() => logAffiliateClick('travelpayouts', 'travels_vrbo')}
+        >
+          <div className="img" style={{ backgroundImage: `url(${VRBO_IMG})` }}>
+            <img className="vrbo-chip" src="/travels/vrbo-logo.svg" alt="Vrbo" />
+          </div>
+          <div className="body">
+            <h3>Whole homes in {place}</h3>
+            <p>
+              Houses, cabins, lofts and condos. Filter by property type, bedrooms
+              and price once you are there.
+            </p>
+            <span className="go">{dated ? `Search ${place} for your dates →` : `Search ${place} →`}</span>
+          </div>
+        </a>
       </div>
     </section>
   );
@@ -2002,9 +2018,17 @@ export function Travels() {
   // wired to nothing but an Expedia handoff, so searching "Asheville" left the
   // grid showing hotels near YOU. Same fix Attractions already had.
   const [searched, setSearched] = useState<{ city: string; coords: { lat: number; lng: number } } | null>(null);
+  // What the visitor typed alongside the destination, so outbound links carry it
+  // instead of throwing it away. `searchedRaw` keeps the full place they typed
+  // ("Pittsburgh, PA") — Vrbo re-guesses from what we send, and there are
+  // Pittsburgs in California, Kansas and Texas.
+  const [trip, setTrip] = useState<{ checkIn: string; checkOut: string; adults: number } | null>(null);
+  const [searchedRaw, setSearchedRaw] = useState<string | null>(null);
   const [searching, setSearching] = useState(false);
-  const onSearch = async (place: string) => {
+  const onSearch = async (place: string, t?: { checkIn: string; checkOut: string; adults: number }) => {
     if (!place.trim()) return;
+    if (t) setTrip(t);
+    setSearchedRaw(place.trim());
     setSearching(true);
     try {
       const r = await fetch(`/api/geocode?q=${encodeURIComponent(place)}`).then((res) => res.json());
@@ -2107,7 +2131,7 @@ export function Travels() {
         </section>
       )}
 
-      {tab === 'STR' && <VrboSection place={placeLabel} />}
+      {tab === 'STR' && <VrboSection place={placeLabel} destination={searchedRaw || placeLabel} trip={trip} />}
 
       {tab === 'TRIPS' && (
         <section className="band">
