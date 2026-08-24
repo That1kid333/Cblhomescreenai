@@ -996,11 +996,15 @@ function useLiveShopPlaces(coords: Coords | null, enabled: boolean, def: PlacesD
   return live;
 }
 
+// Nationwide reach is included on EVERY PAID tier at no extra cost (Keith,
+// 2026-08-24) — prices unchanged, it is a perk added to what each already buys.
+// Basic stays local, which is the point of the upgrade. The flag itself is set by
+// apply-listing-boost after Stripe confirms payment, never by the browser.
 const PRICING: Tier[] = [
-  { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats"], cta: "Post Free Ad" },
-  { name: "Photo Boost", price: "$2.99", per: "one-time", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
-  { name: "Featured", price: "$4.99", per: "for 30 days", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "Featured for 30 days", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
-  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
+  { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats", "Local reach only"], cta: "Post Free Ad" },
+  { name: "Photo Boost", price: "$2.99", per: "one-time", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement", "Nationwide reach"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
+  { name: "Featured", price: "$4.99", per: "for 30 days", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "Featured for 30 days", "Featured badge", "Nationwide reach", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
+  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Nationwide reach", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
 ];
 
 const Check = () => (
