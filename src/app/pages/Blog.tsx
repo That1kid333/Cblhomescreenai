@@ -731,8 +731,21 @@ const REF_CHECK: Record<string, string> = {
  * No FTC disclosure here: this is not affiliate content.
  */
 function TheRegulars() {
+  // A shared story link (/blog?story=the-regulars) lands on the blog index, so
+  // bring the reader to the section rather than making them hunt for it. The
+  // fragment alone would not do this reliably — the section renders after the
+  // posts grid has loaded, so the browser's own anchor jump fires too early.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const story = new URLSearchParams(window.location.search).get('story');
+    if (story !== 'the-regulars') return;
+    const el = document.getElementById('the-regulars');
+    if (!el) return;
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }, []);
   return (
-    <section className="band regulars">
+    <section className="band regulars" id="the-regulars">
       <div className="band-inner">
         <div className="head-row">
           <div>

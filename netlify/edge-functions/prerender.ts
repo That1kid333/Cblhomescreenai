@@ -636,6 +636,43 @@ export default async function handler(req: Request, context: Context): Promise<R
     }
 
     if (path === '/blog') {
+      // A shared REGULARS story: /blog?story=<slug>. The Regulars is a section of
+      // the blog index rather than its own route, so a plain link previews as the
+      // generic blog card — the reader sees the CBL logo instead of the storyteller
+      // and their photo, on a section built to be shared (Keith, 2026-08-24).
+      // Same shape as /directory?listing=<id>. An unknown slug falls straight
+      // through to the normal blog card below.
+      //
+      // Hardcoded because these testimonials live in Blog.tsx, not the database.
+      // If a second story is added there, add it here too — or move both to a
+      // table, which is the right call once there are more than two or three.
+      const story = (url.searchParams.get('story') || '').trim().toLowerCase();
+      const STORIES: Record<string, { title: string; description: string; image: string }> = {
+        'the-regulars': {
+          title:
+            '"It\u2019s the difference between ordering a ride and having a guy." \u2014 Brad, Coughlin\u2019s Law',
+          description:
+            'Brad manages Coughlin\u2019s Law Kitchen & Brewpub in Pittsburgh. A driver handed him a QR code, and now he has the same independent driver scheduled around his shifts. The Regulars: riders and drivers in their own words, unedited.',
+          image: '/blog/regulars/brad-coughlins.jpg',
+        },
+      };
+      const s = STORIES[story];
+      if (s) {
+        const canonical = `${origin}/blog?story=${encodeURIComponent(story)}`;
+        html = injectHead(html, {
+          title: `${s.title} | City Bucket List`,
+          description: s.description,
+          url: canonical,
+          image: absUrl(origin, s.image),
+          type: 'article',
+        });
+        html = injectRoot(
+          html,
+          `<main><p>The Regulars \u00b7 riders &amp; independent drivers, unedited</p><h1>${esc(s.title)}</h1><p>${esc(s.description)}</p></main>`,
+        );
+        return finish();
+      }
+
       const r = await fetch(
         `${SUPABASE_URL}/rest/v1/blog_posts?select=slug,title,subtitle,excerpt,city,author_name,hero_image,published_at&status=eq.published&order=featured.desc,published_at.desc`,
         { headers: sbHeaders },
