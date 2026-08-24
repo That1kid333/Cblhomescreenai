@@ -59,7 +59,7 @@ export async function getDirectoryListings(
 ): Promise<DirectoryListing[]> {
   let query = ridesClient
     .from('directory_listings')
-    .select('id, title, description, category, price, price_type, city, state, neighborhood, latitude, longitude, photos, featured, urgent, tier, user_id, driver_referral_code, driver_ad')
+    .select('id, title, description, category, price, price_type, city, state, neighborhood, latitude, longitude, photos, featured, urgent, tier, user_id, driver_referral_code, driver_ad, nationwide')
     .eq('status', 'active');
   if (opts.city) query = query.ilike('city', opts.city);
   if (opts.category) query = query.eq('category', opts.category);
@@ -85,6 +85,7 @@ export async function getDirectoryListings(
     user_id: (r.user_id as string | null) ?? null,
     driver_referral_code: (r.driver_referral_code as string | null) ?? null,
     driver_ad: (r.driver_ad as Record<string, unknown> | null) ?? null,
+    nationwide: (r.nationwide as boolean | null) ?? false,
     // numeric columns can arrive as strings via PostgREST — coerce so proximity
     // math sees real numbers (NaN guarded to null).
     latitude: r.latitude != null && !Number.isNaN(Number(r.latitude)) ? Number(r.latitude) : null,

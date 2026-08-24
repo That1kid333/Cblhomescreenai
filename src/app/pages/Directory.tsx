@@ -9,6 +9,8 @@ import { APP_URL, RIDER_BOOK_URL } from "../lib/constants";
 import { getActivePartners, getDirectoryListings, type Partner } from "../lib/supabase/ridesClient";
 import { type DirectoryListing } from "../lib/supabase/directoryClient";
 import { authClient, postDirectoryListing, getMyDriverProfile, type MyDriverProfile } from "../lib/supabase/authClient";
+import { studioIsAdmin } from "../lib/blog";
+import { ShareBar } from "../components/ShareBar";
 import { updateDriverAd } from "../lib/studio";
 import { startListingBoost, applyListingBoost, type BoostTier } from "../lib/boost";
 import {
@@ -235,6 +237,9 @@ const DIR_CSS = `
 .cbl-dir .listing .badge-row { position:absolute; top:10px; left:10px; display:flex; gap:6px; z-index:2; }
 .cbl-dir .listing .badge { font-family:${MONO}; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:#C99742; background:rgba(0,0,0,.7); padding:4px 8px; border-radius:4px; border:1px solid rgba(201,151,66,.4); backdrop-filter:blur(6px); }
 .cbl-dir .listing .badge.feat { color:#000; background:#C99742; border-color:#C99742; }
+/* Nationwide reads as a scope, not a promotion — outlined, not filled, so it
+   never competes with the gold Featured badge sitting next to it. */
+.cbl-dir .listing .badge.nation { color:#4DBF66; border-color:rgba(77,191,102,.55); background:rgba(77,191,102,.10); }
 .cbl-dir .listing .img-count { position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,.7); color:#fff; font-family:${MONO}; font-size:10px; letter-spacing:.1em; padding:3px 8px; border-radius:4px; backdrop-filter:blur(4px); z-index:2; }
 .cbl-dir .listing .body { padding:14px 18px 16px; display:flex; flex-direction:column; gap:6px; flex:1; }
 .cbl-dir .listing h3 { font-family:${DISPLAY}; font-weight:900; font-size:20px; line-height:1.1; text-transform:uppercase; letter-spacing:-.005em; }
@@ -820,7 +825,12 @@ function listingToCard(l: DirectoryListing): Listing {
     price: l.price_type === "free" ? "FREE" : l.price != null ? `$${l.price}` : "Contact for price",
     photos: l.photos?.length,
     img: l.photos?.[0],
-    badges: l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : [],
+    // A nationwide post shows WHY it is here, otherwise it reads as a local
+    // listing that wandered into the wrong city.
+    badges: [
+      ...(l.nationwide ? [{ t: "Nationwide", k: "nation" }] : []),
+      ...(l.featured ? [{ t: "★ Featured", k: "feat" }] : l.urgent ? [{ t: "Urgent" }] : []),
+    ],
     featured: !!l.featured,
     placeholder: !l.photos?.length,
     ownerId: l.user_id ?? null,
@@ -986,11 +996,15 @@ function useLiveShopPlaces(coords: Coords | null, enabled: boolean, def: PlacesD
   return live;
 }
 
+// Nationwide reach is included on EVERY PAID tier at no extra cost (Keith,
+// 2026-08-24) — prices unchanged, it is a perk added to what each already buys.
+// Basic stays local, which is the point of the upgrade. The flag itself is set by
+// apply-listing-boost after Stripe confirms payment, never by the browser.
 const PRICING: Tier[] = [
-  { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats"], cta: "Post Free Ad" },
-  { name: "Photo Boost", price: "$2.99", per: "one-time", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
-  { name: "Featured", price: "$4.99", per: "for 30 days", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "Featured for 30 days", "Featured badge", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
-  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
+  { name: "Basic", price: "Free", per: "forever", bullets: ["Text-only listing", "30 days active", "Category placement", "Contact via in-app message"], muted: ["No photos", "No featured badge", "Standard placement", "No view stats", "Local reach only"], cta: "Post Free Ad" },
+  { name: "Photo Boost", price: "$2.99", per: "one-time", bullets: ["Up to 5 photos", "30 days active", "Photo gallery", "Category placement", "Nationwide reach"], muted: ["No featured badge", "Standard placement"], cta: "Add Photos" },
+  { name: "Featured", price: "$4.99", per: "for 30 days", accent: true, badge: "Most Popular", bullets: ["Up to 10 photos", "Featured for 30 days", "Featured badge", "Nationwide reach", "Top of search results", "Gold border highlight", "View counter"], cta: "Go Featured" },
+  { name: "Business Pro", price: "$29.99", per: "per month", bullets: ["Unlimited photos", "Unlimited listings", "CBL Partner badge", "Auto-featured", "Nationwide reach", "Analytics dashboard", "Priority support"], cta: "Go Pro" },
 ];
 
 const Check = () => (
@@ -1401,6 +1415,30 @@ function DriverAdCard({ d }: { d: DriverAd }) {
   );
 }
 
+/**
+ * Share ONE listing, not the page it happens to be on.
+ *
+ * /directory?listing=<id> already opens a listing's detail, so a shared link
+ * lands on the ad itself. Driver cards are the ones that matter here: a driver
+ * paying $19.99 a month wants their own "Need a Ride?" card on their social, and
+ * until now there was no way to send anyone to it.
+ *
+ * The share preview is real: netlify/edge-functions/prerender.ts has a branch for
+ * /directory?listing=<id> that injects the ad's own og:title, og:description and
+ * og:image (photos[0], else the driver's car photo or portrait, else the CBL
+ * card), so Facebook, X and LinkedIn show the listing instead of the site card.
+ */
+function ListingShare({ l }: { l: Listing }) {
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://citybucketlist.com";
+  const url = `${origin}/directory?listing=${encodeURIComponent(l.id)}`;
+  const title = l.driverCode ? `${l.name} — an independent driver on CityBucketList` : `${l.name} on CityBucketList`;
+  return (
+    <div style={{ padding: "4px 20px 18px" }}>
+      <ShareBar title={title} url={url} />
+    </div>
+  );
+}
+
 function DirListingModal({
   l, onClose, canEditPhotos, onEditPhotos, onCustomizeDriverAd,
 }: {
@@ -1469,6 +1507,7 @@ function DirListingModal({
                 </button>
               </div>
             )}
+            <ListingShare l={l} />
           </>
         ) : (
           <>
@@ -1485,7 +1524,7 @@ function DirListingModal({
               {l.badges && l.badges.length > 0 && (
                 <div className="badges">
                   {l.badges.map((b) => (
-                    <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>
+                    <span key={b.t} className={"badge" + (b.k ? " " + b.k : "")}>
                       {b.t}
                     </span>
                   ))}
@@ -1509,6 +1548,7 @@ function DirListingModal({
                   ＋ Add / edit photos
                 </button>
               )}
+              <ListingShare l={l} />
             </div>
           </>
         )}
@@ -1537,7 +1577,7 @@ function ClassifiedCard({ l }: { l: Listing }) {
         <div className="img" style={{ backgroundImage: `url(${l.img})` }}>
           <div className="badge-row">
             {l.badges?.map((b) => (
-              <span key={b.t} className={"badge" + (b.k === "feat" ? " feat" : "")}>{b.t}</span>
+              <span key={b.t} className={"badge" + (b.k ? " " + b.k : "")}>{b.t}</span>
             ))}
           </div>
           {l.photos && <span className="img-count">📷 {l.photos}</span>}
@@ -2220,8 +2260,8 @@ function LocationBar({
 }: {
   city: string | null;
   onChangeCity: (c: string) => void;
-  scope: "metro" | "local";
-  onScope: (s: "metro" | "local") => void;
+  scope: "metro" | "local" | "usa";
+  onScope: (s: "metro" | "local" | "usa") => void;
   metroLabel: string;
   showScope: boolean;
 }) {
@@ -2286,7 +2326,7 @@ function LocationBar({
     cursor: "pointer",
   });
   // What we're showing right now: the metro name when scoped wide, else the town.
-  const shownPlace = showScope && scope === "metro" ? metroLabel : city;
+  const shownPlace = showScope && scope === "usa" ? "the U.S." : showScope && scope === "metro" ? metroLabel : city;
   return (
     <div className="band tight" style={{ paddingBottom: 0 }}>
       <div className="band-inner" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
@@ -2300,6 +2340,12 @@ function LocationBar({
             </button>
             <button type="button" onClick={() => onScope("local")} aria-pressed={scope === "local"} style={pill(scope === "local")}>
               Just {city}
+            </button>
+            {/* Nationwide is a VIEW, separate from the nationwide FLAG on a listing.
+                Picking it drops the distance test so the whole country is visible;
+                the flag is what lets one listing ignore distance for everybody. */}
+            <button type="button" onClick={() => onScope("usa")} aria-pressed={scope === "usa"} style={pill(scope === "usa")}>
+              Nationwide
             </button>
           </div>
         )}
@@ -2356,13 +2402,34 @@ function LocationBar({
   );
 }
 
-function EmptyState({ city, onPost, ctaLabel = "Post the First Listing" }: { city: string | null; onPost: () => void; ctaLabel?: string }) {
+function EmptyState({
+  city, onPost, ctaLabel = "Post the First Listing", onNationwide,
+}: { city: string | null; onPost: () => void; ctaLabel?: string; onNationwide?: () => void }) {
   return (
     <div className="cbl-dir-empty" style={{ textAlign: "center", padding: "48px 24px", color: "#999" }}>
       <p style={{ marginBottom: 16 }}>
         {city ? `No listings near ${city} yet — be the first.` : "No listings yet — be the first."}
       </p>
       <button type="button" className="post-btn" onClick={onPost}>{ctaLabel} →</button>
+      {/* An empty local view is exactly where someone gives up. Offer the way out
+          right here rather than only in the scope pills at the top of the page,
+          which is a long way from where the dead end actually happens. Hidden
+          once you are already browsing nationwide, since it would be a no-op. */}
+      {onNationwide && (
+        <div style={{ marginTop: 14 }}>
+          <button
+            type="button"
+            onClick={onNationwide}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              color: "#C99742", fontSize: 13, textDecoration: "underline",
+              textUnderlineOffset: 3, padding: 6,
+            }}
+          >
+            Or see listings from all over the U.S. →
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -2462,6 +2529,17 @@ function PostListingModal({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("general");
   const [free, setFree] = useState(false);
+  // Nationwide is admin/moderator only. The DB policy is the real guard; this just
+  // decides whether the control is worth showing. Checked server-side via the same
+  // blog_is_admin() RPC the Studio link uses, so the preview demo session (which
+  // has no real auth.uid()) never sees it.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [nationwide, setNationwide] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    studioIsAdmin().then((ok) => { if (!cancelled) setIsAdmin(ok); });
+    return () => { cancelled = true; };
+  }, []);
   const [price, setPrice] = useState("");
   const [cityField, setCityField] = useState("");
   const [description, setDescription] = useState("");
@@ -2541,6 +2619,7 @@ function PostListingModal({
       price: free ? null : price.trim() ? Number(price) : null,
       city: cityField.trim() || undefined,
       state: cityUnchanged ? (defaultState?.trim() || null) : null,
+      nationwide: isAdmin && nationwide,
     });
     if (error) {
       setStatus("error");
@@ -2659,6 +2738,19 @@ function PostListingModal({
                   />
                   <label htmlFor="cbl-post-free">This is free — no price</label>
                 </div>
+                {isAdmin && (
+                  <div className="check">
+                    <input
+                      id="cbl-post-nationwide"
+                      type="checkbox"
+                      checked={nationwide}
+                      onChange={(e) => setNationwide(e.target.checked)}
+                    />
+                    <label htmlFor="cbl-post-nationwide">
+                      Show nationwide — ignores the local radius and appears in every city
+                    </label>
+                  </div>
+                )}
                 {!free && (
                   <div className="field">
                     <label htmlFor="cbl-post-price">Price (USD)</label>
@@ -2950,7 +3042,7 @@ export function Directory() {
   // default so the view isn't empty; "local" = just the visitor's own town/suburb
   // (e.g. the North Hills). Only meaningful for the auto-detected home location —
   // a typed city search has no state, so both scopes behave the same (strict city).
-  const [scope, setScope] = useState<"metro" | "local">("metro");
+  const [scope, setScope] = useState<"metro" | "local" | "usa">("metro");
   const inPghMetro = (() => {
     const mi = milesFromPgh(coords);
     return mi != null && mi <= METRO_RADIUS_MI;
@@ -3076,11 +3168,22 @@ export function Directory() {
   //   3. In "metro" scope: same state as the auto-detected visitor (coarse
   //      fallback when neither side has resolvable coordinates).
   // No city set yet → show everything.
-  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null; driver_ad?: { radius?: number | null } | null }>(items: T[]) => {
+  const filterByLocation = <T extends { city?: string | null; state?: string | null; latitude?: number | null; longitude?: number | null; driver_ad?: { radius?: number | null } | null; nationwide?: boolean | null }>(items: T[]) => {
     if (!city) return items;
     const c = city.trim().toLowerCase();
     const s = (state ?? "").trim().toLowerCase();
     return items.filter((i) => {
+      // Browsing nationwide: show everything, no distance test at all.
+      if (scope === "usa") return true;
+
+      // NATIONWIDE POSTS SKIP THE WHOLE GATE. A CBL promotion is for the country,
+      // not a place, so no city string, radius or state fallback should be able to
+      // hide it. Checked before anything else so a bad or missing location on the
+      // row cannot sink it — that is exactly how Brian's "FREE CLASSIFIED ADS"
+      // post went invisible on 2026-08-23 (typed "ANYWHERE, USA", geocoded to
+      // rural Colorado, 1,412mi from Pittsburgh, dropped for every visitor).
+      if (i.nationwide) return true;
+
       const ic = (i.city ?? "").trim().toLowerCase();
       if (ic && (ic === c || ic.includes(c) || c.includes(ic))) return true;
 
@@ -3198,6 +3301,25 @@ export function Directory() {
         metroLabel={metroLabel}
         showScope={!!state}
       />
+      {/* Sharing the Directory, which had none. Brian's whole reason for posting a
+          free ad on 2026-08-23 was to share it and tell people CBL has free ads,
+          and there was no way to do that from this page. Same ShareBar the blog
+          uses, so the two surfaces behave identically. The title follows the view,
+          so sharing while scoped to a city says that city.
+          NOTE: individual listings still have no URL of their own, so this shares
+          the page rather than a listing. Per-listing URLs and OG cards are the
+          next step if we want a shared ad to preview properly. */}
+      <div className="band tight" style={{ paddingTop: 10, paddingBottom: 0 }}>
+        <div className="band-inner">
+          <ShareBar
+            title={
+              scope === "usa" || !city
+                ? "Free classified ads and local listings on CityBucketList"
+                : `Free classified ads and local listings in ${city} on CityBucketList`
+            }
+          />
+        </div>
+      </div>
       <Filters section={section} setSection={setSection} cat={cat} setCat={setCat} />
 
       {section === "CLASSIFIEDS" && (
@@ -3206,7 +3328,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="CLASSIFIEDS" onPost={openPost} />
               {classifiedsLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Listing" />
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Listing" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {classifiedsLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}
@@ -3225,7 +3347,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="DRIVERS" onPost={openDriverAd} />
               {driversLive.length === 0 ? (
-                <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" />
+                <EmptyState city={city} onPost={openDriverAd} ctaLabel="Post an Ad" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {driversLive.map((l) => <DriverPreviewCard key={l.id} l={l} />)}
@@ -3243,7 +3365,7 @@ export function Directory() {
             <div className="band-inner">
               <SectionHead section="RIDERS" onPost={openPost} />
               {ridersLive.length === 0 ? (
-                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" />
+                <EmptyState city={city} onPost={openPost} ctaLabel="Post a Request" onNationwide={scope !== "usa" ? () => setScope("usa") : undefined} />
               ) : (
                 <div className="listings-grid">
                   {ridersLive.map((l) => <ClassifiedCard key={l.id} l={l} />)}

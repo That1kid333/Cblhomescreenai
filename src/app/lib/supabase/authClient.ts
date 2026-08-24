@@ -38,6 +38,10 @@ export type PostListingInput = {
   city?: string;
   state?: string | null;
   driverAd?: Record<string, unknown> | null; // driver business-card fields (driver_post only)
+  /** Shown in every market, exempt from the proximity filter. Admin/moderator
+   *  only — the DB policy rejects it from anyone else, so this is a UI nicety
+   *  rather than the actual guard. */
+  nationwide?: boolean;
 };
 
 // Active-driver profile for prefilling / gating the driver-ad builder. Returns
@@ -292,6 +296,10 @@ export async function postDirectoryListing(
       ...(input.city !== undefined ? { city: input.city } : {}),
       ...(input.state !== undefined ? { state: input.state } : {}),
       ...(lat != null ? { latitude: lat, longitude: lng } : {}),
+      // Only sent when true. The insert policy rejects nationwide=true from anyone
+      // without the admin/moderator role, so a tampered client gets a 403 rather
+      // than a national listing.
+      ...(input.nationwide ? { nationwide: true } : {}),
       posted_by_email: session.user.email ?? null,
       posted_by_name: (session.user.user_metadata?.name as string) ?? null,
       source: 'citybucketlist',

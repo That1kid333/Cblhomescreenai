@@ -1,7 +1,8 @@
-// Dynamic sitemap.xml — lists the static marketing pages plus every published
-// blog post (pulled live from Supabase), so search engines and AI crawlers
-// discover new stories automatically. Uses the request origin, so it works on
-// both the preview host and citybucketlist.com. See netlify.toml for the path.
+// Dynamic sitemap.xml — lists the static marketing pages, every published blog
+// post, and every publicly visible directory listing (all pulled live from
+// Supabase), so search engines and AI crawlers discover new stories and new ads
+// automatically. Uses the request origin, so it works on both the preview host
+// and citybucketlist.com. See netlify.toml for the path.
 
 import type { Context } from 'https://edge.netlify.com';
 
@@ -30,25 +31,57 @@ const STATIC_PATHS = [
   '/contact',
 ];
 
+const sbHeaders = { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}` };
+
+/** Read rows with the publishable (anon) key — RLS decides what is public.
+ *  Any failure returns nothing so the sitemap still lists the static pages. */
+async function sbRows<T>(query: string): Promise<T[]> {
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${query}`, { headers: sbHeaders });
+    return r.ok ? ((await r.json()) as T[]) : [];
+  } catch (_e) {
+    return [];
+  }
+}
+
+const xmlEsc = (s: string): string =>
+  String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+
+const isoDay = (d?: string | null): string => {
+  if (!d) return '';
+  const t = new Date(d);
+  return Number.isNaN(t.getTime()) ? '' : t.toISOString().slice(0, 10);
+};
+
 export default async function handler(req: Request, _context: Context): Promise<Response> {
   const origin = new URL(req.url).origin;
-  let posts: { slug: string; updated_at?: string | null }[] = [];
-  try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/blog_posts?select=slug,updated_at&status=eq.published`,
-      { headers: { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}` } },
-    );
-    if (r.ok) posts = await r.json();
-  } catch (_e) {
-    /* fall back to just the static pages */
-  }
 
-  const entry = (loc: string, lastmod?: string | null) =>
-    `  <url><loc>${loc}</loc>${lastmod ? `<lastmod>${new Date(lastmod).toISOString().slice(0, 10)}</lastmod>` : ''}</url>`;
+  const [posts, listings] = await Promise.all([
+    sbRows<{ slug: string; updated_at?: string | null }>(
+      'blog_posts?select=slug,updated_at&status=eq.published',
+    ),
+    // Directory ads are shareable at /directory?listing=<id>. RLS already limits
+    // this to active, non-expired listings (and driver posts to drivers with a
+    // live membership), so whatever comes back is exactly what is public.
+    sbRows<{ id: number | string; updated_at?: string | null }>(
+      'directory_listings?select=id,updated_at&status=eq.active&order=updated_at.desc&limit=1000',
+    ),
+  ]);
+
+  const entry = (loc: string, lastmod?: string | null) => {
+    const day = isoDay(lastmod);
+    return `  <url><loc>${xmlEsc(loc)}</loc>${day ? `<lastmod>${day}</lastmod>` : ''}</url>`;
+  };
 
   const urls = [
     ...STATIC_PATHS.map((p) => entry(`${origin}${p}`)),
     ...posts.map((p) => entry(`${origin}/blog/${p.slug}`, p.updated_at)),
+    ...listings.map((l) => entry(`${origin}/directory?listing=${encodeURIComponent(String(l.id))}`, l.updated_at)),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>`;

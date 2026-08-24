@@ -37,4 +37,6 @@ export type DirectoryListing = {
   driver_ad?: Record<string, unknown> | null; // driver business-card fields (driver_post only)
   latitude?: number | null;
   longitude?: number | null;
+  /** True = shown in every market, exempt from the proximity filter. Admin-set. */
+  nationwide?: boolean | null;
 };
