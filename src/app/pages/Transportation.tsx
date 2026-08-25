@@ -65,19 +65,19 @@ const PROVIDERS: Provider[] = [
     key: 'uber',
     name: 'Uber X',
     logo: 'U',
-    blurb: 'On-demand pickup via Uber — a partner option coming soon for trips CBL Private does not cover.',
-    eta: 'Soon',
-    price: '—',
-    badges: [{ k: 'pending', t: 'Coming Soon' }],
+    blurb: 'When no independent driver is free, the app hands you to Uber with your pickup and drop-off already carried over. We earn nothing on it.',
+    eta: 'In app',
+    price: 'Uber\u2019s',
+    badges: [{ k: 'av', t: 'Live in the app' }],
   },
   {
     key: 'lyft',
     name: 'Lyft Standard',
     logo: 'L',
-    blurb: 'On-demand pickup via Lyft — a partner option coming soon for trips CBL Private does not cover.',
-    eta: 'Soon',
-    price: '—',
-    badges: [{ k: 'pending', t: 'Coming Soon' }],
+    blurb: 'Same handoff, via Lyft. Your pickup and drop-off carry across, so you are not retyping them at the worst moment.',
+    eta: 'In app',
+    price: 'Lyft\u2019s',
+    badges: [{ k: 'av', t: 'Live in the app' }],
   },
 ];
 
@@ -98,7 +98,7 @@ const AUDIENCES: Audience[] = [
     num: '01',
     name: 'Riders',
     blurb:
-      'Schedule rides with a trusted local driver you already know. Partner options (Uber, Lyft, autonomous) are coming soon.',
+      'Schedule rides with a trusted local driver you already know. When none is free, the app hands you to Uber or Lyft with your trip details carried over. Autonomous options are still to come.',
     price: 'FREE',
     priceLabel: 'to join',
     bullets: [
@@ -146,8 +146,13 @@ const AUDIENCES: Audience[] = [
 
 const PARTNERS = [
   { name: 'CBL Private', sub: 'Service Fee · $0.01–$0.99', rev: '100%', revLbl: 'to driver' },
-  { name: 'Uber', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
-  { name: 'Lyft', sub: 'Affiliate · Coming Soon', rev: 'Soon', revLbl: '' },
+  // Two different things, and they must not be conflated. The HANDOFF is live in
+  // the app (merged to the app's main, with the trip details carried across). The
+  // AFFILIATE is not signed with either company, so we earn nothing on it — which
+  // is exactly what the FAQ below already says. "Coming Soon" for both read as
+  // though the handoff itself did not exist (Keith, 2026-08-24).
+  { name: 'Uber', sub: 'Handoff live · no affiliate yet', rev: '$0', revLbl: 'we earn nothing' },
+  { name: 'Lyft', sub: 'Handoff live · no affiliate yet', rev: '$0', revLbl: 'we earn nothing' },
 ];
 
 const FAQS = [
@@ -663,7 +668,7 @@ function Hero() {
           </div>
           <p className="lede">
             Schedule a trusted local driver you already know — booked ahead, never on-demand, never a
-            stranger. Uber, Lyft and autonomous partner options are coming soon for the trips CBL does
+            stranger. Uber and Lyft back you up when no independent driver is free, and autonomous options are still to come, for the trips CBL does
             not cover. One membership, one place to plan every ride.
           </p>
           <div style={{ display: 'flex', gap: 14, marginTop: 28, flexWrap: 'wrap' }}>
@@ -851,14 +856,16 @@ function RideAggregator() {
   return (
     <section className="band agg-band" id="pick">
       <div className="band-inner">
-        <div className="section-eyebrow">cbl private · partners coming soon</div>
+        <div className="section-eyebrow">cbl private · uber &amp; lyft backup</div>
         <h2 className="section-h2">
           Pick your ride <span className="it">private or partner</span>
         </h2>
         <p className="section-lede">
           CBL Private is scheduled, by-invitation, your-own-driver — every ride is booked at least 12
           hours ahead, so you always know who is picking you up. Partner options for the trips CBL
-          does not cover yet (Uber, Lyft, autonomous) are coming soon.
+          does not cover. When no independent driver is free, the app hands you to
+          Uber or Lyft with your trip details carried over. Autonomous options are
+          still to come.
         </p>
 
         <div className="agg-toggle">
