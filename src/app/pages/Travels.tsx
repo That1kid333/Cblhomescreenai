@@ -178,6 +178,25 @@ const STAY_KEYWORD: Record<'HOTELS' | 'BNB', string> = {
 // the link could not keep.
 const VRBO_IMG = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&fit=crop';
 
+// The property types the card actually filters to, drawn rather than listed. This
+// strip IS the include set in lib/expedia — if one is added or dropped there, it
+// changes here too, so the picture never promises something the link does not send.
+//
+// Deliberately NOT clickable. A per-type link would filter correctly but return
+// nothing in half our cities (Pittsburgh has zero cabins and zero cottages), which
+// is the dead-tile problem this card was built to avoid. These say "here is what
+// is in here", not "click for cabins".
+const VRBO_TYPES: { l: string; d: string }[] = [
+  { l: 'Houses',  d: 'M3 11l9-7 9 7M5 10v10h14V10M10 20v-6h4v6' },
+  { l: 'Condos',  d: 'M5 21V4h9v17M14 21V9h5v12M8 8h3M8 12h3M8 16h3M16 13h1M16 17h1' },
+  { l: 'Estates', d: 'M2 20V11l5-4 5 4v9M12 20v-6l5-4 5 4v6M6 20v-4h2v4M17 20v-3h2v3' },
+  { l: 'Cabins',  d: 'M3 11l9-7 9 7M5 10v10h14V10M17 4v3M6 14h12M6 17h12M10 20v-6h4v6' },
+  { l: 'Cottages', d: 'M4 12c0-1 8-8 8-8s8 7 8 8v8H4v-8ZM10 20v-5h4v5' },
+  { l: 'Chalets', d: 'M12 3L3 20h18L12 3ZM12 9l-4.5 8.5h9L12 9M10 20v-3h4v3' },
+  { l: 'Villas',  d: 'M3 20V9h18v11M3 9l9-5 9 5M9 20v-5a3 3 0 0 1 6 0v5M6 12h1M17 12h1' },
+  { l: 'Lodges',  d: 'M2 12l10-6 10 6M4 11v9h16v-9M9 20v-5h6v5M7 14h1M16 14h1' },
+];
+
 const STAYS: Record<'HOTELS' | 'BNB', Stay[]> = {
   HOTELS: [
     { name: 'The Ritz-Carlton, Key Biscayne', loc: 'Miami, FL', stars: 5, rating: 4.8, reviews: '2.4k', price: '$589', tag: 'Resort', desc: 'Oceanfront resort with two-mile private beach, full-service spa and three pools.', img: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=900&h=600&fit=crop' },
@@ -955,6 +974,21 @@ const TRAVELS_CSS = `
    already ships correct. Same rule as Expedia and Ticketmaster. */
 .cbl-travels .vrbo-by img { height:17px; width:auto; display:block; }
 .cbl-travels .vrbo-single { max-width:560px; }
+/* What is in the card, drawn. Not links: a per-type link would return nothing in
+   half our cities, which is the dead-tile problem this card replaced. */
+.cbl-travels .vrbo-types {
+  list-style:none; margin:4px 0 0; padding:0;
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:12px 6px;
+}
+.cbl-travels .vrbo-types li {
+  display:flex; flex-direction:column; align-items:center; gap:5px; text-align:center;
+}
+.cbl-travels .vrbo-types svg { width:24px; height:24px; display:block; color:#C99742; opacity:.9; }
+.cbl-travels .vrbo-types span {
+  font-family:${MONO}; font-size:9px; letter-spacing:.1em; text-transform:uppercase;
+  color:#9A9A95; white-space:nowrap;
+}
+@media (max-width:420px) { .cbl-travels .vrbo-types { grid-template-columns:repeat(4, 1fr); gap:10px 4px; } }
 .cbl-travels .vrbo-single .img { aspect-ratio:16/9; }
 .cbl-travels .vrbo-grid {
   display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:22px;
@@ -1999,9 +2033,19 @@ function VrboSection({
           <div className="body">
             <h3>Whole homes in {place}</h3>
             <p>
-              Houses, cabins, lofts and condos. Filter by property type, bedrooms
-              and price once you are there.
+              Hotels filtered out, so what you see is whole places. Narrow by
+              bedrooms and price once you are there.
             </p>
+            <ul className="vrbo-types" aria-label="Property types included">
+              {VRBO_TYPES.map((v) => (
+                <li key={v.l}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d={v.d} />
+                  </svg>
+                  <span>{v.l}</span>
+                </li>
+              ))}
+            </ul>
             <span className="go">{dated ? `Search ${place} for your dates →` : `Search ${place} →`}</span>
           </div>
         </a>
