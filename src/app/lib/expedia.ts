@@ -167,10 +167,44 @@ export function expediaFlightSearch(search: FlightSearch, placement: string): st
  * our page. With them, the same Pittsburgh search returns real whole homes with
  * real totals instead of an apartment-hotel. That was the costlier bug of the two.
  *
- * Vrbo's own property-type filter works in their UI but writes no URL parameter,
- * so there is no verified deep link for it. Do not add another guess here — that
- * is exactly how `keywords` got shipped.
+ * The property-type filter DOES have a parameter after all: `property_type_group`,
+ * repeated (never comma separated). Captured and measured against Vrbo's own panel
+ * counts on 2026-08-24, and a real click confirmed our parameters survive the
+ * Partnerize redirect with tracking intact.
+ *
+ * ⚠️ A WRONG TOKEN FAILS SILENTLY. `property_type_group=rv` (lowercase) returns
+ * 300+ properties and no filter chip — Vrbo ignores an unrecognized value and
+ * hands back everything, which is precisely how `keywords` slipped through. A typo
+ * here quietly puts the hotels back and nothing errors. Every token below was
+ * verified by applying it and matching the result count to Vrbo's own label. If
+ * you add one, verify it the same way: "Filters (1)" means accepted, a bare
+ * "Filters" means ignored.
  */
+
+/** Verified 2026-08-24. Case matters: RV is the only one that is not lowercase. */
+export const VRBO_WHOLE_PLACE_TYPES = [
+  'house',
+  'apartment_or_condo',
+  'estate',
+  'cabin',
+  'cottage',
+  'chalet',
+  'villa',
+  'lodge',
+] as const;
+// Deliberately OUT of that set:
+//   hotel, resort        — the original complaint: a "whole homes" section was
+//                          returning hotels as its first Pittsburgh results.
+//   RV, boat, houseboat  — real Vrbo types, not what this section promises.
+//   guest_house          — verified token, left out on purpose. Vrbo counts it as
+//                          a whole place, but it is usually a unit on someone's
+//                          property, and the card says "whole places rather than
+//                          rooms". Including it would be a smaller version of the
+//                          hotel problem. ~5-8 properties per city; add it back if
+//                          that reads too strict.
+//   village              — token never captured (absent from both panels the day
+//                          they were read). An include list excludes by omission,
+//                          so village stays hidden until someone captures it.
 export type VrboSearch = {
   /** Full resolved place ("Pittsburgh, PA"), not the bare city: there are
    *  Pittsburgs in California, Kansas and Texas, and Vrbo re-guesses from what we
@@ -179,10 +213,12 @@ export type VrboSearch = {
   checkIn?: string;   // YYYY-MM-DD
   checkOut?: string;  // YYYY-MM-DD
   adults?: number;
+  /** Repeated as property_type_group. Defaults to whole places, hotels dropped. */
+  propertyTypes?: readonly string[];
 };
 
 /** Untracked Vrbo search URL. */
-export function vrboSearchUrl({ destination, checkIn, checkOut, adults }: VrboSearch): string {
+export function vrboSearchUrl({ destination, checkIn, checkOut, adults, propertyTypes }: VrboSearch): string {
   const u = new URL('https://www.vrbo.com/search');
   u.searchParams.set('destination', destination);
   // Only send a range that makes sense; a backwards one would just look broken.
@@ -191,6 +227,8 @@ export function vrboSearchUrl({ destination, checkIn, checkOut, adults }: VrboSe
     u.searchParams.set('endDate', checkOut);
   }
   if (adults && adults > 0) u.searchParams.set('adults', String(adults));
+  // append, never set: Vrbo reads a REPEATED parameter, not a comma-separated one.
+  for (const pt of propertyTypes ?? VRBO_WHOLE_PLACE_TYPES) u.searchParams.append('property_type_group', pt);
   return u.toString();
 }
 

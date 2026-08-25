@@ -1999,8 +1999,8 @@ function VrboSection({
           <div className="body">
             <h3>Whole homes in {place}</h3>
             <p>
-              Houses, cabins, lofts and condos. Filter by property type, bedrooms
-              and price once you are there.
+              Houses, cabins, condos and cottages. Hotels filtered out, so what you
+              see is whole places. Narrow by bedrooms and price once you are there.
             </p>
             <span className="go">{dated ? `Search ${place} for your dates →` : `Search ${place} →`}</span>
           </div>
