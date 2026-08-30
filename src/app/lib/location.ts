@@ -558,9 +558,30 @@ export function useVisitorLocation() {
     if (typeof navigator === 'undefined' || !navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        const gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         preciseRef.current = true;
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setCoords(gps);
         setPrecise(true);
+
+        // TRAVEL. displayCity() names a GPS fix by looking it up in the local-area
+        // gazetteer (6mi) and then the metro list (30mi) — both of which only cover
+        // markets we have seeded. Outside those it fell through to the name the IP
+        // reported, so a member in Glenville, West Virginia was told he was in
+        // Bridgeville, PA, 150 miles away, while his coordinates were perfectly
+        // correct and the attractions around him were right (Keith, 2026-08-25).
+        //
+        // Naming a place we are 150 miles from is worse than naming none: it is the
+        // one part of the page a traveller can immediately tell is wrong. So when a
+        // GPS fix lands outside every seeded area, ask the keyless reverse geocoder
+        // what is actually there. Only for far fixes — inside a seeded market the
+        // curated label ("North Hills") beats whatever a geocoder returns.
+        if (!localAreaLabel(gps) && !nearestMetro(gps, METRO_LABEL_RADIUS_MI)) {
+          reverseGeocode(gps.lat, gps.lng).then((place) => {
+            if (place?.city) setLocation(place);
+          }).catch(() => {
+            /* keep whatever we had; a wrong-but-present name beats a blank page */
+          });
+        }
       },
       () => {
         /* denied — the IP-based coords remain in effect */
