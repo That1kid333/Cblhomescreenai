@@ -18,6 +18,28 @@ const json = (statusCode, body, extraHeaders = {}) => ({
 
 const PRICE = ['', '$', '$', '$$', '$$$', '$$$$']; // Google price_level 0-4 → our label
 
+/** Great-circle miles between two lat/lng pairs. */
+const milesBetween = (aLat, aLng, bLat, bLng) => {
+  const R = 3958.8;
+  const rad = (d) => (d * Math.PI) / 180;
+  const h =
+    Math.sin(rad(bLat - aLat) / 2) ** 2 +
+    Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(rad(bLng - aLng) / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+
+// Google treats `radius` as a BIAS, not a limit, when it ranks by prominence: a
+// place famous enough outranks genuinely local ones and gets pulled in from far
+// outside the circle. In a dense market you never notice. In a thin one you do —
+// Kennywood (18k reviews, Pittsburgh) turned up in "attractions near you" for a
+// visitor in Glenville, West Virginia, 150 miles away (Keith, 2026-08-25).
+//
+// So enforce the radius ourselves. With a floor: if enforcing it would leave
+// almost nothing, hand back the unfiltered set instead, because a thin list of
+// real neighbours beats an empty page in a rural market. Same trade the Day Trips
+// distance floor makes.
+const MIN_RESULTS_BEFORE_RELAXING = 3;
+
 export const handler = async (event) => {
   const key = process.env.GOOGLE_PLACES_API_KEY || process.env.GOOGLE_MAPS_API_KEY;
   if (!key) return json(200, { configured: false, results: [] });
@@ -46,9 +68,21 @@ export const handler = async (event) => {
       return json(502, { error: `Places API: ${data.status}`, results: [] });
     }
 
-    const results = (data.results || [])
+    const withinRadius = (p) => {
+      const plat = p.geometry?.location?.lat;
+      const plng = p.geometry?.location?.lng;
+      if (typeof plat !== 'number' || typeof plng !== 'number') return true; // can't judge, keep
+      // 10% grace: Google's radius and a great-circle line disagree at the edge,
+      // and dropping a place 200m over would be its own small wrongness.
+      return milesBetween(lat, lng, plat, plng) <= (radius / 1609.34) * 1.1;
+    };
+
+    const live = (data.results || []).filter((p) => p.business_status !== 'CLOSED_PERMANENTLY');
+    const near = live.filter(withinRadius);
+    const chosen = near.length >= MIN_RESULTS_BEFORE_RELAXING ? near : live;
+
+    const results = chosen
       // Prefer well-reviewed, highly-rated spots.
-      .filter((p) => p.business_status !== 'CLOSED_PERMANENTLY')
       .sort((a, b) => (b.rating || 0) * Math.log10((b.user_ratings_total || 0) + 10) - (a.rating || 0) * Math.log10((a.user_ratings_total || 0) + 10))
       .slice(0, 6)
       .map((p) => ({
