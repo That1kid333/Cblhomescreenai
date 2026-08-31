@@ -506,9 +506,10 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
     highlights: ['Works in 150+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
   airalo: {
-    // Official primary logo (SVG zip) is on airalo.com/about-us/media-center; drop the
-    // SVG at public/travels/partners/airalo-logo.svg and set the path.
-    partner: 'Airalo', logo: '', logoHeight: 20, cta: 'Get a data plan',
+    // Airalo's official horizontal white lockup (media-center file dated 2023-02-08,
+    // supplied by Keith 2026-08-31). Its viewBox carries generous padding, so 32px
+    // here matches the optical size of the 20px Welcome Pickups wordmark.
+    partner: 'Airalo', logo: '/travels/partners/airalo-logo.svg', logoHeight: 32, cta: 'Get a data plan',
     briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
     highlights: ['Works in 200+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
