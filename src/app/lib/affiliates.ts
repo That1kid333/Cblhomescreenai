@@ -41,8 +41,9 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   ticketnetwork: 'https://tp.media/r?campaign_id=72&marker=704468&p=1948&trs=499800&u=https%3A%2F%2Fwww.ticketnetwork.com',
   wegotrip: 'https://tp.media/r?campaign_id=150&marker=704468&p=4487&trs=499800&u=https%3A%2F%2Fwegotrip.com',
   // Viator — the NATIONWIDE local-experiences layer (covers ~any US city, so it's
-  // driven by the visitor's detected location). Empty until Keith pastes the base
-  // link from the TP dashboard → dark-launched (preview shows the plain link).
+  // driven by the visitor's detected location). STAYS DARK: Travelpayouts shows our
+  // Viator connection request as DECLINED (checked 2026-08-31), so no base link can
+  // be generated. Re-apply or go direct via Viator's own partner program before wiring.
   viator: '',
   // ── Arrival transfers (Keith's spec, 2026-08-18) ──────────────────────────
   // Both are available in the TP account NOW — the October traffic gate applies
@@ -56,8 +57,9 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   // ⚠️ GetTransfer is BANNED from CBL (Keith, 2026-07-25 — documented driver
   // non-payment). A driver-first platform does not route travelers there. Do not
   // add it here, and delete its saved link in Travelpayouts.
-  welcomepickups: '', // primary — 8-9%, 45-day cookie, TP program 627
-  kiwitaxi: '',       // backup  — 9-11%, 30-day cookie
+  // LIVE 2026-08-31 (raw Full link from Tools → Links, sub_id stripped; buildAffiliateLink stamps it per placement).
+  welcomepickups: 'https://tp.media/r?campaign_id=627&marker=704468&p=8919&trs=499800&u=https%3A%2F%2Fwelcomepickups.com', // primary — 8-9%, 45-day cookie, TP program 627
+  kiwitaxi: 'https://tp.media/r?campaign_id=1&marker=704468&p=647&trs=499800&u=https%3A%2F%2Fkiwitaxi.com',       // backup  — 9-11%, 30-day cookie (LIVE 2026-08-31)
   // BikesBooking — bike/scooter/motorcycle rentals, location-driven (search by city).
   // LIVE (unlocked 2026-07-26). 4% / 30-day cookie / MOBILE WEB ONLY (no app tracking).
   bikesbooking: 'https://tp.media/r?campaign_id=57&marker=704468&p=1767&trs=499800&u=https%3A%2F%2Fwww.bikesbooking.com',
@@ -984,12 +986,104 @@ const ARRIVAL_ORDER: Program[] = ['welcomepickups', 'kiwitaxi'];
 /** First eSIM brand with a pasted base link wins. Ordered by commission. */
 const ESIM_ORDER: Program[] = ['gigsky', 'yesim', 'saily', 'airalo'];
 
-/** Destination page for a transfer partner, by city. */
-function transferUrl(program: Program, cityName: string): string {
-  const q = encodeURIComponent(cityName);
-  return program === 'kiwitaxi'
-    ? `https://kiwitaxi.com/search?q=${q}`
-    : `https://welcomepickups.com/search/?query=${q}`;
+// ── Welcome Pickups US coverage ──────────────────────────────────────────────
+// Welcome Pickups has no search URL (welcomepickups.com/search/ is a 404, checked
+// 2026-08-31); it has one hub page per served city at welcomepickups.com/<slug>/.
+// So coverage IS the list of city pages: a destination we can map to a slug is
+// bookable, anything else is not, and per Keith's rule ("listing a partner we
+// cannot fulfil is worse than not listing them") the block hides for it.
+//
+// Canonical name → slug, US cities from the Welcome Pickups homepage (2026-08-31).
+// Verified live: chicago, new-york, las-vegas, washington, new-orleans, san-jose-ca,
+// los-angeles, san-francisco, philadelphia, miami, orlando, boston. Others follow the
+// same pattern. Note the two odd ones: DC is /washington/, San Jose CA is /san-jose-ca/.
+const WELCOME_PICKUPS_US: { name: string; slug: string; aliases: string[] }[] = [
+  { name: 'New York', slug: 'new-york', aliases: ['nyc', 'new york city', 'manhattan', 'brooklyn', 'jfk', 'lga', 'ewr', 'newark'] },
+  { name: 'Las Vegas', slug: 'las-vegas', aliases: ['vegas', 'las'] },
+  { name: 'Los Angeles', slug: 'los-angeles', aliases: ['la', 'lax'] },
+  { name: 'Miami', slug: 'miami', aliases: ['mia', 'miami beach', 'south beach', 'fort lauderdale', 'fll'] },
+  { name: 'Orlando', slug: 'orlando', aliases: ['mco', 'disney', 'disney world', 'walt disney world', 'kissimmee'] },
+  { name: 'Boston', slug: 'boston', aliases: ['bos'] },
+  { name: 'San Jose', slug: 'san-jose-ca', aliases: ['san jose ca', 'san jose california', 'sjc'] },
+  { name: 'Denver', slug: 'denver', aliases: ['den'] },
+  { name: 'Washington, DC', slug: 'washington', aliases: ['washington dc', 'washington d c', 'dc', 'dca', 'iad'] },
+  { name: 'Chicago', slug: 'chicago', aliases: ['ord', 'mdw'] },
+  { name: 'San Diego', slug: 'san-diego', aliases: ['san'] },
+  { name: 'Austin', slug: 'austin', aliases: ['aus'] },
+  { name: 'Seattle', slug: 'seattle', aliases: ['sea'] },
+  { name: 'Tampa', slug: 'tampa', aliases: ['tpa'] },
+  { name: 'Atlanta', slug: 'atlanta', aliases: ['atl'] },
+  { name: 'Detroit', slug: 'detroit', aliases: ['dtw'] },
+  { name: 'Phoenix', slug: 'phoenix', aliases: ['phx', 'scottsdale'] },
+  { name: 'Philadelphia', slug: 'philadelphia', aliases: ['philly', 'phl'] },
+  { name: 'Houston', slug: 'houston', aliases: ['iah', 'hou'] },
+  { name: 'New Orleans', slug: 'new-orleans', aliases: ['nola', 'msy'] },
+  { name: 'Minneapolis', slug: 'minneapolis', aliases: ['msp', 'st paul', 'saint paul'] },
+  { name: 'San Antonio', slug: 'san-antonio', aliases: ['sat'] },
+  { name: 'Baltimore', slug: 'baltimore', aliases: ['bwi'] },
+  { name: 'Buffalo', slug: 'buffalo', aliases: ['buf'] },
+  { name: 'Nashville', slug: 'nashville', aliases: ['bna'] },
+  { name: 'Savannah', slug: 'savannah', aliases: ['sav'] },
+  { name: 'Portland', slug: 'portland', aliases: ['pdx', 'portland or', 'portland oregon'] },
+  { name: 'Dallas', slug: 'dallas', aliases: ['dfw', 'dal', 'fort worth'] },
+  { name: 'San Francisco', slug: 'san-francisco', aliases: ['sf', 'sfo', 'oakland', 'oak'] },
+  { name: 'Honolulu', slug: 'honolulu', aliases: ['hnl', 'oahu', 'waikiki'] },
+];
+
+/** Loose text normalizer for a typed destination: "Chicago, IL" → "chicago il". */
+const normDest = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+// Trailing tokens that may follow a city without changing it. Only these get
+// dropped for a second match attempt, so a half-typed "san fr" never matches
+// "san" (San Diego) while the traveler is still typing "san francisco".
+const DEST_SUFFIX_TOKENS = new Set([
+  'al','ak','az','ar','ca','co','ct','de','fl','ga','hi','id','il','in','ia','ks','ky','la','me','md','ma','mi','mn','ms','mo','mt','ne','nv','nh','nj','nm','ny','nc','nd','oh','ok','or','pa','ri','sc','sd','tn','tx','ut','vt','va','wa','wv','wi','wy','dc',
+  'usa','us','airport','international','intl','area','downtown',
+  'alabama','alaska','arizona','arkansas','california','colorado','connecticut','delaware','florida','georgia','hawaii','idaho','illinois','indiana','iowa','kansas','kentucky','louisiana','maine','maryland','massachusetts','michigan','minnesota','mississippi','missouri','montana','nebraska','nevada','ohio','oklahoma','oregon','pennsylvania','tennessee','texas','utah','vermont','virginia','washington','wisconsin','wyoming',
+]);
+
+/**
+ * The strings to try, in order: as typed; the part before a comma ("Buffalo, New
+ * York" → "buffalo"); then with a recognised trailing token dropped.
+ */
+function destCandidates(input: string): string[] {
+  const full = normDest(input);
+  if (!full) return [];
+  const out = [full];
+  const head = normDest(input.split(',')[0]);
+  if (head && head !== full) out.push(head);
+  const tokens = full.split(' ');
+  if (tokens.length > 1 && DEST_SUFFIX_TOKENS.has(tokens[tokens.length - 1])) out.push(tokens.slice(0, -1).join(' '));
+  return out;
+}
+
+/**
+ * Map whatever the traveler typed (city, "City, ST", nickname, or airport code) to
+ * a Welcome Pickups city, or null when they don't serve it. Exported for the app.
+ */
+export function welcomePickupsCity(input: string): { name: string; slug: string } | null {
+  for (const c of destCandidates(input)) {
+    for (const city of WELCOME_PICKUPS_US) {
+      if (normDest(city.name) === c || city.aliases.includes(c)) return { name: city.name, slug: city.slug };
+    }
+  }
+  return null;
+}
+
+// Kiwitaxi: no bookable-destinations feed exists (Travelpayouts ticket #246232, Aug
+// 2026), and its PIT route page quoted "no transfer found". Until we have a list of
+// US cities they actually fulfil, Kiwitaxi stays out of the arrival block rather
+// than risk a dead end. Add entries here (name + kiwitaxi.com destination URL) as
+// they are verified; the resolver below picks it up automatically as the backup.
+const KIWITAXI_US: { name: string; url: string; aliases: string[] }[] = [];
+
+function kiwitaxiCity(input: string): { name: string; url: string } | null {
+  for (const c of destCandidates(input)) {
+    for (const city of KIWITAXI_US) {
+      if (normDest(city.name) === c || city.aliases.includes(c)) return { name: city.name, url: city.url };
+    }
+  }
+  return null;
 }
 
 /**
@@ -1069,15 +1163,27 @@ const ESIM_SITE: Partial<Record<Program, string>> = {
 export function arrivalTransferOffer(cityName: string, placement: string): AffiliateOffer | null {
   if (!cityName?.trim()) return null;
   for (const program of ARRIVAL_ORDER) {
-    const link = affiliateHref(program, transferUrl(program, cityName), placement);
+    // Coverage first: a partner only appears for a destination it actually serves.
+    // Falls Welcome Pickups → Kiwitaxi → null, so an unserved city renders nothing.
+    let name: string; let dest: string;
+    if (program === 'welcomepickups') {
+      const wp = welcomePickupsCity(cityName);
+      if (!wp) continue;
+      name = wp.name; dest = `https://www.welcomepickups.com/${wp.slug}/`;
+    } else {
+      const kt = kiwitaxiCity(cityName);
+      if (!kt) continue;
+      name = kt.name; dest = kt.url;
+    }
+    const link = affiliateHref(program, dest, placement);
     if (!link) continue; // not wired, or parked → try the backup
     const meta = PARTNER_META[program];
     if (!meta) continue;
-    const key = slugify(cityName);
+    const key = slugify(name);
     return {
-      program, partner: meta.partner, cityKey: key, name: cityName, country: '',
-      photo: hasCityPhoto(cityName) ? cityPhoto(key) : '', tint: NEUTRAL_TINT,
-      kicker: 'Airport transfer', title: `Arrive in ${cityName}, sorted`,
+      program, partner: meta.partner, cityKey: key, name, country: '',
+      photo: hasCityPhoto(name) ? cityPhoto(key) : '', tint: NEUTRAL_TINT,
+      kicker: 'Airport transfer', title: `Arrive in ${name}, sorted`,
       price: 'Fixed fare', meta: 'Door to door · booked ahead',
       highlights: meta.highlights, cta: meta.cta, logo: meta.logo,
       href: link.href, tracked: link.tracked,

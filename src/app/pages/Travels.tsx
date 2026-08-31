@@ -4,8 +4,8 @@ import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch } from '../lib/expedia';
 import { logAffiliateClick } from '../lib/clickLog';
-import { preflightOffers } from '../lib/affiliates';
-import { useVisitorLocation, displayCity } from '../lib/location';
+import { preflightOffers, arrivalTransferOffer, PARTNER_META } from '../lib/affiliates';
+import { useVisitorLocation, displayCity, seedCoords } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 import { AffiliateDisclosure } from '../components/AffiliateDisclosure';
@@ -230,6 +230,20 @@ type Trip = { name: string; loc: string; dist: string; time: string; img: string
 // invented for cities we have not visited.
 const PGH_CENTER = { lat: 40.4406, lng: -79.9959 };
 const MARKET_RADIUS_MI = 45;
+
+// CBL driver coverage as the site knows it today: the Pittsburgh market, the same
+// 45-mile gate the trips and stays grids use. A flight INTO this market is a CBL
+// driver's run, so the third-party arrival transfer never renders for it (Keith's
+// 2026-08-18 rule: a CBL driver is always first and never shown beside alternatives).
+// Extend the pattern/gazetteer when drivers cover more markets; keep it partner-agnostic.
+const CBL_MARKET_PATTERN = /\bpittsburgh\b|\bpit\b|\bpgh\b/i;
+function destinationInCblMarket(dest: string): boolean {
+  const d = dest.trim();
+  if (d.length < 3) return true; // nothing typed yet: nothing to offer
+  if (CBL_MARKET_PATTERN.test(d)) return true;
+  const c = seedCoords(d);
+  return !!c && tripMiles(c, PGH_CENTER) <= MARKET_RADIUS_MI;
+}
 /** Below this, it is a walk rather than a drive — see the filter in useLiveTrips. */
 const MIN_TRIP_MI = 5;
 
@@ -962,6 +976,10 @@ const TRAVELS_CSS = `
   letter-spacing:.12em; text-transform:uppercase; color:#C99742;
 }
 .cbl-travels .pf-by { font-size:12px; color:#7E7E79; }
+/* The arrival transfer is the one pre-bookable, earning card in the row: pure black
+   with the CBL gold hairline (Keith's partner-card spec), no ranking labels. */
+.cbl-travels .pf-arrival { background:#000; border-color:rgba(201,151,66,.55); }
+.cbl-travels .pf-arrival:hover { border-color:#C99742; }
 @media (prefers-reduced-motion: reduce) {
   .cbl-travels .pf-card { transition:none; }
   .cbl-travels .pf-card:hover { transform:none; }
@@ -1769,9 +1787,11 @@ function TripCard({ t }: { t: Trip }) {
  * cross-product: whoever books a flight to a city needs a room in it, and that
  * room pays 4% once this click has set the cookie.
  */
-function FlightSearchPanel() {
+function FlightSearchPanel({ onDestinationChange }: { onDestinationChange?: (to: string) => void }) {
   const [from, setFrom] = useState('PIT');
-  const [to, setTo] = useState('');
+  const [to, setToState] = useState('');
+  // The typed destination also drives the arrival-transfer card below the panel.
+  const setTo = (v: string) => { setToState(v); onDestinationChange?.(v); };
   const [depart, setDepart] = useState(() => isoDaysOut(14));
   const [ret, setRet] = useState(() => isoDaysOut(18));
   const [oneWay, setOneWay] = useState(false);
@@ -1963,11 +1983,39 @@ function DealsBand() {
  *
  * Self-hides while the base links are unpasted, so nothing ships as a placeholder.
  */
-function PreflightBand() {
+function PreflightBand({ destination }: { destination: string }) {
   const offers = preflightOffers('travels_flights');
-  if (!offers.length) return null;
+  // Arrival transfer at the OTHER end of the flight (Welcome Pickups first, Kiwitaxi
+  // backup, nothing if neither is wired). Hidden for destinations inside CBL's own
+  // driver market, and until a destination is typed. Sub_id 'travels_flights_arrival'
+  // keeps it separate from the 'arrival'/'prebook' links the app will use.
+  const dest = destination.trim();
+  const arrival = destinationInCblMarket(dest) ? null : arrivalTransferOffer(dest, 'travels_flights_arrival');
+  if (!offers.length && !arrival) return null;
   return (
+    <>
     <div className="preflight">
+      {arrival && (
+        <a
+          className="pf-card pf-arrival"
+          href={arrival.href}
+          target="_blank"
+          rel="sponsored nofollow noopener noreferrer"
+          onClick={() => logAffiliateClick('travelpayouts', `travels_flights_arrival_${arrival.program}`)}
+        >
+          <span className="pf-kicker">Landing in {arrival.name}</span>
+          <h3>A driver waiting when you land</h3>
+          <p>{PARTNER_META[arrival.program]?.briefing}</p>
+          <ul className="pf-list">
+            {arrival.highlights.map((h) => (
+              <li key={h}>{h}</li>
+            ))}
+            {arrival.program === 'kiwitaxi' && <li>Code TPO5 takes 5% off through Dec 31, 2026</li>}
+          </ul>
+          <span className="pf-by">with {arrival.partner}</span>
+          <span className="pf-go">{arrival.cta} →</span>
+        </a>
+      )}
       {offers.map((o) => (
         <a
           key={o.program}
@@ -1990,6 +2038,9 @@ function PreflightBand() {
         </a>
       ))}
     </div>
+    {/* Same-viewport disclosure for this earning row (13px floor, never behind a tap). */}
+    <AffiliateDisclosure inline />
+    </>
   );
 }
 
@@ -2065,6 +2116,8 @@ function VrboSection({
 
 export function Travels() {
   const [tab, setTab] = useState<TabKey>('HOTELS');
+  // Flight destination as typed, lifted so the arrival-transfer card can key off it.
+  const [flightTo, setFlightTo] = useState('');
   // Same keyless IP detection Eats and Attractions use — no permission prompt.
   const { coords: ipCoords, city: ipCity } = useVisitorLocation();
   // A typed destination beats the IP guess. Until 2026-08-22 the search box was
@@ -2148,8 +2201,8 @@ export function Travels() {
                 </h2>
               </div>
             </div>
-            <FlightSearchPanel />
-            <PreflightBand />
+            <FlightSearchPanel onDestinationChange={setFlightTo} />
+            <PreflightBand destination={flightTo} />
           </div>
         </section>
       )}
