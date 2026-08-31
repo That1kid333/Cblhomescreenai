@@ -715,8 +715,12 @@ const TRAVELS_CSS = `
 .cbl-travels .stay-card .stars { display:flex; gap:3px; align-items:center; font-family:${MONO}; font-size:11px; color:#888; }
 .cbl-travels .stay-card .stars b { color:#fff; margin-right:4px; font-family:${DISPLAY}; font-size:14px; }
 .cbl-travels .stay-card .price-row { display:flex; justify-content:space-between; align-items:baseline; margin-top:auto; padding-top:10px; gap:10px; }
-.cbl-travels .stay-card .price { font-family:${DISPLAY}; font-weight:900; font-size:28px; color:#C99742; line-height:1; letter-spacing:-.005em; }
-.cbl-travels .stay-card .per { font-family:${MONO}; font-size:10px; color:#888; letter-spacing:.12em; text-transform:uppercase; }
+.cbl-travels .stay-card .rates { display:flex; align-items:center; gap:9px; }
+/* Expedia's own artwork — NO brightness(0) invert(1). That filter forces assorted
+   logos to white; run over this one it flattens the yellow #fddb32 tile and
+   destroys the mark. Same rule as the Vrbo and Ticketmaster lockups. */
+.cbl-travels .stay-card .rates img { height:18px; width:auto; display:block; flex-shrink:0; }
+.cbl-travels .stay-card .rates span { font-family:${MONO}; font-size:10px; color:#888; letter-spacing:.12em; text-transform:uppercase; white-space:nowrap; }
 .cbl-travels .stay-card .cta-row { display:flex; gap:8px; margin-top:12px; }
 .cbl-travels .stay-card .cta {
   flex:1; background:#C99742; border:0; color:#000;
@@ -1694,11 +1698,16 @@ function StayCard({ s }: { s: Stay }) {
         </div>
         <div className="price-row">
           <div>
-            {/* A price BAND, not a rate. We don't have nightly pricing — Expedia
-                shows the real number after the click, so claiming one here (the
-                old "$295 per night · taxes incl.") was a promise we couldn't keep. */}
-            <div className="price">{s.price || '—'}</div>
-            <div className="per">typical price · live rates on Expedia</div>
+            {/* No price here at all now. We do not have nightly rates: the live
+                Places feed gives a "$$" band and the curated seed carried invented
+                numbers like "$589". Both sat in the slot a real price belongs in,
+                and "$$" told a traveller almost nothing (Keith, 2026-08-31).
+                Expedia has the actual number one tap away, so say whose number it
+                is and let the click fetch it. */}
+            <div className="rates">
+              <img src="/travels/expedia-logo.svg" alt="Expedia" />
+              <span>Live rates</span>
+            </div>
           </div>
         </div>
         <div className="cta-row">

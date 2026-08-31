@@ -67,7 +67,7 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   // and stamps sub_id, and a shortened link can carry neither. Get it from
   // Tools → Links → the row's ⋮ menu → "Full link". Never hand-build campaign_id
   // or p values.
-  airhelp: '',   // 15-16.6%, 45-day cookie — flight delay/cancellation compensation
+  airhelp: 'https://tp.media/r?campaign_id=120&marker=704468&p=9139&trs=499800&u=https%3A%2F%2Fwww.airhelp.com',   // 15-16.6%, 45-day cookie — flight delay/cancellation compensation
   // eSIM. Listed by commission, best first, but note the tradeoff: Airalo pays the
   // least and is by far the best-known brand, so it may well out-earn the others on
   // conversion. Whichever ONE you paste is the one that shows (see ESIM_ORDER), so
@@ -75,7 +75,7 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   gigsky: '',    // 20%
   yesim: '',     // 18%
   saily: '',     // 15%
-  airalo: '',    // 12% — strongest brand recognition
+  airalo: 'https://tp.media/r?campaign_id=541&marker=704468&p=8310&trs=499800&u=https%3A%2F%2Fwww.airalo.com',    // 12% — strongest brand recognition
 };
 
 export type Program =
