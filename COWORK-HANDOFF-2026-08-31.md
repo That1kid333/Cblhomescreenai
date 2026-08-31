@@ -65,3 +65,9 @@ test (logs a real click); the card's own link is fine to click on the preview ho
   egress blocks that CDN). Drop the SVG at `public/travels/partners/airalo-logo.svg` and
   set the path in PARTNER_META. Kiwitaxi stays text until the brand approves the mockup.
 - All Aug 31 commits are LOCAL on main (Cowork's shell has no GitHub login). Push them.
+
+## Addendum: Welcome Pickups waiting-time claim (Keith, Aug 31)
+- Added "Up to 1 hour of free waiting time" to the Welcome Pickups highlights. Source: the
+  Travelpayouts program page (program 627) states it outright. Keith's call: show it, and
+  remove it if the brand ever says it is wrong. Welcome Pickups only; Kiwitaxi's window is
+  a strict 15 minutes, so no waiting-time claim on their card.

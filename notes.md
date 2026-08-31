@@ -77,7 +77,7 @@ Notes: GetTransfer was dropped for brand risk (driver no-shows, last-minute canc
 
 **Do not click the `tpx.li` links to test them** — opening one logs a real click and puts false data in the Travelpayouts reports. Copy by hover/right-click.
 
-**The 15-minute constraint is already honoured in code:** Kiwitaxi's highlights say "Driver waiting on arrival" with no duration, and no waiting-time claim appears on either partner. Keep it that way — the one-hour figure belongs to Welcome Pickups only, and only if we ever verify it.
+**The 15-minute constraint is already honoured in code:** Kiwitaxi's highlights say "Driver waiting on arrival" with no duration. **Update Aug 31, 2026:** the one-hour figure IS verified for Welcome Pickups: their Travelpayouts program page (program 627) lists "Free waiting time: up to 1 hour of free waiting time at the airport." Keith's decision: the Welcome Pickups card now says "Up to 1 hour of free waiting time"; if the brand ever disputes it, take it out. It stays Welcome Pickups only, never Kiwitaxi.
 
 **GetTransfer:** confirmed absent from this codebase, and called out as banned in a comment beside the base links so nobody adds it later. Still needs deleting from the Travelpayouts saved links — dashboard job.
 

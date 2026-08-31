@@ -447,6 +447,11 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       'Meets you inside arrivals',
       'Tracks your flight for delays',
       'Fixed price agreed up front',
+      // Source: the Travelpayouts program page for Welcome Pickups (program 627, checked
+      // 2026-08-31) lists "Free waiting time: up to 1 hour of free waiting time at the
+      // airport." Keith's call: show it; pull it if the brand ever says otherwise. This
+      // claim is Welcome Pickups only, never Kiwitaxi (their window is a strict 15 min).
+      'Up to 1 hour of free waiting time',
       'Vetted local drivers',
     ],
   },
