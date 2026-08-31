@@ -436,11 +436,9 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   welcomepickups: {
     partner: 'Welcome Pickups',
-    // Drop the affiliate-supplied file at public/travels/partners/welcomepickups-logo.svg
-    // and set the path; the card shows a text by-line until then. Do NOT lift it from
-    // newsroom.welcomepickups.com: their media assets are editorial-use only. The
-    // affiliate logo pack is pending on Travelpayouts ticket #246226.
-    logo: '',
+    // Their own white header wordmark (welcomepickups.com, 2026-08-31), placed as
+    // supplied. Swap for the affiliate pack if ticket #246226 ever delivers one.
+    logo: '/travels/partners/welcomepickups-logo.svg',
     logoHeight: 20,
     cta: 'Book your transfer',
     briefing:
@@ -470,9 +468,11 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   airhelp: {
     partner: 'AirHelp',
-    // public/travels/partners/airhelp-logo.svg when the brand's affiliate assets are in hand.
-    logo: '',
-    logoHeight: 20,
+    // AirHelp's own header mark in ITS dark-background variant (white wordmark, sky-blue
+    // and coral icon), taken from airhelp.com 2026-08-31. The viewBox carries the icon
+    // above the wordmark, so 24px here reads the same size as a 20px wordmark.
+    logo: '/travels/partners/airhelp-logo.svg',
+    logoHeight: 24,
     cta: 'Check your flight',
     briefing:
       'If your flight was delayed, cancelled or overbooked, you may be owed compensation by law. AirHelp checks the claim and handles the airline for you, and only takes a cut if it pays out.',
@@ -499,7 +499,8 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
     highlights: ['Works in 150+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
   airalo: {
-    // public/travels/partners/airalo-logo.svg when the brand's affiliate assets are in hand.
+    // Official primary logo (SVG zip) is on airalo.com/about-us/media-center; drop the
+    // SVG at public/travels/partners/airalo-logo.svg and set the path.
     partner: 'Airalo', logo: '', logoHeight: 20, cta: 'Get a data plan',
     briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
     highlights: ['Works in 200+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],

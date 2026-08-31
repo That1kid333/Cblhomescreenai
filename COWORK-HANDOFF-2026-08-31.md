@@ -55,8 +55,13 @@ test (logs a real click); the card's own link is fine to click on the preview ho
 - `PartnerBy` in Travels.tsx renders `PARTNER_META.logo` as supplied (no white filter),
   scaled by `logoHeight` (20px wordmarks, 30px for Kiwitaxi's stacked lockup), with the
   brand name in text beside it. Empty `logo` = text by-line, so nothing ships broken.
-- No affiliate logo files are in hand yet: Travelpayouts program pages carry no brand
-  assets, newsroom.welcomepickups.com is editorial-use only, and the Welcome Pickups /
-  Kiwitaxi logo answers are still pending on tickets #246226 / #246232. When files arrive,
-  save to `public/travels/partners/<program>-logo.svg` and set the path in PARTNER_META.
-- Both Aug 31 commits are LOCAL on main (Cowork's shell has no GitHub login). Push them.
+- Keith's call (Aug 31): we are promoting these brands, so we use their marks. Two files
+  now live in `public/travels/partners/`, both lifted from the brands' own site headers
+  and byte-verified: `welcomepickups-logo.svg` (their white wordmark, 20px) and
+  `airhelp-logo.svg` (AirHelp's own dark-background variant: white wordmark, blue and
+  coral icon, 24px because the viewBox stacks the icon above the type). The by-line
+  reads "with <mark>", alt text carries the name.
+- Airalo: official primary-logo SVG zip is on airalo.com/about-us/media-center (Cowork's
+  egress blocks that CDN). Drop the SVG at `public/travels/partners/airalo-logo.svg` and
+  set the path in PARTNER_META. Kiwitaxi stays text until the brand approves the mockup.
+- All Aug 31 commits are LOCAL on main (Cowork's shell has no GitHub login). Push them.

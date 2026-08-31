@@ -978,7 +978,7 @@ const TRAVELS_CSS = `
 .cbl-travels .pf-by { font-size:12px; color:#7E7E79; }
 /* Logo by-line: the supplied mark, unaltered (no white filter here, unlike the
    Attractions chip strip), name in plain text beside it. */
-.cbl-travels .pf-by-logo { display:flex; align-items:center; gap:10px; color:#B9B9B4; }
+.cbl-travels .pf-by-logo { display:flex; align-items:center; gap:8px; color:#7E7E79; }
 .cbl-travels .pf-by-logo img { width:auto; display:block; }
 /* The arrival transfer is the one pre-bookable, earning card in the row: pure black
    with the CBL gold hairline (Keith's partner-card spec), no ranking labels. */
@@ -1988,18 +1988,18 @@ function DealsBand() {
  * Self-hides while the base links are unpasted, so nothing ships as a placeholder.
  */
 /**
- * Partner by-line for the pre-flight / arrival cards. When a brand's affiliate logo
- * is in hand (PARTNER_META.logo) it renders the mark as supplied, scaled by height,
- * with the brand name in plain text beside it (never the mark alone). Until then
- * it is the text by-line, so nothing ships with a broken image.
+ * Partner by-line for the pre-flight / arrival cards: "with <mark>". When a brand's
+ * logo is in hand (PARTNER_META.logo) the mark is placed as supplied, scaled by
+ * height, and stands in for the name in the sentence (every mark we carry is a
+ * wordmark, so the name is legible; alt text carries it for screen readers). Until
+ * a file exists it is the plain text by-line, so nothing ships with a broken image.
  */
 function PartnerBy({ program, partner }: { program: Program; partner: string }) {
   const meta = PARTNER_META[program];
   if (meta?.logo) {
     return (
       <span className="pf-by pf-by-logo">
-        <img src={meta.logo} alt="" style={{ height: meta.logoHeight ?? 20 }} />
-        <span>{partner}</span>
+        with <img src={meta.logo} alt={partner} style={{ height: meta.logoHeight ?? 20 }} />
       </span>
     );
   }
