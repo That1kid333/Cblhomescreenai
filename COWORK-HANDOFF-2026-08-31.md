@@ -71,3 +71,10 @@ test (logs a real click); the card's own link is fine to click on the preview ho
   Travelpayouts program page (program 627) states it outright. Keith's call: show it, and
   remove it if the brand ever says it is wrong. Welcome Pickups only; Kiwitaxi's window is
   a strict 15 minutes, so no waiting-time claim on their card.
+
+## Addendum: Travelpayouts answered on native apps (Val, Aug 31)
+- Welcome Pickups CANNOT be promoted in the native app at all (brand rule: no apps operated
+  by travel businesses). Kiwitaxi CAN, under a separate project, if booking completes on
+  kiwitaxi.com. See notes.md for the full answer; a code comment is on ARRIVAL_ORDER.
+- Welcome Pickups logo use is approved for affiliates (white-on-dark acceptable, unaltered).
+- Welcome Pickups' minimum booking notice is city-dependent, 1-5 hours — not one figure.

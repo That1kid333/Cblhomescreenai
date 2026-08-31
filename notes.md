@@ -114,3 +114,22 @@ Notes: GetTransfer was dropped for brand risk (driver no-shows, last-minute canc
 The decline pattern is understood — a declined ride was booked 14× closer to pickup than a completed one, which is what the intent chooser addresses. **Cancellations are four times larger and uncharacterised.** They are not our own testing: 99 of 110 are outside riders, spanning Mar 2025 to Aug 2026.
 
 **Affiliate reporting has no independent check.** Until Aug 16 the networks were the only record of a click, they report 1–2 business days late, and a zero was indistinguishable from broken tracking. The `affiliate_clicks` table now gives a first-party count to reconcile against. Worth a weekly habit: if our log says 40 and Partnerize says 3, tracking broke somewhere in between and nobody would otherwise notice.
+
+## Travelpayouts answer on the native apps + brand assets (Val, Aug 31, 2026)
+
+Ticket #246226. Three things settled, all of which constrain the mobile app build:
+
+1. **Welcome Pickups may NOT be promoted in CBL's native app.** The brand does not allow
+   promotion through apps operated by travel businesses, and CBL is one. This is stronger
+   than "not rewarded": do not show them there, tracked or untracked. Website and PWA only.
+2. **Kiwitaxi MAY run in the native app** under a separate Travelpayouts project, and
+   attribution holds as long as the booking is completed on kiwitaxi.com. A booking finished
+   inside Kiwitaxi's own app earns nothing. So the app's airport pre-book block is
+   Kiwitaxi-only, and it must hand off to the web, not deep-link into their app.
+3. **Welcome Pickups logo use is approved for affiliates.** Official brand colors preferred;
+   the white monochrome version on a dark background is acceptable if unaltered and used
+   consistently. Our card uses the official Full White lockup, which fits that permission.
+
+Also corrected: Welcome Pickups' minimum booking notice is **city-dependent, 1 to 5 hours**,
+not a single global figure. Any time-gating must therefore be per-city, or use the 5-hour
+worst case. Kiwitaxi's remaining details are still pending from the brand.

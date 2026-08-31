@@ -46,6 +46,17 @@ const PROGRAM_BASE: Partial<Record<Program, string>> = {
   // be generated. Re-apply or go direct via Viator's own partner program before wiring.
   viator: '',
   // ── Arrival transfers (Keith's spec, 2026-08-18) ──────────────────────────
+  //
+  // NATIVE-APP RULE (Travelpayouts, Val, 2026-08-31 — read before porting any of
+  // this into the Capacitor apps):
+  //   • Welcome Pickups CANNOT be promoted in CBL's native app at all. The brand
+  //     does not allow promotion through apps operated by travel businesses, and
+  //     CBL falls in that category. Not "untracked" — not shown. Web + PWA only.
+  //   • Kiwitaxi CAN run in the native app under a SEPARATE Travelpayouts project,
+  //     and attribution works as long as the booking completes on kiwitaxi.com.
+  //     Bookings finished inside Kiwitaxi's own app earn nothing (no attribution).
+  // So the app's airport pre-book block is Kiwitaxi-only; this file's ARRIVAL_ORDER
+  // is the WEB order and must not be reused verbatim on native.
   // Both are available in the TP account NOW — the October traffic gate applies
   // only to the "Unlock more" tier, not to these.
   //
@@ -437,7 +448,10 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   welcomepickups: {
     partner: 'Welcome Pickups',
     // Welcome Pickups' official "Full White" lockup from their logo pack (1500x215 PNG,
-    // supplied by Keith 2026-08-31), placed as supplied. Tighter-cropped than the site
+    // supplied by Keith 2026-08-31), placed as supplied. The brand confirmed via
+    // Travelpayouts (2026-08-31) that affiliates may use the mark, prefers the official
+    // brand colors, and accepts the white monochrome version on a dark background so long
+    // as it is unaltered and used consistently — which is exactly this placement. Tighter-cropped than the site
     // header SVG it replaced, so 20px reads a touch larger; that matches the other marks.
     logo: '/travels/partners/welcomepickups-logo.png',
     logoHeight: 20,
@@ -452,6 +466,8 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
       // 2026-08-31) lists "Free waiting time: up to 1 hour of free waiting time at the
       // airport." Keith's call: show it; pull it if the brand ever says otherwise. This
       // claim is Welcome Pickups only, never Kiwitaxi (their window is a strict 15 min).
+      // The brand answered on 2026-08-31 about LEAD TIME (1-5 hours depending on city)
+      // and about logo use, and did not dispute this waiting-time figure.
       'Up to 1 hour of free waiting time',
       'Vetted local drivers',
     ],
