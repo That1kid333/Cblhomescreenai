@@ -484,7 +484,9 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
     ],
   },
   gigsky: {
-    partner: 'GigSky', logo: '', cta: 'Get a data plan',
+    // GigSky's white no-tagline mark (Keith, 2026-08-31), parked here in case the eSIM
+    // slot ever switches from Airalo. Renders only if gigsky is wired (or on preview).
+    partner: 'GigSky', logo: '/travels/partners/gigsky-logo.webp', logoHeight: 20, cta: 'Get a data plan',
     briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
     highlights: ['Works in 190+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
