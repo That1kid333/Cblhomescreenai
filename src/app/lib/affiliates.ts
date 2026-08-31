@@ -303,6 +303,11 @@ export type PartnerMeta = {
   cta: string;       // button verb, e.g. "Book tickets"
   briefing: string;  // one-liner: who they are
   highlights: string[];
+  // Pre-flight / arrival cards only: the mark is placed AS SUPPLIED (no recolour,
+  // no white filter), scaled by height. Default 20px for a horizontal wordmark;
+  // a stacked lockup (Kiwitaxi) sets 30px so the two read at equal optical weight.
+  // Keith's usage sheet, sent to Travelpayouts 2026-08-25.
+  logoHeight?: number;
 };
 export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   tiqets: {
@@ -431,7 +436,12 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   welcomepickups: {
     partner: 'Welcome Pickups',
+    // Drop the affiliate-supplied file at public/travels/partners/welcomepickups-logo.svg
+    // and set the path; the card shows a text by-line until then. Do NOT lift it from
+    // newsroom.welcomepickups.com: their media assets are editorial-use only. The
+    // affiliate logo pack is pending on Travelpayouts ticket #246226.
     logo: '',
+    logoHeight: 20,
     cta: 'Book your transfer',
     briefing:
       'Airport transfers with a vetted local driver who meets you at arrivals, tracks your flight, and takes you straight to your door for a price agreed up front.',
@@ -444,7 +454,10 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   kiwitaxi: {
     partner: 'Kiwitaxi',
+    // public/travels/partners/kiwitaxi-logo.svg once the brand approves the mockup
+    // (ticket #246232). Stacked lockup → 30px (24px minimum anywhere).
     logo: '',
+    logoHeight: 30,
     cta: 'Book your transfer',
     briefing:
       'Pre-booked airport and intercity transfers in 100+ countries, with the fare fixed when you book and a driver waiting on arrival.',
@@ -457,7 +470,9 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   airhelp: {
     partner: 'AirHelp',
+    // public/travels/partners/airhelp-logo.svg when the brand's affiliate assets are in hand.
     logo: '',
+    logoHeight: 20,
     cta: 'Check your flight',
     briefing:
       'If your flight was delayed, cancelled or overbooked, you may be owed compensation by law. AirHelp checks the claim and handles the airline for you, and only takes a cut if it pays out.',
@@ -484,7 +499,8 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
     highlights: ['Works in 150+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },
   airalo: {
-    partner: 'Airalo', logo: '', cta: 'Get a data plan',
+    // public/travels/partners/airalo-logo.svg when the brand's affiliate assets are in hand.
+    partner: 'Airalo', logo: '', logoHeight: 20, cta: 'Get a data plan',
     briefing: 'A data plan for your phone abroad, activated before you fly, so you land with maps and messages already working and no roaming bill.',
     highlights: ['Works in 200+ countries', 'Set up before you fly', 'Keep your normal number', 'No roaming charges'],
   },

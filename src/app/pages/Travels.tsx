@@ -4,7 +4,7 @@ import { useAuth } from '../lib/auth';
 import { RIDER_BOOK_URL } from '../lib/constants';
 import { expediaStay, expediaStaySearch, expediaFlightSearch, vrboSearch } from '../lib/expedia';
 import { logAffiliateClick } from '../lib/clickLog';
-import { preflightOffers, arrivalTransferOffer, PARTNER_META } from '../lib/affiliates';
+import { preflightOffers, arrivalTransferOffer, PARTNER_META, type Program } from '../lib/affiliates';
 import { useVisitorLocation, displayCity, seedCoords } from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
@@ -976,6 +976,10 @@ const TRAVELS_CSS = `
   letter-spacing:.12em; text-transform:uppercase; color:#C99742;
 }
 .cbl-travels .pf-by { font-size:12px; color:#7E7E79; }
+/* Logo by-line: the supplied mark, unaltered (no white filter here, unlike the
+   Attractions chip strip), name in plain text beside it. */
+.cbl-travels .pf-by-logo { display:flex; align-items:center; gap:10px; color:#B9B9B4; }
+.cbl-travels .pf-by-logo img { width:auto; display:block; }
 /* The arrival transfer is the one pre-bookable, earning card in the row: pure black
    with the CBL gold hairline (Keith's partner-card spec), no ranking labels. */
 .cbl-travels .pf-arrival { background:#000; border-color:rgba(201,151,66,.55); }
@@ -1983,6 +1987,25 @@ function DealsBand() {
  *
  * Self-hides while the base links are unpasted, so nothing ships as a placeholder.
  */
+/**
+ * Partner by-line for the pre-flight / arrival cards. When a brand's affiliate logo
+ * is in hand (PARTNER_META.logo) it renders the mark as supplied, scaled by height,
+ * with the brand name in plain text beside it (never the mark alone). Until then
+ * it is the text by-line, so nothing ships with a broken image.
+ */
+function PartnerBy({ program, partner }: { program: Program; partner: string }) {
+  const meta = PARTNER_META[program];
+  if (meta?.logo) {
+    return (
+      <span className="pf-by pf-by-logo">
+        <img src={meta.logo} alt="" style={{ height: meta.logoHeight ?? 20 }} />
+        <span>{partner}</span>
+      </span>
+    );
+  }
+  return <span className="pf-by">with {partner}</span>;
+}
+
 function PreflightBand({ destination }: { destination: string }) {
   const offers = preflightOffers('travels_flights');
   // Arrival transfer at the OTHER end of the flight (Welcome Pickups first, Kiwitaxi
@@ -2012,7 +2035,7 @@ function PreflightBand({ destination }: { destination: string }) {
             ))}
             {arrival.program === 'kiwitaxi' && <li>Code TPO5 takes 5% off through Dec 31, 2026</li>}
           </ul>
-          <span className="pf-by">with {arrival.partner}</span>
+          <PartnerBy program={arrival.program} partner={arrival.partner} />
           <span className="pf-go">{arrival.cta} →</span>
         </a>
       )}
@@ -2033,7 +2056,7 @@ function PreflightBand({ destination }: { destination: string }) {
               <li key={h}>{h}</li>
             ))}
           </ul>
-          <span className="pf-by">with {o.partner}</span>
+          <PartnerBy program={o.program} partner={o.partner} />
           <span className="pf-go">{o.cta} →</span>
         </a>
       ))}

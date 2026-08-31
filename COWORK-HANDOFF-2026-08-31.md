@@ -50,3 +50,13 @@ test (logs a real click); the card's own link is fine to click on the preview ho
 ## Still with Keith
 - Push decision on `docs/camref-fallback-stays`; the pre-existing TS5095 tsconfig item.
 - Travelpayouts question on native-app attribution (drafted Aug 31) goes on ticket #246226.
+
+## Addendum, later Aug 31: logo slot on the pre-flight / arrival cards
+- `PartnerBy` in Travels.tsx renders `PARTNER_META.logo` as supplied (no white filter),
+  scaled by `logoHeight` (20px wordmarks, 30px for Kiwitaxi's stacked lockup), with the
+  brand name in text beside it. Empty `logo` = text by-line, so nothing ships broken.
+- No affiliate logo files are in hand yet: Travelpayouts program pages carry no brand
+  assets, newsroom.welcomepickups.com is editorial-use only, and the Welcome Pickups /
+  Kiwitaxi logo answers are still pending on tickets #246226 / #246232. When files arrive,
+  save to `public/travels/partners/<program>-logo.svg` and set the path in PARTNER_META.
+- Both Aug 31 commits are LOCAL on main (Cowork's shell has no GitHub login). Push them.
