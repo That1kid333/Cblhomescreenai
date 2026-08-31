@@ -436,9 +436,10 @@ export const PARTNER_META: Partial<Record<Program, PartnerMeta>> = {
   },
   welcomepickups: {
     partner: 'Welcome Pickups',
-    // Their own white header wordmark (welcomepickups.com, 2026-08-31), placed as
-    // supplied. Swap for the affiliate pack if ticket #246226 ever delivers one.
-    logo: '/travels/partners/welcomepickups-logo.svg',
+    // Welcome Pickups' official "Full White" lockup from their logo pack (1500x215 PNG,
+    // supplied by Keith 2026-08-31), placed as supplied. Tighter-cropped than the site
+    // header SVG it replaced, so 20px reads a touch larger; that matches the other marks.
+    logo: '/travels/partners/welcomepickups-logo.png',
     logoHeight: 20,
     cta: 'Book your transfer',
     briefing:
