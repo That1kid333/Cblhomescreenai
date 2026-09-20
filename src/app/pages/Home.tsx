@@ -10,7 +10,7 @@ import buckeeImage from '../../assets/buckee.png';
 import buckeeServerImg from '../../assets/buckee_server.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
-import riderDashboardImg from '../../assets/cbl-rider-dashboard.png';
+import riderDashboardImg from '../../assets/app/phone-dashboard-2x.png';
 import appStoreBadge from '../../assets/app/app-store-badge.svg';
 import { APP_URL } from '../lib/constants';
 import { JoinModal } from '../components/JoinModal';
@@ -63,7 +63,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Private, scheduled rides —{' '}
+        Private, scheduled rides:{' '}
         <a href={APP_URL} target="_blank" rel="noopener noreferrer" className="cap-link">
           book a ride
         </a>
@@ -83,7 +83,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Hotel concierge available —{' '}
+        Hotel concierge available:{' '}
         <Link to="/concierge" className="cap-link">
           sign up
         </Link>
@@ -104,7 +104,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local restaurant deals —{' '}
+        Local restaurant deals:{' '}
         <Link to="/eats-and-drinks" className="cap-link">
           explore dining
         </Link>
@@ -124,7 +124,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local experiences —{' '}
+        Local experiences:{' '}
         <Link to="/attractions" className="cap-link">
           start exploring
         </Link>
@@ -144,7 +144,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Guides, tips & stories —{' '}
+        Guides, tips & stories:{' '}
         <Link to="/blog" className="cap-link">
           read the blog
         </Link>
@@ -164,7 +164,7 @@ const SLIDES: Slide[] = [
     ),
     caption: (
       <>
-        Local business directory —{' '}
+        Local business directory:{' '}
         <Link to="/directory" className="cap-link">
           browse now
         </Link>
@@ -193,9 +193,9 @@ const SLIDE_CAT: Record<string, { label: string; to: string }> = {
 
 const APP_FEATURES = [
   { t: 'Meet Buckee', d: 'Your AI travel buddy builds personalized itineraries and local insider tips on demand.' },
-  { t: 'Book in seconds', d: 'Trusted rides, dining, and attractions — all from one membership, on any device.' },
+  { t: 'Book in seconds', d: 'Trusted rides, dining, and attractions, all from one membership on any device.' },
   { t: 'Your preferred driver', d: 'Schedule and message your own private driver, right from the dashboard.' },
-  { t: 'Your digital business card', d: 'Every member gets a personal QR code to share with friends, drivers, and local spots — when they join under your code, you earn.' },
+  { t: 'Your digital business card', d: 'Every member gets a personal QR code to share with friends, drivers, and local spots. When they join under your code, you earn.' },
   { t: 'Save more', d: 'Member savings and partner offers across every city you visit. Joining is free.' },
 ];
 
@@ -586,9 +586,14 @@ const HOME_CSS = `
 .cbl-home .app-how:hover { text-decoration:underline; }
 .cbl-home .app-note { margin-top:14px; font-size:13px; color:#8a8a8a; }
 
-/* Real Rider Dashboard phone mockup — transparent PNG (886×1866, ~2x retina),
-   shown at roughly half its pixel width so it stays crisp on retina screens.
-   Transparent bg sits flush on the black band; drop-shadow lifts it off. */
+/* Real Rider Dashboard, cropped from the 1.0 App Store panel (1000x1964 RGBA,
+   57px rounded corners masked to transparent) and shown at roughly a third of
+   its pixel width so it stays crisp on retina screens. Transparent corners sit
+   flush on the black band; drop-shadow lifts it off. Replaced the July mockup,
+   which showed invented riders and a placeholder tab label. The QR in the shot
+   was repointed to https://citybucketlist.com so the homepage does not funnel
+   every scan into one driver's client list (Keith's call, same as the App Store
+   panels). Regenerate with the same crop if the dashboard is re-shot. */
 .cbl-home .device-wrap { display:flex; justify-content:center; }
 .cbl-home .app-phone {
   width:min(100%, 420px); height:auto; display:block;
@@ -723,7 +728,7 @@ export function Home() {
     PT: 'Oi, sou o Buckee, seu concierge de IA 👋 Viagens, corridas e reservas no app.',
   };
   // Names the DESTINATION rather than repeating the signup. The hero button
-  // right above this card is already "Join Now — Free", and having both shout
+  // right above this card is already "Join Now for Free", and having both shout
   // "free/join" made the pair read as one message said twice (Keith's call).
   const BUCKEE_CTA: Record<string, string> = {
     EN: 'Meet Buckee in the app',
@@ -793,7 +798,7 @@ export function Home() {
               {!session && (
                 <>
                   <button className="btn-primary" onClick={() => setJoinOpen(true)}>
-                    Join Now — Free
+                    Join Now for Free
                   </button>
                   <Link className="btn-ghost" to="/login">
                     Sign In
@@ -982,7 +987,7 @@ export function Home() {
             <img
               className="app-phone"
               src={riderDashboardImg}
-              alt="CityBucketList Rider Dashboard app on a phone — schedule rides, message your preferred driver, and share your referral QR code"
+              alt="The CityBucketList rider dashboard on an iPhone: book a ride, message your preferred driver, plan a trip with Buckee, and share your referral QR code"
             />
           </div>
         </div>
@@ -1044,7 +1049,7 @@ export function Home() {
               <h2>
                 What's on <span className="it">your bucket list?</span>
               </h2>
-              <p>Join free and let locals everywhere help you feel at home — in any city you visit.</p>
+              <p>Join free and let locals everywhere help you feel at home in any city you visit.</p>
               <Link className="btn-primary" to="/login">
                 Join City Bucket List
               </Link>
