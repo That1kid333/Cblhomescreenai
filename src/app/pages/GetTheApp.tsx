@@ -1,5 +1,5 @@
 import appStoreBadge from '../../assets/app/app-store-badge.svg';
-import phoneDashboard from '../../assets/app/phone-dashboard.png';
+import phoneDashboard from '../../assets/app/phone-dashboard-2x.png';
 import phoneMessage from '../../assets/app/phone-message.png';
 import phoneBuckee from '../../assets/app/phone-buckee.png';
 import { APP_URL } from '../lib/constants';
