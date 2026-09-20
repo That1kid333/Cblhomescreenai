@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router';
 import { APP_URL } from '../lib/constants';
 import { signUpMember, authClient } from '../lib/supabase/authClient';
 import { useAuth, firstNameOf } from '../lib/auth';
@@ -262,10 +263,15 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
     }
   };
 
+  // "Get the app" goes to /app, not straight to the web app: that page carries
+  // both the App Store badge and the browser link, so the reader picks. Closes the
+  // modal on the way so it is not left sitting over the page. Em-dash dropped per
+  // the house rule while this line was open.
   const accessNote = (
     <p className="note">
-      This creates your real, password-protected City Bucket List account — the same one
-      you'll use in the CBL App. <a href={APP_URL} target="_blank" rel="noopener noreferrer">Get the app →</a>
+      This creates your real, password-protected City Bucket List account, the same one
+      you'll use in the CBL App.{' '}
+      <Link to="/app" onClick={onClose}>Get the app →</Link>
     </p>
   );
 

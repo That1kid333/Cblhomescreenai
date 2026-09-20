@@ -19,6 +19,7 @@ import { Concierge } from './pages/Concierge';
 import { PartnerRestaurants } from './pages/PartnerRestaurants';
 import { PartnerAttractions } from './pages/PartnerAttractions';
 import { Feedback } from './pages/Feedback';
+import { GetTheApp } from './pages/GetTheApp';
 import { Login } from './pages/Login';
 import { Studio } from './pages/Studio';
 import { TermsAndConditions } from './pages/TermsAndConditions';
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
       { path: 'contact', Component: Contact },
       { path: 'our-story', Component: OurStory },
       { path: 'how-it-works', Component: HowItWorks },
+      { path: 'app', Component: GetTheApp },
       { path: 'meet-buckee', Component: MeetBuckee },
       { path: 'blog', Component: Blog },
       { path: 'blog/:slug', Component: BlogPost },
