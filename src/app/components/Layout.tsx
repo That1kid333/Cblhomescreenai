@@ -59,6 +59,8 @@ const MOBILE_NAV: MobileSection[] = [
       { label: 'Coupons & Offers', to: '/directory?section=COUPONS' },
     ],
   },
+  // No items, so this renders as a plain link (see the direct-link branch below).
+  { label: 'Get the App', to: '/app' },
 ];
 
 export function Layout() {
@@ -266,6 +268,12 @@ export function Layout() {
                   </div>
                 )}
               </div>
+
+              {/* Last top-level item, no dropdown. The App Store release needs a
+                  door in the nav, and /app carries both the badge and the web link. */}
+              <Link to="/app" className="text-white hover:text-[var(--brand-yellow)] transition-colors text-sm">
+                GET THE APP
+              </Link>
             </nav>
 
             {/* Right slot — keeps the nav centered on desktop (min 88px) and
@@ -401,6 +409,7 @@ export function Layout() {
               <Link to="/affiliates" className="hover:text-[#FDB913] transition-colors">Partners</Link>
             </div>
             <div className="flex items-center gap-6 text-[10px] uppercase">
+              <Link to="/app" className="hover:text-[#FDB913] transition-colors">Get the App</Link>
               <a href="https://app.citybucketlist.com/privacy" className="hover:text-[#FDB913] transition-colors">Privacy</a>
               <a href="https://app.citybucketlist.com/terms" className="hover:text-[#FDB913] transition-colors">Terms</a>
               <a href="https://app.citybucketlist.com/membership" className="hover:text-[#FDB913] transition-colors">Membership</a>
