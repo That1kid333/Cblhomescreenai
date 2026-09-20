@@ -11,6 +11,7 @@ import buckeeServerImg from '../../assets/buckee_server.png';
 import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import riderDashboardImg from '../../assets/cbl-rider-dashboard.png';
+import appStoreBadge from '../../assets/app/app-store-badge.svg';
 import { APP_URL } from '../lib/constants';
 import { JoinModal } from '../components/JoinModal';
 import { useAuth } from '../lib/auth';
@@ -577,6 +578,13 @@ const HOME_CSS = `
 .cbl-home .app-actions { display:flex; align-items:center; gap:24px; flex-wrap:wrap; margin-top:28px; }
 .cbl-home .app-url { display:inline-block; font-family:${MONO}; font-size:13px; letter-spacing:.06em; color:#8a8a8a; }
 .cbl-home .app-url b { color:${GOLD}; font-weight:600; }
+/* Apple's own artwork: at least 40px tall, never recolored, nothing layered over it. */
+.cbl-home .app-badge { display:inline-block; line-height:0; text-decoration:none; }
+.cbl-home .app-badge img { height:52px; width:auto; display:block; }
+.cbl-home .app-badge:focus-visible { outline:2px solid ${GOLD}; outline-offset:4px; border-radius:8px; }
+.cbl-home .app-how { font-size:14px; color:${GOLD}; text-decoration:none; font-weight:600; white-space:nowrap; }
+.cbl-home .app-how:hover { text-decoration:underline; }
+.cbl-home .app-note { margin-top:14px; font-size:13px; color:#8a8a8a; }
 
 /* Real Rider Dashboard phone mockup — transparent PNG (886×1866, ~2x retina),
    shown at roughly half its pixel width so it stays crisp on retina screens.
@@ -932,12 +940,11 @@ export function Home() {
           <div>
             <div className="section-eyebrow">your city, one app</div>
             <h2 className="section-h2">
-              Check out <span className="it">our app</span>
+              Get the CBL <span className="it">app</span>
             </h2>
             <p className="section-lede">
-              Everything City Bucket List does — rides, dining, attractions, stays, and your AI
-              travel buddy Buckee — lives in one place. Scan the code or open it on any device and
-              start exploring in seconds.
+              Rides with a driver you know, Buckee to plan the rest, and your referral code, all in
+              one app. It is on the App Store now, and the same account works in your browser.
             </p>
             <ul className="app-features">
               {APP_FEATURES.map((f) => (
@@ -947,14 +954,28 @@ export function Home() {
                 </li>
               ))}
             </ul>
+            {/* App Store first, the web app as the alternate (Keith, 2026-09-19).
+                The old gold "Launch the App" button sent everyone to the web version
+                even though 1.0 is live on the store. */}
             <div className="app-actions">
-              <a className="btn-primary" href={APP_URL} target="_blank" rel="noopener noreferrer">
-                Launch the App
+              <a
+                className="app-badge"
+                href="https://apps.apple.com/us/app/citybucketlist/id6809569228"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={appStoreBadge} alt="Download CityBucketList on the App Store" />
               </a>
               <a className="app-url" href={APP_URL} target="_blank" rel="noopener noreferrer">
+                or open it in your browser
+                <br />
                 <b>app.citybucketlist.com</b>
               </a>
+              <Link className="app-how" to="/app">
+                See how it works
+              </Link>
             </div>
+            <p className="app-note">iPhone today. Android is coming.</p>
           </div>
 
           <div className="device-wrap">
