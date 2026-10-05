@@ -50,8 +50,16 @@ const faqData = [
     answer: 'Yes. Drivers pay a $19.99 Monthly Subscription to access all driver tools. The first month is free, and the subscription can be canceled anytime. Membership includes: Digital driver packet, QR codes, Badges, Full access to the app and booking tools.',
   },
   {
+    // Approved wording, Keith + Brian, Oct 5 2026. Deliberately no "negotiable" and no
+    // Uber or Lyft; the same line sits on the app's Book a Ride confirmation.
+    question: 'How much does a ride cost?',
+    answer: 'It depends on your driver. Every CBL driver sets their own rates, so prices vary. Some keep rates low, others charge more for the service they offer. Find the driver who fits you, and agree on the price before you ride.',
+  },
+  {
     question: 'Does City Bucket List take a percentage of rides?',
-    answer: 'Yes. For card payments only, a small service fee (round-up to the nearest dollar, ranging from $0.01 to $0.99) is added to support platform operations. This fee is clearly displayed before booking. In-person payments do not include a service fee. 100% of your driver\'s fare goes directly to them — the service fee supports the platform, not the driver\'s earnings.',
+    // The fee rule changed on Aug 17 2026 (4.6% + $0.50, fare only, never the tip); the
+    // round-up wording here was from before that.
+    answer: 'Yes, for card payments only. A transparent 4.6% + $0.50 platform and processing fee is added to the fare and shown before you book. It is never applied to tips, and in-person payments have no fee. 100% of the fare goes directly to your driver; the fee supports the platform, not the driver\'s earnings.',
   },
   {
     question: 'What kind of rides can Riders schedule?',
