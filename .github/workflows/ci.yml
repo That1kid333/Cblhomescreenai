@@ -36,7 +36,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'  # keep in step with NODE_VERSION in netlify.toml
           cache: 'npm'
 
       # `npm ci` over `npm install` so a run can't quietly drift from the lockfile.
