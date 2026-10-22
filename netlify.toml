@@ -12,8 +12,14 @@
 # so Netlify installs with npm and package-lock.json, matching CI, the build
 # command, and local dev. Do NOT reintroduce a pnpm lockfile — regenerating it was
 # the previous fix (see 2022829) and it broke again on the next npm-only change.
+#
+# Oct 22, 2026: moved from 20 to 22. Node 20 reached end of life in April 2026
+# and gets no security fixes, including the Oct 21, 2026 Node.js security release
+# (CVE-2026-111497, Brotli decoder remote code execution). The Netlify functions
+# in netlify/functions run server-side on this version. Keep this on a supported
+# LTS line, and keep .github/workflows/ci.yml on the same major.
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22"
 
 [functions]
   node_bundler = "esbuild"
