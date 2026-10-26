@@ -12,6 +12,7 @@ import cittyImage from '../../assets/citty.png';
 import listyImage from '../../assets/listy.png';
 import riderDashboardImg from '../../assets/app/phone-dashboard-2x.png';
 import appStoreBadge from '../../assets/app/app-store-badge.svg';
+import googlePlayBadge from '../../assets/app/google-play-badge.png';
 import { APP_URL } from '../lib/constants';
 import { JoinModal } from '../components/JoinModal';
 import { useAuth } from '../lib/auth';
@@ -949,7 +950,8 @@ export function Home() {
             </h2>
             <p className="section-lede">
               Rides with a driver you know, Buckee to plan the rest, and your referral code, all in
-              one app. It is on the App Store now, and the same account works in your browser.
+              one app. It is on the App Store and Google Play now, and the same account works in
+              your browser.
             </p>
             <ul className="app-features">
               {APP_FEATURES.map((f) => (
@@ -971,6 +973,15 @@ export function Home() {
               >
                 <img src={appStoreBadge} alt="Download CityBucketList on the App Store" />
               </a>
+              {/* Google Play beside the App Store badge, same height (Keith, Oct 26 2026). */}
+              <a
+                className="app-badge"
+                href="https://play.google.com/store/apps/details?id=com.citybucketlist.app"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src={googlePlayBadge} alt="Get CityBucketList on Google Play" />
+              </a>
               <a className="app-url" href={APP_URL} target="_blank" rel="noopener noreferrer">
                 or open it in your browser
                 <br />
@@ -980,7 +991,7 @@ export function Home() {
                 See how it works
               </Link>
             </div>
-            <p className="app-note">iPhone today. Android is coming.</p>
+            <p className="app-note">On iPhone and Android.</p>
           </div>
 
           <div className="device-wrap">

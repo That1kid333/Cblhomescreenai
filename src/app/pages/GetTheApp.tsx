@@ -1,4 +1,5 @@
 import appStoreBadge from '../../assets/app/app-store-badge.svg';
+import googlePlayBadge from '../../assets/app/google-play-badge.png';
 import phoneDashboard from '../../assets/app/phone-dashboard-2x.png';
 import phoneMessage from '../../assets/app/phone-message.png';
 import phoneBuckee from '../../assets/app/phone-buckee.png';
@@ -13,8 +14,9 @@ import { APP_URL } from '../lib/constants';
  * `.cbl-getapp`, no nav or footer (the shared Layout supplies both), the canonical
  * 1280px column and 48px band padding that keeps every page's left edge aligned.
  *
- * Hierarchy is deliberate (Keith, 2026-09-19): App Store first, the web app as the
- * alternate. Android gets one honest line rather than a badge it cannot deliver.
+ * Hierarchy is deliberate (Keith, 2026-09-19): the store badges first, the web app as
+ * the alternate. Google Play joined the App Store on Oct 26 2026 (Keith), once the
+ * Android listing was live, so both badges sit side by side wherever one appears.
  *
  * On rides, the page says BOTH things and must keep saying both: CBL rides are
  * scheduled ahead with a private driver, AND the app hands you to Uber or Lyft when
@@ -29,6 +31,7 @@ const MONO = 'ui-monospace, SFMono-Regular, Menlo, monospace';
 const ITALIC = "'Playfair Display', serif";
 
 const APP_STORE_URL = 'https://apps.apple.com/us/app/citybucketlist/id6809569228';
+const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.citybucketlist.app';
 
 const GETAPP_CSS = `
 .cbl-getapp { background:#0A0A0A; color:#fff; font-family:${BODY}; -webkit-font-smoothing:antialiased; }
@@ -74,8 +77,11 @@ const GETAPP_CSS = `
 .cbl-getapp .hero p.lede { margin-top:18px; max-width:560px; font-size:17px; line-height:1.5; color:#B0B0B0; }
 .cbl-getapp .cta { display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-top:26px; }
 
-/* Apple's own artwork. Their guidelines: at least 40px tall, clear space around it,
-   never recolored, never redrawn. Do not add a filter, border or background here. */
+/* Apple's and Google's own artwork. Their guidelines: at least 40px tall, clear space
+   around it, never recolored, never redrawn, and the Google Play badge no smaller than
+   the App Store one. Both render at the same height. Do not add a filter, border or
+   background here. The Play PNG has Google's transparent padding trimmed, nothing else. */
+.cbl-getapp .badges { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .cbl-getapp .badge { display:inline-block; text-decoration:none; line-height:0; }
 .cbl-getapp .badge img { height:54px; width:auto; }
 .cbl-getapp .badge:focus-visible { outline:2px solid #C99742; outline-offset:4px; border-radius:8px; }
@@ -164,6 +170,7 @@ const GETAPP_CSS = `
   border-radius:999px; padding:13px 26px; font-weight:700; font-size:14px; letter-spacing:.04em;
   text-transform:uppercase; text-decoration:none; white-space:nowrap;
 }
+.cbl-getapp .strip-actions { display:flex; gap:12px; flex-wrap:wrap; }
 .cbl-getapp .btn-ghost:hover { background:rgba(201,151,66,.14); }
 .cbl-getapp .btn-ghost:focus-visible { outline:2px solid #C99742; outline-offset:3px; }
 
@@ -215,20 +222,25 @@ const GETAPP_CSS = `
 }
 `;
 
-/** App Store badge. Apple's official artwork, linked out, never recolored. */
-function StoreBadge() {
+/** App Store and Google Play badges. Official artwork, linked out, never recolored. */
+function StoreBadges() {
   return (
-    <a className="badge" href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
-      <img src={appStoreBadge} alt="Download CityBucketList on the App Store" />
-    </a>
+    <div className="badges">
+      <a className="badge" href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
+        <img src={appStoreBadge} alt="Download CityBucketList on the App Store" />
+      </a>
+      <a className="badge" href={PLAY_STORE_URL} target="_blank" rel="noopener noreferrer">
+        <img src={googlePlayBadge} alt="Get CityBucketList on Google Play" />
+      </a>
+    </div>
   );
 }
 
-/** The App Store badge plus the web-app alternate. Used in the hero and the closing band. */
+/** Both store badges plus the web-app alternate. Used in the hero and the closing band. */
 function CtaRow() {
   return (
     <div className="cta">
-      <StoreBadge />
+      <StoreBadges />
       <div className="alt">
         or open it in your browser
         <br />
@@ -248,7 +260,7 @@ export function GetTheApp() {
       <section className="hero">
         <div className="wrap grid">
           <div>
-            <div className="eyebrow">now on the app store</div>
+            <div className="eyebrow">now on iphone and android</div>
             <h1 className="hero-title">
               Your city.
               <br />
@@ -257,14 +269,15 @@ export function GetTheApp() {
               One <span className="gold">app.</span>
             </h1>
             <p className="lede">
-              The CityBucketList app is on the App Store. Scan your driver&rsquo;s code, download,
+              The CityBucketList app is on the App Store and Google Play. Scan your driver&rsquo;s
+              code, download,
               and every ride, message and trip plan lives in one place, with your driver already
               saved.
             </p>
             <CtaRow />
             <p className="note">
-              <b>iPhone today.</b> Android is coming. Until then the web app works on any phone, and
-              it is the same account.
+              <b>iPhone and Android.</b> The web app works in any phone&rsquo;s browser too, and it
+              is the same account.
             </p>
           </div>
           <div className="device">
@@ -311,7 +324,8 @@ export function GetTheApp() {
               <div className="n">STEP 2</div>
               <h3>Download the app</h3>
               <p>
-                Tap the App Store button on the welcome screen, install CityBucketList, and sign in
+                Tap the App Store or Google Play button on the welcome screen, install
+                CityBucketList, and sign in
                 with the account you just made. <em>Allow notifications</em> so you hear back when
                 your driver accepts.
               </p>
@@ -421,14 +435,24 @@ export function GetTheApp() {
                 you set up on the web is already there.
               </p>
             </div>
-            <a
-              className="btn-ghost"
-              href={APP_STORE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Get the app →
-            </a>
+            <div className="strip-actions">
+              <a
+                className="btn-ghost"
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                App Store →
+              </a>
+              <a
+                className="btn-ghost"
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Google Play →
+              </a>
+            </div>
           </div>
         </div>
       </section>
@@ -450,16 +474,16 @@ export function GetTheApp() {
             <div className="q">
               <h4>Do I need a driver&rsquo;s QR code to join?</h4>
               <p>
-                No. You can join free right here on citybucketlist.com and download the app.
-                Scanning a driver&rsquo;s code just saves that driver to your dashboard from day
-                one. You can scan one later from the app too.
+                No. Anyone can join free right here on citybucketlist.com and use the rider
+                dashboard. To book a scheduled ride, you&rsquo;ll need your driver&rsquo;s code.
+                Scan it when you join, or later from the app.
               </p>
             </div>
             <div className="q">
-              <h4>What about Android?</h4>
+              <h4>Is there an Android app?</h4>
               <p>
-                Coming. In the meantime, app.citybucketlist.com does everything the iPhone app does,
-                from any phone&rsquo;s browser. It is the same account.
+                Yes. CityBucketList is on Google Play. And app.citybucketlist.com does everything the
+                app does from any phone&rsquo;s browser. It is the same account.
               </p>
             </div>
             <div className="q">
