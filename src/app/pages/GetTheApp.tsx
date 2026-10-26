@@ -40,6 +40,9 @@ const GETAPP_CSS = `
 .cbl-getapp .wrap { max-width:1280px; margin:0 auto; }
 .cbl-getapp section.band { padding:48px 48px 56px; }
 .cbl-getapp section.band.tight { padding:28px 48px 36px; }
+/* .tight's vertical rhythm without its side padding, so this band keeps the mobile
+   gutters below and lines up with the hero at every width. */
+.cbl-getapp section.band.bring { padding-top:28px; padding-bottom:36px; }
 
 .cbl-getapp .eyebrow {
   display:inline-flex; align-items:center; gap:10px; font-family:${MONO};
@@ -269,6 +272,20 @@ export function GetTheApp() {
           </div>
           <div className="device">
             <img src={phoneDashboard} alt="CityBucketList rider dashboard on an iPhone" />
+          </div>
+        </div>
+      </section>
+
+      <section className="band bring">
+        <div className="wrap">
+          <div className="strip">
+            <div>
+              <h3>Bring your&nbsp;driver.</h3>
+              <p>
+                Scheduled rides on CBL are with a driver you know. Don&rsquo;t have one yet? Ask a
+                CBL driver for their code, or book on demand from the app in the&nbsp;meantime.
+              </p>
+            </div>
           </div>
         </div>
       </section>
