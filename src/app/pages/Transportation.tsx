@@ -159,7 +159,9 @@ const FAQS = [
   // signed, and the answer above says CBL earns nothing on those rides).
   {
     q: 'Does CBL take a percentage of rides?',
-    a: "For CBL Private rides paid by card, a small service fee (round-up to the nearest dollar, $0.01–$0.99) supports platform operations. 100% of the driver's fare goes to them.",
+    // Matches the app (src/lib/serviceFee.ts) and the main FAQ page. The old round-up
+    // fee is retired.
+    a: "For rides paid by card, a 4.6% + $0.50 platform and processing fee is added to the fare and shown before you book. It is never applied to tips, and in-person payments have no fee. 100% of the driver's fare goes to them.",
   },
   {
     q: 'Do drivers work for CityBucketList?',
