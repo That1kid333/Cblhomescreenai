@@ -479,7 +479,7 @@ function listingCard(l: Listing): ListingCard {
   const lead = [
     ...new Set(
       [
-        isDriver ? [driverName, 'independent CBL driver'].filter(Boolean).join(' · ') : label,
+        isDriver ? [driverName, 'independent driver'].filter(Boolean).join(' · ') : label,
         place,
         price,
       ].filter(Boolean),
@@ -507,7 +507,7 @@ function listingJsonLd(canonical: string, image: string, c: ListingCard, l: List
         ...(l.driver_referral_code ? { url: driverBookingUrl(l.driver_referral_code) } : {}),
         provider: {
           '@type': 'Person',
-          name: c.driverName || 'Independent CBL driver',
+          name: c.driverName || 'Independent driver',
           ...(portrait ? { image: portrait } : {}),
         },
         ...(c.place ? { areaServed: { '@type': 'Place', name: c.place } } : {}),
