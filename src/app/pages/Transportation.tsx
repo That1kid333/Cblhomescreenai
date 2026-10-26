@@ -144,29 +144,22 @@ const AUDIENCES: Audience[] = [
   },
 ];
 
-const PARTNERS = [
-  { name: 'CBL Private', sub: 'Service Fee · $0.01–$0.99', rev: '100%', revLbl: 'to driver' },
-  // Two different things, and they must not be conflated. The HANDOFF is live in
-  // the app (merged to the app's main, with the trip details carried across). The
-  // AFFILIATE is not signed with either company, so we earn nothing on it — which
-  // is exactly what the FAQ below already says. "Coming Soon" for both read as
-  // though the handoff itself did not exist (Keith, 2026-08-24).
-  { name: 'Uber', sub: 'Handoff live · no affiliate yet', rev: '$0', revLbl: 'we earn nothing' },
-  { name: 'Lyft', sub: 'Handoff live · no affiliate yet', rev: '$0', revLbl: 'we earn nothing' },
-];
+// The PARTNERS revenue rows and the "Affiliate program coming soon" band were removed
+// Oct 26 2026 (Keith): routing, coverage and revenue roadmap read as dispatch and as an
+// investor slide on a rider-facing page. RideRules below keeps the three rider-facing
+// points in plain language.
 
 const FAQS = [
   {
     q: 'Is CityBucketList a rideshare company?',
     a: 'No. CityBucketList is a Private Membership Platform (Software as a Service) that connects subscribed members who schedule rides directly with Independent Contractors they already know. When no independent driver is free, we hand you off to Uber or Lyft with your pickup and dropoff carried over. We earn nothing on those — they exist so you still get where you are going.',
   },
-  {
-    q: 'Why offer Uber, Lyft and autonomous options?',
-    a: "To give riders 100% coverage. If a CBL Private Driver isn't available at the time you need, you can still get a ride through a partner provider — without leaving the app. CBL earns a small affiliate fee on every third-party ride, which supports the platform without raising rider fares.",
-  },
+  // "Why offer Uber, Lyft and autonomous options?" was removed Oct 26 2026: it said CBL
+  // earns an affiliate fee on every third-party ride, which is not true (no affiliate is
+  // signed, and the answer above says CBL earns nothing on those rides).
   {
     q: 'Does CBL take a percentage of rides?',
-    a: "For CBL Private rides paid by card, a small service fee (round-up to the nearest dollar, $0.01–$0.99) supports platform operations. 100% of the driver's fare goes to them. For third-party providers, CBL earns an affiliate commission paid by the network — never by the rider.",
+    a: "For CBL Private rides paid by card, a small service fee (round-up to the nearest dollar, $0.01–$0.99) supports platform operations. 100% of the driver's fare goes to them.",
   },
   {
     q: 'Do drivers work for CityBucketList?',
@@ -520,6 +513,7 @@ const TRANSPORT_CSS = `
 }
 
 .cbl-transport .pillar-list { display:flex; flex-direction:column; gap:20px; }
+.cbl-transport .ride-rules { max-width:760px; margin-top:24px; }
 .cbl-transport .pillar { display:flex; gap:18px; }
 .cbl-transport .pillar .num {
   flex-shrink:0; width:44px; height:44px; border-radius:50%;
@@ -986,7 +980,7 @@ function RideAggregator() {
               >
                 Every CBL Private ride is scheduled at least 12 hours in advance, so you and your
                 driver have time to plan, message, and confirm the trip before pickup. No anonymous
-                strangers. Sign in to the app to browse available drivers in your city.
+                strangers. You book with the driver who invited you.
               </p>
             </div>
           </>
@@ -1096,81 +1090,47 @@ function RideAggregator() {
   );
 }
 
-function AffiliateBand() {
+/**
+ * How rides work. Replaced the "Affiliate program coming soon" band (Oct 26 2026,
+ * Keith): that band talked about routing, coverage and partner revenue, which read as
+ * dispatch. This one describes the mechanism a rider actually meets. Promises nothing:
+ * a driver may accept or hand the ride on, and autonomous is a plan, not a feature.
+ */
+function RideRules() {
+  const rules = [
+    {
+      n: 'A',
+      t: 'Your driver comes first',
+      d: 'A request goes to the driver you chose. They accept it or hand it to a driver they trust, and they keep their full fare.',
+    },
+    {
+      n: 'B',
+      t: 'On demand when you need it now',
+      d: 'If your driver can\u2019t take it, the app opens an on-demand ride with your trip details carried over.',
+    },
+    {
+      n: 'C',
+      t: 'Autonomous-ready',
+      d: 'When autonomous fleets reach your city, CBL plans to offer them in the same app, without ever owning vehicles.',
+    },
+  ];
   return (
     <section className="band" style={{ borderTop: '1px solid rgba(255,255,255,.06)' }}>
       <div className="band-inner">
-        <div className="section-eyebrow">platform economics</div>
+        <div className="section-eyebrow">a driver you know</div>
         <h2 className="section-h2">
-          Affiliate program <span className="it">coming soon</span>
+          How rides <span className="it">work on CBL</span>
         </h2>
-        <p className="section-lede">
-          Here is the roadmap. CBL Private scheduled rides are live today; the partner affiliate
-          options below are coming soon. Riders will never pay extra for partner routing — CBL earns
-          from the network on the back end, not from you.
-        </p>
-
-        <div className="affiliate-grid">
-          <div>
-            {PARTNERS.map((p) => (
-              <div key={p.name} className="partner-card">
-                <div className="p-logo">{p.name.split(' ')[0][0]}</div>
-                <div>
-                  <div className="p-name">{p.name}</div>
-                  <div className="p-sub">{p.sub}</div>
-                </div>
-                <div className="p-rev">
-                  {p.rev}
-                  <span className="small">{p.revLbl}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="pillar-list">
-            <div className="pillar">
-              <div className="num">A</div>
+        <div className="pillar-list ride-rules">
+          {rules.map((r) => (
+            <div className="pillar" key={r.n}>
+              <div className="num">{r.n}</div>
               <div>
-                <h4>CBL Private comes first</h4>
-                <p>
-                  Every ride request searches local Independent Drivers first. If an independent driver
-                  accepts, the rider gets transparent pricing and the driver keeps 100% of the fare.
-                </p>
+                <h4>{r.t}</h4>
+                <p>{r.d}</p>
               </div>
             </div>
-            <div className="pillar">
-              <div className="num">B</div>
-              <div>
-                <h4>Partner fallback for 100% coverage</h4>
-                <p>
-                  Coming soon: for trips no independent driver can cover — or when a rider prefers
-                  Uber, Lyft or autonomous — the booking will hand off to that partner. CBL is not
-                  signed up with the affiliate networks yet; this is on the roadmap.
-                </p>
-              </div>
-            </div>
-            <div className="pillar">
-              <div className="num">C</div>
-              <div>
-                <h4>Free for riders, sustainable for CBL</h4>
-                <p>
-                  Affiliate revenue, once live, is paid by the network — not the rider. The flat
-                  membership model plus a small service fee on private rides keeps the platform
-                  running today.
-                </p>
-              </div>
-            </div>
-            <div className="pillar">
-              <div className="num">D</div>
-              <div>
-                <h4>Autonomous-ready</h4>
-                <p>
-                  The same routing layer hands off to Uber or Lyft when no CBL driver is free.
-                  As fleets expand, CBL participates in the upside without owning vehicles.
-                </p>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>
@@ -1208,7 +1168,7 @@ export function Transportation() {
       <Hero />
       <Audiences />
       <RideAggregator />
-      <AffiliateBand />
+      <RideRules />
       <FAQs />
       <PlatformNotice variant="rides" />
     </main>
