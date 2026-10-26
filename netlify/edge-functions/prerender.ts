@@ -375,9 +375,15 @@ type DriverAd = {
   plate?: string | null;
   plateState?: string | null;
   phone?: string | null;
+  // Opt-in (Oct 26 2026): the number is published only when the driver ticked it.
+  showPhone?: boolean | null;
   since?: string | null;
   availability?: string | null;
 };
+
+/** Where a rider joins and books a driver: the driver's own code link. */
+const driverBookingUrl = (code: string): string =>
+  `https://app.citybucketlist.com/r/${encodeURIComponent(code)}`;
 
 type Listing = {
   id: number | string;
@@ -498,6 +504,7 @@ function listingJsonLd(canonical: string, image: string, c: ListingCard, l: List
         '@type': 'Service',
         name: oneLine(l.title, 110),
         serviceType: 'Scheduled private ride',
+        ...(l.driver_referral_code ? { url: driverBookingUrl(l.driver_referral_code) } : {}),
         provider: {
           '@type': 'Person',
           name: c.driverName || 'Independent CBL driver',
@@ -531,9 +538,10 @@ function listingJsonLd(canonical: string, image: string, c: ListingCard, l: List
 }
 
 /** Crawlable body for one listing. Same non-cloaking deal as the blog: React
- *  replaces #root for real visitors. The driver's email is deliberately left
- *  out of the prerendered HTML (the SPA still shows it) — no reason to hand a
- *  member's inbox to address harvesters; the phone is the point of the ad. */
+ *  replaces #root for real visitors. The driver's code link is the way in, the
+ *  same as the QR on the card. The phone appears only when the driver opted in
+ *  (Oct 26 2026). The email is never prerendered, even when shown on the card:
+ *  no reason to hand a member's inbox to address harvesters. */
 function renderListing(l: Listing, c: ListingCard, image: string): string {
   const heading = oneLine(l.title, 140);
   const parts: string[] = ['<main><article>'];
@@ -555,9 +563,17 @@ function renderListing(l: Listing, c: ListingCard, image: string): string {
       .map((r) => `<li>${esc(oneLine(r, 120))}</li>`)
       .join('');
     if (rows) parts.push(`<ul>${rows}</ul>`);
-    const phone = oneLine(c.ad.phone, 24);
-    const tel = phone.replace(/[^\d+]/g, '');
-    if (tel) parts.push(`<p><a href="tel:${esc(tel)}">${esc(phone)}</a></p>`);
+    if (l.driver_referral_code) {
+      const who = c.driverName ? oneLine(c.driverName.split(/\s+/)[0], 30) : 'this driver';
+      parts.push(
+        `<p><a href="${esc(driverBookingUrl(l.driver_referral_code))}">Join and book with ${esc(who)} on City Bucket List</a></p>`,
+      );
+    }
+    if (c.ad.showPhone === true) {
+      const phone = oneLine(c.ad.phone, 24);
+      const tel = phone.replace(/[^\d+]/g, '');
+      if (tel) parts.push(`<p><a href="tel:${esc(tel)}">${esc(phone)}</a></p>`);
+    }
   }
   parts.push('<p><a href="/directory">Back to the City Bucket List local directory</a></p>');
   parts.push(`<p>${esc(SAAS_NOTE)}</p>`);

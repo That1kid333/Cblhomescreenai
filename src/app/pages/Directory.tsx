@@ -1395,6 +1395,11 @@ type DriverAd = {
   car?: string | null; color?: string | null; // text fallback: "2024 Hyundai Santa Fe" + "Black"
   plate?: string | null; plateState?: string | null; code: string;
   phone?: string | null; email?: string | null; since?: string | null;
+  // Phone and email are OPT-IN (Keith, Oct 26 2026). The QR code is how riders reach a
+  // driver; a driver who wants a number or email on the card turns it on. A saved ad
+  // with no flag shows neither, and an unticked field is not saved at all, so it is
+  // not readable from the listing either.
+  showPhone?: boolean; showEmail?: boolean;
   availability?: string | null; // e.g. "Scheduled rides only · Book 12+ hrs ahead"
   radius?: number | null; // PICKUP radius in miles — how far from their city a rider's
                           // search still surfaces this ad. Not trip length; trips can end anywhere.
@@ -1447,8 +1452,8 @@ function DriverAdCard({ d }: { d: DriverAd }) {
         <div className="dc-qr">{qr && <img src={qr} alt={`Scan to book with ${first}`} />}</div>
         <div>
           <div className="dc-scan">Scan to book with {first}</div>
-          {d.phone && <div className="dc-phone">{d.phone}</div>}
-          {d.email && <div className="dc-email">{d.email}</div>}
+          {d.showPhone && d.phone && <div className="dc-phone">{d.phone}</div>}
+          {d.showEmail && d.email && <div className="dc-email">{d.email}</div>}
           <div className="dc-url">app.citybucketlist.com/r/{d.code}</div>
         </div>
       </div>
@@ -1532,6 +1537,8 @@ function DirListingModal({
                 code: l.driverCode,
                 phone: l.driverAd?.phone ?? null,
                 email: l.driverAd?.email ?? null,
+                showPhone: l.driverAd?.showPhone === true,
+                showEmail: l.driverAd?.showEmail === true,
                 since: l.driverAd?.since ?? null,
                 availability: l.driverAd?.availability ?? null,
               }}
@@ -1797,6 +1804,10 @@ const DRIVERMODAL_CSS = `
 .cbl-drivermodal label .req { color:#C99742; }
 .cbl-drivermodal .field { margin-bottom:13px; }
 .cbl-drivermodal .row { display:flex; gap:10px; }
+.cbl-drivermodal .optin { margin-bottom:10px; }
+.cbl-drivermodal .optin .check { font-family:inherit; display:flex; align-items:center; gap:10px; cursor:pointer; font-size:14px; color:#e6e6e6; margin:0; text-transform:none; letter-spacing:0; font-weight:600; }
+.cbl-drivermodal .optin .check input { width:18px; height:18px; flex:none; accent-color:#C99742; margin:0; padding:0; background:none; border:0; border-radius:3px; box-shadow:none; }
+.cbl-drivermodal .optin input[type="tel"], .cbl-drivermodal .optin input[type="email"] { margin-top:8px; }
 .cbl-drivermodal .row .field { flex:1; }
 .cbl-drivermodal .field input, .cbl-drivermodal .field select, .cbl-drivermodal .field textarea { width:100%; background:#0A0A0A; color:#fff; font-size:15px; font-family:inherit; border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:11px 13px; transition:border-color .2s, box-shadow .2s, background .2s; }
 .cbl-drivermodal .field textarea { resize:vertical; min-height:70px; line-height:1.45; }
@@ -1865,6 +1876,8 @@ function DriverAdModal({
   const [plateState, setPlateState] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [showPhone, setShowPhone] = useState(false);
+  const [showEmail, setShowEmail] = useState(false);
   const [since, setSince] = useState("");
   const [availability, setAvailability] = useState("Scheduled rides only · Book 12+ hrs ahead");
   const [radius, setRadius] = useState(DEFAULT_DRIVER_RADIUS_MI);
@@ -1894,6 +1907,8 @@ function DriverAdModal({
     setDescription("");
     setAvailability(ed?.availability ?? "Scheduled rides only · Book 12+ hrs ahead");
     setRadius(Number(ed?.radius) || DEFAULT_DRIVER_RADIUS_MI);
+    setShowPhone(ed?.showPhone === true);
+    setShowEmail(ed?.showEmail === true);
 
     let cancelled = false;
     getMyDriverProfile().then((p) => {
@@ -1948,6 +1963,8 @@ function DriverAdModal({
     code: profile?.referralCode || "yourcode",
     phone: phone.trim() || null,
     email: email.trim() || null,
+    showPhone,
+    showEmail,
     since: since.trim() || null,
     availability: availability.trim() || null,
     radius,
@@ -1967,8 +1984,12 @@ function DriverAdModal({
       color: color.trim() || null,
       plate: plate.trim() || null,
       plateState: plateState.trim() || null,
-      phone: phone.trim() || null,
-      email: email.trim() || null,
+      // Opt-in: an unticked number or email is not saved, so it never reaches the
+      // public listing, the share preview or the search-engine page.
+      phone: showPhone ? phone.trim() || null : null,
+      email: showEmail ? email.trim() || null : null,
+      showPhone: showPhone && !!phone.trim(),
+      showEmail: showEmail && !!email.trim(),
       since: since.trim() || null,
       availability: availability.trim() || null,
       radius,
@@ -2131,21 +2152,32 @@ function DriverAdModal({
                   </div>
                   <p className="hint">No photo? No problem — your card shows your car&rsquo;s year, make, model &amp; color instead.</p>
 
-                  <div className="row">
-                    <div className="field">
-                      <label htmlFor="da-phone">Phone</label>
-                      <input id="da-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(412) 555-0148" />
-                    </div>
-                    <div className="field">
-                      <label htmlFor="da-since">Driving since</label>
-                      <input id="da-since" type="text" value={since} onChange={(e) => setSince(e.target.value)} placeholder="2025" maxLength={4} />
-                    </div>
+                  <div className="field">
+                    <label htmlFor="da-since">Driving since</label>
+                    <input id="da-since" type="text" value={since} onChange={(e) => setSince(e.target.value)} placeholder="2025" maxLength={4} />
                   </div>
 
-                  <div className="field">
-                    <label htmlFor="da-email">Email</label>
-                    <input id="da-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+                  {/* Contact details are opt-in. The QR is how riders reach a driver. */}
+                  <div className="field optin">
+                    <label className="check">
+                      <input type="checkbox" checked={showPhone} onChange={(e) => setShowPhone(e.target.checked)} />
+                      <span>Show my phone number on my card</span>
+                    </label>
+                    {showPhone && (
+                      <input id="da-phone" type="tel" aria-label="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(412) 555-0148" />
+                    )}
                   </div>
+
+                  <div className="field optin">
+                    <label className="check">
+                      <input type="checkbox" checked={showEmail} onChange={(e) => setShowEmail(e.target.checked)} />
+                      <span>Show my email on my card</span>
+                    </label>
+                    {showEmail && (
+                      <input id="da-email" type="email" aria-label="Email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" />
+                    )}
+                  </div>
+                  <p className="hint">Both are off unless you turn them on. Riders scan your QR code to join and book with you.</p>
 
                   <div className="field">
                     <label htmlFor="da-avail">Availability line</label>
