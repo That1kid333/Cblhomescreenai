@@ -39,7 +39,7 @@ const faqData = [
   },
   {
     question: 'Where do I manage or edit my directory listings?',
-    answer: 'Everything you post lives in CBL Studio — your member hub. Open it from your profile avatar (top-right) or the "Manage my posts" link on the Directory. There you can edit any listing’s title, price, and photos, pause or delete it, boost it to Featured, and share your digital business card — all in one place. Active Private Membership drivers also get a "Verified CBL Driver" QR card that rides along on their driver posts so riders can connect in the app.',
+    answer: 'Everything you post lives in CBL Studio — your member hub. Open it from your profile avatar (top-right) or the "Manage my posts" link on the Directory. There you can edit any listing’s title, price, and photos, pause or delete it, boost it to Featured, and share your digital business card, all in one place. Active Private Membership drivers also get a "Verified Independent Driver" QR card that rides along on their driver posts so riders can connect in the app.',
   },
   {
     question: 'Do Riders pay a monthly fee?',
@@ -53,7 +53,7 @@ const faqData = [
     // Approved wording, Keith + Brian, Oct 5 2026. Deliberately no "negotiable" and no
     // Uber or Lyft; the same line sits on the app's Book a Ride confirmation.
     question: 'How much does a ride cost?',
-    answer: 'It depends on your driver. Every CBL driver sets their own rates, so prices vary. Some keep rates low, others charge more for the service they offer. Find the driver who fits you, and agree on the price before you ride.',
+    answer: 'It depends on your driver. Every independent driver on CBL sets their own rates, so prices vary. Some keep rates low, others charge more for the service they offer. Agree on the price with your driver before you ride.',
   },
   {
     question: 'Does City Bucket List take a percentage of rides?',

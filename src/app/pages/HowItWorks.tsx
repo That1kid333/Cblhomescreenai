@@ -21,7 +21,7 @@ function BizCardMock() {
       <div className="bc-top">
         <img src={driverFace} alt="" className="bc-face" />
         <div>
-          <div className="bc-verified">★ Verified CBL Driver</div>
+          <div className="bc-verified">★ Verified Independent Driver</div>
           <div className="bc-name">Simone D.</div>
           <div className="bc-role">Airport Runs · Pittsburgh</div>
         </div>

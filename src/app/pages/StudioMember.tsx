@@ -97,7 +97,7 @@ function BusinessCard({ referralCode, driver }: { referralCode: string | null; d
     <div className="card">
       <div className="qr">{qr ? <img src={qr} alt="Your referral QR code" /> : null}</div>
       <div className="cbody">
-        {isDriver && <div className="verified">★ Verified CBL Driver</div>}
+        {isDriver && <div className="verified">★ Verified Independent Driver</div>}
         <div className="ceyebrow">your digital business card</div>
         <h3>Share it. <span className="it">Earn it.</span></h3>
         <p style={{ color: '#B0B0B0', fontSize: 13.5, lineHeight: 1.5, margin: '0 0 4px' }}>

@@ -1336,7 +1336,7 @@ function DriverQRCard({ code }: { code: string }) {
         {qr && <img src={qr} alt="Driver referral QR code" style={{ width: "100%", height: "100%", display: "block" }} />}
       </div>
       <div>
-        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "#8FE0A2", marginBottom: 5 }}>★ Verified CBL Driver</div>
+        <div style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", textTransform: "uppercase", color: "#8FE0A2", marginBottom: 5 }}>★ Verified Independent Driver</div>
         <div style={{ fontSize: 13, color: "#C8C8C8", lineHeight: 1.45 }}>Scan to connect with this driver in the CBL app.</div>
       </div>
     </div>
@@ -1432,7 +1432,7 @@ function DriverAdCard({ d }: { d: DriverAd }) {
       <style>{DRIVERAD_CSS}</style>
       <div className="dc-top">
         {d.photo ? <img className="dc-avatar" src={d.photo} alt={d.name} /> : <div className="dc-avatar ph">{initials}</div>}
-        <div className="dc-eyebrow">CBL Drivers Directory</div>
+        <div className="dc-eyebrow">Independent Drivers Directory</div>
         <div className="dc-h">Need a Ride?</div>
         <div className="dc-ride">Ride with <b>{first}.</b></div>
         <div className="dc-badge">★ Private Membership Association{d.since ? ` · Since ${d.since}` : ""}</div>

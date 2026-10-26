@@ -43,6 +43,9 @@ const GETAPP_CSS = `
 .cbl-getapp .wrap { max-width:1280px; margin:0 auto; }
 .cbl-getapp section.band { padding:48px 48px 56px; }
 .cbl-getapp section.band.tight { padding:28px 48px 36px; }
+/* .tight's vertical rhythm without its side padding, so this band keeps the mobile
+   gutters below and lines up with the hero at every width. */
+.cbl-getapp section.band.bring { padding-top:28px; padding-bottom:36px; }
 
 .cbl-getapp .eyebrow {
   display:inline-flex; align-items:center; gap:10px; font-family:${MONO};
@@ -286,6 +289,24 @@ export function GetTheApp() {
         </div>
       </section>
 
+      {/* Invite-only (Keith, Oct 26 2026): scheduled rides are with the driver who
+          invited you. Folded in from PR #6, with "independent driver" in place of
+          "CBL driver". */}
+      <section className="band bring">
+        <div className="wrap">
+          <div className="strip">
+            <div>
+              <h3>Bring your&nbsp;driver.</h3>
+              <p>
+                Scheduled rides on CBL are with a driver you know. Don&rsquo;t have one yet? Ask an
+                independent driver for their CBL code, or book on demand from the app in
+                the&nbsp;meantime.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="band">
         <div className="wrap">
           <div className="section-eyebrow">three steps, one ride</div>
@@ -293,8 +314,8 @@ export function GetTheApp() {
             Scan. Download. <span className="it">Ride.</span>
           </h2>
           <p className="section-lede">
-            Every CBL driver carries a QR code. It is how riders join, and it is how a driver
-            becomes yours.
+            Every independent driver on CBL carries a QR code. It is how riders join, and it is
+            how a driver becomes yours.
           </p>
           <div className="steps">
             <div className="step">
