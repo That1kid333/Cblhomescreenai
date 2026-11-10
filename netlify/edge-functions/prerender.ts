@@ -25,12 +25,12 @@ const OG_FALLBACK = '/CBL-1024.png';
 // [[headers]] block in netlify.toml, which covers static assets + non-edge routes.
 const CSP =
   "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; " +
-  "script-src 'self' 'unsafe-inline'; " +
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; " +
   "style-src 'self' 'unsafe-inline' https://use.typekit.net https://p.typekit.net https://fonts.googleapis.com; " +
   "font-src 'self' data: https://use.typekit.net https://p.typekit.net https://fonts.gstatic.com; " +
   "img-src 'self' data: https:; " +
   "media-src 'self' data: https:; " +
-  "connect-src 'self' https://*.supabase.co https://use.typekit.net https://p.typekit.net https://ipwho.is https://ipapi.co https://api.bigdatacloud.net https://api.open-meteo.com https://*.googleapis.com; " +
+  "connect-src 'self' https://*.supabase.co https://use.typekit.net https://p.typekit.net https://ipwho.is https://ipapi.co https://api.bigdatacloud.net https://api.open-meteo.com https://*.googleapis.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com; " +
   "frame-src 'self' https://www.google.com https://maps.google.com; upgrade-insecure-requests";
 const SECURITY_HEADERS: Record<string, string> = {
   'X-Content-Type-Options': 'nosniff',

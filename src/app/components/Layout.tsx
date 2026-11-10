@@ -3,6 +3,7 @@ import { ChevronRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import logo from '../../assets/4e362ee0a6833a98e4906d2c5dffb87be8775f8e.png';
 import { useAuth, firstNameOf } from '../lib/auth';
+import { Analytics } from './Analytics';
 import { MemberCard } from './MemberCard';
 
 // Mobile menu, grouped into the same categories as the desktop nav so the two
@@ -91,6 +92,7 @@ export function Layout() {
     <div className="bg-black text-white min-h-screen w-full flex flex-col">
       {/* Scroll to top on navigation; restore position on back/forward */}
       <ScrollRestoration />
+      <Analytics />
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 lg:px-6 py-4 lg:py-6">
