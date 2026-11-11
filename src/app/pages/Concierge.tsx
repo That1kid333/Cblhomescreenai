@@ -471,9 +471,9 @@ export function Concierge() {
           <div className="section-eyebrow">what you earn</div>
           <h2 className="section-h2">Commission, <span className="it">simply paid</span></h2>
           <p className="section-lede">
-            Your commission is funded by a small concierge fee added at booking and paid out securely
-            through Stripe Connect — so your driver always keeps 100% of their fare. Track every dollar
-            from your Concierge Bank.
+            Your commission comes from the driver's fare on every guest ride you book — fair, since
+            you're the one bringing them the business — and pays out securely through Stripe Connect.
+            Track every dollar from your Concierge Bank.
           </p>
           <div className="earn-grid">
             <div className="earn-card">
@@ -537,7 +537,7 @@ export function Concierge() {
               <div className="tag">$0</div>
               <div className="sub">they earn, never pay</div>
               <ul>
-                <li>Keep 8% commission on every guest ride you book</li>
+                <li>Keep 10% commission on every guest ride you book</li>
                 <li>Earn $5 for every driver you refer</li>
                 <li>Full Concierge Dashboard + itinerary tools</li>
                 <li>Secure Stripe payouts — no equipment, no fees</li>
