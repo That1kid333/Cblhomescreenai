@@ -61,6 +61,49 @@ async function reverseGeocode(lat: number, lng: number): Promise<StoredCity | nu
 
 export type Coords = { lat: number; lng: number };
 
+// ── Browse city (Eats & Drinks, Attractions) ─────────────────────────────────
+// A city the visitor searched on a browse page, remembered across reloads so a
+// pick doesn't snap back to the IP guess the moment the page reloads (Brian,
+// 2026-11-12: searched Myrtle Beach on his phone, page went back to "Charlotte",
+// the city his carrier's IP resolves to). Kept apart from the Directory's
+// stored city on purpose: the Directory stamps its city onto driver ads, and a
+// restaurant search in another town shouldn't quietly change where an ad posts.
+const BROWSE_KEY = 'cbl_browse_city';
+export type BrowseCity = { city: string; coords: Coords };
+
+export function readBrowseCity(): BrowseCity | null {
+  try {
+    const raw = localStorage.getItem(BROWSE_KEY);
+    if (!raw) return null;
+    const v = JSON.parse(raw) as BrowseCity;
+    return v && v.city && v.coords && typeof v.coords.lat === 'number' ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function storeBrowseCity(v: BrowseCity | null) {
+  try {
+    if (v) localStorage.setItem(BROWSE_KEY, JSON.stringify(v));
+    else localStorage.removeItem(BROWSE_KEY);
+  } catch {
+    /* private browsing — the pick just won't survive a reload */
+  }
+}
+
+export type GpsProblem = 'denied' | 'unavailable' | 'unsupported';
+export type GpsResult = { ok: boolean; reason?: GpsProblem };
+
+/** Plain-English note for a failed "Near me", or null when there's nothing to say. */
+export function gpsProblemMessage(reason: GpsProblem | null | undefined): string | null {
+  if (reason === 'denied')
+    return 'Location is turned off for this site. Allow it in your browser settings, or search your city above.';
+  if (reason === 'unavailable')
+    return "Couldn't get your location just now. Try again, or search your city above.";
+  if (reason === 'unsupported') return "This browser can't share your location. Search your city above.";
+  return null;
+}
+
 // ── Forward geocoding (place name → coordinates) ────────────────────────────
 // Powers proximity search in the Directory: a listing tagged "Pittsburgh"
 // should surface for a visitor searching "North Hills PA" (a suburb ~11mi
@@ -554,8 +597,13 @@ export function useVisitorLocation() {
   }, []);
 
   // Optional precision upgrade — GPS (prompts once) for exact nearest-first.
-  const requestPrecise = () => {
-    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+  // `onDone` reports whether GPS actually worked, so a "Near me" tap can say why
+  // it didn't instead of silently leaving the visitor on the IP guess.
+  const requestPrecise = (onDone?: (r: GpsResult) => void) => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      onDone?.({ ok: false, reason: 'unsupported' });
+      return;
+    }
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const gps = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -575,18 +623,29 @@ export function useVisitorLocation() {
         // GPS fix lands outside every seeded area, ask the keyless reverse geocoder
         // what is actually there. Only for far fixes — inside a seeded market the
         // curated label ("North Hills") beats whatever a geocoder returns.
+        //
+        // While that lookup runs the label would otherwise keep showing the IP
+        // city (Brian in Myrtle Beach saw "Charlotte", 150 miles off, even with
+        // GPS on), so show "you…" until the real name arrives. A manual pick is
+        // never renamed here.
         if (!localAreaLabel(gps) && !nearestMetro(gps, METRO_LABEL_RADIUS_MI)) {
+          const manual = !!readStoredCity();
+          if (!manual) setStatus('locating');
           reverseGeocode(gps.lat, gps.lng).then((place) => {
-            if (place?.city) setLocation(place);
+            if (place?.city && !readStoredCity()) setLocation(place);
           }).catch(() => {
             /* keep whatever we had; a wrong-but-present name beats a blank page */
+          }).finally(() => {
+            if (!manual) setStatus('resolved');
           });
         }
+        onDone?.({ ok: true });
       },
-      () => {
-        /* denied — the IP-based coords remain in effect */
+      (err) => {
+        // Denied or timed out — the IP-based coords remain in effect.
+        onDone?.({ ok: false, reason: err && err.code === 1 ? 'denied' : 'unavailable' });
       },
-      { timeout: 8000 }
+      { timeout: 10000, maximumAge: 300000 }
     );
   };
 

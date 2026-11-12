@@ -2,7 +2,10 @@ import { useState, useEffect, useMemo, createContext, useContext } from 'react';
 import { Car } from 'lucide-react';
 import { scheduleRideUrl } from '../lib/scheduleRide';
 import { Link } from 'react-router';
-import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
+import {
+  useVisitorLocation, displayCity, readBrowseCity, storeBrowseCity, gpsProblemMessage,
+  type Coords, type VisitorLocationStatus,
+} from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { AttractionsAffiliate } from '../components/AttractionsAffiliate';
 import { useLocalEvents, ticketSegmentFor, EventTicketCard, nextEventAtVenue, venueKey, type TMEvent } from '../components/LocalEvents';
@@ -1102,12 +1105,14 @@ function LocationBar({
   onSearchCity,
   onNearMe,
   searching,
+  hint,
 }: {
   status: VisitorLocationStatus;
   activeCity: string;
-  onSearchCity: (q: string) => void;
+  onSearchCity: (q: string, label?: string) => void;
   onNearMe: () => void;
   searching: boolean;
+  hint?: string | null;
 }) {
   const [q, setQ] = useState('');
   return (
@@ -1148,6 +1153,11 @@ function LocationBar({
         </svg>
         {searching ? 'Locating…' : 'Near me'}
       </button>
+      {hint && (
+        <p role="status" style={{ flexBasis: '100%', margin: '2px 0 0', color: '#B0B0B0', fontSize: 12, lineHeight: 1.5, textAlign: 'center' }}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -1693,23 +1703,43 @@ export function Attractions() {
   const loc = useVisitorLocation();
   // A city the visitor typed into the search box (geocoded). When set, it
   // overrides the auto-detected location; "Near me" clears it back to GPS/IP.
-  const [searched, setSearched] = useState<{ city: string; coords: Coords } | null>(null);
+  // Remembered across reloads (see readBrowseCity), so a pick doesn't snap back
+  // to the IP city when the page reloads.
+  const [searched, setSearchedState] = useState<{ city: string; coords: Coords } | null>(() => readBrowseCity());
+  const setSearched = (v: { city: string; coords: Coords } | null) => {
+    setSearchedState(v);
+    storeBrowseCity(v);
+  };
   const [searching, setSearching] = useState(false);
+  const [locHint, setLocHint] = useState<string | null>(null);
 
-  const onSearchCity = async (q: string) => {
+  // `label` is the name the visitor picked from the suggestions ("Myrtle Beach");
+  // `q` may carry the state too ("Myrtle Beach, SC, USA") so the geocoder lands
+  // on the right town.
+  const onSearchCity = async (q: string, label?: string) => {
     setSearching(true);
+    setLocHint(null);
     try {
       const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`).then((res) => res.json());
-      if (r.coord) setSearched({ city: r.city || q, coords: { lat: r.coord[0], lng: r.coord[1] } });
+      if (r.coord) setSearched({ city: label || r.city || q, coords: { lat: r.coord[0], lng: r.coord[1] } });
+      else setLocHint(`Couldn't find "${label || q}". Try adding the state, like "Myrtle Beach SC".`);
     } catch {
-      /* ignore — keep current location */
+      setLocHint("Couldn't search just now. Try again in a moment.");
     } finally {
       setSearching(false);
     }
   };
+  // GPS first; only drop the searched city once GPS actually worked. Clearing it
+  // up front meant a blocked or slow GPS left the visitor on the IP guess
+  // ("Charlotte" for Brian in Myrtle Beach) with no word as to why.
   const onNearMe = () => {
-    setSearched(null);
-    loc.requestPrecise(); // GPS: pinpoint the visitor for true closest-first
+    setSearching(true);
+    setLocHint(null);
+    loc.requestPrecise((res) => {
+      setSearching(false);
+      if (res.ok) setSearched(null);
+      else setLocHint(gpsProblemMessage(res.reason));
+    });
   };
 
   // Per-page SEO title + meta description (Google renders JS; also covers SPA nav).
@@ -1865,11 +1895,12 @@ export function Attractions() {
       <style>{ATTRACTIONS_CSS}</style>
       <Hero />
       <LocationBar
-        status={loc.status}
+        status={searched ? 'manual' : loc.status}
         activeCity={activeCity}
         onSearchCity={onSearchCity}
         onNearMe={onNearMe}
         searching={searching}
+        hint={locHint}
       />
       <WeatherStrip weather={weather} city={activeCity} />
       <Filters cat={cat} setCat={setCat} />
