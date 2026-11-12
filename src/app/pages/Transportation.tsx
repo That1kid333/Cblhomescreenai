@@ -159,9 +159,11 @@ const FAQS = [
   // signed, and the answer above says CBL earns nothing on those rides).
   {
     q: 'Does CBL take a percentage of rides?',
-    // Matches the app (src/lib/serviceFee.ts) and the main FAQ page. The old round-up
-    // fee is retired.
-    a: "For rides paid by card, a 4.6% + $0.50 platform and processing fee is added to the fare and shown before you book. It is never applied to tips, and in-person payments have no fee. 100% of the driver's fare goes to them.",
+    // Matches the app (src/lib/serviceFee.ts) and the main FAQ page. The old round-up fee
+    // was retired 2026-08-01; the flat 4.6% + $0.50 that replaced it was retired 2026-11-11
+    // for a margin-targeted fee that covers the processing cost of the tip too, which the
+    // flat rate did not (a generous tip on a modest fare used to cost CBL money outright).
+    a: "For rides paid by card, a transparent platform and processing fee is added to the fare, covering the real cost of processing your payment (including any tip), and shown in full before you book. In-person payments have no fee. 100% of the driver's fare goes to them; the fee is never taken from it.",
   },
   {
     q: 'Do drivers work for CityBucketList?',
