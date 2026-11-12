@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef, createContext, useContext } from 'react';
 import { Link } from 'react-router';
-import { useVisitorLocation, displayCity, type Coords, type VisitorLocationStatus } from '../lib/location';
+import {
+  useVisitorLocation, displayCity, readBrowseCity, storeBrowseCity, gpsProblemMessage,
+  type Coords, type VisitorLocationStatus,
+} from '../lib/location';
 import { PlatformNotice } from '../components/PlatformNotice';
 import { useAuth } from '../lib/auth';
 
@@ -82,12 +85,14 @@ function LocationBar({
   onSearchCity,
   onNearMe,
   searching,
+  hint,
 }: {
   status: VisitorLocationStatus;
   activeCity: string;
-  onSearchCity: (q: string) => void;
+  onSearchCity: (q: string, label?: string) => void;
   onNearMe: () => void;
   searching: boolean;
+  hint?: string | null;
 }) {
   const [q, setQ] = useState('');
   // Google-backed location autocomplete (via our server-side proxy), same as the
@@ -112,9 +117,12 @@ function LocationBar({
       } catch { setSug([]); setOpenSug(false); }
     }, 240);
   };
-  const pick = (text: string) => {
-    setQ(text); setSug([]); setOpenSug(false); setActiveIdx(-1);
-    if (text.trim()) onSearchCity(text.trim());
+  // Geocode "Myrtle Beach, SC, USA" (not just "Myrtle Beach") so the right town
+  // wins, but label the page with the name the visitor picked.
+  const pick = (s: { mainText: string; secondaryText: string }) => {
+    const name = s.mainText.trim();
+    setQ(name); setSug([]); setOpenSug(false); setActiveIdx(-1);
+    if (name) onSearchCity(s.secondaryText ? `${name}, ${s.secondaryText}` : name, name);
   };
   useEffect(() => {
     const onDoc = (e: MouseEvent) => { if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpenSug(false); };
@@ -138,7 +146,7 @@ function LocationBar({
         style={{ position: 'relative' }}
         onSubmit={(e) => {
           e.preventDefault();
-          if (openSug && activeIdx >= 0 && sug[activeIdx]) pick(sug[activeIdx].mainText);
+          if (openSug && activeIdx >= 0 && sug[activeIdx]) pick(sug[activeIdx]);
           else if (q.trim()) onSearchCity(q.trim());
         }}
       >
@@ -178,7 +186,7 @@ function LocationBar({
                 key={s.mainText + i}
                 role="option"
                 aria-selected={i === activeIdx}
-                onMouseDown={(e) => { e.preventDefault(); pick(s.mainText); }}
+                onMouseDown={(e) => { e.preventDefault(); pick(s); }}
                 onMouseEnter={() => setActiveIdx(i)}
                 style={{ display: 'flex', flexDirection: 'column', gap: 1, padding: '8px 12px', borderRadius: 9, cursor: 'pointer', background: i === activeIdx ? 'rgba(201,151,66,.14)' : 'transparent' }}
               >
@@ -196,6 +204,11 @@ function LocationBar({
         </svg>
         {searching ? 'Locating…' : 'Near me'}
       </button>
+      {hint && (
+        <p role="status" style={{ flexBasis: '100%', margin: '2px 0 0', color: '#B0B0B0', fontSize: 12, lineHeight: 1.5, textAlign: 'center' }}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
@@ -2742,24 +2755,44 @@ export function EatsAndDrinks() {
   const loc = useVisitorLocation();
   // A city the visitor typed into the search box (geocoded). When set, it
   // overrides the auto-detected location; "Near me" clears it back to GPS/IP.
-  const [searched, setSearched] = useState<{ city: string; coords: Coords } | null>(null);
+  // Remembered across reloads (see readBrowseCity), so a pick doesn't snap back
+  // to the IP city when the page reloads.
+  const [searched, setSearchedState] = useState<{ city: string; coords: Coords } | null>(() => readBrowseCity());
+  const setSearched = (v: { city: string; coords: Coords } | null) => {
+    setSearchedState(v);
+    storeBrowseCity(v);
+  };
   const [searching, setSearching] = useState(false);
+  const [locHint, setLocHint] = useState<string | null>(null);
   const [modalR, setModalR] = useState<Restaurant | null>(null);
 
-  const onSearchCity = async (q: string) => {
+  // `label` is the name the visitor picked from the suggestions ("Myrtle Beach");
+  // `q` may carry the state too ("Myrtle Beach, SC, USA") so the geocoder lands
+  // on the right town.
+  const onSearchCity = async (q: string, label?: string) => {
     setSearching(true);
+    setLocHint(null);
     try {
       const r = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`).then((res) => res.json());
-      if (r.coord) setSearched({ city: r.city || q, coords: { lat: r.coord[0], lng: r.coord[1] } });
+      if (r.coord) setSearched({ city: label || r.city || q, coords: { lat: r.coord[0], lng: r.coord[1] } });
+      else setLocHint(`Couldn't find "${label || q}". Try adding the state, like "Myrtle Beach SC".`);
     } catch {
-      /* ignore — keep current location */
+      setLocHint("Couldn't search just now. Try again in a moment.");
     } finally {
       setSearching(false);
     }
   };
+  // GPS first; only drop the searched city once GPS actually worked. Clearing it
+  // up front meant a blocked or slow GPS left the visitor on the IP guess
+  // ("Charlotte" for Brian in Myrtle Beach) with no word as to why.
   const onNearMe = () => {
-    setSearched(null);
-    loc.requestPrecise(); // GPS: pinpoint the visitor for true closest-first
+    setSearching(true);
+    setLocHint(null);
+    loc.requestPrecise((res) => {
+      setSearching(false);
+      if (res.ok) setSearched(null);
+      else setLocHint(gpsProblemMessage(res.reason));
+    });
   };
 
   // Auto-locate on load so the list opens to the restaurants closest to you.
@@ -2790,11 +2823,12 @@ export function EatsAndDrinks() {
       <style>{PARTNER_CSS}</style>
       <style>{LOC_CSS}</style>
       <LocationBar
-        status={loc.status}
+        status={searched ? 'manual' : loc.status}
         activeCity={activeCity}
         onSearchCity={onSearchCity}
         onNearMe={onNearMe}
         searching={searching}
+        hint={locHint}
       />
       <DesktopEats
         meal={meal}
