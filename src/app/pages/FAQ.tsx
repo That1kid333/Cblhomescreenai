@@ -57,9 +57,10 @@ const faqData = [
   },
   {
     question: 'Does City Bucket List take a percentage of rides?',
-    // The fee rule changed on Aug 17 2026 (4.6% + $0.50, fare only, never the tip); the
-    // round-up wording here was from before that.
-    answer: 'Yes, for card payments only. A transparent 4.6% + $0.50 platform and processing fee is added to the fare and shown before you book. It is never applied to tips, and in-person payments have no fee. 100% of the fare goes directly to your driver; the fee supports the platform, not the driver\'s earnings.',
+    // The fee rule changed on Aug 17 2026 (flat 4.6% + $0.50, fare only, never the tip) and
+    // again on Nov 11 2026 (margin-targeted, tip included, since the flat rate lost money on
+    // generously-tipped rides). The round-up wording here predates both.
+    answer: 'Yes, for card payments only. A transparent platform and processing fee is added to the fare, covering the real cost of processing your payment (including any tip), and shown in full before you book. In-person payments have no fee. 100% of the fare goes directly to your driver; the fee supports the platform, not the driver\'s earnings.',
   },
   {
     question: 'What kind of rides can Riders schedule?',
