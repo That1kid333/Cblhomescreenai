@@ -29,6 +29,7 @@ const MOBILE_NAV: MobileSection[] = [
       { label: 'Eats & Drinks', to: '/eats-and-drinks' },
       { label: 'Attractions', to: '/attractions' },
       { label: 'Delivery', to: '/delivery' },
+      { label: 'Arcade', to: '/arcade' },
     ],
   },
   {
@@ -182,6 +183,10 @@ export function Layout() {
                       <div className="border-b border-gray-600 border-dotted mx-4"></div>
                       <Link to="/delivery" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
                         Delivery
+                      </Link>
+                      <div className="border-b border-gray-600 border-dotted mx-4"></div>
+                      <Link to="/arcade" className="block px-4 py-2 text-sm text-white hover:bg-[#FDB913] hover:text-black transition-colors">
+                        Arcade
                       </Link>
                     </div>
                   </div>
