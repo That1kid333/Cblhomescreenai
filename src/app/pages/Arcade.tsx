@@ -14,6 +14,11 @@ import { ExternalLink } from 'lucide-react';
  *
  * ParKING was fully replaced by Bucket List City (Nov 2026, "Bucket List City 5.0.0
  * replaces ParKING"); the old parking-lot premise no longer exists on that site.
+ *
+ * cbl-bucket-list-pinball.netlify.app was deployed by direct upload, not from any
+ * connected Git repo, and its table is drawn live on <canvas>, not a static image
+ * file. Its preview is a real headless-Chrome screenshot of the live table
+ * (`chrome --headless --screenshot`), not an asset pulled from anywhere.
  */
 
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -90,9 +95,9 @@ const GAMES = [
     image: '/arcade/bucket-list-city.jpg',
   },
   {
-    name: 'CBL Pinball',
-    tagline: 'City Bucket List Pinball',
-    description: 'A full pinball table, CBL themed. Quick to pick up, hard to put down.',
+    name: 'City Bucket List: Night Shift',
+    tagline: 'A real pinball table, CBL themed',
+    description: "Friday night in Pittsburgh. Shoot the Concierge to start a ride, clear all six stops on tonight's bucket list, and chase Victory Lap multiball.",
     url: 'https://cbl-bucket-list-pinball.netlify.app',
     image: '/arcade/cbl-pinball.jpg',
   },
