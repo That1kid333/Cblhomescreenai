@@ -23,6 +23,7 @@ import { GetTheApp } from './pages/GetTheApp';
 import { Login } from './pages/Login';
 import { Studio } from './pages/Studio';
 import { TermsAndConditions } from './pages/TermsAndConditions';
+import { Arcade } from './pages/Arcade';
 
 export const router = createBrowserRouter([
   {
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
       { path: 'directory', Component: Directory },
       { path: 'eats-and-drinks', Component: EatsAndDrinks },
       { path: 'delivery', Component: Delivery },
+      { path: 'arcade', Component: Arcade },
       { path: 'terms', Component: TermsAndConditions },
       { path: 'travels', Component: Travels },
       { path: 'transportation', Component: Transportation },
