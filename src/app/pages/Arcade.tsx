@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { Gamepad2, ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 /**
  * Two CBL-made games, open to everyone. Each card is a plain outbound link to its
@@ -9,7 +9,11 @@ import { Gamepad2, ExternalLink } from 'lucide-react';
  * Brand note: this page uses #F5A623 ("cbl-gold" in the app repo's Tailwind config),
  * the one-gold-everywhere standard set Oct 18 2026. The rest of this repo still runs
  * on the older #C99742 / #FDB913 pair; that's a pre-existing drift this page doesn't
- * try to fix.
+ * try to fix. Confirmed deliberate: #F5A623 is the standard, the rest of the site is
+ * what's behind, not the other way around.
+ *
+ * ParKING was fully replaced by Bucket List City (Nov 2026, "Bucket List City 5.0.0
+ * replaces ParKING"); the old parking-lot premise no longer exists on that site.
  */
 
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -44,14 +48,12 @@ const ARCADE_CSS = `
 
 .cbl-arcade .card {
   background:#141414; border:1px solid rgba(255,255,255,.08);
-  border-radius:18px 0 18px 0; padding:28px; display:flex; flex-direction:column; gap:14px;
+  border-radius:18px 0 18px 0; overflow:hidden; display:flex; flex-direction:column;
   transition:transform .3s, border-color .3s;
 }
 .cbl-arcade .card:hover { transform:translateY(-4px); border-color:rgba(245,166,35,.45); }
-.cbl-arcade .card .ic {
-  width:56px; height:56px; border-radius:14px; background:#0A0A0A; border:1px solid rgba(245,166,35,.35);
-  display:flex; align-items:center; justify-content:center; color:${GOLD};
-}
+.cbl-arcade .card .preview { width:100%; height:220px; object-fit:cover; display:block; }
+.cbl-arcade .card .body { padding:24px; display:flex; flex-direction:column; gap:12px; flex:1; }
 .cbl-arcade .card h3 {
   font-weight:900; font-size:24px; line-height:1; text-transform:uppercase; letter-spacing:-.01em; margin:0; color:#fff;
 }
@@ -81,16 +83,18 @@ function injectStyles() {
 
 const GAMES = [
   {
-    name: 'ParKING',
-    tagline: 'Idle Parking Tycoon',
-    description: 'Build a parking empire from a gravel lot to the stars. Idle income, upgrades, prestige.',
+    name: 'Bucket List City',
+    tagline: 'Build your own bucket list city',
+    description: 'Grow a city full of bucket list venues with Buckee, Citty and Listy. Idle income, upgrades, prestige.',
     url: 'https://parking-idle-tycoon.netlify.app',
+    image: '/arcade/bucket-list-city.jpg',
   },
   {
     name: 'CBL Pinball',
     tagline: 'City Bucket List Pinball',
     description: 'A full pinball table, CBL themed. Quick to pick up, hard to put down.',
     url: 'https://cbl-bucket-list-pinball.netlify.app',
+    image: '/arcade/cbl-pinball.jpg',
   },
 ];
 
@@ -107,16 +111,16 @@ export function Arcade() {
       <div className="grid">
         {GAMES.map((game) => (
           <div className="card" key={game.name}>
-            <div className="ic">
-              <Gamepad2 size={28} />
+            <img className="preview" src={game.image} alt={`${game.name} preview`} />
+            <div className="body">
+              <p className="tagline">{game.tagline}</p>
+              <h3>{game.name}</h3>
+              <p className="desc">{game.description}</p>
+              <a className="play" href={game.url} target="_blank" rel="noopener noreferrer">
+                Play {game.name}
+                <ExternalLink size={16} />
+              </a>
             </div>
-            <p className="tagline">{game.tagline}</p>
-            <h3>{game.name}</h3>
-            <p className="desc">{game.description}</p>
-            <a className="play" href={game.url} target="_blank" rel="noopener noreferrer">
-              Play {game.name}
-              <ExternalLink size={16} />
-            </a>
           </div>
         ))}
       </div>
