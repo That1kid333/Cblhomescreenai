@@ -24,6 +24,7 @@ import { APP_URL } from '../lib/constants';
 import { useAuth, firstNameOf } from '../lib/auth';
 import { signUpMember, authClient } from '../lib/supabase/authClient';
 import { captureRefFromUrl } from '../lib/referral';
+import { trackEvent } from '../lib/analytics';
 
 const GOLD = '#C99742';
 const DISPLAY = "'myriad-pro', 'Source Sans 3', sans-serif";
@@ -379,6 +380,7 @@ export function Login() {
       setErrorMessage(error);
     } else {
       setStatus('success');
+      trackEvent('sign_up', { method: 'email', member_type: 'rider', source: 'login-page' });
     }
   };
 

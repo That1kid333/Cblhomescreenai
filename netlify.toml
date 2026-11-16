@@ -96,6 +96,12 @@
 [[edge_functions]]
   path = "/terms"
   function = "prerender"
+[[edge_functions]]
+  path = "/app"
+  function = "prerender"
+[[edge_functions]]
+  path = "/arcade"
+  function = "prerender"
 
 # Dynamic sitemap listing static pages + all published blog posts.
 [[edge_functions]]
@@ -107,10 +113,219 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# ── Old addresses (SEO audit, Nov 2026) ──
+# Google still holds links from the old www site. Before these, each one
+# answered 200 with the home page's title and React Router's error screen, so
+# Google filed them as duplicate home pages. 301 = moved for good.
+[[redirects]]
+  from = "/about-us"
+  to = "/our-story"
+  status = 301
+[[redirects]]
+  from = "/about"
+  to = "/our-story"
+  status = 301
+[[redirects]]
+  from = "/contact-us"
+  to = "/contact"
+  status = 301
+[[redirects]]
+  from = "/riders"
+  to = "/how-it-works"
+  status = 301
+# Temporary (302) until the Pittsburgh fun facts post exists. When it is
+# published, point this at /blog/<its slug> and change the status to 301.
+[[redirects]]
+  from = "/fun-facts"
+  to = "/blog"
+  status = 302
+
+# ── App addresses typed on the main domain ──
+# These pages live on app.citybucketlist.com. Until now a wrong-domain link
+# still "worked" by landing on the home page; with real 404s below, forward
+# them to the app instead so a printed or shared link never dead-ends.
+[[redirects]]
+  from = "/r/*"
+  to = "https://app.citybucketlist.com/r/:splat"
+  status = 302
+[[redirects]]
+  from = "/p/*"
+  to = "https://app.citybucketlist.com/p/:splat"
+  status = 302
+[[redirects]]
+  from = "/c/*"
+  to = "https://app.citybucketlist.com/c/:splat"
+  status = 302
+[[redirects]]
+  from = "/rider/*"
+  to = "https://app.citybucketlist.com/rider/:splat"
+  status = 302
+[[redirects]]
+  from = "/driver/*"
+  to = "https://app.citybucketlist.com/driver/:splat"
+  status = 302
+[[redirects]]
+  from = "/partner/*"
+  to = "https://app.citybucketlist.com/partner/:splat"
+  status = 302
+[[redirects]]
+  from = "/privacy"
+  to = "https://app.citybucketlist.com/privacy"
+  status = 302
+[[redirects]]
+  from = "/download-app"
+  to = "/app"
+  status = 301
+# Branded short link for the CBL Driver Feedback Survey (Google Form). The app
+# repo's netlify.toml carries the same rule, but that file configures
+# app.citybucketlist.com, so citybucketlist.com/cblsurvey never reached it.
+[[redirects]]
+  from = "/cblsurvey"
+  to = "https://forms.gle/pMtiBGcMYKdoy8EU9"
+  status = 302
+  force = true
+
+# ── Single-page app routes ──
+# Every real page, rewritten to the app shell with 200. Mirrors src/app/routes.ts:
+# ADD A LINE HERE WHEN YOU ADD A PAGE, or the new page will answer 404 to Google
+# (it still draws fine for visitors, which is why it would go unnoticed).
+[[redirects]]
+  from = "/faq"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/our-story"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/how-it-works"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/app"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/meet-buckee"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog/*"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/directory"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/eats-and-drinks"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/delivery"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/arcade"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/travels"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/transportation"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/attractions"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/affiliates"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/concierge"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/partner-restaurants"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/partner-attractions"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/feedback"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/studio"
+  to = "/index.html"
+  status = 200
+
+# Everything else is a real "not found": the app shell, served with a 404
+# status, draws the branded NotFound page. Real files in dist/ (images, PDFs,
+# robots.txt, llms.txt) are served before any of these rules.
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
+  status = 404
+
+# Member-only pages stay out of search results. (/login is served by the
+# prerender edge function, which sets its own noindex: [[headers]] here do not
+# reach edge-function responses.)
+[[headers]]
+  for = "/studio"
+  [headers.values]
+    X-Robots-Tag = "noindex"
+
+# Plain-text guides for AI tools and the IndexNow key: say so, so nothing
+# sniffs them as HTML.
+[[headers]]
+  for = "/llms.txt"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
 
 # ── Security headers (apply to every response) ──
 [[headers]]

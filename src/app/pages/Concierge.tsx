@@ -18,6 +18,7 @@ import { useState } from 'react';
 import { APP_URL } from '../lib/constants';
 import conciergeDashImg from '../../assets/cbl-concierge-dashboard.png';
 import plaqueImg from '../../assets/cbl-concierge-desk-plaque.png';
+import { trackEvent } from '../lib/analytics';
 
 const CSS = `
 .cbl-concierge{
@@ -274,6 +275,7 @@ export function Concierge() {
       const result = await res.json().catch(() => ({}));
       if (res.ok && result.success) {
         setStatus('success');
+        trackEvent('generate_lead', { member_type: 'concierge_partner', plan: String(plan) });
       } else {
         setStatus('error');
         setErrorMessage(result.error || 'Something went wrong. Please try again.');
