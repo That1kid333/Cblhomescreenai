@@ -101,13 +101,15 @@ const GAMES = [
   {
     name: 'City Bucket List: Night Shift',
     tagline: 'A real pinball table, CBL themed',
-    description: "Friday night in Pittsburgh. Shoot the Concierge to start a ride, clear all six stops on tonight's bucket list, and chase Victory Lap multiball.",
+    description: 'Pittsburgh bucket-list themed. Six city stops to clear, and a multiball finish to chase.',
     url: 'https://cbl-bucket-list-pinball.netlify.app',
-    // The whole table, uncropped (no single horizontal slice reads as "pinball" on its
-    // own: the flippers that make it recognizable sit far below the bumpers). Shown in
-    // full via object-fit: contain, letterboxed on the card's own dark background.
+    // The bumpers/mascots at the top and the flippers near the bottom are too far
+    // apart to both fit in one short landscape crop (the real screenshot is 860x1864).
+    // Cropped to the flipper/footer band instead, ending at the screenshot's actual
+    // bottom edge: it's the one region that's unmistakably "pinball," same uniform
+    // box and object-fit: cover as the city card.
     image: '/arcade/cbl-pinball.jpg',
-    imageFit: 'contain',
+    imageFit: 'cover',
   },
 ];
 
