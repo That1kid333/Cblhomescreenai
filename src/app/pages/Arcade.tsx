@@ -47,17 +47,18 @@ const ARCADE_CSS = `
 
 .cbl-arcade .grid {
   max-width:900px; margin:40px auto 80px; padding:0 24px;
-  display:grid; grid-template-columns:repeat(2,1fr); gap:20px;
+  display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:20px;
 }
-@media (max-width: 700px) { .cbl-arcade .grid { grid-template-columns:1fr; } }
+@media (max-width: 700px) { .cbl-arcade .grid { grid-template-columns:minmax(0, 1fr); } }
 
 .cbl-arcade .card {
   background:#141414; border:1px solid rgba(255,255,255,.08);
   border-radius:18px 0 18px 0; overflow:hidden; display:flex; flex-direction:column;
   transition:transform .3s, border-color .3s;
+  min-width:0;
 }
 .cbl-arcade .card:hover { transform:translateY(-4px); border-color:rgba(245,166,35,.45); }
-.cbl-arcade .card .preview { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
+.cbl-arcade .card .preview { width:100%; aspect-ratio:3/2; object-fit:cover; display:block; }
 .cbl-arcade .card .body { padding:24px; display:flex; flex-direction:column; gap:12px; flex:1; }
 .cbl-arcade .card h3 {
   font-weight:900; font-size:24px; line-height:1; text-transform:uppercase; letter-spacing:-.01em; margin:0; color:#fff;
