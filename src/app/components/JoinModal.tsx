@@ -4,6 +4,7 @@ import { APP_URL } from '../lib/constants';
 import { signUpMember, authClient } from '../lib/supabase/authClient';
 import { useAuth, firstNameOf } from '../lib/auth';
 import { captureRefFromUrl } from '../lib/referral';
+import { trackEvent } from '../lib/analytics';
 
 /**
  * JoinModal — real member sign-up, right on the site.
@@ -234,6 +235,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       setSiError(error);
     } else {
       setSiStatus('idle');
+      trackEvent('login', { method: 'email', source: source || 'join-modal' });
     }
   };
 
@@ -260,6 +262,7 @@ export function JoinModal({ open, onClose, source = 'site' }: JoinModalProps) {
       setErrorMessage(error);
     } else {
       setStatus('success');
+      trackEvent('sign_up', { method: 'email', member_type: 'rider', source: source || 'join-modal' });
     }
   };
 

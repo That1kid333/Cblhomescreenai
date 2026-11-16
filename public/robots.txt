@@ -1,4 +1,30 @@
+# citybucketlist.com
+# Every search engine and AI assistant is welcome to read the public site.
+# Member pages (/login, /studio) carry a noindex tag instead of a Disallow
+# line, so crawlers can still see that tag and drop them from results.
+
 User-agent: *
 Allow: /
+Disallow: /api/
+
+# Named so a future blanket rule can't shut them out by accident.
+User-agent: Googlebot
+User-agent: Google-Extended
+User-agent: Bingbot
+User-agent: Applebot
+User-agent: Applebot-Extended
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: meta-externalagent
+User-agent: DuckAssistBot
+User-agent: CCBot
+Allow: /
+Disallow: /api/
 
 Sitemap: https://citybucketlist.com/sitemap.xml

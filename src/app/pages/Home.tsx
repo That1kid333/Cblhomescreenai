@@ -1,16 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router';
-import conciergeImage from '../../assets/9b0fc11a5ef647d02d147f7c1dee023bd105e175.png';
-import transportationImage from '../../assets/0c14cb1865bf0ca612f6fcb9d74d4ff3578188ac.png';
-import eatsImage from '../../assets/5f602f7d30b9658349675aa8836bb8d75594e226.png';
-import attractionsImage from '../../assets/e04fa8d75cf2828287ef82f02beaae9386ee6f52.png';
-import blogImage from '../../assets/cbl_blog_slide.png';
-import directoryImage from '../../assets/cbl_directory_slide.png';
-import buckeeImage from '../../assets/buckee.png';
-import buckeeServerImg from '../../assets/buckee_server.png';
-import cittyImage from '../../assets/citty.png';
-import listyImage from '../../assets/listy.png';
-import riderDashboardImg from '../../assets/app/phone-dashboard-2x.png';
+// Below-the-fold art as WebP, sized to how big it is drawn (Nov 2026 speed fix:
+// the PNG originals were 300 KB to 1 MB each and Google's phone test waited on them).
+import buckeeImage from '../../assets/buckee.webp';
+import buckeeServerImg from '../../assets/buckee_server.webp';
+import cittyImage from '../../assets/citty.webp';
+import listyImage from '../../assets/listy.webp';
+import riderDashboardImg from '../../assets/app/phone-dashboard-2x.webp';
 import appStoreBadge from '../../assets/app/app-store-badge.svg';
 import googlePlayBadge from '../../assets/app/google-play-badge.png';
 import { APP_URL } from '../lib/constants';
@@ -38,10 +34,28 @@ const ITALIC = "'Playfair Display', serif";
 
 const MAP_BG = '/eats/imagery/cbl-map-backdrop.jpg';
 
+/**
+ * Hero slide images live in public/hero as fixed-name WebP files (640 px for
+ * phones, up to 1200 px for desktop) instead of hashed PNG imports. The fixed
+ * name lets the prerender edge function preload the first slide in the HTML
+ * itself, so the phone's main image no longer waits for the JavaScript to load.
+ * Regenerate both sizes from the originals in src/assets if a slide changes.
+ * The first slide's file name is mirrored in netlify/edge-functions/prerender.ts.
+ */
+type HeroImg = { src: string; srcSet: string };
+const heroImg = (key: string, bigWidth: number): HeroImg => ({
+  src: `/hero/home-${key}-640.webp`,
+  srcSet: `/hero/home-${key}-640.webp 640w, /hero/home-${key}-1200.webp ${bigWidth}w`,
+});
+const HERO_SIZES = '(max-width: 1000px) 100vw, 46vw';
+// Blog + directory cards further down reuse the slide art at card size.
+const blogImage = '/hero/home-blog-640.webp';
+const directoryImage = '/hero/home-directory-640.webp';
+
 
 type Slide = {
   key: string;
-  image: string;
+  image: HeroImg;
   alt: string;
   headline: React.ReactNode;
   caption: React.ReactNode;
@@ -53,7 +67,7 @@ type Slide = {
 const SLIDES: Slide[] = [
   {
     key: 'transportation',
-    image: transportationImage,
+    image: heroImg('ride', 1000),
     alt: 'Transportation Services',
     headline: (
       <>
@@ -73,7 +87,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'travels',
-    image: conciergeImage,
+    image: heroImg('travels', 1200),
     alt: 'Hotel Concierge Services',
     headline: (
       <>
@@ -93,7 +107,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'eats',
-    image: eatsImage,
+    image: heroImg('eats', 1200),
     alt: 'Dining and Restaurants',
     imgPos: '50% 18%', // keep the waiter's head from being cropped in the short mobile banner
     headline: (
@@ -114,7 +128,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'attractions',
-    image: attractionsImage,
+    image: heroImg('attractions', 1050),
     alt: 'Local Attractions',
     headline: (
       <>
@@ -134,7 +148,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'blog',
-    image: blogImage,
+    image: heroImg('blog', 1024),
     alt: 'CBL Blog',
     headline: (
       <>
@@ -154,7 +168,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'directory',
-    image: directoryImage,
+    image: heroImg('directory', 1024),
     alt: 'CBL Directory',
     headline: (
       <>
@@ -331,14 +345,14 @@ const HOME_CSS = `
   display:grid; grid-template-columns:1.05fr .95fr; gap:44px; align-items:center;
 }
 .cbl-home .hero-copy { min-width:0; }
-.cbl-home h1.hero-title {
+.cbl-home .hero-title {
   font-family:${DISPLAY}; font-weight:900; font-size:clamp(44px,5.2vw,76px);
   line-height:.96; letter-spacing:-.02em; text-transform:uppercase; margin:0 0 18px;
-  color:#fff; transition:filter .5s, opacity .5s;
+  color:#fff; transition:filter .5s, opacity .5s; text-wrap:balance;
 }
 /* Locked to three lines so the rotation never shifts the layout. */
-.cbl-home h1.hero-title .ln { display:block; }
-.cbl-home h1.hero-title .gold { color:${GOLD}; }
+.cbl-home .hero-title .ln { display:block; }
+.cbl-home .hero-title .gold { color:${GOLD}; }
 .cbl-home .hero-lede {
   font-size:16px; line-height:1.5; color:#B8B8B8; margin:0 0 24px;
   white-space:nowrap;
@@ -655,10 +669,10 @@ const HOME_CSS = `
   .cbl-home .eyebrow { display:flex; justify-content:center; }
   .cbl-home .hero-media .cap { display:none; } /* caption already shown in the lede */
   /* Large centered title: three consistent lines (one phrase per line) via base .ln{display:block} */
-  .cbl-home h1.hero-title { font-size:clamp(29px,6.7vw,42px); margin-bottom:4px; text-align:center; line-height:1.02; }
+  .cbl-home .hero-title { font-size:clamp(29px,6.7vw,42px); margin-bottom:4px; text-align:center; line-height:1.02; }
   /* Two-line headline on mobile: drop the 3rd phrase, make the 2nd line orange. */
-  .cbl-home h1.hero-title .ln.gold { display:none; }
-  .cbl-home h1.hero-title .ln:nth-of-type(2) { color:${GOLD}; }
+  .cbl-home .hero-title .ln.gold { display:none; }
+  .cbl-home .hero-title .ln:nth-of-type(2) { color:${GOLD}; }
   .cbl-home .btn-primary { padding:10px 24px; font-size:13px; }
   .cbl-home .btn-ghost { padding:10px 22px; font-size:13px; margin-left:10px; }
   /* Big icon-only row hugging the image (like the live site) */
@@ -683,7 +697,7 @@ const HOME_CSS = `
 @media (max-width:640px){
   .cbl-home .eyebrow { margin-bottom:3px; font-size:11px; }
   .cbl-home .hero-media { height:clamp(110px,20vh,160px); }
-  .cbl-home h1.hero-title { font-size:clamp(34px,10vw,46px); }
+  .cbl-home .hero-title { font-size:clamp(34px,10vw,46px); }
   .cbl-home .hero-lede { margin-bottom:10px; }
   /* Tighten CTAs so both stay on one row on small phones */
   .cbl-home .btn-primary { padding:11px 18px; font-size:12px; }
@@ -776,12 +790,17 @@ export function Home() {
           <div className="hero-map-streaklayer" />
         </div>
         <div className="hero-inner">
+          <h1 className="sr-only">City Bucket List: live like a local in Pittsburgh and every city you visit</h1>
           <div className="eyebrow">what's on your bucket list?</div>
           <div className="hero-grid">
             <div className="hero-copy">
-              <h1 className="hero-title" style={fadeStyle}>
+              {/* The rotating headline is a styled paragraph, not the page heading:
+                  search engines read the h1 below as what this page is about, and
+                  "Need a ride? Arrive safe." named neither City Bucket List nor
+                  Pittsburgh (SEO audit, Nov 2026). Looks exactly as before. */}
+              <p className="hero-title" style={fadeStyle}>
                 {slide.headline}
-              </h1>
+              </p>
               <p className="hero-lede" style={fadeStyle}>
                 {slide.caption}
                 {SLIDE_CAT[slide.key] && (
@@ -845,7 +864,18 @@ export function Home() {
               onMouseLeave={() => setPaused(false)}
             >
               <div className="frame" style={fadeStyle}>
-                <img src={slide.image} alt={slide.alt} style={{ objectPosition: slide.imgPos ?? 'center' }} />
+                <img
+                  src={slide.image.src}
+                  srcSet={slide.image.srcSet}
+                  sizes={HERO_SIZES}
+                  alt={slide.alt}
+                  width={640}
+                  height={480}
+                  // The first slide is the phone's main image: fetch it first.
+                  fetchPriority={current === 0 ? 'high' : 'auto'}
+                  decoding="async"
+                  style={{ objectPosition: slide.imgPos ?? 'center' }}
+                />
                 <div className="cap">{slide.caption}</div>
               </div>
             </div>
@@ -885,7 +915,7 @@ export function Home() {
         <div className="talk-wrap">
           <div className="talk-row">
           <span className="talk-buckee-wrap">
-            <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" />
+            <img className="talk-buckee" src={buckeeImage} alt="Buckee, the CityBucketList concierge" width={100} height={100} loading="lazy" decoding="async" />
           </span>
           <div className="talk-card">
             <a className="mic-btn" aria-label="Meet Buckee in the app" href={APP_URL}>
@@ -933,9 +963,9 @@ export function Home() {
             </Link>
           </div>
           <div className="family-figs">
-            <img src={buckeeServerImg} alt="Buckee" />
-            <img src={cittyImage} alt="Citty" />
-            <img src={listyImage} alt="Listy" />
+            <img src={buckeeServerImg} alt="Buckee" width={194} height={220} loading="lazy" decoding="async" />
+            <img src={cittyImage} alt="Citty" width={186} height={220} loading="lazy" decoding="async" />
+            <img src={listyImage} alt="Listy" width={194} height={220} loading="lazy" decoding="async" />
           </div>
         </div>
       </section>
@@ -998,6 +1028,10 @@ export function Home() {
             <img
               className="app-phone"
               src={riderDashboardImg}
+              width={840}
+              height={1650}
+              loading="lazy"
+              decoding="async"
               alt="The CityBucketList rider dashboard on an iPhone: book a ride, message your preferred driver, plan a trip with Buckee, and share your referral QR code"
             />
           </div>
@@ -1013,7 +1047,7 @@ export function Home() {
           </h2>
           <div className="more-grid">
             <Link to="/blog" className="more-card">
-              <img src={blogImage} alt="" />
+              <img src={blogImage} alt="CBL Blog: local guides and stories" width={640} height={640} loading="lazy" decoding="async" />
               <div className="overlay">
                 <div className="tag">CBL Blog</div>
                 <h3>Stay in the know</h3>
@@ -1025,7 +1059,7 @@ export function Home() {
               to="/directory"
               className="more-card"
             >
-              <img src={directoryImage} alt="" />
+              <img src={directoryImage} alt="City Bucket List local directory" width={640} height={640} loading="lazy" decoding="async" />
               <div className="overlay">
                 <div className="tag">Directory & Savings</div>
                 <h3>Find local businesses</h3>

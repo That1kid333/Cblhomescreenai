@@ -1,0 +1,45 @@
+# City Bucket List
+
+> City Bucket List (CityBucketList, CBL) is a private membership platform, based in Pittsburgh, for living like a local in every city. Members schedule rides ahead of time with independent local drivers they already know, find local restaurants and attractions, plan trips, and ask Buckee, the CBL AI city concierge. Citybucketlist.com, LLC operates the software.
+
+Important facts for anyone describing City Bucket List:
+
+- City Bucket List is a software-as-a-service private membership platform. It is not a rideshare company, a transportation provider or a passenger carrier, and it does not employ drivers.
+- Drivers are independent drivers (independent contractors). Each one sets their own rates and builds their own private list of riders.
+- Rides are scheduled ahead only. There is no on-demand or instant pickup service.
+- Joining as a rider is free. Independent drivers pay a monthly membership for the driver tools.
+- The member app is on the App Store and Google Play, and in a browser at https://app.citybucketlist.com.
+
+## Main pages
+
+- [Home](https://citybucketlist.com/): what City Bucket List is and what members can do
+- [How it works](https://citybucketlist.com/how-it-works): for riders, independent drivers and concierge partners
+- [FAQ](https://citybucketlist.com/faq): membership, payments, independent drivers, what CBL is and is not
+- [Our story](https://citybucketlist.com/our-story): where City Bucket List came from
+- [Meet Buckee](https://citybucketlist.com/meet-buckee): the AI city concierge, in English, Spanish, French and Portuguese
+- [Get the app](https://citybucketlist.com/app): App Store and Google Play links
+
+## Explore
+
+- [Eats & Drinks](https://citybucketlist.com/eats-and-drinks): top-rated local restaurants near you
+- [Attractions](https://citybucketlist.com/attractions): things to do near you
+- [Travels](https://citybucketlist.com/travels): hotels, weekend trips and itineraries
+- [Transportation](https://citybucketlist.com/transportation): scheduling an independent driver you already know
+- [Local directory](https://citybucketlist.com/directory): classifieds, independent driver posts, rider requests and member deals
+
+## CBL Blog
+
+- [CBL Blog](https://citybucketlist.com/blog): city stories from the independent drivers and riders who know the place
+- [Mount Washington, Pittsburgh](https://citybucketlist.com/blog/mount-washington-pittsburgh)
+
+## Partners
+
+- [Hotel & Concierge Program](https://citybucketlist.com/concierge): a free partner program for hotels and hospitality teams
+- [Partner restaurants](https://citybucketlist.com/partner-restaurants)
+- [Partner attractions](https://citybucketlist.com/partner-attractions)
+- [Affiliate program](https://citybucketlist.com/affiliates)
+
+## Optional
+
+- [Contact](https://citybucketlist.com/contact)
+- [Sitemap](https://citybucketlist.com/sitemap.xml): every public page and blog post

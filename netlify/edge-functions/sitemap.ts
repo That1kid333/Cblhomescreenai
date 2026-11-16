@@ -29,7 +29,13 @@ const STATIC_PATHS = [
   '/meet-buckee',
   '/faq',
   '/contact',
+  '/app',
+  '/arcade',
+  '/feedback',
+  '/terms',
 ];
+// Not listed on purpose: /login and /studio (member pages, marked noindex).
+
 
 const sbHeaders = { apikey: PUBLISHABLE, Authorization: `Bearer ${PUBLISHABLE}` };
 

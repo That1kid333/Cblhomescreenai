@@ -5,8 +5,9 @@
  * deploy tracks visits without a Netlify setting. Set VITE_GA_MEASUREMENT_ID
  * to send a build to a different stream. A blank value keeps the default.
  *
- * Page views only. The app (app.citybucketlist.com) is a separate site and is
- * not tagged here.
+ * Page views, plus the sign-up events below. The app (app.citybucketlist.com)
+ * is a separate site and is not tagged here, so driver and partner sign-ups
+ * that finish inside the app are not counted by this file.
  */
 
 /** CityBucketList.com web stream. */
@@ -65,4 +66,30 @@ export function trackPageView(pagePath: string): void {
     page_location: window.location.href,
     page_title: document.title,
   });
+}
+
+/**
+ * Sign-up events (SEO audit, Nov 2026). Mark these as key events in GA4
+ * (Admin > Events) so they count as conversions:
+ *
+ *   sign_up              a member account was created on this site
+ *                        (member_type: rider; source: which form)
+ *   generate_lead        a partner application was sent
+ *                        (member_type: concierge_partner)
+ *   login                a member signed in on this site
+ *
+ * Only fired after the form actually succeeds, never on a click, and never
+ * with anything the person typed: no names, emails or phone numbers go to
+ * Google from here.
+ */
+export type SignupEvent = 'sign_up' | 'generate_lead' | 'login';
+
+export function trackEvent(name: SignupEvent, params: Record<string, string> = {}): void {
+  if (typeof window === 'undefined') return;
+  try {
+    initAnalytics();
+    window.gtag?.('event', name, params);
+  } catch {
+    /* analytics must never break a form */
+  }
 }
