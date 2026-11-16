@@ -57,7 +57,7 @@ const ARCADE_CSS = `
   transition:transform .3s, border-color .3s;
 }
 .cbl-arcade .card:hover { transform:translateY(-4px); border-color:rgba(245,166,35,.45); }
-.cbl-arcade .card .preview { width:100%; height:220px; object-fit:cover; display:block; }
+.cbl-arcade .card .preview { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; }
 .cbl-arcade .card .body { padding:24px; display:flex; flex-direction:column; gap:12px; flex:1; }
 .cbl-arcade .card h3 {
   font-weight:900; font-size:24px; line-height:1; text-transform:uppercase; letter-spacing:-.01em; margin:0; color:#fff;
