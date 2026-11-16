@@ -58,7 +58,9 @@ const ARCADE_CSS = `
   min-width:0;
 }
 .cbl-arcade .card:hover { transform:translateY(-4px); border-color:rgba(245,166,35,.45); }
-.cbl-arcade .card .preview { width:100%; aspect-ratio:3/2; object-fit:cover; display:block; }
+.cbl-arcade .card .preview { width:100%; aspect-ratio:3/2; display:block; background:#141414; }
+.cbl-arcade .card .preview.cover { object-fit:cover; }
+.cbl-arcade .card .preview.contain { object-fit:contain; }
 .cbl-arcade .card .body { padding:24px; display:flex; flex-direction:column; gap:12px; flex:1; }
 .cbl-arcade .card h3 {
   font-weight:900; font-size:24px; line-height:1; text-transform:uppercase; letter-spacing:-.01em; margin:0; color:#fff;
@@ -94,13 +96,18 @@ const GAMES = [
     description: 'Grow a city full of bucket list venues with Buckee, Citty and Listy. Idle income, upgrades, prestige.',
     url: 'https://parking-idle-tycoon.netlify.app',
     image: '/arcade/bucket-list-city.jpg',
+    imageFit: 'cover',
   },
   {
     name: 'City Bucket List: Night Shift',
     tagline: 'A real pinball table, CBL themed',
     description: "Friday night in Pittsburgh. Shoot the Concierge to start a ride, clear all six stops on tonight's bucket list, and chase Victory Lap multiball.",
     url: 'https://cbl-bucket-list-pinball.netlify.app',
+    // The whole table, uncropped (no single horizontal slice reads as "pinball" on its
+    // own: the flippers that make it recognizable sit far below the bumpers). Shown in
+    // full via object-fit: contain, letterboxed on the card's own dark background.
     image: '/arcade/cbl-pinball.jpg',
+    imageFit: 'contain',
   },
 ];
 
@@ -117,7 +124,7 @@ export function Arcade() {
       <div className="grid">
         {GAMES.map((game) => (
           <div className="card" key={game.name}>
-            <img className="preview" src={game.image} alt={`${game.name} preview`} />
+            <img className={`preview ${game.imageFit}`} src={game.image} alt={`${game.name} preview`} />
             <div className="body">
               <p className="tagline">{game.tagline}</p>
               <h3>{game.name}</h3>
