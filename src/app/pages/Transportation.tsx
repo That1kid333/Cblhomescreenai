@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { JoinModal } from '../components/JoinModal';
 import { PlatformNotice } from '../components/PlatformNotice';
+import { BlackCarLimoSection } from '../components/BlackCarLimoSection';
 import { RIDER_BOOK_URL, DRIVER_SIGNUP_URL } from '../lib/constants';
 
 /**
@@ -1172,6 +1173,7 @@ export function Transportation() {
       <Hero />
       <Audiences />
       <RideAggregator />
+      <BlackCarLimoSection />
       <RideRules />
       <FAQs />
       <PlatformNotice variant="rides" />
