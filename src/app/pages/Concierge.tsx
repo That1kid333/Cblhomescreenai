@@ -239,7 +239,7 @@ const CSS = `
 
 const PLANS = {
   team: 'Team member — Always Free',
-  property: 'Property — Hotel Plan (90-day free trial, then Founding Rate)',
+  property: 'Property — Hotel Plan (60-day free trial, then Founding Rate)',
 } as const;
 type PlanKey = keyof typeof PLANS;
 
@@ -551,7 +551,7 @@ export function Concierge() {
               <h3>Hotel Plan</h3>
               <div className="who">Per property · billed annually</div>
               <div className="tag">$99<small>/mo · $1,188/yr</small></div>
-              <div className="sub">free for 90 days, no card needed · founding rate: first year half off</div>
+              <div className="sub">free for 60 days, no card needed · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
                 <li>Property earns 2% on every concierge ride</li>
@@ -559,7 +559,7 @@ export function Concierge() {
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
               </ul>
-              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start Your Free 90 Days →</a>
+              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start 60 Days Free →</a>
             </div>
           </div>
           <div className="price-note">
