@@ -239,7 +239,7 @@ const CSS = `
 
 const PLANS = {
   team: 'Team member — Always Free',
-  property: 'Property — Hotel Plan (Founding Rate)',
+  property: 'Property — Hotel Plan (90-day free trial, then Founding Rate)',
 } as const;
 type PlanKey = keyof typeof PLANS;
 
@@ -551,7 +551,7 @@ export function Concierge() {
               <h3>Hotel Plan</h3>
               <div className="who">Per property · billed annually</div>
               <div className="tag">$99<small>/mo · $1,188/yr</small></div>
-              <div className="sub">founding rate available — first year half off</div>
+              <div className="sub">free for 90 days, no card needed · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
                 <li>Property earns 2% on every concierge ride</li>
@@ -559,7 +559,7 @@ export function Concierge() {
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
               </ul>
-              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start with a Founding Rate →</a>
+              <a className="btn gold" href="#apply" onClick={() => setPlan('property')}>Start Your Free 90 Days →</a>
             </div>
           </div>
           <div className="price-note">
@@ -587,7 +587,11 @@ export function Concierge() {
                 step: create your CBL account now so we can activate your dashboard, referral
                 code, and payouts the moment you're approved.
               </p>
-              <a className="btn gold" href={`${APP_URL}/partner/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
+              {/* Concierge sign-up, not partner sign-up (concierge audit, Nov 19 2026). The
+                  partner form makes a business storefront with no Concierge Dashboard, no guest
+                  link and no Hotel Plan trial; that is how the first hotel lead ended up with
+                  the wrong kind of account. */}
+              <a className="btn gold" href={`${APP_URL}/concierge/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
                 Create your account in the app →
               </a>
             </div>
