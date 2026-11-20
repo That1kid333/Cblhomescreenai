@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router';
 import { authClient } from '../lib/supabase/authClient';
 import {
@@ -7,6 +7,7 @@ import {
   getStudioPost,
   savePost,
   deleteStudioPost,
+  setStudioSchedule,
   getStudioSubmissions,
   setSubmissionStatus,
   deleteSubmission,
@@ -79,13 +80,47 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
-/** Studio badge text: a scheduled post shows when it goes live. */
-function fmtWhen(iso: string | null): string {
+/** A go-live time in the viewer's own time zone, e.g. "Fri, Nov 27, 9:00 AM EST". */
+function fmtWhen(iso: string | null, withYear = false): string {
   if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const showYear = withYear || d.getFullYear() !== new Date().getFullYear();
   try {
-    return new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    return d.toLocaleString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      ...(showYear ? { year: 'numeric' as const } : {}),
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZoneName: 'short',
+    });
   } catch {
-    return '';
+    return d.toLocaleString();
+  }
+}
+
+/** How far off a go-live time is: "in 7 days", "tomorrow", "in 3 hours". */
+function fromNow(iso: string | null): string {
+  if (!iso) return '';
+  const ms = new Date(iso).getTime() - Date.now();
+  if (Number.isNaN(ms)) return '';
+  if (ms <= 0) return 'due, goes live within the hour';
+  const h = ms / 3600000;
+  if (h < 1) return 'in under an hour';
+  if (h < 24) return `in ${Math.round(h)} hour${Math.round(h) === 1 ? '' : 's'}`;
+  const days = Math.round(h / 24);
+  return days === 1 ? 'tomorrow' : `in ${days} days`;
+}
+
+/** The viewer's time zone as a short name, e.g. "EST". */
+function tzName(): string {
+  try {
+    const part = new Intl.DateTimeFormat('en-US', { timeZoneName: 'short' }).formatToParts(new Date()).find((x) => x.type === 'timeZoneName');
+    return part?.value ?? 'your time zone';
+  } catch {
+    return 'your time zone';
   }
 }
 
@@ -98,8 +133,28 @@ function toLocalInput(iso: string | null): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-function statusLabel(status: string, publishedAt: string | null): string {
-  return status === 'scheduled' ? `scheduled · ${fmtWhen(publishedAt)}` : status;
+function badgeClass(status: string): string {
+  return status === 'published' || status === 'scheduled' ? status : 'draft';
+}
+
+type ListFilter = 'all' | 'scheduled' | 'draft' | 'published';
+const FILTERS: { f: ListFilter; label: string }[] = [
+  { f: 'all', label: 'All' },
+  { f: 'scheduled', label: 'Scheduled' },
+  { f: 'draft', label: 'Drafts' },
+  { f: 'published', label: 'Published' },
+];
+const kindOf = (status: string): Exclude<ListFilter, 'all'> => (status === 'published' || status === 'scheduled' ? status : 'draft');
+const ts = (iso: string | null) => (iso ? new Date(iso).getTime() || 0 : 0);
+/** Scheduled first (soonest go-live first), then drafts (last edited first), then published (newest first). */
+function sortPosts(a: StudioListItem, b: StudioListItem): number {
+  const rank = { scheduled: 0, draft: 1, published: 2 };
+  const ka = kindOf(a.status);
+  const kb = kindOf(b.status);
+  if (ka !== kb) return rank[ka] - rank[kb];
+  if (ka === 'scheduled') return ts(a.published_at) - ts(b.published_at);
+  if (ka === 'published') return ts(b.published_at) - ts(a.published_at);
+  return ts(b.updated_at) - ts(a.updated_at);
 }
 
 function fmt(iso: string | null): string {
@@ -204,6 +259,31 @@ const CSS = `
 .cbl-studio td .pt { font-weight:800; color:#fff; display:block; }
 .cbl-studio td .ps { font-family:${MONO}; font-size:11px; color:#888; }
 .cbl-studio .rowbtns { display:flex; gap:8px; justify-content:flex-end; }
+.cbl-studio .filters { display:flex; gap:8px; flex-wrap:wrap; margin:-4px 0 18px; }
+.cbl-studio .fbtn { font-family:${MONO}; font-size:11px; letter-spacing:.08em; text-transform:uppercase; background:transparent; border:1px solid rgba(255,255,255,.14); color:#aaa; border-radius:999px; padding:7px 13px; cursor:pointer; }
+.cbl-studio .fbtn:hover { color:#fff; }
+.cbl-studio .fbtn.on { border-color:#C99742; color:#fff; background:rgba(201,151,66,.12); }
+.cbl-studio .fbtn .n { color:#C99742; margin-left:6px; }
+.cbl-studio .when { display:block; color:#E3B864; font-weight:800; font-size:13.5px; }
+.cbl-studio .when.pub { color:#ddd; font-weight:600; }
+.cbl-studio tr.editrow td { background:rgba(201,151,66,.06); border-bottom:1px solid rgba(201,151,66,.25); }
+.cbl-studio .rowsched { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.cbl-studio .rowsched label { font-family:${MONO}; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#9a9a9a; }
+.cbl-studio .rowsched input { width:auto; color-scheme:dark; }
+.cbl-studio .rowsched .hint, .cbl-studio .rowerr { flex-basis:100%; font-size:11px; color:#8a8a8a; }
+.cbl-studio .rowerr { color:#ff8a8a; font-family:${MONO}; }
+.cbl-studio .pubrow { display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+.cbl-studio .pubwhen { font-size:16px; color:#fff; font-weight:800; }
+.cbl-studio .pubwhen small { display:block; font-size:12px; color:#9a9a9a; font-weight:500; margin-top:2px; }
+.cbl-studio .pubset { border-color:rgba(201,151,66,.3); }
+@media (max-width:760px) {
+  .cbl-studio table.posts thead { display:none; }
+  .cbl-studio table.posts, .cbl-studio table.posts tbody, .cbl-studio table.posts tr, .cbl-studio table.posts td { display:block; width:100%; }
+  .cbl-studio table.posts tr { border-bottom:1px solid rgba(255,255,255,.08); padding:12px 0; }
+  .cbl-studio table.posts td { border:0; padding:4px 0; }
+  .cbl-studio table.posts td[data-label]::before { content:attr(data-label); display:block; font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:#777; margin-bottom:2px; }
+  .cbl-studio table.posts .rowbtns { justify-content:flex-start; flex-wrap:wrap; margin-top:6px; }
+}
 .cbl-studio .empty { text-align:center; color:#888; padding:56px 20px; font-family:${MONO}; letter-spacing:.04em; }
 `;
 
@@ -324,6 +404,11 @@ function Admin({ email }: { email: string }) {
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string; slug?: string } | null>(null);
   const [showPreview, setShowPreview] = useState(false);
 
+  const [filter, setFilter] = useState<ListFilter>('all');
+  const [rowEdit, setRowEdit] = useState<{ id: string; text: string } | null>(null);
+  const [rowBusy, setRowBusy] = useState(false);
+  const [rowErr, setRowErr] = useState<string | null>(null);
+
   const [section, setSection] = useState<'stories' | 'submissions'>('stories');
   const [subs, setSubs] = useState<Submission[] | null>(null);
   const [subCount, setSubCount] = useState<number | null>(null);
@@ -419,13 +504,13 @@ function Admin({ email }: { email: string }) {
     }
     if (!editId && id) setEditId(id);
     setExistingPub(published_at);
-    if (status !== 'scheduled') setScheduleText('');
+    setScheduleText(status === 'scheduled' ? toLocalInput(published_at) : '');
     setForm((f) => ({ ...f, status }));
     const text =
       status === 'published'
         ? 'Published — live now.'
         : status === 'scheduled'
-          ? `Scheduled — goes live ${fmtWhen(published_at)}.`
+          ? `Saved — goes live ${fmtWhen(published_at)}.`
           : prevStatus === 'scheduled'
             ? 'Draft saved — no longer scheduled.'
             : 'Draft saved.';
@@ -437,6 +522,36 @@ function Admin({ email }: { email: string }) {
     const { error } = await deleteStudioPost(id);
     if (error) window.alert(error);
     else loadList();
+  }
+
+  function openRowSchedule(p: StudioListItem) {
+    setRowErr(null);
+    setRowEdit({ id: p.id, text: p.status === 'scheduled' ? toLocalInput(p.published_at) : '' });
+  }
+  async function rowSchedule(p: StudioListItem, next: 'scheduled' | 'draft' | 'published') {
+    if (next === 'published' && !window.confirm(`Publish “${p.title}” now? It goes live on the blog right away.`)) return;
+    if (next === 'draft' && !window.confirm(`Take “${p.title}” off the schedule? It goes back to a draft.`)) return;
+    let req: Parameters<typeof setStudioSchedule>[1];
+    if (next === 'scheduled') {
+      const d = rowEdit?.text ? new Date(rowEdit.text) : null;
+      if (!d || Number.isNaN(d.getTime())) {
+        setRowErr('Pick a date and time first.');
+        return;
+      }
+      req = { status: 'scheduled', at: d.toISOString() };
+    } else {
+      req = { status: next };
+    }
+    setRowBusy(true);
+    const { error } = await setStudioSchedule(p.id, req);
+    setRowBusy(false);
+    if (error) {
+      setRowErr(error);
+      return;
+    }
+    setRowEdit(null);
+    setRowErr(null);
+    loadList();
   }
 
   // Community submissions → prefill the editor from a reader's pitch.
@@ -514,52 +629,124 @@ function Admin({ email }: { email: string }) {
           ) : list.length === 0 ? (
             <div className="empty">No stories yet. Hit “+ New story” to write the first one.</div>
           ) : (
-            <table>
-              <thead>
-                <tr>
-                  <th>Title</th>
-                  <th>Category</th>
-                  <th>Status</th>
-                  <th>Updated</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {list.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <span className="pt">
-                        {p.title}
-                        {p.featured ? ' ★' : ''}
-                      </span>
-                      <span className="ps">/blog/{p.slug}</span>
-                    </td>
-                    <td>{VERTICALS.find((v) => v.v === p.vertical)?.label ?? p.vertical ?? '—'}</td>
-                    <td>
-                      <span className={`badge ${p.status === 'published' || p.status === 'scheduled' ? p.status : 'draft'}`}>
-                        {statusLabel(p.status, p.published_at)}
-                      </span>
-                    </td>
-                    <td className="ps">{fmt(p.updated_at)}</td>
-                    <td>
-                      <div className="rowbtns">
-                        {p.status === 'published' && (
-                          <Link className="btn btn-ghost mini" to={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
-                            View
-                          </Link>
-                        )}
-                        <button className="btn btn-ghost mini" onClick={() => openEdit(p.id)}>
-                          Edit
-                        </button>
-                        <button className="btn btn-danger mini" onClick={() => doDelete(p.id, p.title)}>
-                          Delete
-                        </button>
-                      </div>
-                    </td>
+            <>
+              <div className="filters">
+                {FILTERS.map(({ f, label }) => {
+                  const n = f === 'all' ? list.length : list.filter((p) => kindOf(p.status) === f).length;
+                  return (
+                    <button key={f} className={'fbtn' + (filter === f ? ' on' : '')} onClick={() => setFilter(f)}>
+                      {label}
+                      <span className="n">{n}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <table className="posts">
+                <thead>
+                  <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Author</th>
+                    <th>Status</th>
+                    <th>Goes live</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {list
+                    .filter((p) => filter === 'all' || kindOf(p.status) === filter)
+                    .sort(sortPosts)
+                    .map((p) => {
+                      const kind = kindOf(p.status);
+                      const editing = rowEdit?.id === p.id;
+                      return (
+                        <Fragment key={p.id}>
+                          <tr>
+                            <td>
+                              <span className="pt">
+                                {p.title}
+                                {p.featured ? ' ★' : ''}
+                              </span>
+                              <span className="ps">
+                                /blog/{p.slug} · edited {fmt(p.updated_at)}
+                              </span>
+                            </td>
+                            <td data-label="Category">{VERTICALS.find((v) => v.v === p.vertical)?.label ?? p.vertical ?? '—'}</td>
+                            <td data-label="Author">{p.author_name || '—'}</td>
+                            <td data-label="Status">
+                              <span className={`badge ${badgeClass(p.status)}`}>{kind}</span>
+                            </td>
+                            <td data-label="Goes live">
+                              {kind === 'scheduled' ? (
+                                <>
+                                  <span className="when">{fmtWhen(p.published_at)}</span>
+                                  <span className="ps">{fromNow(p.published_at)}</span>
+                                </>
+                              ) : kind === 'published' ? (
+                                <span className="when pub">Live since {fmt(p.published_at)}</span>
+                              ) : (
+                                <span className="ps">Not scheduled</span>
+                              )}
+                            </td>
+                            <td>
+                              <div className="rowbtns">
+                                {kind === 'published' && (
+                                  <Link className="btn btn-ghost mini" to={`/blog/${p.slug}`} target="_blank" rel="noreferrer">
+                                    View
+                                  </Link>
+                                )}
+                                {kind !== 'published' && (
+                                  <button className="btn btn-ghost mini" onClick={() => (editing ? setRowEdit(null) : openRowSchedule(p))}>
+                                    {kind === 'scheduled' ? 'Change date' : 'Schedule'}
+                                  </button>
+                                )}
+                                <button className="btn btn-ghost mini" onClick={() => openEdit(p.id)}>
+                                  Edit
+                                </button>
+                                <button className="btn btn-danger mini" onClick={() => doDelete(p.id, p.title)}>
+                                  Delete
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                          {editing && rowEdit && (
+                            <tr className="editrow">
+                              <td colSpan={6}>
+                                <div className="rowsched">
+                                  <label htmlFor={`rs-${p.id}`}>{kind === 'scheduled' ? 'New go-live time' : 'Go live on'}</label>
+                                  <input
+                                    id={`rs-${p.id}`}
+                                    type="datetime-local"
+                                    value={rowEdit.text}
+                                    min={toLocalInput(new Date().toISOString())}
+                                    onChange={(e) => setRowEdit({ id: p.id, text: e.target.value })}
+                                  />
+                                  <button className="btn btn-gold mini" disabled={rowBusy || !rowEdit.text} onClick={() => rowSchedule(p, 'scheduled')}>
+                                    {kind === 'scheduled' ? 'Save new date' : 'Schedule'}
+                                  </button>
+                                  <button className="btn btn-ghost mini" disabled={rowBusy} onClick={() => rowSchedule(p, 'published')}>
+                                    Publish now
+                                  </button>
+                                  {kind === 'scheduled' && (
+                                    <button className="btn btn-ghost mini" disabled={rowBusy} onClick={() => rowSchedule(p, 'draft')}>
+                                      Unschedule
+                                    </button>
+                                  )}
+                                  <button className="btn btn-ghost mini" disabled={rowBusy} onClick={() => setRowEdit(null)}>
+                                    Cancel
+                                  </button>
+                                  <span className="hint">Times are in your time zone ({tzName()}). The post goes live within an hour of the time you pick.</span>
+                                  {rowErr && <span className="rowerr">{rowErr}</span>}
+                                </div>
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </>
           )
         ) : subs === null ? (
           <div className="empty">Loading…</div>
@@ -651,6 +838,49 @@ function Admin({ email }: { email: string }) {
           <div className="md">{form.body_md ? <Markdown source={form.body_md} /> : <p style={{ color: '#666' }}>Start writing the body to see it here…</p>}</div>
         </div>
       )}
+
+      <div className="fldset pubset">
+        <div className="legend">Publishing</div>
+        <div className="pubrow">
+          <span className={`badge ${badgeClass(form.status)}`}>{kindOf(form.status)}</span>
+          <span className="pubwhen">
+            {form.status === 'scheduled' ? (
+              <>
+                Goes live {fmtWhen(existingPub, true)}
+                <small>{fromNow(existingPub)}</small>
+              </>
+            ) : form.status === 'published' ? (
+              <>Live since {fmt(existingPub)}</>
+            ) : (
+              <>
+                Not scheduled
+                <small>Pick a go-live time below, or press Publish now at the bottom.</small>
+              </>
+            )}
+          </span>
+        </div>
+        {form.status !== 'published' && (
+          <div className="sched">
+            <label htmlFor="f-golive">Go live on</label>
+            <input
+              id="f-golive"
+              type="datetime-local"
+              value={scheduleText}
+              min={toLocalInput(new Date().toISOString())}
+              onChange={(e) => setScheduleText(e.target.value)}
+            />
+            <button className="btn btn-ghost" onClick={() => doSave('scheduled')} disabled={saving || !scheduleText}>
+              {form.status === 'scheduled' ? 'Save new date' : 'Schedule'}
+            </button>
+            {form.status === 'scheduled' && (
+              <button className="btn btn-ghost" onClick={() => doSave('draft')} disabled={saving}>
+                Unschedule
+              </button>
+            )}
+            <span className="schedhint">Times are in your time zone ({tzName()}). The post goes live within an hour of the time you pick.</span>
+          </div>
+        )}
+      </div>
 
       <div className="fldset">
         <div className="legend">The basics</div>
@@ -784,8 +1014,8 @@ function Admin({ email }: { email: string }) {
       </div>
 
       <div className="actions">
-        <span className={`badge ${form.status === 'published' || form.status === 'scheduled' ? form.status : 'draft'}`}>
-          {statusLabel(form.status, existingPub)}
+        <span className={`badge ${badgeClass(form.status)}`}>
+          {form.status === 'scheduled' ? `scheduled · ${fmtWhen(existingPub)}` : kindOf(form.status)}
         </span>
         {msg && (
           <span className={`msg ${msg.type}`}>
@@ -802,26 +1032,16 @@ function Admin({ email }: { email: string }) {
         )}
         <span className="spacer" />
         {form.status !== 'published' && (
-          <div className="sched">
-            <label htmlFor="f-golive">Go live on</label>
-            <input
-              id="f-golive"
-              type="datetime-local"
-              value={scheduleText}
-              min={toLocalInput(new Date().toISOString())}
-              onChange={(e) => setScheduleText(e.target.value)}
-            />
-            <button className="btn btn-ghost" onClick={() => doSave('scheduled')} disabled={saving || !scheduleText}>
-              {form.status === 'scheduled' ? 'Reschedule' : 'Schedule'}
-            </button>
-            <span className="schedhint">Goes live within an hour of this time</span>
-          </div>
+          <button
+            className="btn btn-ghost"
+            onClick={() => doSave(form.status === 'scheduled' ? 'scheduled' : 'draft')}
+            disabled={saving || (form.status === 'scheduled' && !scheduleText)}
+          >
+            {saving ? 'Saving…' : form.status === 'scheduled' ? 'Save changes' : 'Save draft'}
+          </button>
         )}
-        <button className="btn btn-ghost" onClick={() => doSave('draft')} disabled={saving}>
-          {saving ? 'Saving…' : form.status === 'scheduled' ? 'Unschedule (draft)' : 'Save draft'}
-        </button>
         <button className="btn btn-gold" onClick={() => doSave('published')} disabled={saving}>
-          {form.status === 'published' ? 'Update (live)' : form.status === 'scheduled' ? 'Publish now' : 'Publish'}
+          {form.status === 'published' ? 'Update (live)' : 'Publish now'}
         </button>
       </div>
     </>

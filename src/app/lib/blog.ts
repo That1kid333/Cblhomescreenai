@@ -125,6 +125,7 @@ export type StudioListItem = {
   vertical: string | null;
   city: string | null;
   featured: boolean;
+  author_name: string | null;
   updated_at: string | null;
   published_at: string | null;
 };
@@ -175,7 +176,7 @@ export async function studioIsAdmin(): Promise<boolean> {
 export async function getStudioPosts(): Promise<StudioListItem[]> {
   const { data, error } = await authClient
     .from('blog_posts')
-    .select('id, slug, title, status, vertical, city, featured, updated_at, published_at')
+    .select('id, slug, title, status, vertical, city, featured, author_name, updated_at, published_at')
     .order('updated_at', { ascending: false });
   if (error) {
     console.error('getStudioPosts', error.message);
@@ -294,6 +295,47 @@ export async function savePost(
     .select('id, slug')
     .maybeSingle();
   return { id: (data?.id as string) ?? null, slug: (data?.slug as string) ?? input.slug, published_at, error: error?.message ?? null };
+}
+
+/**
+ * Change only when a post goes live, without touching its content. Used by the
+ * Studio list and the editor's Publishing panel.
+ * - 'scheduled': set (or move) the go-live time; it must be in the future.
+ * - 'draft': take a scheduled post off the schedule.
+ * - 'published': publish a scheduled post right now.
+ * Each change is limited to posts that are currently scheduled or drafts, so a
+ * live post is never pulled back by mistake.
+ */
+export async function setStudioSchedule(
+  id: string,
+  next: { status: 'scheduled'; at: string } | { status: 'draft' } | { status: 'published' },
+): Promise<{ published_at: string | null; error: string | null }> {
+  let row: { status: PostStatus; published_at: string | null };
+  let from: PostStatus[];
+  if (next.status === 'scheduled') {
+    const t = new Date(next.at).getTime();
+    if (Number.isNaN(t) || t <= Date.now()) {
+      return { published_at: null, error: 'Pick a go-live time in the future, or press Publish now.' };
+    }
+    row = { status: 'scheduled', published_at: new Date(t).toISOString() };
+    from = ['scheduled', 'draft'];
+  } else if (next.status === 'draft') {
+    row = { status: 'draft', published_at: null };
+    from = ['scheduled'];
+  } else {
+    row = { status: 'published', published_at: new Date().toISOString() };
+    from = ['scheduled', 'draft'];
+  }
+  const { data, error } = await authClient
+    .from('blog_posts')
+    .update(row)
+    .eq('id', id)
+    .in('status', from)
+    .select('id')
+    .maybeSingle();
+  if (error) return { published_at: null, error: error.message };
+  if (!data) return { published_at: null, error: 'That post changed since you opened it. Reload and try again.' };
+  return { published_at: row.published_at, error: null };
 }
 
 export async function deleteStudioPost(id: string): Promise<{ error: string | null }> {
