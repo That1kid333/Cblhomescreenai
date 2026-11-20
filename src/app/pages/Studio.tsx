@@ -13,6 +13,7 @@ import {
   getSubscriberCount,
   type StudioListItem,
   type StudioInput,
+  type PostStatus,
   type Submission,
 } from '../lib/blog';
 import { Markdown } from '../components/Markdown';
@@ -78,6 +79,29 @@ function slugify(s: string): string {
     .slice(0, 80);
 }
 
+/** Studio badge text: a scheduled post shows when it goes live. */
+function fmtWhen(iso: string | null): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  } catch {
+    return '';
+  }
+}
+
+/** ISO time -> value for <input type="datetime-local"> in the viewer's own time zone. */
+function toLocalInput(iso: string | null): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function statusLabel(status: string, publishedAt: string | null): string {
+  return status === 'scheduled' ? `scheduled · ${fmtWhen(publishedAt)}` : status;
+}
+
 function fmt(iso: string | null): string {
   if (!iso) return '—';
   try {
@@ -125,7 +149,7 @@ const CSS = `
 .cbl-studio .fld label { font-family:${MONO}; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#9a9a9a; }
 .cbl-studio .fld .hint { font-size:11px; color:#6f6f6f; }
 .cbl-studio .req-star { color:#C99742; }
-.cbl-studio input[type=text],.cbl-studio input[type=email],.cbl-studio input[type=password],.cbl-studio select,.cbl-studio textarea {
+.cbl-studio input[type=datetime-local],.cbl-studio input[type=text],.cbl-studio input[type=email],.cbl-studio input[type=password],.cbl-studio select,.cbl-studio textarea {
   width:100%; background:#0c0c0c; border:1px solid rgba(255,255,255,.12); border-radius:9px; padding:11px 13px;
   color:#fff; font-family:${DISPLAY}; font-size:15px; outline:0; transition:border-color .15s;
 }
@@ -144,6 +168,10 @@ const CSS = `
 .cbl-studio .actions { position:sticky; bottom:0; background:linear-gradient(180deg,rgba(10,10,10,0),#0A0A0A 34%); padding:18px 0 8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-top:6px; z-index:5; }
 .cbl-studio .badge { font-family:${MONO}; font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:5px 11px; border-radius:999px; border:1px solid; }
 .cbl-studio .badge.draft { color:#c9c9c9; border-color:rgba(255,255,255,.25); }
+.cbl-studio .badge.scheduled { color:#E3B864; border-color:rgba(201,151,66,.55); background:rgba(201,151,66,.1); }
+.cbl-studio .sched { display:flex; align-items:center; gap:8px; }
+.cbl-studio .sched label { font-family:${MONO}; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#9a9a9a; white-space:nowrap; }
+.cbl-studio .sched input { width:auto; color-scheme:dark; }
 .cbl-studio .badge.published { color:#4DBF66; border-color:rgba(77,191,102,.5); background:rgba(77,191,102,.1); }
 .cbl-studio .msg { font-size:13px; font-family:${MONO}; }
 .cbl-studio .msg.ok { color:#4DBF66; } .cbl-studio .msg.err { color:#ff8a8a; }
@@ -288,6 +316,7 @@ function Admin({ email }: { email: string }) {
   const [tagsText, setTagsText] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [existingPub, setExistingPub] = useState<string | null>(null);
+  const [scheduleText, setScheduleText] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: 'ok' | 'err'; text: string; slug?: string } | null>(null);
@@ -318,6 +347,7 @@ function Admin({ email }: { email: string }) {
     setTagsText('');
     setEditId(null);
     setExistingPub(null);
+    setScheduleText('');
     setSlugTouched(false);
     setMsg(null);
     setShowPreview(false);
@@ -338,6 +368,7 @@ function Admin({ email }: { email: string }) {
     setTagsText(rest.tags.join(', '));
     setEditId(pid);
     setExistingPub(published_at);
+    setScheduleText(rest.status === 'scheduled' ? toLocalInput(published_at) : '');
     setSlugTouched(true);
   }
 
@@ -351,10 +382,19 @@ function Admin({ email }: { email: string }) {
     set('slug', slugify(v));
   }
 
-  async function doSave(status: 'draft' | 'published') {
+  async function doSave(status: PostStatus) {
     if (!form.title.trim() || !form.slug.trim()) {
       setMsg({ type: 'err', text: 'Title and slug are both required.' });
       return;
+    }
+    let scheduleAt: string | null = null;
+    if (status === 'scheduled') {
+      const d = scheduleText ? new Date(scheduleText) : null;
+      if (!d || Number.isNaN(d.getTime())) {
+        setMsg({ type: 'err', text: 'Pick a date and time to go live first.' });
+        return;
+      }
+      scheduleAt = d.toISOString();
     }
     setSaving(true);
     setMsg(null);
@@ -363,16 +403,31 @@ function Admin({ email }: { email: string }) {
       status,
       tags: tagsText.split(',').map((t) => t.trim()).filter(Boolean),
     };
-    const { id, slug, error } = await savePost(input, { id: editId ?? undefined, existingPublishedAt: existingPub });
+    const prevStatus = form.status;
+    const { id, slug, published_at, error } = await savePost(input, {
+      id: editId ?? undefined,
+      existingPublishedAt: existingPub,
+      prevStatus,
+      scheduleAt,
+    });
     setSaving(false);
     if (error) {
       setMsg({ type: 'err', text: error });
       return;
     }
     if (!editId && id) setEditId(id);
-    if (status === 'published' && !existingPub) setExistingPub(new Date().toISOString());
+    setExistingPub(published_at);
+    if (status !== 'scheduled') setScheduleText('');
     setForm((f) => ({ ...f, status }));
-    setMsg({ type: 'ok', text: status === 'published' ? 'Published — live now.' : 'Draft saved.', slug });
+    const text =
+      status === 'published'
+        ? 'Published — live now.'
+        : status === 'scheduled'
+          ? `Scheduled — goes live ${fmtWhen(published_at)}.`
+          : prevStatus === 'scheduled'
+            ? 'Draft saved — no longer scheduled.'
+            : 'Draft saved.';
+    setMsg({ type: 'ok', text, slug });
   }
 
   async function doDelete(id: string, title: string) {
@@ -397,6 +452,7 @@ function Admin({ email }: { email: string }) {
     setTagsText('');
     setEditId(null);
     setExistingPub(null);
+    setScheduleText('');
     setSlugTouched(true);
     setMsg(null);
     setShowPreview(false);
@@ -478,7 +534,9 @@ function Admin({ email }: { email: string }) {
                     </td>
                     <td>{VERTICALS.find((v) => v.v === p.vertical)?.label ?? p.vertical ?? '—'}</td>
                     <td>
-                      <span className={`badge ${p.status === 'published' ? 'published' : 'draft'}`}>{p.status}</span>
+                      <span className={`badge ${p.status === 'published' || p.status === 'scheduled' ? p.status : 'draft'}`}>
+                        {statusLabel(p.status, p.published_at)}
+                      </span>
                     </td>
                     <td className="ps">{fmt(p.updated_at)}</td>
                     <td>
@@ -724,7 +782,9 @@ function Admin({ email }: { email: string }) {
       </div>
 
       <div className="actions">
-        <span className={`badge ${form.status === 'published' ? 'published' : 'draft'}`}>{form.status}</span>
+        <span className={`badge ${form.status === 'published' || form.status === 'scheduled' ? form.status : 'draft'}`}>
+          {statusLabel(form.status, existingPub)}
+        </span>
         {msg && (
           <span className={`msg ${msg.type}`}>
             {msg.text}
@@ -739,11 +799,26 @@ function Admin({ email }: { email: string }) {
           </span>
         )}
         <span className="spacer" />
+        {form.status !== 'published' && (
+          <div className="sched">
+            <label htmlFor="f-golive">Go live on</label>
+            <input
+              id="f-golive"
+              type="datetime-local"
+              value={scheduleText}
+              min={toLocalInput(new Date().toISOString())}
+              onChange={(e) => setScheduleText(e.target.value)}
+            />
+            <button className="btn btn-ghost" onClick={() => doSave('scheduled')} disabled={saving || !scheduleText}>
+              {form.status === 'scheduled' ? 'Reschedule' : 'Schedule'}
+            </button>
+          </div>
+        )}
         <button className="btn btn-ghost" onClick={() => doSave('draft')} disabled={saving}>
-          {saving ? 'Saving…' : 'Save draft'}
+          {saving ? 'Saving…' : form.status === 'scheduled' ? 'Unschedule (draft)' : 'Save draft'}
         </button>
         <button className="btn btn-gold" onClick={() => doSave('published')} disabled={saving}>
-          {form.status === 'published' ? 'Update (live)' : 'Publish'}
+          {form.status === 'published' ? 'Update (live)' : form.status === 'scheduled' ? 'Publish now' : 'Publish'}
         </button>
       </div>
     </>

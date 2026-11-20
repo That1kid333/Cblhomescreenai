@@ -149,8 +149,15 @@ export type StudioInput = {
   show_trip_planner: boolean;
   seo_title: string;
   seo_description: string;
-  status: 'draft' | 'published';
+  status: PostStatus;
 };
+
+/**
+ * 'scheduled' = saved with a future go-live time (kept in published_at). The
+ * public can't read it (RLS only exposes status='published'), and the database
+ * job `blog-publish-scheduled` flips it to 'published' once that time passes.
+ */
+export type PostStatus = 'draft' | 'published' | 'scheduled';
 
 export type StudioFullPost = StudioInput & { id: string; published_at: string | null };
 
@@ -207,7 +214,7 @@ export async function getStudioPost(id: string): Promise<StudioFullPost | null> 
     show_trip_planner: !!p.show_trip_planner,
     seo_title: (p.seo_title as string) ?? '',
     seo_description: (p.seo_description as string) ?? '',
-    status: (p.status as 'draft' | 'published') ?? 'draft',
+    status: (p.status as PostStatus) ?? 'draft',
     published_at: (p.published_at as string) ?? null,
   };
 }
@@ -224,12 +231,27 @@ const nn = (s: string): string | null => {
  */
 export async function savePost(
   input: StudioInput,
-  opts: { id?: string; existingPublishedAt?: string | null } = {},
-): Promise<{ id: string | null; slug: string; error: string | null }> {
+  opts: {
+    id?: string;
+    existingPublishedAt?: string | null;
+    /** Status the post had before this save, so un-scheduling can clear the date. */
+    prevStatus?: PostStatus;
+    /** Required when input.status is 'scheduled': the go-live time (ISO). */
+    scheduleAt?: string | null;
+  } = {},
+): Promise<{ id: string | null; slug: string; published_at: string | null; error: string | null }> {
   const { data: sess } = await authClient.auth.getSession();
   const uid = sess.session?.user?.id ?? null;
 
   let published_at = opts.existingPublishedAt ?? null;
+  // A post that was only ever scheduled has no real publish date to keep.
+  if (opts.prevStatus === 'scheduled') published_at = null;
+  if (input.status === 'scheduled') {
+    if (!opts.scheduleAt || new Date(opts.scheduleAt).getTime() <= Date.now()) {
+      return { id: opts.id ?? null, slug: input.slug, published_at: null, error: 'Pick a go-live time in the future, or press Publish now.' };
+    }
+    published_at = opts.scheduleAt;
+  }
   if (input.status === 'published' && !published_at) published_at = new Date().toISOString();
 
   const row: Record<string, unknown> = {
@@ -264,14 +286,14 @@ export async function savePost(
       .eq('id', opts.id)
       .select('id, slug')
       .maybeSingle();
-    return { id: (data?.id as string) ?? opts.id, slug: (data?.slug as string) ?? input.slug, error: error?.message ?? null };
+    return { id: (data?.id as string) ?? opts.id, slug: (data?.slug as string) ?? input.slug, published_at, error: error?.message ?? null };
   }
   const { data, error } = await authClient
     .from('blog_posts')
     .insert({ ...row, created_by: uid })
     .select('id, slug')
     .maybeSingle();
-  return { id: (data?.id as string) ?? null, slug: (data?.slug as string) ?? input.slug, error: error?.message ?? null };
+  return { id: (data?.id as string) ?? null, slug: (data?.slug as string) ?? input.slug, published_at, error: error?.message ?? null };
 }
 
 export async function deleteStudioPost(id: string): Promise<{ error: string | null }> {
