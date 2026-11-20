@@ -814,7 +814,7 @@ function Admin({ email }: { email: string }) {
             <button className="btn btn-ghost" onClick={() => doSave('scheduled')} disabled={saving || !scheduleText}>
               {form.status === 'scheduled' ? 'Reschedule' : 'Schedule'}
             </button>
-            <span className="schedhint">Goes live within 4 hours of this time</span>
+            <span className="schedhint">Goes live within an hour of this time</span>
           </div>
         )}
         <button className="btn btn-ghost" onClick={() => doSave('draft')} disabled={saving}>

@@ -9,10 +9,9 @@ Until that time the post is invisible everywhere public. The `blog_public_read`
 RLS policy, the blog list, the post page, the prerender and sitemap edge functions,
 and the like-count functions all read only `status = 'published'`.
 
-A database job flips due posts to published every 4 hours (Babz asked for 4 hours to
-keep usage down), so a post goes live within 4 hours of its chosen time. The checks
-run at 02, 06, 10, 14, 18 and 22 UTC, which is 9 AM, 1 PM, 5 PM, 9 PM, 1 AM and 5 AM
-Eastern in winter (an hour later in summer). The site reads posts
+A database job flips due posts to published at the top of every hour (Babz chose
+hourly to keep usage down), so a post goes live within an hour of its chosen time.
+The site reads posts
 live, so nothing needs to be deployed when a post goes live.
 
 ## Database job (run once, when this change is merged)
@@ -20,7 +19,7 @@ live, so nothing needs to be deployed when a post goes live.
 ```sql
 select cron.schedule(
   'blog-publish-scheduled',
-  '0 2,6,10,14,18,22 * * *',
+  '0 * * * *',
   $$update public.blog_posts
       set status = 'published'
     where status = 'scheduled'
