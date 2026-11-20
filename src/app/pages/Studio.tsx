@@ -172,6 +172,8 @@ const CSS = `
 .cbl-studio .sched { display:flex; align-items:center; gap:8px; }
 .cbl-studio .sched label { font-family:${MONO}; font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:#9a9a9a; white-space:nowrap; }
 .cbl-studio .sched input { width:auto; color-scheme:dark; }
+.cbl-studio .sched { flex-wrap:wrap; }
+.cbl-studio .schedhint { flex-basis:100%; font-size:11px; color:#8a8a8a; }
 .cbl-studio .badge.published { color:#4DBF66; border-color:rgba(77,191,102,.5); background:rgba(77,191,102,.1); }
 .cbl-studio .msg { font-size:13px; font-family:${MONO}; }
 .cbl-studio .msg.ok { color:#4DBF66; } .cbl-studio .msg.err { color:#ff8a8a; }
@@ -812,6 +814,7 @@ function Admin({ email }: { email: string }) {
             <button className="btn btn-ghost" onClick={() => doSave('scheduled')} disabled={saving || !scheduleText}>
               {form.status === 'scheduled' ? 'Reschedule' : 'Schedule'}
             </button>
+            <span className="schedhint">Goes live within 4 hours of this time</span>
           </div>
         )}
         <button className="btn btn-ghost" onClick={() => doSave('draft')} disabled={saving}>
