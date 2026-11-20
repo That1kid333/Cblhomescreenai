@@ -4,6 +4,7 @@ import { ShareBar } from '../components/ShareBar';
 import { getPublishedPosts, getLikeCounts, subscribeEmail, submitStory, type BlogCard, type StorySubmission , plainTitle } from '../lib/blog';
 import { useAuth } from '../lib/auth';
 import keithPhoto from '../../assets/cbl-keith.png';
+import justinPhoto from '../../assets/cbl-justin.png';
 
 /**
  * Blog — Keith's approved "CBL Blog Desktop" design (Claude Design · CBL Website
@@ -494,7 +495,7 @@ function toCard(p: BlogCard, likes: number): Card {
     title: plainTitle(p.title),
     excerpt: p.excerpt || '',
     author: p.author_name || 'City Bucket List',
-    avatar: (p.author_name || '').toLowerCase().includes('keith') ? keithPhoto : '',
+    avatar: authorAvatar(p.author_name),
     date: fmtDate(p.published_at),
     city: p.city || '',
     img: p.hero_image || MAP_BG,
@@ -591,6 +592,14 @@ function Filters({
       </div>
     </div>
   );
+}
+
+/** Author photo for the byline: matched on the byline name, blank for anyone else. */
+function authorAvatar(name?: string | null): string {
+  const n = (name || '').toLowerCase();
+  if (n.includes('keith')) return keithPhoto;
+  if (n.includes('justin')) return justinPhoto;
+  return '';
 }
 
 function Spotlight({ p }: { p: Card }) {
