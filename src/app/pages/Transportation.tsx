@@ -56,7 +56,7 @@ const PROVIDERS: Provider[] = [
       "Local, verified Independent Driver. Scheduled rides only — 12hr+ advance booking. You already know who's picking you up.",
     eta: '12hr+',
     price: '$18',
-    commission: '5% return discount · No surge · Scheduled only',
+    commission: 'Return discounts set by each driver · No surge · Scheduled only',
     badges: [
       { k: 'preferred', t: 'Preferred' },
       { k: 'av', t: 'Pre-Scheduled' },
@@ -106,7 +106,7 @@ const AUDIENCES: Audience[] = [
       'Upfront, consistent pricing',
       'No surge or hidden commissions',
       'Live GPS tracking + ETA updates',
-      '5% off every return trip',
+      'Some drivers offer discounts on return trips',
     ],
     cta: 'Join as a Rider',
   },
