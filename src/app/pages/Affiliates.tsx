@@ -50,10 +50,10 @@ const PARTNERS: Partner[] = [
     name: 'Hotel & Concierge',
     link: '/concierge',
     blurb:
-      'Connect guests with trusted drivers and plan their itineraries — staff free and earning, the property on a simple flat plan.',
+      'Better stays for guests. A share for staff. Connect guests with trusted drivers and plan their itineraries, free for staff, with an optional flat monthly plan for the property.',
     bullets: [
-      '8% to staff on every guest ride',
-      'Property earns 2% + branded welcome kit',
+      'Share of the 10% concierge fee on every guest ride',
+      'Your property sets the split, 50/50 to start',
       'Full concierge dashboard',
     ],
   },
@@ -80,7 +80,7 @@ const STEPS = [
 ];
 
 const TIERS = [
-  { rev: '10%', name: 'Concierge Partners', sub: 'Hotels, venues & businesses', note: 'On every ride or booking you refer.' },
+  { rev: '10%', name: 'Concierge Partners', sub: 'Hotels, venues & businesses', note: 'Concierge fee on every guest ride paid in the app, shared by staff and property.' },
   { rev: '4–6%', name: 'Affiliate Bookings', sub: 'Rides, travel & tickets', note: 'Paid by the network — never by the member.' },
   { rev: 'Featured', name: 'Sponsored Listings', sub: 'Restaurants & attractions', note: 'Top placement + partner badge on your category page.' },
 ];
