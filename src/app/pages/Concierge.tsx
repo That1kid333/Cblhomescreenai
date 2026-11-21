@@ -553,7 +553,7 @@ export function Concierge() {
               <h3>Hotel Plan</h3>
               <div className="who">Per property · billed monthly</div>
               <div className="tag">$99<small>/mo</small></div>
-              <div className="sub">free for 60 days, no card needed · founding rate: first year half off</div>
+              <div className="sub">free for 60 days · card added at the start, billed only when the trial ends · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
                 <li>Your property sets its own split of the 10% concierge fee, 50/50 to start</li>
