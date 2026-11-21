@@ -254,11 +254,11 @@ const STATIC_PAGES: Record<string, StaticPage> = {
   '/concierge': {
     title: 'Hotel & Concierge Partner Program | City Bucket List',
     description:
-      'A free partner program for hotels, residences and hospitality teams. Connect guests with trusted independent drivers and earn commission on bookings.',
+      'Better stays for guests, a share for staff. A free partner program for hotels and hospitality teams: trusted independent drivers for guests and a share of the 10% concierge fee.',
     eyebrow: 'hotels & hospitality · partner program',
     h1: 'Hotel & Concierge Program',
-    sub: 'Earn on every ride',
-    body: `<p>A free partner program for hotels, residences, senior communities, venues, and hospitality teams. Connect guests with trusted independent drivers, plan complete itineraries, and earn commission on every ride and booking. ${SAAS_NOTE}</p>`,
+    sub: 'Better stays for guests',
+    body: `<p>A free partner program for hotels, residences, senior communities, venues, and hospitality teams. Connect guests with trusted independent drivers, plan complete itineraries, and earn a share of the 10% concierge fee on every guest ride paid in the app. Your property sets the split. ${SAAS_NOTE}</p>`,
   },
   '/partner-restaurants': {
     title: 'Restaurant Partners: Reach Local Diners | City Bucket List',

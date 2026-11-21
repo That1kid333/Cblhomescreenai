@@ -300,13 +300,13 @@ export function Concierge() {
             <h1 className="hero-title">Hotel &amp;</h1>
             <div className="hero-subtitle">
               <span>Concierge Program.</span>
-              <span className="it">earn on every ride.</span>
+              <span className="it">better stays for guests.</span>
             </div>
             <p className="lede">
-              A free partnership for hotels, residences, and hospitality teams. Connect your guests
-              with trusted local drivers, plan their complete itineraries, and earn commission on
-              everything you book — powered by CityBucketList.com, the operating system for
-              hospitality transportation.
+              Better stays for guests. A share for staff. A free partnership for hotels, residences,
+              and hospitality teams: connect your guests with trusted local drivers, plan their
+              complete itineraries, and earn a share of the 10% concierge fee on every guest ride
+              paid in the app, powered by CityBucketList.com.
             </p>
           </div>
         </div>
@@ -321,7 +321,7 @@ export function Concierge() {
             <a className="btn ghost" href="#dashboard">See the Dashboard</a>
           </div>
           <div className="hero-stats">
-            <div className="s"><b className="gold">10%</b><span>per guest ride</span></div>
+            <div className="s"><b className="gold">10%</b><span>concierge fee per guest ride</span></div>
             <div className="s"><b className="gold">$5</b><span>per driver referred</span></div>
             <div className="s"><b>$0</b><span>free to join</span></div>
             <div className="s"><b>10</b><span>preferred drivers</span></div>
@@ -345,8 +345,9 @@ export function Concierge() {
               </div>
               <div className="big">10%</div>
               <h3>On every ride</h3>
-              <p>Earn 10% commission on every ride you schedule for a guest — credited the moment your
-                 driver completes the drop-off. Payouts go straight to your bank via Stripe Connect.</p>
+              <p>Guests pay a 10% concierge fee on every ride you book for them in the app, and you earn
+                 a share of it at drop-off, paid straight to your bank via Stripe Connect. Your property
+                 sets the split, and we suggest 50/50 to start. The driver keeps the full fare.</p>
             </div>
             <div className="val-card">
               <div className="ic">
@@ -354,7 +355,7 @@ export function Concierge() {
               </div>
               <div className="big">$5</div>
               <h3>Per driver referred</h3>
-              <p>Build your own driver network and earn $5 for every successful signup. Add ride-share
+              <p>Build your own driver network and earn $5 for each driver who pays for their first month. Add ride-share
                  drivers you trust, fellow staff, or friends &amp; family — up to 10 preferred drivers.</p>
             </div>
             <div className="val-card">
@@ -426,7 +427,7 @@ export function Concierge() {
             <div className="feat-list">
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11" /><path d="M5 11h14v5H5z" /></svg></div>
-                <div><h4>Book a Ride for Guest</h4><p>Select a guest, set drop-off and pickup time, choose a preferred driver, and add special requests (Black Car, XL, pet). 10% commission credited on drop-off.</p></div>
+                <div><h4>Book a Ride for Guest</h4><p>Select a guest, set drop-off and pickup time, choose a preferred driver, and add special requests (Black Car, XL, pet). Your share of the concierge fee is paid out at drop-off.</p></div>
               </div>
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.4" /><path d="M2 19c0-3 2.7-5 6-5s6 2 6 5" /><path d="M15 19c0-2 1.3-3.6 4-3.6" /></svg></div>
@@ -434,7 +435,7 @@ export function Concierge() {
               </div>
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></svg></div>
-                <div><h4>Concierge Bank</h4><p>Connect your bank securely through Stripe Connect. See total earned, pending payouts, and your 10% commission rate — all in real time.</p></div>
+                <div><h4>Concierge Bank</h4><p>Connect your bank securely through Stripe Connect. See total earned, pending payouts, and your share of the concierge fee, all in real time.</p></div>
               </div>
             </div>
           </div>
@@ -473,28 +474,29 @@ export function Concierge() {
           <div className="section-eyebrow">what you earn</div>
           <h2 className="section-h2">Commission, <span className="it">simply paid</span></h2>
           <p className="section-lede">
-            Your commission comes from the driver's fare on every guest ride you book — fair, since
-            you're the one bringing them the business — and pays out securely through Stripe Connect.
-            Track every dollar from your Concierge Bank.
+            Guests pay the driver's fare plus a 10% concierge fee. The driver keeps 100% of the fare,
+            and the fee is shared between your staff and your property, the way your property sets
+            it (we suggest 50/50 to start). It pays out securely through Stripe Connect, and you can
+            track every dollar from your Concierge Bank.
           </p>
           <div className="earn-grid">
             <div className="earn-card">
               <div className="e-num">10%</div>
-              <div className="e-h">Per Guest Ride</div>
-              <div className="e-sub">credited on driver drop-off</div>
-              <p>Every ride you schedule for a guest earns you 10% — automatically, on every completed trip.</p>
+              <div className="e-h">Concierge Fee</div>
+              <div className="e-sub">paid out at drop-off</div>
+              <p>Your share of the 10% fee on every guest ride paid in the app, automatically, on every completed trip.</p>
             </div>
             <div className="earn-card">
               <div className="e-num">$5</div>
               <div className="e-h">Per Driver Signup</div>
               <div className="e-sub">ongoing monetization</div>
-              <p>Refer drivers with your QR code or link and earn $5 for each one that successfully joins.</p>
+              <p>Refer drivers with your QR code or link and earn $5 for each one once they pay for their first month.</p>
             </div>
             <div className="earn-card">
               <div className="e-num">Free</div>
               <div className="e-h">To Join</div>
               <div className="e-sub">no fees · no equipment</div>
-              <p>The program, the dashboard, the welcome kit, and Stripe payouts are all free for partners.</p>
+              <p>The program, the dashboard, and Stripe payouts are all free for partners.</p>
             </div>
           </div>
         </div>
@@ -528,8 +530,8 @@ export function Concierge() {
           <div className="section-eyebrow">what it costs</div>
           <h2 className="section-h2">Free for your team, <span className="it">simple for your property</span></h2>
           <p className="section-lede">
-            Your staff never pay a cent — they earn. The property carries one flat annual subscription
-            for the full concierge platform. No per-seat fees, no equipment, no surprises.
+            Your staff never pay a cent. They earn. The property can add the Hotel Plan for one flat
+            monthly price. No per-seat fees, no equipment, no surprises.
           </p>
           <div className="price-grid">
             <div className="price-card">
@@ -539,8 +541,8 @@ export function Concierge() {
               <div className="tag">$0</div>
               <div className="sub">they earn, never pay</div>
               <ul>
-                <li>Keep 10% commission on every guest ride you book</li>
-                <li>Earn $5 for every driver you refer</li>
+                <li>Earn a share of the 10% concierge fee on every guest ride</li>
+                <li>Earn $5 for each driver you refer once they pay their first month</li>
                 <li>Full Concierge Dashboard + itinerary tools</li>
                 <li>Secure Stripe payouts — no equipment, no fees</li>
               </ul>
@@ -549,12 +551,11 @@ export function Concierge() {
             <div className="price-card feature">
               <div className="pc-eyebrow">For your property</div>
               <h3>Hotel Plan</h3>
-              <div className="who">Per property · billed annually</div>
-              <div className="tag">$99<small>/mo · $1,188/yr</small></div>
+              <div className="who">Per property · billed monthly</div>
+              <div className="tag">$99<small>/mo</small></div>
               <div className="sub">free for 60 days, no card needed · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
-                <li>Property earns 2% on every concierge ride</li>
                 <li>Manage unlimited staff, drivers &amp; guests</li>
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
