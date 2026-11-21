@@ -556,6 +556,7 @@ export function Concierge() {
               <div className="sub">free for 60 days, no card needed · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
+                <li>Your property sets its own split of the 10% concierge fee, 50/50 to start</li>
                 <li>Manage unlimited staff, drivers &amp; guests</li>
                 <li>Earnings &amp; booking reporting dashboard</li>
                 <li>Local Eats, Attractions &amp; Airport info for guests</li>
