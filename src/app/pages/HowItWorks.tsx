@@ -342,7 +342,7 @@ const AUDIENCES: Audience[] = [
       </>
     ),
     lede:
-      'Concierge Partners are the local backbone — hotels, senior communities, venues, small businesses — that connect riders to independent drivers who fit their needs. When your referrals sign up, drivers earn, riders get a trusted ride, and you share in every trip that follows.',
+      'Concierge Partners are the local backbone — hotels, senior communities, venues, small businesses — that connect riders to independent drivers who fit their needs. When your referrals sign up, drivers earn, riders get a trusted ride, and on guest rides your staff earn a share of the 10% concierge fee.',
     callout: (
       <p>
         <b>Your role →</b> You're the bridge. You know who in your community needs reliable,

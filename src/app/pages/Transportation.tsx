@@ -131,9 +131,9 @@ const AUDIENCES: Audience[] = [
     num: '03',
     name: 'Concierge',
     blurb:
-      'Hotels, hospitality teams, and local businesses help guests schedule rides AND plan complete itineraries — with commission on every booking.',
+      'Hotels, hospitality teams, and local businesses help guests schedule rides AND plan complete itineraries, and staff earn a share of the 10% concierge fee guests pay on every ride.',
     price: '10%',
-    priceLabel: 'commission · free to join',
+    priceLabel: 'concierge fee · free to join',
     bullets: [
       '10% on every ride you schedule for guests',
       'Ongoing earnings from every Driver you refer',

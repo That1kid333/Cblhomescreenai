@@ -388,7 +388,7 @@ export function Affiliates() {
           </h2>
           <p className="section-lede">
             Pick the path that fits your business. Restaurants and attractions get featured placement
-            on their category pages; hotels and concierge partners earn on every guest booking.
+            on their category pages; hotels and concierge partners earn a share of the 10% concierge fee on every guest ride.
           </p>
           <div className="partner-grid">
             {PARTNERS.map((p) => (
