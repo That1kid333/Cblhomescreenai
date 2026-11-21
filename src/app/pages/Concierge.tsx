@@ -530,8 +530,9 @@ export function Concierge() {
           <div className="section-eyebrow">what it costs</div>
           <h2 className="section-h2">Free for your team, <span className="it">simple for your property</span></h2>
           <p className="section-lede">
-            Your staff never pay a cent. They earn. The property can add the Hotel Plan for one flat
-            monthly price. No per-seat fees, no equipment, no surprises.
+            Your staff never pay a cent. They earn. The property joins on the Hotel Plan for one flat
+            monthly price, and your team joins free from the property's invite link. No per-seat fees,
+            no equipment, no surprises.
           </p>
           <div className="price-grid">
             <div className="price-card">
@@ -545,6 +546,7 @@ export function Concierge() {
                 <li>Earn $5 for each driver you refer once they pay their first month</li>
                 <li>Full Concierge Dashboard + itinerary tools</li>
                 <li>Secure Stripe payouts — no equipment, no fees</li>
+                <li>Join from your property's team invite link</li>
               </ul>
               <a className="btn ghost" href="#apply" onClick={() => setPlan('team')}>Join Free</a>
             </div>
@@ -553,7 +555,7 @@ export function Concierge() {
               <h3>Hotel Plan</h3>
               <div className="who">Per property · billed monthly</div>
               <div className="tag">$99<small>/mo</small></div>
-              <div className="sub">free for 60 days, no card needed · founding rate: first year half off</div>
+              <div className="sub">free for 60 days · card on file, no charge during the trial · founding rate: first year half off</div>
               <ul>
                 <li>Branded front-desk plaque + QR welcome kit</li>
                 <li>Your property sets its own split of the 10% concierge fee, 50/50 to start</li>
@@ -584,18 +586,31 @@ export function Concierge() {
             <div className="apply-success">
               <div className="mark" aria-hidden="true">✓</div>
               <h3>Application <span className="g">received.</span></h3>
-              <p>
-                Thanks — we'll be in touch within 24 hours with your welcome kit details. One more
-                step: create your CBL account now so we can activate your dashboard, referral
-                code, and payouts the moment you're approved.
-              </p>
+              {/* Nov 21, 2026: a property is approved automatically once its trial, letter and
+                  payouts are set up; team members join from the property's invite link, so an
+                  account made without that link would be set up as a new property. */}
+              {plan === 'team' ? (
+                <p>
+                  Thanks — we'll be in touch within 24 hours. To join your property's team, open the
+                  team invite link your property shares from its Concierge Dashboard. That links your
+                  account to your property, and you set up your own payouts from there.
+                </p>
+              ) : (
+                <p>
+                  Thanks — we'll be in touch within 24 hours. One more step: create your CBL account now
+                  and start your 60-day free trial. Once your authorization letter is uploaded and your
+                  payouts are set up, your property is approved automatically.
+                </p>
+              )}
               {/* Concierge sign-up, not partner sign-up (concierge audit, Nov 19 2026). The
                   partner form makes a business storefront with no Concierge Dashboard, no guest
                   link and no Hotel Plan trial; that is how the first hotel lead ended up with
                   the wrong kind of account. */}
-              <a className="btn gold" href={`${APP_URL}/concierge/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
-                Create your account in the app →
-              </a>
+              {plan !== 'team' && (
+                <a className="btn gold" href={`${APP_URL}/concierge/signup`} target="_blank" rel="noopener noreferrer" style={{ marginTop: '18px', display: 'inline-flex' }}>
+                  Create your account in the app →
+                </a>
+              )}
             </div>
           ) : (
             <form onSubmit={handleApply}>
