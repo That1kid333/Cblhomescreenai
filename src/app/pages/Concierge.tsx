@@ -346,7 +346,7 @@ export function Concierge() {
               <div className="big">10%</div>
               <h3>On every ride</h3>
               <p>Guests pay a 10% concierge fee on every ride you book for them in the app, and you earn
-                 a share of it at drop-off, paid straight to your bank via Stripe Connect. Your property
+                 a share of it at drop-off, paid to your bank via Stripe Connect. Your property
                  sets the split, and we suggest 50/50 to start. The driver keeps the full fare.</p>
             </div>
             <div className="val-card">
@@ -427,7 +427,7 @@ export function Concierge() {
             <div className="feat-list">
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round"><path d="M5 11l1.5-4.5A2 2 0 018.4 5h7.2a2 2 0 011.9 1.5L19 11" /><path d="M5 11h14v5H5z" /></svg></div>
-                <div><h4>Book a Ride for Guest</h4><p>Select a guest, set drop-off and pickup time, choose a preferred driver, and add special requests (Black Car, XL, pet). Your share of the concierge fee is paid out at drop-off.</p></div>
+                <div><h4>Book a Ride for Guest</h4><p>Select a guest, set drop-off and pickup time, choose a preferred driver, and add special requests (Black Car, XL, pet). Your share of the concierge fee is earned at drop-off.</p></div>
               </div>
               <div className="feat">
                 <div className="fic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C99742" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="3" /><circle cx="17" cy="9" r="2.4" /><path d="M2 19c0-3 2.7-5 6-5s6 2 6 5" /><path d="M15 19c0-2 1.3-3.6 4-3.6" /></svg></div>
@@ -483,7 +483,7 @@ export function Concierge() {
             <div className="earn-card">
               <div className="e-num">10%</div>
               <div className="e-h">Concierge Fee</div>
-              <div className="e-sub">paid out at drop-off</div>
+              <div className="e-sub">earned at drop-off</div>
               <p>Your share of the 10% fee on every guest ride paid in the app, automatically, on every completed trip.</p>
             </div>
             <div className="earn-card">
