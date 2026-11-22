@@ -49,7 +49,7 @@ const ITALIC = "'Playfair Display',serif";
 const MONO = "'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace";
 const MAP_BG = "/eats/imagery/cbl-map-backdrop.jpg";
 
-// Pretty-print a stored 10-digit phone ("4129772408" → "(412) 977-2408").
+// Pretty-print a stored 10-digit phone ("4125550123" → "(412) 555-0123").
 // Leaves anything that isn't a clean 10/11-digit US number untouched.
 function formatPhone(raw: string | null | undefined): string {
   if (!raw) return "";
