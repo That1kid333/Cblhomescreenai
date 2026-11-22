@@ -27,7 +27,7 @@ What we told them:
 - CPA model: yes
 - On Impact: yes, publisher account 7504721 (display name CityBucketList.com, under info@citybucketlist.com, W-9 on file under citybucketlist.com LLC)
 - "Just launched in July 2026, growing month over month," no traffic figures
-- Contact: Keith Schmiedlin, Founder, (412) 977-2408
+- Contact: Keith Schmiedlin, Founder (phone on file)
 - No mention of the app or rideshare anywhere
 
 Uber pays only for NEW users' first ride or first Eats order. If approved, the program attaches inside Impact account 7504721.
