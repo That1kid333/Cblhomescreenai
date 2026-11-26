@@ -133,6 +133,25 @@
   from = "/riders"
   to = "/how-it-works"
   status = 301
+# Four more old-site addresses that Search Console reported as Not found (404)
+# on Nov 26, 2026, once the real 404s below went live. Nothing on the current
+# site links to them; Google still remembers them from the old www site.
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+[[redirects]]
+  from = "/pricing"
+  to = "/transportation"
+  status = 301
+[[redirects]]
+  from = "/things-to-do"
+  to = "/attractions"
+  status = 301
+[[redirects]]
+  from = "/savings"
+  to = "/directory"
+  status = 301
 # Temporary (302) until the Pittsburgh fun facts post exists. When it is
 # published, point this at /blog/<its slug> and change the status to 301.
 [[redirects]]
